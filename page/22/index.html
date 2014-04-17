@@ -11,16 +11,13 @@
 	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
 	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
 	<script src="/js/combined.js"></script>
-	<script type="text/javascript">
-		var _gaq = _gaq || [];
-		_gaq.push(['_setAccount', 'UA-2479580-1']);
-		_gaq.push(['_trackPageview']);
-
-		(function() {
-			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-		})();
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+		ga('create', 'UA-2479580-1', 'improve.dk');
+		ga('send', 	'pageview');
 	</script>
 	<link rel="stylesheet" href="/css/style.css" type="text/css">
 </head>
@@ -87,7 +84,7 @@
 		<h1><a href="/missing-windows-mobile-device-center/" title="Missing Windows Mobile Device Center" rel="bookmark">Missing Windows Mobile Device Center</a></h1>
 		<div class="categories">
 			
-				<a href="http://improve.dk/category/Windows/">Windows</a>
+				<a href="/category/Windows/">Windows</a>
 				
 			
 		</div>
@@ -145,10 +142,63 @@
 	</div>
 
 	<div class="title">
+		<h1><a href="/setpoint-volume-control-in-vista/" title="SetPoint Volume Control In Vista" rel="bookmark">SetPoint Volume Control In Vista</a></h1>
+		<div class="categories">
+			
+				<a href="/category/Windows/">Windows</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>It seems Logitech has some pretty functional SetPoint drivers out for Vista already (SetPoint is the all-purpose driver software for all their keyboards and mice).</p>
+<a id="more"></a>
+
+<p>The ony thing that did not work was the volume control. I could turn it up and down and the visual volume meter would respond (the SetPoint generated one, not the Vista one), but nothing would actually happen.</p>
+<p>Fortunately there’s an easy solution.</p>
+<div class="imgwrapper" style=""><div><a href="/setpoint-volume-control-in-vista/setpoint_1_2.jpg" class="fancy"><img src="/setpoint-volume-control-in-vista/setpoint_1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Navigate to “C:Program FilesLogitechSetPoint”. Now make sure that the “SetPoint.exe” process is NOT running - you may have to click Ctrl+Shift+Escape and end the process in the task manager.</p>
+<div class="imgwrapper" style=""><div><a href="/setpoint-volume-control-in-vista/setpoint_2_2.jpg" class="fancy"><img src="/setpoint-volume-control-in-vista/setpoint_2_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Now rightclick SetPoint.exe and select “Properties”. Navigate to the Compatibility pane and set it to run in compatibility mode as Windows XP (Service Pack 2). After this, double click SetPoint.exe to restart the process. Your volume control should now work!</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Dec</span>
+			<span class="day">04</span>
+		</div>
+		<div class="lower">2006</div>
+	</div>
+
+	<div class="title">
 		<h1><a href="/running-ie6-and-ie7-at-the-same-time/" title="Running IE6 and IE7 at the Same Time" rel="bookmark">Running IE6 and IE7 at the Same Time</a></h1>
 		<div class="categories">
 			
-				<a href="http://improve.dk/category/Tools of the Trade/">Tools of the Trade</a>
+				<a href="/category/Tools of the Trade/">Tools of the Trade</a>
 				
 			
 		</div>
@@ -195,7 +245,7 @@
 		<h1><a href="/installing-office-2007-on-vista/" title="Installing Office 2007 on Vista" rel="bookmark">Installing Office 2007 on Vista</a></h1>
 		<div class="categories">
 			
-				<a href="http://improve.dk/category/Windows/">Windows</a>
+				<a href="/category/Windows/">Windows</a>
 				
 			
 		</div>
@@ -270,59 +320,6 @@
 	<div class="datebox">
 		<div class="upper">
 			<span class="month">Dec</span>
-			<span class="day">04</span>
-		</div>
-		<div class="lower">2006</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/setpoint-volume-control-in-vista/" title="SetPoint Volume Control In Vista" rel="bookmark">SetPoint Volume Control In Vista</a></h1>
-		<div class="categories">
-			
-				<a href="http://improve.dk/category/Windows/">Windows</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>It seems Logitech has some pretty functional SetPoint drivers out for Vista already (SetPoint is the all-purpose driver software for all their keyboards and mice).</p>
-<a id="more"></a>
-
-<p>The ony thing that did not work was the volume control. I could turn it up and down and the visual volume meter would respond (the SetPoint generated one, not the Vista one), but nothing would actually happen.</p>
-<p>Fortunately there’s an easy solution.</p>
-<div class="imgwrapper" style=""><div><a href="/setpoint-volume-control-in-vista/setpoint_1_2.jpg" class="fancy"><img src="/setpoint-volume-control-in-vista/setpoint_1_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>Navigate to “C:Program FilesLogitechSetPoint”. Now make sure that the “SetPoint.exe” process is NOT running - you may have to click Ctrl+Shift+Escape and end the process in the task manager.</p>
-<div class="imgwrapper" style=""><div><a href="/setpoint-volume-control-in-vista/setpoint_2_2.jpg" class="fancy"><img src="/setpoint-volume-control-in-vista/setpoint_2_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>Now rightclick SetPoint.exe and select “Properties”. Navigate to the Compatibility pane and set it to run in compatibility mode as Windows XP (Service Pack 2). After this, double click SetPoint.exe to restart the process. Your volume control should now work!</p>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Dec</span>
 			<span class="day">02</span>
 		</div>
 		<div class="lower">2006</div>
@@ -332,7 +329,7 @@
 		<h1><a href="/running-vista-and-msdnaa-update/" title="Running Vista, MSDNAA Update" rel="bookmark">Running Vista, MSDNAA Update</a></h1>
 		<div class="categories">
 			
-				<a href="http://improve.dk/category/Windows/">Windows</a>
+				<a href="/category/Windows/">Windows</a>
 				
 			
 		</div>
@@ -396,7 +393,7 @@
 		<h1><a href="/multi-monitoring-with-style/" title="Multi Monitoring With Style" rel="bookmark">Multi Monitoring With Style</a></h1>
 		<div class="categories">
 			
-				<a href="http://improve.dk/category/Tools of the Trade/">Tools of the Trade</a>
+				<a href="/category/Tools of the Trade/">Tools of the Trade</a>
 				
 			
 		</div>
@@ -483,7 +480,7 @@
 		<h1><a href="/invaluable-ie-addon-tools/" title="Invaluable IE Addon Tools" rel="bookmark">Invaluable IE Addon Tools</a></h1>
 		<div class="categories">
 			
-				<a href="http://improve.dk/category/Tools of the Trade/">Tools of the Trade</a>
+				<a href="/category/Tools of the Trade/">Tools of the Trade</a>
 				
 			
 		</div>
@@ -559,7 +556,7 @@
 		<h1><a href="/unix-to-the-rescue/" title="Unix to the Rescue" rel="bookmark">Unix to the Rescue</a></h1>
 		<div class="categories">
 			
-				<a href="http://improve.dk/category/Conferences and Presenting/">Conferences and Presenting</a>
+				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
 				
 			
 		</div>
@@ -607,7 +604,7 @@
 		<h1><a href="/securingdotnet/" title="Securing .NET Code Presentation" rel="bookmark">Securing .NET Code Presentation</a></h1>
 		<div class="categories">
 			
-				<a href="http://improve.dk/category/Conferences and Presenting/">Conferences and Presenting</a>
+				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
 				
 			
 		</div>
@@ -655,7 +652,7 @@
 		<h1><a href="/securing-dotnet-code-article/" title="Securing .NET Code" rel="bookmark">Securing .NET Code</a></h1>
 		<div class="categories">
 			
-				<a href="http://improve.dk/category/.NET/">.NET</a>
+				<a href="/category/.NET/">.NET</a>
 				
 			
 		</div>
