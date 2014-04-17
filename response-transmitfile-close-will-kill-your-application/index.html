@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Response.TransmitFile + Close Will Kill Your Application | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Mar</span>
+			<span class="day">29</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/response-transmitfile-close-will-kill-your-application/" title="Response.TransmitFile + Close Will Kill Your Application" rel="bookmark">Response.TransmitFile + Close Will Kill Your Application</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on Response.TransmitFile + Close Will Kill Your Application">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>Just before last weekend I noticed that a website I’m responsible for started spitting out “Server is busy” messages, not something you want to see on a website with millions of visitors per day. The quickfix was to recycle the application pool, and thus I solved the symptoms by setting a 15 mins recycle cycle on all the application pools. Not exactly optimal, but sometimes pissing your pants is the way to go.</p>
+<a id="more"></a>
+
+<p>The first step I made to analyze what was causing this is the Performance Monitor tool. We weren’t experiencing above average traffic, so that couldn’t explain it. What first struck me was the the “ASP.NETRequests Queued” queue was 0, not 5000+ as I’d expected! That meant the requests were not being queued, so the server didn’t have trouble handling the requests themselves. The reason was to be found in the “ASP.NETRequests Current” counter. This was constantly rising even though the CPU, memory and disk counters looked fine. It obviously didn’t look like a performance problem, more like a configuration issue. So I increased the appQueueRequestLimit to 20k and set the recycle cycle to 30 minutes, at most the “ASP.NETRequests Current” went to about 10k before being recycled and thus reset to 0.</p>
+<p>Now, that didn’t fix the problem, just the symptom. We hadn’t experienced this issue previously, so I thought back at what changes had been made in the latest release version. The primary functionality of the system is to serve images, thus we have an Image.ashx file with a responsibility of serving the images as well as logging various parameters of the request. The previous system version had a funtionality like so:</p>
+<ul>
+<li>Find image path</li>
+<li>Response.TransmitFile()</li>
+<li>Logging</li>
+</ul>
+<p>The disadvantage of doing it that way is that the client will not have the image served before the statistics have been logged, even though that’s purely a serverside functionality. I wanted the client to receive the image as quickly as possible, and then letting the server continue its job afterwards. The obvious solution is to spawn a new thread doing the logging, but with the amount of requests we’ve got, I really don’t want to spawn any more threads than absolutely neccessary, excessive context switching will have a negative impact when the thread count gets high enough. So the new version functioned like this:</p>
+<ul>
+<li>Find image path</li>
+<li>Response.TransmitFile()</li>
+<li>Response.Flush()</li>
+<li>Response.Close()</li>
+<li>Logging</li>
+</ul>
+<p>This had the great advantage that the client receives the image immediatly while the server continues logging afterwards. We use only a single thread, the actual request thread. A friend of mine pointed out I might want to move the logging out of the ASP.NET worker process so as to not block incoming requests. The thing is, this will require new thread spawning, and I really don’t mind blocking a worker process as we can easily tune the amount of concurrent worker processes, and the “Server too busy” functionality is actually there for a reason - I don’t wanna end up in a situation where the server is running a million logging threads but still accepting new connections willingly - in <em>that</em> case, I’d really like the server to block new requests.</p>
+<p>Anyways, although this looked good, this was the sole reason for the “Server too busy” errors we were experiencing! After some testing I discovered that if you call Response.TransmitFile() and then afterwards call Response.Close(), the request process is stuck! It will simply keep on living, and thus the “ASP.NETRequests Current” counter will keep increasing. It will not be removed until a pool recycle event is fired! This does not happen if you use Response.WriteFile, Response.BinaryWrite or if you manually stream the file, only if you use TransmitFile!</p>
+<h3 id="This_will_kill_your_application:">This will kill your application:</h3>
+<figure class="highlight csharp"><pre><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">Page_Load</span>(<span class="keyword">object</span> sender, EventArgs e)
+{
+	Response.Buffer = <span class="keyword">false</span>;
+	Response.TransmitFile(<span class="string">"Tree.jpg"</span>);
+	Response.Close();
+}
+</pre></figure>
+
+<h3 id="But_this_won’t:">But this won’t:</h3>
+<figure class="highlight csharp"><pre><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">Page_Load</span>(<span class="keyword">object</span> sender, EventArgs e)
+{
+	Response.WriteFile(<span class="string">"Tree.jpg"</span>);
+	Response.Flush();
+	Response.Close();
+}
+
+<span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">Page_Load</span>(<span class="keyword">object</span> sender, EventArgs e)
+{
+	Response.BinaryWrite(File.ReadAllBytes(Server.MapPath(<span class="string">"Tree.jpg"</span>)));
+	Response.Flush();
+	Response.Close();
+}
+
+<span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">Page_Load</span>(<span class="keyword">object</span> sender, EventArgs e)
+{
+	<span class="keyword">int</span> chunkSize = <span class="number">64</span>;
+	<span class="keyword">byte</span>[] buffer = <span class="keyword">new</span> <span class="keyword">byte</span>[chunkSize];
+	<span class="keyword">int</span> offset = <span class="number">0</span>;
+	<span class="keyword">int</span> read = <span class="number">0</span>;
+	<span class="keyword">using</span> (FileStream fs = File.Open(Server.MapPath(<span class="string">"Tree.jpg"</span>), FileMode.Open, FileAccess.Read, FileShare.Read))
+	{
+		<span class="keyword">while</span> ((read = fs.Read(buffer, offset, chunkSize)) &gt; <span class="number">0</span>)
+		{
+			Response.OutputStream.Write(buffer, <span class="number">0</span>, read);
+			Response.Flush();
+		}
+	}
+
+	Response.Close();
+}
+</pre></figure>
+
+<p>I can replicate the exact same errors on Server 2003 with IIS running i *32 mode, Vista x64 and Server 2003 in x64 mode. It does not matter if you’re running ASPX pages or ASHX HttpHandlers, same problem.</p>
+<p>I used this code snippet to get a list of the current active requests in IIS (to verify that the “ASP.NETRequests Current” and “W3SVC_W3WPActive Requests” are not lying:</p>
+<figure class="highlight csharp"><pre>ServerManager iisManager = new ServerManager()<span class="comment">;</span>
+
+foreach (WorkerProcess w3wp <span class="keyword">in</span> iisManager<span class="preprocessor">.WorkerProcesses</span>)
+{
+	Console<span class="preprocessor">.WriteLine</span>(<span class="string">"W3WP ({0})"</span>, w3wp<span class="preprocessor">.ProcessId</span>)<span class="comment">;</span>
+
+	foreach (Request request <span class="keyword">in</span> w3wp<span class="preprocessor">.GetRequests</span>(<span class="number">0</span>)<span class="preprocessor">.Where</span>(req =&gt; req<span class="preprocessor">.Url</span> == <span class="string">"/default.aspx"</span>))
+	{
+		Console<span class="preprocessor">.WriteLine</span>(<span class="string">"URL: "</span> + request<span class="preprocessor">.Url</span>)<span class="comment">;</span>
+		Console<span class="preprocessor">.WriteLine</span>(<span class="string">"TimeElapsed: "</span> + request<span class="preprocessor">.TimeElapsed</span>)<span class="comment">;</span>
+		Console<span class="preprocessor">.WriteLine</span>(<span class="string">"TimeInState: "</span> + request<span class="preprocessor">.TimeInState</span>)<span class="comment">;</span>
+		Console<span class="preprocessor">.WriteLine</span>(<span class="string">"TimeInModule: "</span> + request<span class="preprocessor">.TimeInModule</span>)<span class="comment">;</span>
+		Console<span class="preprocessor">.WriteLine</span>(<span class="string">"CurrentModule: "</span> + request<span class="preprocessor">.CurrentModule</span>)<span class="comment">;</span>
+		Console<span class="preprocessor">.WriteLine</span>(<span class="string">"PipelineState: "</span> + request<span class="preprocessor">.PipelineState</span>)<span class="comment">;</span>
+		Console<span class="preprocessor">.WriteLine</span>()<span class="comment">;</span>
+	}
+}
+</pre></figure>
+
+
+<figure class="highlight"><pre>W3WP (<span class="number">7580</span>)
+<span class="label">URL:</span> /default<span class="preprocessor">.aspx</span>
+<span class="label">TimeElapsed:</span> <span class="number">4223509</span>
+<span class="label">TimeInState:</span> <span class="number">4223509</span>
+<span class="label">TimeInModule:</span> <span class="number">4223509</span>
+<span class="label">CurrentModule:</span> IsapiModule
+<span class="label">PipelineState:</span> ExecuteRequestHandler
+
+<span class="label">URL:</span> /default<span class="preprocessor">.aspx</span>
+<span class="label">TimeElapsed:</span> <span class="number">2529463</span>
+<span class="label">TimeInState:</span> <span class="number">2529463</span>
+<span class="label">TimeInModule:</span> <span class="number">2529463</span>
+<span class="label">CurrentModule:</span> IsapiModule
+<span class="label">PipelineState:</span> ExecuteRequestHandler
+
+<span class="label">URL:</span> /default<span class="preprocessor">.aspx</span>
+<span class="label">TimeElapsed:</span> <span class="number">2527809</span>
+<span class="label">TimeInState:</span> <span class="number">2527809</span>
+<span class="label">TimeInModule:</span> <span class="number">2527809</span>
+<span class="label">CurrentModule:</span> IsapiModule
+<span class="label">PipelineState:</span> ExecuteRequestHandler
+
+<span class="label">URL:</span> /default<span class="preprocessor">.aspx</span>
+<span class="label">TimeElapsed:</span> <span class="number">2521117</span>
+<span class="label">TimeInState:</span> <span class="number">2521117</span>
+<span class="label">TimeInModule:</span> <span class="number">2521117</span>
+<span class="label">CurrentModule:</span> IsapiModule
+<span class="label">PipelineState:</span> ExecuteRequestHandler
+
+<span class="label">URL:</span> /default<span class="preprocessor">.aspx</span>
+<span class="label">TimeElapsed:</span> <span class="number">2516562</span>
+<span class="label">TimeInState:</span> <span class="number">2516562</span>
+<span class="label">TimeInModule:</span> <span class="number">2516562</span>
+<span class="label">CurrentModule:</span> IsapiModule
+<span class="label">PipelineState:</span> ExecuteRequestHandler
+
+<span class="label">URL:</span> /default<span class="preprocessor">.aspx</span>
+<span class="label">TimeElapsed:</span> <span class="number">2515470</span>
+<span class="label">TimeInState:</span> <span class="number">2515470</span>
+<span class="label">TimeInModule:</span> <span class="number">2515470</span>
+<span class="label">CurrentModule:</span> IsapiModule
+<span class="label">PipelineState:</span> ExecuteRequestHandler
+
+<span class="label">URL:</span> /default<span class="preprocessor">.aspx</span>
+<span class="label">TimeElapsed:</span> <span class="number">2514378</span>
+<span class="label">TimeInState:</span> <span class="number">2514378</span>
+<span class="label">TimeInModule:</span> <span class="number">2514378</span>
+<span class="label">CurrentModule:</span> IsapiModule
+<span class="label">PipelineState:</span> ExecuteRequestHandler
+
+<span class="label">URL:</span> /default<span class="preprocessor">.aspx</span>
+<span class="label">TimeElapsed:</span> <span class="number">2291749</span>
+<span class="label">TimeInState:</span> <span class="number">2291749</span>
+<span class="label">TimeInModule:</span> <span class="number">2291749</span>
+<span class="label">CurrentModule:</span> IsapiModule
+<span class="label">PipelineState:</span> ExecuteRequestHandler
+</pre></figure>
+
+<p>So obviously the requests are there, they’re just stale.</p>
+<p>If we take a look at an <a href="http://iismonitor.motobit.com/" target="_blank">IISTrace</a> trace, we can see all of the requests in the “Send data” state. They have all sent all the data and no further data is being sent, but they’re still stuck in the “Send data” state:</p>
+<div class="imgwrapper" style=""><div><a href="/response-transmitfile-close-will-kill-your-application/iistrace_2.jpg" class="fancy"><img src="/response-transmitfile-close-will-kill-your-application/iistrace_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>For all the other ways to send the file, the request exits the Send data state as soon as all processing is done (that is, not directly after Response.Close). Calling Response.End has no influence.</p>
+<h2 id="Symptoms">Symptoms</h2>
+<p>You may be experiencing this problem without knowing it. Unless you have a some load on your site, chances are you will never actually see this problem. While the requests will go stale and continue to live, a recycle event will kill them off as the process is closed. But you will see this in your System log:</p>
+<p>A process serving application pool ‘Classic .NET AppPool’ exceeded time limits during shut down. The process id was ‘13304’.</p>
+<p>Since the requests continue living, recycling the pool will time out and thus force the process to shut down, and thereby generating the above event. This may lead to increased memory usage depending on your recycle settings. So unless you have more requests than the Request queue limit setting on your application pool, within the recycle period, you will not notice this problem.</p>
+<h2 id="Fix">Fix</h2>
+<p>The easiest way to get around this problem (bug?) is to just spawn a new thread doing the logging so the main thread will complete right after TransmitFile. In most cases the logging operation will be rather fast so the threads will be shortlived and thus not create too many concurrent threading operations.</p>
+<figure class="highlight csharp"><pre>Response<span class="built_in">.</span>Buffer <span class="subst">=</span> <span class="literal">false</span>;
+Response<span class="built_in">.</span>TransmitFile(<span class="string">"Tree.jpg"</span>);
+
+<span class="keyword">Thread</span> t <span class="subst">=</span> <span class="literal">new</span> <span class="keyword">Thread</span>(delegate()
+{
+	<span class="comment">// Logging</span>
+});
+t<span class="built_in">.</span>Start();
+</pre></figure>
+
+<h2 id="Bonus_code">Bonus code</h2>
+<p>Jonathan Gilbert posted a couple of great comments regarding spawning your own threads in the process and the possibility of extracing the actual logging process into a separate service. Since my blogs comments suck in regards to posting code, here are his code parts:</p>
+<figure class="highlight csharp"><pre>static object log_sync = new object();
+static Queue&lt;LogData&gt; log_queue = new Queue&lt;LogData&gt;();
+static bool log_thread_running = false;
+
+static void post_log_entry(LogData log_entry)
+{
+	lock (log_sync)
+	{
+		log_queue.Enqueue(log_entry);
+
+		if (log_thread_running)
+			Monitor.PulseAll(log_sync);
+		else
+			new Thread(log_thread_proc).Start();
+	}
+}
+
+static void log_thread_proc()
+{
+	lock (log_sync)
+	{
+		if (log_thread_running)
+			return;
+
+		log_thread_running = true;
+
+		try
+		{
+			while (true)
+			{
+				while (log_queue.Count == 0)
+					Monitor.Wait(log_sync);
+
+				LogData one_item = null;
+				List&lt;LogData&gt; multiple_items = null;
+
+				if (log_queue.Count == 1)
+					one_item = log_queue.Dequeue();
+				else
+				{
+					multiple_items = new List&lt;LogData&gt;(log_queue);
+					log_queue.Clear();
+				}
+
+				// The following block: Exit; try/finally{Enter}
+				// ..is the logical inverse of a lock() block. :-)
+				Monitor.Exit(log_sync);
+
+				try
+				{
+					if (one_item != null)
+						process_log_entry(one_item);
+
+					if (multiple_items != null)
+						foreach (LogData item in multiple_items)
+							process_log_entry(item);
+				}
+				finally
+				{
+					Monitor.Enter(log_sync);
+				}
+			}
+		}
+		catch (Exception e)
+		{
+			// TODO: log this unexpected error
+		}
+		finally
+		{
+			log_thread_running = false;
+		}
+	}
+}
+</pre></figure>
+
+
+<figure class="highlight csharp"><pre><span class="keyword">static</span> <span class="keyword">object</span> log_sync = <span class="keyword">new</span> <span class="keyword">object</span>();
+<span class="keyword">static</span> BinaryFormatter log_formatter = <span class="keyword">new</span> BinaryFormatter(); <span class="comment">// in System.Runtime.Serialization.Formatters.Binary</span>
+<span class="keyword">static</span> Stream log_stream;
+
+<span class="keyword">static</span> <span class="keyword">void</span> post_log_entry(LogData log_entry)
+{
+	<span class="keyword">lock</span> (log_sync)
+	{
+		<span class="keyword">if</span> (log_writer == <span class="keyword">null</span>)
+		{
+			Socket socket = <span class="keyword">new</span> Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
+			<span class="comment">// In practice, I would let the OS pick the port number when binding in the Windows Service</span>
+			<span class="comment">// and write it to a central location that the ASP.NET process can read from.</span>
+			socket.Connect(<span class="keyword">new</span> IPEndPoint(IPAddress.Loopback, SecretPortNumber));
+
+			log_stream = <span class="keyword">new</span> NetworkStream(socket, <span class="keyword">true</span>);
+		}
+
+		log_formatter.Serialize(log_stream, log_entry);
+	}
+}
+</pre></figure>
+
+
+<figure class="highlight csharp"><pre>class LogService : System.ServiceProcess.ServiceBase
+{
+	static void Main(string[] args)
+	{
+		if ((args.Length &gt; 0) && string.Equals(args[0], <span class="string">"/console"</span>, StringComparison.InvariantCultureIgnoreCase))
+		{
+			LogService service = new LogService();
+
+			service.StartDirect();
+			Console.WriteLine(<span class="string">"Press enter to stop debugging"</span>);
+			Console.ReadLine();
+			service.StopDirect();
+		}
+		else
+			ServiceBase.Run(new LogService());
+	}
+
+	LogService()
+	{
+		ServiceName = <span class="string">"LogService"</span>;
+		CanStop = true;
+	}
+
+	public void StartDirect()
+	{
+		OnStart(null);
+	}
+
+	public void StopDirect()
+	{
+		OnStop();
+	}
+
+	protected override void OnStart(string[] args)
+	{
+		socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
+		// Again, in implementation, change this to bind to port 0 and then after the Bind call
+		// has succeeded, read the port number back from the LocalEndPoint property and write it
+		// to a place where the ASP.NET side can read it.
+		socket.Bind(new IPEndPoint(IPAddress.Loopback, SecretPortNumber));
+
+		socket.Listen(5);
+
+		shutdown = false;
+
+		Thread main_thread = new Thread(main_thread_proc);
+
+		main_thread.IsBackground = true;
+		main_thread.Start();
+	}
+
+	protected override void OnStop()
+	{
+		shutdown = true;
+	}
+
+	Socket socket;
+	bool shutdown;
+
+	void main_thread_proc()
+	{
+		BinaryFormatter log_formatter = new BinaryFormatter();
+
+		using (NetworkStream log_stream = new NetworkStream(socket, true))
+		{
+			while (!shutdown)
+			{
+				LogData log_entry = (LogData)log_formatter.Deserialize(stream);
+
+				process_log_entry(log_entry);
+			}
+		}
+	}
+}
+</pre></figure>
+
+<h2 id="Downloads">Downloads</h2>
+<p><a href="ResponseCloseTest.zip">ResponseCloseTest.zip - Sample code</a></p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=Response.TransmitFile%20%2B%20Close%20Will%20Kill%20Your%20Application%20http%3A%2F%2Fimprove.dk%2Fresponse-transmitfile-close-will-kill-your-application%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fresponse-transmitfile-close-will-kill-your-application%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fresponse-transmitfile-close-will-kill-your-application%2F&title=Response.TransmitFile%20%2B%20Close%20Will%20Kill%20Your%20Application" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/response-transmitfile-close-will-kill-your-application/response-transmitfile-close-will-kill-your-application.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'response-transmitfile-close-will-kill-your-application';
+	var disqus_url = 'http://improve.dk/response-transmitfile-close-will-kill-your-application/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

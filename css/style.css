@@ -1,0 +1,991 @@
+/***** RESET & defaults *****/
+h1,
+h2,
+h3,
+ul,
+li,
+table,
+tr,
+td,
+body,
+img,
+html {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  list-style: none;
+}
+td,
+th {
+  padding-right: 15px;
+}
+th {
+  text-decoration: underline;
+}
+body {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  background-color: #ffffff;
+  text-align: center;
+}
+div.clear {
+  clear: both;
+}
+h1 {
+  font-size: 36px;
+  font-weight: bold;
+}
+h2 {
+  clear: both;
+  margin-top: 30px;
+  line-height: 1;
+  margin-bottom: -5px;
+}
+h3 {
+  clear: both;
+  margin-top: 20px;
+  line-height: 1;
+  margin-bottom: -5px;
+}
+h1,
+h2,
+h3 {
+  color: #33363b;
+}
+h1 a,
+h2 a,
+h3 a {
+  color: #33363b;
+}
+a {
+  text-decoration: none;
+  color: inherit;
+}
+/***** Header *****/
+div#headerline {
+  height: 10px;
+  background-color: #23262b;
+}
+header {
+  background-color: #33363b;
+  color: #FFF;
+  padding: 0 40px 0 40px;
+}
+header div.wrapper {
+  max-width: 1300px;
+  margin: 0 auto 0 auto;
+  text-align: left;
+  border-bottom: 4px solid #f58320;
+}
+header div.wrapper div#title {
+  padding: 30px 0 30px 0;
+}
+header div.wrapper div#title a {
+  font-size: 30px;
+}
+header div.wrapper div#title span {
+  font-size: 20px;
+  color: #999;
+  padding-left: 10px;
+}
+header div.wrapper nav {
+  float: left;
+}
+header div.wrapper nav ul.normal {
+  padding: 0;
+  margin: 0;
+}
+header div.wrapper nav ul.normal li {
+  float: left;
+  background-color: #23262b;
+  margin-right: 5px;
+  font-size: 14px;
+  font-weight: bold;
+}
+header div.wrapper nav ul.normal li:hover {
+  background-color: #13161b;
+  cursor: pointer;
+  color: #f58320;
+}
+header div.wrapper nav ul.normal li.navicon {
+  padding: 13px 20px 13px 20px;
+  display: none;
+}
+header div.wrapper nav ul.normal li a {
+  padding: 15px 40px 15px 40px;
+  display: block;
+}
+header div.wrapper ul#sharing {
+  float: right;
+}
+header div.wrapper ul#sharing li {
+  float: left;
+  margin-left: 15px;
+}
+header div.wrapper div#naviconcontent {
+  display: none;
+}
+header div.wrapper div#naviconcontent ul.mobile {
+  display: none;
+}
+header div.wrapper div#naviconcontent ul.mobile > li {
+  background-color: #23262b;
+  padding: 12px 0 12px 20px;
+  font-weight: bold;
+}
+header div.wrapper div#naviconcontent ul.mobile > li > ul {
+  margin-top: 10px;
+}
+header div.wrapper div#naviconcontent ul.mobile > li ul {
+  line-height: 1.5;
+  margin-left: 25px;
+  font-weight: normal;
+}
+/***** Main wrapper *****/
+div#mainwrapper {
+  padding: 0 40px 0 40px;
+  margin: 30px auto 30px auto;
+  max-width: 1300px;
+  text-align: left;
+  /***** Asides *****/
+  /***** Content *****/
+}
+div#mainwrapper div#asides {
+  float: right;
+  width: 210px;
+  margin-left: -100%;
+  padding-top: 50px;
+  line-height: 1.8;
+  font-size: 13px;
+}
+div#mainwrapper div#asides span.sectiontitle {
+  font-weight: bold;
+  color: #33363b;
+  margin-left: 30px;
+  font-size: 15px;
+}
+div#mainwrapper div#asides ul {
+  margin-left: 30px;
+}
+div#mainwrapper div#asides div.aside {
+  margin-bottom: 30px;
+  border-left: 4px solid #dddddd;
+}
+div#mainwrapper div#asides div.aside a {
+  border-left: 5px solid #ffffff;
+  padding-left: 5px;
+  color: #555555;
+}
+div#mainwrapper div#asides div.categories a:hover {
+  border-left: 5px solid #18aee1;
+}
+div#mainwrapper div#asides div.archive a:hover {
+  border-left: 5px solid #f58320;
+}
+div#mainwrapper div#contentwrapper {
+  float: left;
+  width: 100%;
+}
+div#mainwrapper div#contentwrapper div#content {
+  margin-right: 230px;
+  color: #555555;
+  border-top: 20px solid #dddddd;
+  padding-top: 30px;
+  /***** No content margin in page views *****/
+  /***** Paging *****/
+}
+div#mainwrapper div#contentwrapper div#content article {
+  margin-bottom: 60px;
+  /***** Date box *****/
+  /***** Title *****/
+  /***** Body customizations on single post view *****/
+  /***** Comments *****/
+}
+div#mainwrapper div#contentwrapper div#content article div.datebox {
+  width: 60px;
+  float: left;
+  text-align: center;
+  clear: left;
+}
+div#mainwrapper div#contentwrapper div#content article div.datebox div.upper {
+  background-color: #23262b;
+  color: #FFF;
+}
+div#mainwrapper div#contentwrapper div#content article div.datebox div.upper span.month {
+  display: block;
+  text-transform: uppercase;
+  padding: 15px 0 0 0;
+  font-size: 14px;
+}
+div#mainwrapper div#contentwrapper div#content article div.datebox div.upper span.day {
+  display: block;
+  font-size: 30px;
+  padding: 5px 0 15px 0;
+}
+div#mainwrapper div#contentwrapper div#content article div.datebox div.lower {
+  background-color: #dddddd;
+  border-bottom: 1px solid #f58320;
+  line-height: 24px;
+  font-size: 13px;
+}
+div#mainwrapper div#contentwrapper div#content article div.title {
+  margin-left: 75px;
+  /* Categories & Comments common */
+  /* Categories */
+  /* Comments */
+  /* Edit */
+}
+div#mainwrapper div#contentwrapper div#content article div.title div.categories,
+div#mainwrapper div#contentwrapper div#content article div.title div.comments,
+div#mainwrapper div#contentwrapper div#content article div.title div.edit {
+  float: left;
+  padding-left: 5px;
+  font-style: italic;
+  font-size: 15px;
+  line-height: 1.5;
+}
+div#mainwrapper div#contentwrapper div#content article div.title div.categories {
+  border-left: 5px solid #18aee1;
+}
+div#mainwrapper div#contentwrapper div#content article div.title div.categories a {
+  border-bottom: 1px dotted #18aee1;
+}
+div#mainwrapper div#contentwrapper div#content article div.title div.categories a:hover {
+  border-bottom: 1px solid #18aee1;
+}
+div#mainwrapper div#contentwrapper div#content article div.title div.comments {
+  margin-left: 15px;
+  border-left: 5px solid #dd5557;
+}
+div#mainwrapper div#contentwrapper div#content article div.title div.comments a {
+  border-bottom: 1px dotted #dd5557;
+}
+div#mainwrapper div#contentwrapper div#content article div.title div.comments a:hover {
+  border-bottom: 1px solid #dd5557;
+}
+div#mainwrapper div#contentwrapper div#content article div.title div.edit {
+  margin-left: 15px;
+  border-left: 5px solid #237b23;
+}
+div#mainwrapper div#contentwrapper div#content article div.title div.edit a {
+  border-bottom: 1px dotted #237b23;
+}
+div#mainwrapper div#contentwrapper div#content article div.title div.edit a:hover {
+  border-bottom: 1px solid #237b23;
+}
+div#mainwrapper div#contentwrapper div#content article div#bodywrapper {
+  margin: 0 0 0 75px;
+  line-height: 1.5;
+  overflow: hidden;
+  /***** Body *****/
+}
+div#mainwrapper div#contentwrapper div#content article div#bodywrapper div.body {
+  border-bottom: 4px solid #dddddd;
+}
+div#mainwrapper div#contentwrapper div#content article div#bodywrapper div.body blockquote {
+  border-left: 5px solid #dddddd;
+  background-color: #EEE;
+  padding: 10px 10px 10px 25px;
+}
+div#mainwrapper div#contentwrapper div#content article div#bodywrapper div.body ul {
+  margin-left: 20px;
+  margin-top: 20px;
+}
+div#mainwrapper div#contentwrapper div#content article div#bodywrapper div.body ul li {
+  list-style: disc;
+  margin-left: 20px;
+  line-height: 1.75em;
+}
+div#mainwrapper div#contentwrapper div#content article div#bodywrapper div.body a {
+  color: #488094;
+}
+div#mainwrapper div#contentwrapper div#content article div#bodywrapper div.body a:hover {
+  color: #dd5557;
+}
+div#mainwrapper div#contentwrapper div#content article div#bodywrapper div.body div.imgwrapper {
+  display: block;
+  margin: 16px 0 16px 0;
+}
+div#mainwrapper div#contentwrapper div#content article div#bodywrapper div.body div.imgwrapper div {
+  margin-right: 10px;
+  margin-left: 5px;
+}
+div#mainwrapper div#contentwrapper div#content article div#bodywrapper div.body div.imgwrapper div img {
+  box-shadow: 2px 2px 10px #8C8C8C;
+  -webkit-box-shadow: 2px 2px 10px #8C8C8C;
+  -moz-box-shadow: 2px 2px 10px #8C8C8C;
+  max-width: 100%;
+  height: auto;
+}
+div#mainwrapper div#contentwrapper div#content article div#bodywrapper div.body div.imgwrapper.right {
+  margin: 16px;
+  float: right;
+}
+div#mainwrapper div#contentwrapper div#content article div#bodywrapper div.body div#postsharing {
+  text-align: center;
+  margin-top: 30px;
+}
+div#mainwrapper div#contentwrapper div#content article div#bodywrapper div.body div#postsharing img {
+  width: 64px;
+  height: 64px;
+}
+div#mainwrapper div#contentwrapper div#content article div#bodywrapper.single div.body {
+  border-bottom: 15px solid #dddddd;
+}
+div#mainwrapper div#contentwrapper div#content article div#bodywrapper.single div#bio {
+  border-top: 15px solid #dddddd;
+  margin-top: 30px;
+}
+div#mainwrapper div#contentwrapper div#content article div#bodywrapper.single div#bio img {
+  display: inline-block;
+  float: left;
+  margin: 15px;
+  border: 5px solid #dddddd;
+}
+div#mainwrapper div#contentwrapper div#content article div#bodywrapper.single div#bio div.wrapper {
+  display: inline-block;
+  display: block;
+  margin: 15px;
+}
+div#mainwrapper div#contentwrapper div#content article div#bodywrapper.single div#bio div.wrapper div.name {
+  font-size: 28px;
+  font-weight: bold;
+}
+div#mainwrapper div#contentwrapper div#content article div#bodywrapper.single div#bio div.wrapper div.description {
+  font-size: 14px;
+}
+div#mainwrapper div#contentwrapper div#content article div#disqus_thread {
+  margin-top: 30px;
+}
+div#mainwrapper div#contentwrapper div#content article.page div.title,
+div#mainwrapper div#contentwrapper div#content article.page div#bodywrapper {
+  margin-left: 0;
+}
+div#mainwrapper div#contentwrapper div#content div.paging {
+  background-color: #33363b;
+  margin: 75px 0 0 75px;
+  font-size: 20px;
+  clear: both;
+  border-radius: 5px;
+  -moz-border-radius: 5px;
+  -o-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  height: 65px;
+  color: white;
+}
+div#mainwrapper div#contentwrapper div#content div.paging div.past,
+div#mainwrapper div#contentwrapper div#content div.paging div.future {
+  background-color: #23262b;
+  padding: 10px 30px 10px 30px;
+  margin: 11px;
+  border-radius: 5px;
+  -moz-border-radius: 5px;
+  -o-border-radius: 5px;
+  -webkit-border-radius: 5px;
+}
+div#mainwrapper div#contentwrapper div#content div.paging div.past:hover,
+div#mainwrapper div#contentwrapper div#content div.paging div.future:hover {
+  background-color: #FFF;
+  color: #000;
+  cursor: pointer;
+}
+div#mainwrapper div#contentwrapper div#content div.paging div.past {
+  float: left;
+}
+div#mainwrapper div#contentwrapper div#content div.paging div.future {
+  float: right;
+}
+/***** Footer *****/
+footer {
+  background-color: #33363b;
+  color: #999;
+  font-size: 13px;
+  padding: 0 40px 0 40px;
+}
+footer div.wrapper {
+  max-width: 1300px;
+  margin: 0 auto 0 auto;
+  border-top: 4px solid #f58320;
+  padding: 10px 0 100px 0;
+}
+@media screen and (max-width: 850px) {
+  div#asides span.sectiontitle {
+    margin-left: 10px !important;
+  }
+  div#asides ul {
+    margin-left: 10px !important;
+  }
+  div#content article div#bodywrapper {
+    margin-left: 0 !important;
+  }
+  div#content article div.title div.comments {
+    display: none !important;
+  }
+  div#content div.paging {
+    margin-left: 0 !important;
+  }
+  footer,
+  header,
+  div#mainwrapper {
+    padding: 0 10px 0 10px !important;
+  }
+}
+@media screen and (max-width: 650px) {
+  header nav ul li {
+    display: none !important;
+  }
+  header nav ul li.navicon {
+    display: block !important;
+  }
+  header div#title {
+    padding: 10px 0 10px 0 !important;
+  }
+  header div#naviconcontent {
+    display: block !important;
+  }
+  div#asides {
+    display: none !important;
+  }
+  div#content {
+    margin-right: 0 !important;
+  }
+  div#content article div.datebox {
+    width: 50px !important;
+  }
+  div#content article div.datebox div.upper span.month {
+    padding: 8px 0 0 0 !important;
+    font-size: 12px !important;
+  }
+  div#content article div.datebox div.upper span.day {
+    font-size: 25px !important;
+    padding: 3px 0 8px 0 !important;
+  }
+  div#content article div.datebox div.lower {
+    line-height: 20px !important;
+    font-size: 12px !important;
+  }
+  div#content article div.title {
+    margin-left: 65px !important;
+  }
+  div#content article div.title h1 {
+    font-size: 30px !important;
+  }
+  div#content article div.title div.categories {
+    display: none !important;
+  }
+  div#content article div.title div.comments {
+    display: none !important;
+  }
+  div#content article div#bodywrapper {
+    clear: both !important;
+    margin-top: 10px !important;
+  }
+  div#content article div#bodywrapper div#comments ul li {
+    margin-left: 0 !important;
+  }
+  div#content article div#bodywrapper div#respond {
+    margin-left: 0 !important;
+  }
+  div#content article div#bodywrapper div#bio img {
+    display: none !important;
+  }
+  div#content article.page div.title {
+    margin-left: 0 !important;
+  }
+}
+/*! fancyBox v2.1.5 fancyapps.com | fancyapps.com/fancybox/#license */
+.fancybox-wrap,
+.fancybox-skin,
+.fancybox-outer,
+.fancybox-inner,
+.fancybox-image,
+.fancybox-wrap iframe,
+.fancybox-wrap object,
+.fancybox-nav,
+.fancybox-nav span,
+.fancybox-tmp {
+  padding: 0;
+  margin: 0;
+  border: 0;
+  outline: none;
+  vertical-align: top;
+}
+.fancybox-wrap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 8020;
+}
+.fancybox-skin {
+  position: relative;
+  background: #f9f9f9;
+  color: #444;
+  text-shadow: none;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  border-radius: 4px;
+}
+.fancybox-opened {
+  z-index: 8030;
+}
+.fancybox-opened .fancybox-skin {
+  -webkit-box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  -moz-box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+.fancybox-outer,
+.fancybox-inner {
+  position: relative;
+}
+.fancybox-inner {
+  overflow: hidden;
+}
+.fancybox-type-iframe .fancybox-inner {
+  -webkit-overflow-scrolling: touch;
+}
+.fancybox-error {
+  color: #444;
+  font: 14px/20px "Helvetica Neue", Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 15px;
+  white-space: nowrap;
+}
+.fancybox-image,
+.fancybox-iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.fancybox-image {
+  max-width: 100%;
+  max-height: 100%;
+}
+#fancybox-loading,
+.fancybox-close,
+.fancybox-prev span,
+.fancybox-next span {
+  background-image: url('/fancybox/fancybox_sprite.png');
+}
+#fancybox-loading {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  margin-top: -22px;
+  margin-left: -22px;
+  background-position: 0 -108px;
+  opacity: 0.8;
+  cursor: pointer;
+  z-index: 8060;
+}
+#fancybox-loading div {
+  width: 44px;
+  height: 44px;
+  background: url('/fancybox/fancybox_loading.gif') center center no-repeat;
+}
+.fancybox-close {
+  position: absolute;
+  top: -18px;
+  right: -18px;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  z-index: 8040;
+}
+.fancybox-nav {
+  position: absolute;
+  top: 0;
+  width: 40%;
+  height: 100%;
+  cursor: pointer;
+  text-decoration: none;
+  background: transparent url('/fancybox/blank.gif');
+  /* helps IE */
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  z-index: 8040;
+}
+.fancybox-prev {
+  left: 0;
+}
+.fancybox-next {
+  right: 0;
+}
+.fancybox-nav span {
+  position: absolute;
+  top: 50%;
+  width: 36px;
+  height: 34px;
+  margin-top: -18px;
+  cursor: pointer;
+  z-index: 8040;
+  visibility: hidden;
+}
+.fancybox-prev span {
+  left: 10px;
+  background-position: 0 -36px;
+}
+.fancybox-next span {
+  right: 10px;
+  background-position: 0 -72px;
+}
+.fancybox-nav:hover span {
+  visibility: visible;
+}
+.fancybox-tmp {
+  position: absolute;
+  top: -99999px;
+  left: -99999px;
+  visibility: hidden;
+  max-width: 99999px;
+  max-height: 99999px;
+  overflow: visible !important;
+}
+/* Overlay helper */
+.fancybox-lock {
+  overflow: hidden !important;
+  width: auto;
+}
+.fancybox-lock body {
+  overflow: hidden !important;
+}
+.fancybox-lock-test {
+  overflow-y: hidden !important;
+}
+.fancybox-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  display: none;
+  z-index: 8010;
+  background: url('/fancybox/fancybox_overlay.png');
+}
+.fancybox-overlay-fixed {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+}
+.fancybox-lock .fancybox-overlay {
+  overflow: auto;
+  overflow-y: scroll;
+}
+/* Title helper */
+.fancybox-title {
+  visibility: hidden;
+  font: normal 13px/20px "Helvetica Neue", Helvetica, Arial, sans-serif;
+  position: relative;
+  text-shadow: none;
+  z-index: 8050;
+}
+.fancybox-opened .fancybox-title {
+  visibility: visible;
+}
+.fancybox-title-float-wrap {
+  position: absolute;
+  bottom: 0;
+  right: 50%;
+  margin-bottom: -35px;
+  z-index: 8050;
+  text-align: center;
+}
+.fancybox-title-float-wrap .child {
+  display: inline-block;
+  margin-right: -100%;
+  padding: 2px 20px;
+  background: transparent;
+  /* Fallback for web browsers that doesn't support RGBa */
+  background: rgba(0, 0, 0, 0.8);
+  -webkit-border-radius: 15px;
+  -moz-border-radius: 15px;
+  border-radius: 15px;
+  text-shadow: 0 1px 2px #222;
+  color: #FFF;
+  font-weight: bold;
+  line-height: 24px;
+  white-space: nowrap;
+}
+.fancybox-title-outside-wrap {
+  position: relative;
+  margin-top: 10px;
+  color: #fff;
+}
+.fancybox-title-inside-wrap {
+  padding-top: 10px;
+}
+.fancybox-title-over-wrap {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  color: #fff;
+  padding: 10px;
+  background: #000;
+  background: rgba(0, 0, 0, 0.8);
+}
+/*Retina graphics!*/
+@media only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (min--moz-device-pixel-ratio: 1.5), only screen and (min-device-pixel-ratio: 1.5) {
+  #fancybox-loading,
+  .fancybox-close,
+  .fancybox-prev span,
+  .fancybox-next span {
+    background-image: url('/fancybox/fancybox_sprite@2x.png');
+    background-size: 44px 152px;
+    /*The size of the normal image, half the size of the hi-res image*/
+  }
+  #fancybox-loading div {
+    background-image: url('/fancybox/fancybox_loading@2x.gif');
+    background-size: 24px 24px;
+    /*The size of the normal image, half the size of the hi-res image*/
+  }
+}
+/*** Syntax highlighting ***/
+article pre,
+article .highlight {
+  background: #FFFFDD;
+  padding: 15px 20px;
+  border-style: solid;
+  border-color: #ddd;
+  border-width: 1px 0;
+  overflow: auto;
+  color: #555;
+  line-height: 22.400000000000002px;
+  tab-size: 4;
+  margin: 16px 0 16px 0;
+}
+article .highlight .gutter pre,
+article .gist .gist-file .gist-data .line-numbers {
+  color: #666;
+  font-size: 0.85em;
+}
+article pre,
+article code {
+  font-family: Consolas, Monaco, Menlo, Consolas, monospace;
+}
+article code {
+  background: #FFFFDD;
+  border: 1px solid #ddd;
+  text-shadow: 0 1px #fff;
+  padding: 0 0.3em;
+}
+article pre code {
+  background: none;
+  text-shadow: none;
+  padding: 0;
+}
+article .highlight pre {
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+article .highlight table {
+  margin: 0;
+  width: auto;
+}
+article .highlight td {
+  border: none;
+  padding: 0;
+}
+figure.csharp pre .comment,
+figure.sql pre .comment,
+figure.js pre .comment,
+figure.xml pre .comment,
+figure.html pre .comment {
+  color: #090;
+}
+figure.csharp pre .title,
+figure.sql pre .title,
+figure.js pre .title,
+figure.xml pre .title,
+figure.html pre .title {
+  color: #555;
+}
+figure.csharp pre .variable,
+figure.sql pre .variable,
+figure.js pre .variable,
+figure.xml pre .variable,
+figure.html pre .variable,
+figure.csharp pre .attribute,
+figure.sql pre .attribute,
+figure.js pre .attribute,
+figure.xml pre .attribute,
+figure.html pre .attribute,
+figure.csharp pre .tag,
+figure.sql pre .tag,
+figure.js pre .tag,
+figure.xml pre .tag,
+figure.html pre .tag,
+figure.csharp pre .regexp,
+figure.sql pre .regexp,
+figure.js pre .regexp,
+figure.xml pre .regexp,
+figure.html pre .regexp,
+figure.csharp pre .ruby .constant,
+figure.sql pre .ruby .constant,
+figure.js pre .ruby .constant,
+figure.xml pre .ruby .constant,
+figure.html pre .ruby .constant,
+figure.csharp pre .xml .tag .title,
+figure.sql pre .xml .tag .title,
+figure.js pre .xml .tag .title,
+figure.xml pre .xml .tag .title,
+figure.html pre .xml .tag .title,
+figure.csharp pre .xml .pi,
+figure.sql pre .xml .pi,
+figure.js pre .xml .pi,
+figure.xml pre .xml .pi,
+figure.html pre .xml .pi,
+figure.csharp pre .xml .doctype,
+figure.sql pre .xml .doctype,
+figure.js pre .xml .doctype,
+figure.xml pre .xml .doctype,
+figure.html pre .xml .doctype,
+figure.csharp pre .html .doctype,
+figure.sql pre .html .doctype,
+figure.js pre .html .doctype,
+figure.xml pre .html .doctype,
+figure.html pre .html .doctype,
+figure.csharp pre .css .id,
+figure.sql pre .css .id,
+figure.js pre .css .id,
+figure.xml pre .css .id,
+figure.html pre .css .id,
+figure.csharp pre .css .class,
+figure.sql pre .css .class,
+figure.js pre .css .class,
+figure.xml pre .css .class,
+figure.html pre .css .class,
+figure.csharp pre .css .pseudo,
+figure.sql pre .css .pseudo,
+figure.js pre .css .pseudo,
+figure.xml pre .css .pseudo,
+figure.html pre .css .pseudo {
+  color: #f2777a;
+}
+figure.csharp pre .number,
+figure.sql pre .number,
+figure.js pre .number,
+figure.xml pre .number,
+figure.html pre .number,
+figure.csharp pre .literal,
+figure.sql pre .literal,
+figure.js pre .literal,
+figure.xml pre .literal,
+figure.html pre .literal,
+figure.csharp pre .params,
+figure.sql pre .params,
+figure.js pre .params,
+figure.xml pre .params,
+figure.html pre .params,
+figure.csharp pre .constant,
+figure.sql pre .constant,
+figure.js pre .constant,
+figure.xml pre .constant,
+figure.html pre .constant,
+figure.csharp pre .string,
+figure.sql pre .string,
+figure.js pre .string,
+figure.xml pre .string,
+figure.html pre .string,
+figure.csharp pre .value,
+figure.sql pre .value,
+figure.js pre .value,
+figure.xml pre .value,
+figure.html pre .value,
+figure.csharp pre .inheritance,
+figure.sql pre .inheritance,
+figure.js pre .inheritance,
+figure.xml pre .inheritance,
+figure.html pre .inheritance,
+figure.csharp pre .header,
+figure.sql pre .header,
+figure.js pre .header,
+figure.xml pre .header,
+figure.html pre .header,
+figure.csharp pre .ruby .symbol,
+figure.sql pre .ruby .symbol,
+figure.js pre .ruby .symbol,
+figure.xml pre .ruby .symbol,
+figure.html pre .ruby .symbol,
+figure.csharp pre .xml .cdata,
+figure.sql pre .xml .cdata,
+figure.js pre .xml .cdata,
+figure.xml pre .xml .cdata,
+figure.html pre .xml .cdata {
+  color: #FF0000;
+}
+figure.csharp pre .class,
+figure.sql pre .class,
+figure.js pre .class,
+figure.xml pre .class,
+figure.html pre .class,
+figure.csharp pre .ruby .class .title,
+figure.sql pre .ruby .class .title,
+figure.js pre .ruby .class .title,
+figure.xml pre .ruby .class .title,
+figure.html pre .ruby .class .title,
+figure.csharp pre .css .rules .attribute,
+figure.sql pre .css .rules .attribute,
+figure.js pre .css .rules .attribute,
+figure.xml pre .css .rules .attribute,
+figure.html pre .css .rules .attribute {
+  color: #9c9;
+}
+figure.csharp pre .css .hexcolor,
+figure.sql pre .css .hexcolor,
+figure.js pre .css .hexcolor,
+figure.xml pre .css .hexcolor,
+figure.html pre .css .hexcolor {
+  color: #6cc;
+}
+figure.csharp pre .function,
+figure.sql pre .function,
+figure.js pre .function,
+figure.xml pre .function,
+figure.html pre .function,
+figure.csharp pre .python .decorator,
+figure.sql pre .python .decorator,
+figure.js pre .python .decorator,
+figure.xml pre .python .decorator,
+figure.html pre .python .decorator,
+figure.csharp pre .python .title,
+figure.sql pre .python .title,
+figure.js pre .python .title,
+figure.xml pre .python .title,
+figure.html pre .python .title,
+figure.csharp pre .ruby .function .title,
+figure.sql pre .ruby .function .title,
+figure.js pre .ruby .function .title,
+figure.xml pre .ruby .function .title,
+figure.html pre .ruby .function .title,
+figure.csharp pre .ruby .title .keyword,
+figure.sql pre .ruby .title .keyword,
+figure.js pre .ruby .title .keyword,
+figure.xml pre .ruby .title .keyword,
+figure.html pre .ruby .title .keyword,
+figure.csharp pre .perl .sub,
+figure.sql pre .perl .sub,
+figure.js pre .perl .sub,
+figure.xml pre .perl .sub,
+figure.html pre .perl .sub,
+figure.csharp pre .javascript .title,
+figure.sql pre .javascript .title,
+figure.js pre .javascript .title,
+figure.xml pre .javascript .title,
+figure.html pre .javascript .title,
+figure.csharp pre .coffeescript .title,
+figure.sql pre .coffeescript .title,
+figure.js pre .coffeescript .title,
+figure.xml pre .coffeescript .title,
+figure.html pre .coffeescript .title {
+  color: #69c;
+}
+figure.csharp pre .keyword,
+figure.sql pre .keyword,
+figure.js pre .keyword,
+figure.xml pre .keyword,
+figure.html pre .keyword,
+figure.csharp pre .javascript .function,
+figure.sql pre .javascript .function,
+figure.js pre .javascript .function,
+figure.xml pre .javascript .function,
+figure.html pre .javascript .function {
+  color: #00F;
+}

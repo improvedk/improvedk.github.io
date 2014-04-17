@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>My PASS Summit 2011 Abstracts | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">03</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/my-pass-summit-2011-abstracts/" title="My PASS Summit 2011 Abstracts" rel="bookmark">My PASS Summit 2011 Abstracts</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/Conferences and Presenting/">Conferences and Presenting</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on My PASS Summit 2011 Abstracts">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>Last year I went on a marathon conference trip, starting out in LA at <a href="http://2010.max.adobe.com/" target="_blank">Adobe Max</a>, continuing on to <a href="http://qconsf.com/sf2010/" target="_blank">QCon</a> in San Francisco before finally ending up in lovely Seattle for the <a href="http://www.sqlpass.org/summit/na2010/" target="_blank">PASS Summit</a>.</p>
+<a id="more"></a>
+
+<div class="imgwrapper" style=""><div><a href="/my-pass-summit-2011-abstracts/71624_444201957306_724027306_5893683_5375463_n_2.jpg" class="fancy"><img src="/my-pass-summit-2011-abstracts/71624_444201957306_724027306_5893683_5375463_n_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Of the three, the one I’ll definitely be returning to this year is the PASS Summit. Last year I had the honor of getting a nice neon green “FIRST-TIMER” snippet on my badge, a snippet I wore with honor. This year however, I’m aiming for the Alumni snippet, and perhaps even the speaker snippet by submitting a couple of abstracts.</p>
+<p>As I’ve been somewhat busy with <a href="/introducing-orcamdf">OrcaMDF</a> in my spare time recently, both of my abstracts use OrcaMDF as the origin for going into the internals. I really hope I get a chance to present about this as I’m super psyched about it :)</p>
+<h2 id="Knowing_the_Internals_–_Who_Needs_SQL_Server_Anyway?">Knowing the Internals – Who Needs SQL Server Anyway?</h2>
+<p>You’re stuck on a remote island with just a laptop and your main database .MDF file. The boss calls and asks you to retrieve some data, but alas, you forgot to install SQL Server on your laptop. Luckily you have a HEX editor by your side!</p>
+<p>In this level 500 deep dive session we will go into the intimate details of the MDF file format. Think using DBCC Page is pushing it? Think again! As a learning experiment, I’ve created an open source parser for MDF files, called OrcaMDF. Using the OrcaMDF parser I’ll go through the primary storage mechanisms, how to parse page headers, boot pages, internal system tables, data &amp; index records, b-tree structures as well as the supporting IAM, GAM, SGAM &amp; PFS pages.</p>
+<p>Has your database suffered an unrecoverable disk corruption? This session might just be your way out! Using a corrupt &amp; unattachable MDF file, I’ll demo how to recover as much data as possible. This session is not for the faint of heart, there will be bytes!</p>
+<h3 id="Why_&amp;_What?">Why &amp; What?</h3>
+<p>I originally gave this presentation at <a href="http://mow2011.dk/mow2011.aspx" target="_blank">Miracle Open World 2011</a> and got some great feedback. Fueled by positive feedback I continued the development and am now at the point where I have so much content I considered doing a 3½ hour session instead. By attending this session you will not only see diagrams of internal structures on slides, you’ll actually see C# code demonstrated that parses &amp; utilizes them!</p>
+<h2 id="Demystifying_Database_Metadata">Demystifying Database Metadata</h2>
+<p>You know how to query sys.tables, sys.columns and perhaps even sys.system_internals_allocation_units to discover the metadata contents of a database. But where are these views getting their data from, and how do the core system tables relate?</p>
+<p>Based on my work with OrcaMDF, an open source C# parser for MDF files, I will demonstrate how to parse the internal system tables. Using just the boot page as origin, we’ll discover how to traverse the chain of references that ultimately end up in references to the actual system table data, from where we can parse the data records.</p>
+<p>Once we’ve got the system table data, I’ll demonstrate how to correlate the different tables to end up with the data we see in common system views.</p>
+<h3 id="Why_&amp;_What?-1">Why &amp; What?</h3>
+<p>As I continued the development of OrcaMDF I used the various system views extensively – sys.objects, tables, columns, indexes, internals_allocation_units etc. However, as development moved forward and I needed to parse that metadata myself, I had to look into the underlying tables – sysallocunits, sysschobjs, sysrowsets, sysrowsetcolumns. Join this session and let’s enter the realm of the hidden metadata and let’s explore it together!</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=My%20PASS%20Summit%202011%20Abstracts%20http%3A%2F%2Fimprove.dk%2Fmy-pass-summit-2011-abstracts%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fmy-pass-summit-2011-abstracts%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fmy-pass-summit-2011-abstracts%2F&title=My%20PASS%20Summit%202011%20Abstracts" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/my-pass-summit-2011-abstracts/my-pass-summit-2011-abstracts.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'my-pass-summit-2011-abstracts';
+	var disqus_url = 'http://improve.dk/my-pass-summit-2011-abstracts/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

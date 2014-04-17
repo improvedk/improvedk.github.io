@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>OrcaMDF Studio Release + Feature Recap | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Nov</span>
+			<span class="day">25</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/orcamdf-studio-release-feature-recap/" title="OrcaMDF Studio Release + Feature Recap" rel="bookmark">OrcaMDF Studio Release + Feature Recap</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on OrcaMDF Studio Release + Feature Recap">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>Just about two and a half months have passed since I last posted an <a href="/orcamdf-feature-recap">OrcaMDF feature recap</a>. Since then I’ve been busy attending three of the top SQL Server conferences – SQLBits, PASS and SQL Rally. It’s been excellent chatting about <a href="/introducing-orcamdf">OrcaMDF</a> and getting some feedback on where to take it, thanks to all of you!</p>
+<a id="more"></a>
+
+<p>Though I’ve been busy, I’ve also managed to put some work into OrcaMDF in the meantime.</p>
+<h2 id="New_features">New features</h2>
+<p>A non-exhaustive list of additions since my last post:</p>
+<ul>
+<li><a href="/orcamdf-now-supports-databases-with-multiple-data-files">Support for multi-file databases</a>.</li>
+<li><a href="/orcamdf-now-exposes-metadata-through-system-dmvs">Exposing metadata through standard SQL Server DMVs</a>.</li>
+<li>Optimized performance by more light weight usage of byte arrays, as well as sharing a single instance of the table schema between all rows.</li>
+</ul>
+<p>I’ve also added support for the following extra data types:</p>
+<ul>
+<li>money</li>
+<li>smallmoney</li>
+<li>uniqueidentifier</li>
+<li>User defined types</li>
+</ul>
+<p>And just one more minor thing…</p>
+<h2 id="OrcaMDF_Studio">OrcaMDF Studio</h2>
+<p>Common among much of the feedback I got was something along the lines of: Awesome project! I definitely want to try it out, but I haven’t had the time yet.</p>
+<p>To be honest, it’s been somewhat cumbersome to try out OrcaMDF. You had to download the source, compile it yourself and then write your own application to actually invoke OrcaMDF. It’s never been my intention for it to be directly end user usable, as that’s just not my focus. However, to improve upon OrcaMDF, I need more usage feedback. As a result, I decided to create OrcaMDF Studio – an UI on top of OrcaMDF, allowing you to query user tables, dmvs and base tables without looking at any of the code at all. What you’re seeing here is OrcaMDF showing the contents of the Product table in a standard AdventureWorks 2008 database:</p>
+<div class="imgwrapper" style=""><div><a href="/orcamdf-studio-release-feature-recap/image_43.png" class="fancy"><img src="/orcamdf-studio-release-feature-recap/image_43.png" style="max-height: 250px"/></a></div></div>
+
+<h3 id="Base_tables">Base tables</h3>
+<p>OrcaMDF Studio exposes all of the base tables (that it currently supports &amp; parses), just like normal tables:</p>
+<div class="imgwrapper" style=""><div><a href="/orcamdf-studio-release-feature-recap/image_12.png" class="fancy"><img src="/orcamdf-studio-release-feature-recap/image_12.png" style="max-height: 250px"/></a></div></div>
+
+<h3 id="Dynamic_Management_Views">Dynamic Management Views</h3>
+<p>OrcaMDF also exposes all of the currently supported DMVs, just like any other table:</p>
+<div class="imgwrapper" style=""><div><a href="/orcamdf-studio-release-feature-recap/image_14.png" class="fancy"><img src="/orcamdf-studio-release-feature-recap/image_14.png" style="max-height: 250px"/></a></div></div>
+
+<h3 id="User_tables,_indexes_&amp;_schemas">User tables, indexes &amp; schemas</h3>
+<p>Finally, OrcaMDF also exposes all of the user tables, including their schemas, indexes and index schemas:</p>
+<div class="imgwrapper" style=""><div><a href="/orcamdf-studio-release-feature-recap/image_161.png" class="fancy"><img src="/orcamdf-studio-release-feature-recap/image_161.png" style="max-height: 250px"/></a></div></div>
+
+<h3 id="Error_reporting">Error reporting</h3>
+<p>As OrcaMDF, and the Studio, is still far from production ready, you’ll probably run into unsupported scenarios or common bugs. If you do, OrcaMDF Studio will report it to you, as well as save a stack trace in the application directory. Here’s an example of a typical error – trying to open a table with an unsupported column type (xml for example):</p>
+<div class="imgwrapper" style=""><div><a href="/orcamdf-studio-release-feature-recap/image_18.png" class="fancy"><img src="/orcamdf-studio-release-feature-recap/image_18.png" style="max-height: 250px"/></a></div></div>
+
+<p>If you look in the ErrorLog.txt file that’s written to the application directory, you’ll see an exception like this:</p>
+<figure class="highlight"><pre><span class="number">25</span>-<span class="number">11</span>-<span class="number">2011</span> <span class="number">00</span>:<span class="number">41</span>:<span class="number">21</span>
+----------
+<span class="label">System.ArgumentException:</span> Unsupported type: xml(-<span class="number">1</span>)
+   at OrcaMDF<span class="preprocessor">.Core</span><span class="preprocessor">.MetaData</span><span class="preprocessor">.DataColumn</span>.<span class="preprocessor">.ctor</span>(String name, String type, Boolean nullable) <span class="keyword">in</span> D:ProjectsOrcaMDFsrcOrcaMDF<span class="preprocessor">.CoreMetaDataDataColumn</span><span class="preprocessor">.cs</span>:line <span class="number">135</span>
+   at OrcaMDF<span class="preprocessor">.Core</span><span class="preprocessor">.MetaData</span><span class="preprocessor">.DataColumn</span>.<span class="preprocessor">.ctor</span>(String name, String type) <span class="keyword">in</span> D:ProjectsOrcaMDFsrcOrcaMDF<span class="preprocessor">.CoreMetaDataDataColumn</span><span class="preprocessor">.cs</span>:line <span class="number">20</span>
+   at OrcaMDF<span class="preprocessor">.Core</span><span class="preprocessor">.MetaData</span><span class="preprocessor">.DatabaseMetaData</span><span class="preprocessor">.GetEmptyDataRow</span>(String tableName) <span class="keyword">in</span> D:ProjectsOrcaMDFsrcOrcaMDF<span class="preprocessor">.CoreMetaDataDatabaseMetaData</span><span class="preprocessor">.cs</span>:line <span class="number">155</span>
+   at OrcaMDF<span class="preprocessor">.Core</span><span class="preprocessor">.Engine</span><span class="preprocessor">.DataScanner</span><span class="preprocessor">.ScanTable</span>(String tableName) <span class="keyword">in</span> D:ProjectsOrcaMDFsrcOrcaMDF<span class="preprocessor">.CoreEngineDataScanner</span><span class="preprocessor">.cs</span>:line <span class="number">31</span>
+   at OrcaMDF<span class="preprocessor">.OMS</span><span class="preprocessor">.Main</span><span class="preprocessor">.loadTable</span>(String table) <span class="keyword">in</span> D:ProjectsOrcaMDFsrcOrcaMDF<span class="preprocessor">.OMSMain</span><span class="preprocessor">.cs</span>:line <span class="number">158</span>
+</pre></figure>
+
+<p>Completely anonymous data that just gives an indication of where the error occurred. If you run into issues like these, I would appreciate if you would send me the ErrorLog.txt file so I can debug potential issues. All issues, requests, error reports, etc. should be sent to my email.</p>
+<h3 id="Database_version_support">Database version support</h3>
+<p>OrcaMDF has been developed for, and tested with, SQL Server 2008 R2. Some operations will work on SQL Server 2005, but many will fail since some of the base tables have different schemas. OrcaMDF does not differ and will thus throw up once you hit those differences. I’ll add an abstraction layer + support for both at a later time.</p>
+<h3 id="Opening_live_databases">Opening live databases</h3>
+<p>OrcaMDF Studio will have to take a read lock on the database file(s) for now. As SQL Server takes exclusive locks on the files, this means you can’t open a live database. You can either detach the database, take it offline, backup-restore-detach or simply use a non-attached database to begin with. For a later release, I’ll add automatic VSS snapshot functionality.</p>
+<h3 id="System_requirements">System requirements</h3>
+<p>OrcaMDF is built on top of the <a href="http://www.microsoft.com/download/en/details.aspx?id=17851" target="_blank">.NET Framework 4.0</a> – as such, you will need to have it installed for OrcaMDF Studio to run. OrcaMDF Studio will run on both x64 and x86 machines.</p>
+<h3 id="Disclaimer">Disclaimer</h3>
+<p>Once again, OrcaMDF + Studio is experimental software. I give no guarantees whatsoever, and you’re using it at your own risk. OrcaMDF will not write anything to disk and will thus not, in any way, modify your database files. However, I strongly suggest that you <strong>do not</strong> use this on a production database, either way.</p>
+<p>OrcaMDF neither knows nor cares about security. No matter who owns that schema or object, OrcaMDF will parse it just fine – no need for pesky usernames and passwords. However, OrcaMDF does not support <a href="http://msdn.microsoft.com/en-us/library/bb934049.aspx" target="_blank">Transparent Data Encryption</a>, so databases using TDE will not be supported.</p>
+<h3 id="Download">Download</h3>
+<p>You can download the OrcaMDF Studio binary release at the <a href="https://github.com/improvedk/OrcaMDF/downloads" target="_blank">OrcaMDF Github project page</a>. Please don’t ever download OrcaMDF anywhere else, you risk that someone modifies the source and distributes their own version. <strong>Always</strong> get it from the Github project page.</p>
+<p>Once you download it, simply unpack it and run the OrcaMDF.OMS.exe application:</p>
+<div class="imgwrapper" style=""><div><a href="/orcamdf-studio-release-feature-recap/image_221.png" class="fancy"><img src="/orcamdf-studio-release-feature-recap/image_221.png" style="max-height: 250px"/></a></div></div>
+
+<p>Note that this is a debug build – hence the .pdf files. Debug builds will be slightly slower than release builds, but it does enable me to get full stack traces if/when an exception occurs. Once OrcaMDF stabilizes, I’ll provide both debug and release versions.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=OrcaMDF%20Studio%20Release%20%2B%20Feature%20Recap%20http%3A%2F%2Fimprove.dk%2Forcamdf-studio-release-feature-recap%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Forcamdf-studio-release-feature-recap%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Forcamdf-studio-release-feature-recap%2F&title=OrcaMDF%20Studio%20Release%20%2B%20Feature%20Recap" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/orcamdf-studio-release-feature-recap/orcamdf-studio-release-feature-recap.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'orcamdf-studio-release-feature-recap';
+	var disqus_url = 'http://improve.dk/orcamdf-studio-release-feature-recap/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

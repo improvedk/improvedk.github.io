@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jun</span>
+			<span class="day">21</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/copying-a-sql-server-database-file-thatrsquos-in-use-using/" title="Copying a SQL Server Database File That&#39;s in Use Using Volume Shadow Copy" rel="bookmark">Copying a SQL Server Database File That&#39;s in Use Using Volume Shadow Copy</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>When working on <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a> I usually setup a test database, force a checkpoint and then perform my tests on the MDF file. Problem is, you can’t open the MDF file for reading, nor copy it, as long as the database is online in SQL Server. I could shut down SQL Server temporarily while copying the file, but that quickly becomes quite a hassle.</p>
+<a id="more"></a>
+
+<h2 id="Leveraging_Volume_Shadow_Copy_(VSS)_through_AlphaVSS">Leveraging Volume Shadow Copy (VSS) through AlphaVSS</h2>
+<p><a href="http://www.alphaleonis.com/2008/08/alphavss-bringing-windows-shadow-copy-service-vss-to-net/" target="_blank">AlphaVSS</a> is an excellent library for invoking VSS through .NET. While it can do much more, I’m using it to create a snapshot of a single active file, copy it and then dispose of the snapshot afterwards.</p>
+<p>The following class presents a single static method that’ll copy any file (locked or not) and copy it to the desired destination. It would be easy to adapt upon this sample to copy multiple files, directories, etc. Note that while a copy file progress clalback is supported, I don’t really care about the progress and am there sending a null reference when calling <a href="http://msdn.microsoft.com/en-us/library/aa363852(v=vs.85" target="_blank">CopyFileEx</a>.aspx).</p>
+<figure class="highlight csharp"><pre>class VssHelper
+{
+	[DllImport(<span class="string">"kernel32.dll"</span>, SetLastError = <span class="keyword">true</span>, CharSet = CharSet.Auto)]
+	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">extern</span> <span class="keyword">bool</span> <span class="title">CopyFileEx</span>(<span class="keyword">string</span> lpExistingFileName, <span class="keyword">string</span> lpNewFileName, CopyProgressRoutine lpProgressRoutine, <span class="keyword">int</span> lpData, <span class="keyword">ref</span> <span class="keyword">int</span> pbCancel, <span class="keyword">uint</span> dwCopyFlags);
+	<span class="keyword">private</span> <span class="keyword">delegate</span> <span class="keyword">uint</span> <span class="title">CopyProgressRoutine</span>(<span class="keyword">long</span> TotalFileSize, <span class="keyword">long</span> TotalBytesTransferred, <span class="keyword">long</span> StreamSize, <span class="keyword">long</span> StreamBytesTransferred, <span class="keyword">uint</span> dwStreamNumber, <span class="keyword">uint</span> dwCallbackReason, IntPtr hSourceFile, IntPtr hDestinationFile, IntPtr lpData);
+
+	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">CopyFile</span>(<span class="keyword">string</span> source, <span class="keyword">string</span> destination)
+	{
+		<span class="keyword">var</span> oVSSImpl = VssUtils.LoadImplementation();
+
+		<span class="keyword">using</span> (<span class="keyword">var</span> vss = oVSSImpl.CreateVssBackupComponents())
+		{
+			vss.InitializeForBackup(<span class="keyword">null</span>);
+
+			vss.SetBackupState(<span class="keyword">false</span>, <span class="keyword">true</span>, VssBackupType.Full, <span class="keyword">false</span>);
+
+			<span class="keyword">using</span> (<span class="keyword">var</span> <span class="keyword">async</span> = vss.GatherWriterMetadata())
+				<span class="keyword">async</span>.Wait();
+
+			vss.StartSnapshotSet();
+			<span class="keyword">string</span> volume = <span class="keyword">new</span> FileInfo(source).Directory.Root.Name;
+			<span class="keyword">var</span> snapshot = vss.AddToSnapshotSet(volume, Guid.Empty);
+
+			<span class="keyword">using</span> (<span class="keyword">var</span> <span class="keyword">async</span> = vss.PrepareForBackup())
+				<span class="keyword">async</span>.Wait();
+
+			<span class="keyword">using</span> (<span class="keyword">var</span> <span class="keyword">async</span> = vss.DoSnapshotSet())
+				<span class="keyword">async</span>.Wait();
+
+			<span class="keyword">var</span> props = vss.GetSnapshotProperties(snapshot);
+			<span class="keyword">string</span> vssFile = source.Replace(volume, props.SnapshotDeviceObject + <span class="string">@""</span>);
+
+			<span class="keyword">int</span> cancel = <span class="number">0</span>;
+			CopyFileEx(vssFile, destination, <span class="keyword">null</span>, <span class="number">0</span>, <span class="keyword">ref</span> cancel, <span class="number">0</span>);
+		}
+	}
+}
+</pre></figure>
+
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jun</span>
+			<span class="day">16</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/getting-bit-by-datetime-rounding-or-why-235959-999-ltgt/" title="Getting Bit by Datetime Rounding or Why 23:59:59.999 &lt; &#39;23:59:59.999&#39;" rel="bookmark">Getting Bit by Datetime Rounding or Why 23:59:59.999 &lt; &#39;23:59:59.999&#39;</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Earlier today I was doing some ad-hoc querying to retrieve some numbers for the month of May. Not giving it deeper thought, I made a simple query like this:</p>
+<a id="more"></a>
+
+
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	<span class="aggregate">SUM</span>(SomeColumn)
+<span class="keyword">FROM</span>
+	SomeTable
+<span class="keyword">WHERE</span>
+	SomeDatetime BETWEEN <span class="string">'2011-05-01'</span> <span class="keyword">AND</span> <span class="string">'2011-05-31 23:59:59.999'</span></span>
+</pre></figure>
+
+<p>Much to my surprise, the last rows looked like this:</p>
+<div class="imgwrapper" style=""><div><a href="/getting-bit-by-datetime-rounding-or-why-235959-999-ltgt/image_2.png" class="fancy"><img src="/getting-bit-by-datetime-rounding-or-why-235959-999-ltgt/image_2.png" style="max-height: 250px"/></a></div></div>
+
+<p>Why in the world are results from June included when I had an explicit predicate limiting the results to May? The answer can be found in one of my <a href="/parsing-dates-in-orcamdf">earlier posts on parsing dates</a>. As SQL Server stores the millisecond part of a datetime with a precision of 1/300th of a second, with .997 being the highest possible stored value. .998 will be rounded down to .997 while .999 will be rounded up – causing a rollover of the day part.</p>
+<p>Let’s setup a simple sample data set:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> DateTest
+(
+	ID <span class="keyword">int</span>,
+	Created datetime
+)
+
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span>
+	DateTest (ID, Created)
+<span class="keyword">VALUES</span> 
+	(<span class="number">1</span>, <span class="string">'2011-05-31 23:59:59.996'</span>),
+	(<span class="number">2</span>, <span class="string">'2011-05-31 23:59:59.997'</span>),
+	(<span class="number">3</span>, <span class="string">'2011-05-31 23:59:59.998'</span>),
+	(<span class="number">4</span>, <span class="string">'2011-05-31 23:59:59.999'</span>)</span>
+</pre></figure>
+
+<p>Performing my simple query reveals the same problem as earlier today:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	*
+<span class="keyword">FROM</span>
+	DateTest
+<span class="keyword">WHERE</span>
+	Created BETWEEN <span class="string">'2011-05-01'</span> <span class="keyword">AND</span> <span class="string">'2011-05-31 23:59:59.999'</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/getting-bit-by-datetime-rounding-or-why-235959-999-ltgt/image_4.png" class="fancy"><img src="/getting-bit-by-datetime-rounding-or-why-235959-999-ltgt/image_4.png" style="max-height: 250px"/></a></div></div>
+
+<p>Row number 4 is inserted with a date of 2011-06-01 00:00:00.000 since the .999 millisecond part causes a day rollover. Equally, the .999 value causes the last predicate part to be interpreted as 2011-06-01 00:00:00.000 during the CONVERT_IMPLICIT conversion.</p>
+<p>A simple rewrite of the query guarantees to return just the results we want:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	*
+<span class="keyword">FROM</span>
+	DateTest
+<span class="keyword">WHERE</span>
+	Created &gt;= <span class="string">'2011-05-01'</span> <span class="keyword">AND</span> Created &lt; <span class="string">'2011-06-01'</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/getting-bit-by-datetime-rounding-or-why-235959-999-ltgt/image_10.png" class="fancy"><img src="/getting-bit-by-datetime-rounding-or-why-235959-999-ltgt/image_10.png" style="max-height: 250px"/></a></div></div>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jun</span>
+			<span class="day">14</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/avoiding-regressions-in-orcamdf-by-system-testing/" title="Avoiding Regressions in OrcaMDF by System Testing" rel="bookmark">Avoiding Regressions in OrcaMDF by System Testing</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				, 
+			
+				<a href="http://improve.dk/category/Testing/">Testing</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>As I continue to add new features &amp; support for new data structures in <a href="/introducing-orcamdf">OrcaMDF</a>, the risk of <a href="http://en.wikipedia.org/wiki/Software_regression" target="_blank">regressions</a> increase. Especially so as I’m developing in a largely unknown field, given that I can’t plan for structures and relations that I do not yet know about. To reduce the risk of regressions, testing is an obvious need.</p>
+<a id="more"></a>
+
+<h2 id="Unit_testing">Unit testing</h2>
+<p><a href="http://en.wikipedia.org/wiki/Unit_testing" target="_blank">Unit testing</a> is the process of testing the smallest parts of the code, which would be functions in object oriented programming. A sample test for the <a href="https://github.com/improvedk/OrcaMDF/blob/694dd0cff213dc48b5153b040a41fdc707914680/src/OrcaMDF.Core/Engine/SqlTypes/SqlBigInt.cs" target="_blank">SqlBigInt</a> data type parsing class could look like this:</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> NUnit.Framework;
+<span class="keyword">using</span> OrcaMDF.Core.Engine.SqlTypes;
+
+namespace OrcaMDF.Core.Tests.Engine.SqlTypes
+{
+	[TestFixture]
+	<span class="keyword">public</span> <span class="keyword">class</span> SqlBigIntTests
+	{
+		[Test]
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">GetValue</span>()
+		{
+			<span class="keyword">var</span> type = <span class="keyword">new</span> SqlBigInt();
+			<span class="keyword">byte</span>[] input;
+
+			input = <span class="keyword">new</span> <span class="keyword">byte</span>[] { <span class="number">0xFF</span>, <span class="number">0xFF</span>, <span class="number">0xFF</span>, <span class="number">0xFF</span>, <span class="number">0xFF</span>, <span class="number">0xFF</span>, <span class="number">0xFF</span>, <span class="number">0x7F</span> };
+			Assert.AreEqual(<span class="number">9223372036854775807</span>, Convert.ToInt64(type.GetValue(input)));
+
+			input = <span class="keyword">new</span> <span class="keyword">byte</span>[] { <span class="number">0x82</span>, <span class="number">0x5A</span>, <span class="number">0x03</span>, <span class="number">0x1B</span>, <span class="number">0xD5</span>, <span class="number">0x3E</span>, <span class="number">0xCD</span>, <span class="number">0x71</span> };
+			Assert.AreEqual(<span class="number">8200279581513702018</span>, Convert.ToInt64(type.GetValue(input)));
+
+			input = <span class="keyword">new</span> <span class="keyword">byte</span>[] { <span class="number">0x7F</span>, <span class="number">0xA5</span>, <span class="number">0xFC</span>, <span class="number">0xE4</span>, <span class="number">0x2A</span>, <span class="number">0xC1</span>, <span class="number">0x32</span>, <span class="number">0x8E</span> };
+			Assert.AreEqual(-<span class="number">8200279581513702017</span>, Convert.ToInt64(type.GetValue(input)));
+		}
+
+		[Test]
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Length</span>()
+		{
+			<span class="keyword">var</span> type = <span class="keyword">new</span> SqlBigInt();
+
+			Assert.Throws&lt;ArgumentException&gt;(() =&gt; type.GetValue(<span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">9</span>]));
+			Assert.Throws&lt;ArgumentException&gt;(() =&gt; type.GetValue(<span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">7</span>]));
+		}
+	}
+}
+</pre></figure>
+
+<p>This tests the main entrypoints for the SqlBigInt class, testing for over/underflow of the long bigint data type, as well as checking the length. This works great for simple classes like SqlBigInt. Unit testing more complex interrelated classes requires infrastructure support for mocking out called methods, related classes, etc. While this is a working strategy, it arguably requires some effort, especially at the early stage of a project where the architecture is dynamic.</p>
+<h2 id="System_testing">System testing</h2>
+<p>On the other end of the spectrum, we have <a href="http://en.wikipedia.org/wiki/System_testing" target="_blank">system testing</a>. System testing seeks to test the system as a whole, largely ignoring the inner workings of either system, which merits a categorization as <a href="http://en.wikipedia.org/wiki/Black_box_testing" target="_blank">black-box testing</a>. In the case of OrcaMDF I’ve estimated that I can catch 90% of all regressions using just 10% of the time, compared to unit testing which would have the reverse properties. As such, it’s a great way to test during development, while allowing for the introduction of key unit &amp; integration tests as necessary.</p>
+<p>Say I wanted to test the parsing of user table names in the <a href="https://github.com/improvedk/OrcaMDF/blob/694dd0cff213dc48b5153b040a41fdc707914680/src/OrcaMDF.Core/MetaData/DatabaseMetaData.cs" target="_blank">DatabaseMetaData</a> class, I could mock the values of the SysObjects list, while also mocking <a href="https://github.com/improvedk/OrcaMDF/blob/694dd0cff213dc48b5153b040a41fdc707914680/src/OrcaMDF.Core/Engine/MdfFile.cs" target="_blank">MdfFile</a> as that’s a require parameter for the constructor. To do that, I’d have to extract MdfFile into an interface and use a mocking framework on top of that.</p>
+<p>Taking the system testing approach, I’m instead performing the following workflow:</p>
+<ul>
+<li>Connect to a running SQL Server.</li>
+<li>Create test schema in the fixture setup.</li>
+<li>Detach the database.</li>
+<li>Run OrcaMDF on the detached .mdf file and validate the results.</li>
+</ul>
+<p>A sample test, creating two user tables and validating the output from the DatabaseMetaData, looks like this:</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System.Data.SqlClient;
+<span class="keyword">using</span> NUnit.Framework;
+<span class="keyword">using</span> OrcaMDF.Core.Engine;
+
+namespace OrcaMDF.Core.Tests.Integration
+{
+	<span class="keyword">public</span> <span class="keyword">class</span> ParseUserTableNames : SqlServerSystemTest
+	{
+		[Test]
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">ParseTableNames</span>()
+		{
+			<span class="keyword">using</span>(<span class="keyword">var</span> mdf = <span class="keyword">new</span> MdfFile(MdfPath))
+			{
+				<span class="keyword">var</span> metaData = mdf.GetMetaData();
+
+				Assert.AreEqual(<span class="number">2</span>, metaData.UserTableNames.Length);
+				Assert.AreEqual(<span class="string">"MyTable"</span>, metaData.UserTableNames[<span class="number">0</span>]);
+				Assert.AreEqual(<span class="string">"XYZ"</span>, metaData.UserTableNames[<span class="number">1</span>]);
+			}
+		}
+
+		<span class="keyword">protected</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">RunSetupQueries</span>(SqlConnection conn)
+		{
+			<span class="keyword">var</span> cmd = <span class="keyword">new</span> SqlCommand(<span class="string">@"
+				CREATE TABLE MyTable (ID int);
+				CREATE TABLE XYZ (ID int);"</span>, conn);
+			cmd.ExecuteNonQuery();
+		}
+	}
+}
+</pre></figure>
+
+<p>This allows for extremely quick testing of actual real life scenarios. Want to test the parsing of forwarded records? Simply create a new test, write the T-SQL code to generate the desired database state and then validate the scanned table data.</p>
+<h2 id="The_downside_to_system_testing">The downside to system testing</h2>
+<p>Unfortunately system testing is no panacea; it has its downsides. The most obvious one is performance. A unit test is usually required to run extremely fast, allowing you to basically run them in the background on each file save. Each of these system tests takes about half a second to run, being CPU bound. Fortunately, they can be run in parallel without problems. On a quad core machine that’ll allow me to run 480 tests per minute. This’ll allow a manageable test time for a complete test set, while still keeping a subset test very quick. Usually a code change won’t impact more than handful of tests.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jun</span>
+			<span class="day">09</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/anatomy-of-a-forwarded-record-ndash-the-back-pointer/" title="Anatomy of a Forwarded Record &amp; the Back Pointer" rel="bookmark">Anatomy of a Forwarded Record &amp; the Back Pointer</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Earlier this week I provided some details on the <a href="/anatomy-of-a-forwarded-record-ndash-the-forwarding-stub">forwarding stub that’s left behind</a> when a heap record is forwarded. In this post I’ll look at the second part of a forwarded record – the actual record to which the forwarding stub points.</p>
+<a id="more"></a>
+
+<h2 id="What’s_in_a_forwarded_record?">What’s in a forwarded record?</h2>
+<p>A forwarded record is just like a normal record, only with a couple of minor differences.</p>
+<p>For one, the record type (read from bits 1-3 of the first record status byte, see <a href="/anatomy-of-a-forwarded-record-ndash-the-forwarding-stub">the earlier post</a><br>for details) is changed to BlobFragment, decimal value 4. This is important to note when scanning data – as all blob fragment records should be ignored. Instead, blob fragments will automatically be read whenever we scan the forwarding stub which points to the blob fragment. Scanning both directly would result in the records being read twice.</p>
+<p>The second part being that there’s an extra variable length column stored in the record. This last variable length column is not part of the table schema, it’s actually a special pointer called the back pointer. The back pointer points back to the <font color="#444444">forwarding stub that points to this record. This makes it easy to find the original record location, given the blob fragment location. When a blob fragment shrinks in size, we can easily check whether it might fit on the original page again. It’s also used if the blob fragment size increases and we therefore might need to allocate it on a new page. In that case, we’ll have to go back to the</font>forwarding stub and change it so it points to the new location.</p>
+<p>The naïve implementation would be to just replace the blob fragment with another forwarding stub, thus creating a chain of forwarding stubs, eventually pointing to the forwarded record itself. However, this is not the case - SQL Server will never chain forwarding stubs.</p>
+<h2 id="Parsing_the_forwarded_record">Parsing the forwarded record</h2>
+<p>To check out the back pointer storage format, I’ve reused the table sample from the <a href="/anatomy-of-a-forwarded-record-ndash-the-forwarding-stub">last post</a>. Thus we’ve got a forwarding stub on page (1:114) pointing to the forwarded record on page (1:118). Let’s try and parse the forwarded record at (1:118:0):  </p>
+<p><strong><font color="#ff0000">3200</font><font color="#0000ff">0800</font><font color="#9b00d3">02000000</font><font color="#008000">0200</font></strong><font color="#a5a5a5"><strong>0002 009913a3 93 <snip 5.000 x 0x62> 00047200 00000100 0100</strong></font></p>
+<ul>
+<li><font face="Lucida Sans Unicode"><font color="#ff0000"><strong>3200  </strong></font>The first two bytes are the two status bytes, indicating that this is a blob fragment record, it’s got a null bitmap and it’s got variable length columns.</font></li>
+<li><font face="Lucida Sans Unicode"><font color="#0000ff"><strong>0800  </strong></font><font color="#000000">The next two bytes indicates the total length of the fixed length portion of this record.</font></font></li>
+<li><font face="Lucida Sans Unicode"><font color="#9b00d3"><strong>02000000  </strong></font><font color="#000000">Next up is the first and only fixed length column, an integer field with a decimal value of 2.</font></font></li>
+<li><font face="Lucida Sans Unicode"><font color="#804000"><font color="#008000"><strong>0200  </strong></font></font><font color="#000000">Indicates the total number of columns in this record – decimal value 2.</font></font>
+
+</li>
+</ul>
+<p><strong><font color="#a5a5a5">32000800 02000000 0200</font><font color="#ff0000">00</font><font color="#0000ff">02 00</font><font color="#9b00d3">9913a3</font><font color="#9b00d3">93</font><font color="#008000"><snip 5.000 x 0x62></font></strong><font color="#a5a5a5"><strong>00047200 00000100 0100</strong></font></p>
+<ul>
+<li><font face="Lucida Sans Unicode"><font color="#ff0000"><strong>00  </strong></font><font color="#000000">The next byte is the null bitmap. As there are no nullable columns in this table, no columns have a null bit set, thus the value of 0.</font>    </font></li>
+<li><font face="Lucida Sans Unicode"><font color="#0000ff"><strong>0200  </strong></font><font color="#000000">The next two bytes specify the number of variable length columns contained in the record. Hold up - this doesn’t add up! The total number of columns was two, and we’ve got a single fixed length column. So how can there be two variable length columns, adding up to a total of three columns? This extra variable length column is the special back pointer field, as we’ll look at in just a bit.</font>    </font></li>
+<li><font face="Lucida Sans Unicode"><font color="#9b00d3"><strong>9913a393  </strong></font><font color="#000000">The next four bytes, in pairs of two, is the variable length column offset array. They hold the offsets (and thus the length) of each variable length field. The first offset is 0x1399 = 5.017. The second offset is a bit more tricky. 0x93a3 has a decimal value of 37.795, clearly above the valid threshold. If we convert that value to binary, we get a value of 0b1001001110100011. No variable column length offset will ever need the high order bit and it’s thus used as an indicator for a pointer column – just like it’s used to indicate a row-overflow pointer. If we flip the high order bit, we get a value of 0b0001001110100011 = 5.027. Subtracting 5.017 from 5.027 gives us a column size of 10 bytes – the size of the back pointer.</font>    </font></li>
+<li><font face="Lucida Sans Unicode"><font color="#008000"><strong>5.000 x 0x62  </strong></font><font color="#000000">I’ve snipped the next 5.000 bytes as those are just 5.000 ‘b’s repeated – the data in the Data column.</font></font>
+
+
+</li>
+</ul>
+<h2 id="The_back_pointer_format">The back pointer format</h2>
+<p>The remaining 10 bytes make up the back pointer:</p>
+<p><strong><font color="#a5a5a5">32000800 02000000 02000002 009913a3 93 <snip 5.000 x 0x62><font color="#ff0000">0004</font> <font color="#0000ff">72000000</font> <font color="#9b00d3">0100</font> <font color="#008000">0100</font></font></strong></p>
+<ul>
+<li><font color="#000000"><font face="Lucida Sans Unicode"><font color="#ff0000"><strong>0004  </strong></font>The first two bytes indicates the special column ID with a decimal value of 1.024, indicating that it’s a back pointer.    </font></font></li>
+<li><font color="#000000"><font face="Lucida Sans Unicode"><font color="#0000ff"><strong>72000000  </strong></font>Is the beginning of the back pointer page location. 0x72 = 114 in decimal, which is the page ID of the referencing forwarding stub.    </font></font></li>
+<li><font color="#000000"><font face="Lucida Sans Unicode"><font color="#9b00d3"><strong>0100  </strong></font>Indicates the file ID with a decimal value of 1.    </font></font></li>
+<li><font color="#000000"><font face="Lucida Sans Unicode"><font color="#008000"><strong>0100  </strong></font>Finally the last two bytes indicates the slot number with a decimal value of 1.</font></font>
+
+</li>
+</ul>
+<font color="#000000">And so, with the above, we’ve now parsed the complete forwarded record. We can conclude that the back pointer takes up a total of 10 bytes, in this case pointing to the slot (<font color="#9b00d3"><strong>1</strong></font>:<font color="#0000ff"><strong>114</strong></font>:<font color="#008000"><strong>1</strong></font>)</font>
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jun</span>
+			<span class="day">07</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/anatomy-of-a-forwarded-record-ndash-the-forwarding-stub/" title="Anatomy of a Forwarded Record &amp; the Forwarding Stub" rel="bookmark">Anatomy of a Forwarded Record &amp; the Forwarding Stub</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>A forwarded record occurs whenever a record in a <a href="http://msdn.microsoft.com/en-us/library/ms188270.aspx" target="_blank">heap</a> increases in size and it no longer fits on the page. Instead of causing a page split, as would happen had the table not been a heap, the record is moved onto another with enough free space, or onto a newly allocated page. Forwarded records can wreak havoc to your performance due to fragmentation, but I’ll leave not cover that here as many other more skilled people <a href="http://sqlblog.com/blogs/kalen_delaney/archive/2009/11/11/fragmentation-and-forwarded-records-in-a-heap.aspx" target="_blank">have</a> <a href="http://blogs.msdn.com/b/mssqlisv/archive/2006/12/01/knowing-about-forwarded-records-can-help-diagnose-hard-to-find-performance-issues.aspx" target="_blank">already</a> <a href="http://www.sqlskills.com/BLOGS/PAUL/post/Forwarding-and-forwarded-records-and-the-back-pointer-size.aspx" target="_blank">done</a> <a href="http://blogs.msdn.com/b/sqlserverstorageengine/archive/2006/09/19/761437.aspx" target="_blank">so</a>.</p>
+<a id="more"></a>
+
+<h2 id="Test_setup">Test setup</h2>
+<p>As a test table we’ll use a simple table with three wide records, taking up almost a full page of data.</p>
+<figure class="highlight sql"><pre><span class="comment">-- Create test table</span>
+<span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> ForwardedRecordTest
+(
+	ID <span class="keyword">int</span> <span class="keyword">identity</span>,
+	Data <span class="keyword">varchar</span>(<span class="number">8000</span>)
+)
+
+-- <span class="keyword">Insert</span> dummy data
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span>
+	ForwardedRecordTest (Data)
+<span class="keyword">VALUES</span> 
+	(REPLICATE(<span class="string">'a'</span>, <span class="number">2000</span>)),
+	(REPLICATE(<span class="string">'b'</span>, <span class="number">2000</span>)),
+	(REPLICATE(<span class="string">'c'</span>, <span class="number">2000</span>))</span>
+</pre></figure>
+
+<p>Firing up DBCC IND shows us a single IAM page tracking a single data page:</p>
+<figure class="highlight sql"><pre>DBCC IND (Test, ForwardedRecordTest, -1)
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/anatomy-of-a-forwarded-record-ndash-the-forwarding-stub/image_21.png" class="fancy"><img src="/anatomy-of-a-forwarded-record-ndash-the-forwarding-stub/image_21.png" style="max-height: 250px"/></a></div></div>
+
+<p>Now, to force a forwarded record, we’ll update one of the columns so it’ll no longer fit on the page with the other records:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">UPDATE</span>
+	ForwardedRecordTest
+<span class="keyword">SET</span>
+	Data = REPLICATE(<span class="string">'b'</span>, <span class="number">5000</span>)
+<span class="keyword">WHERE</span>
+	Data = REPLICATE(<span class="string">'b'</span>, <span class="number">2000</span>)</span>
+</pre></figure>
+
+<p>Invoking DBCC IND again confirms that a new page has been allocated to our table:</p>
+<div class="imgwrapper" style=""><div><a href="/anatomy-of-a-forwarded-record-ndash-the-forwarding-stub/image_41.png" class="fancy"><img src="/anatomy-of-a-forwarded-record-ndash-the-forwarding-stub/image_41.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="The_FORWARDING_STUB">The FORWARDING_STUB</h2>
+<p>By using DBCC PAGE we can take a look at the forwarded recorded, or at least what’s left of it on the original page 114:</p>
+<figure class="highlight sql"><pre>DBCC TRACEON (3604)
+DBCC PAGE (Test, 1, 114, 3)
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/anatomy-of-a-forwarded-record-ndash-the-forwarding-stub/image_6.png" class="fancy"><img src="/anatomy-of-a-forwarded-record-ndash-the-forwarding-stub/image_6.png" style="max-height: 250px"/></a></div></div>
+
+<p>Identifying a forwarding stub is done by looking at the first status byte of the record. Specifically, bits 1-3 will tell us the record type:</p>
+<figure class="highlight sql"><pre>Type = (RecordType)((Convert.ToByte(bits[1]) &lt;&lt; 2) + (Convert.ToByte(bits[2]) &lt;&lt; 1) + Convert.ToByte(bits[3]));
+</pre></figure>
+
+<p>With Type being one of the valid SQL Server record types:</p>
+<figure class="highlight sql"><pre>public enum RecordType : byte
+{
+	Primary = 0,
+	Forwarded = 1,
+	ForwardingStub = 2,
+	Index = 3,
+	BlobFragment = 4,
+	GhostIndex = 5,
+	GhostData = 6,
+	GhostVersion = 7
+}
+</pre></figure>
+
+<p>While other record types will have two status bytes, a forwarding stub only has a single status byte. Thus, if we identify the record to be a forwarding stub, we know that the next 8 bytes will be a page pointer.</p>
+<h2 id="Parsing_the_forwarding_stub">Parsing the forwarding stub</h2>
+<p>Once we know the format, parsing a forwarding stub record is straight forward.</p>
+<p>The first byte has a value of 0x04, or 0b100 in binary. Looking at bits 1-3 we get 0b10 or decimal 2 – which matches RecordType.ForwardingStub.</p>
+<p>Looking at the next 8 bytes we have <span style="color: #ff0000;">76000000</span> <span style="color: #0000ff;">0001</span> <span style="color: #9b00d3;">0000</span>. I’ve divided them into three groups – in order they contain the page ID, the file ID and finally the slot number.</p>
+<p><span style="color: #ff0000;">76000000</span> byte swapped = 0x76 = 118 in decimal.</p>
+<p><span style="color: #0000ff;">0001</span> byte swapped = 0x01 = 1 in decimal.</p>
+<p><span style="color: #9b00d3;">0000</span> byte swapped = 0x00 = 0 in decimal.</p>
+<p>Thus we have the position of the forwarded record: (<span style="color: #0000ff;">1</span>:<span style="color: #ff0000;">118</span>:<span style="color: #9b00d3;">0</span>).</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jun</span>
+			<span class="day">01</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/using-fiddler-to-automatically-download-streamed-mp3s/" title="Using Fiddler to Automatically Download Streamed MP3s" rel="bookmark">Using Fiddler to Automatically Download Streamed MP3s</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Eric Lawrence’s <a href="http://www.fiddler2.com/fiddler2/version.asp" target="_blank">Fiddler</a> has many uses. I use it every day for debugging our client/server interaction, caching behavior, etc. What many don’t realize is that Fiddler is also an excellent platform for scripting, enabling you to modify requests and responses as they go out and come back. I made a quick script to automatically download streamed MP3 files as they were played, naming them automatically from the ID3 information contained in them.</p>
+<a id="more"></a>
+
+<p>Before we get started, head on over and download the <a href="http://www.fiddler2.com/fiddler/fse.asp" target="_blank">FiddlerScript Editor</a>.</p>
+<h2 id="Parsing_ID3_tags">Parsing ID3 tags</h2>
+<p>As I’m lazy, and most likely you are too, we’ll use the excellent TagLib Sharp library for parsing the ID3 information in the downloaded MP3 files. You can get the latest version (2.0.4.0 as of this writing) <a href="http://download.banshee.fm/taglib-sharp/" target="_blank">from here</a>.</p>
+<p>To gain access to the TagLib Sharp library from Fiddler, add a reference to it in the Fiddler Options dialog:</p>
+<div class="imgwrapper" style=""><div><a href="/using-fiddler-to-automatically-download-streamed-mp3s/image_210.png" class="fancy"><img src="/using-fiddler-to-automatically-download-streamed-mp3s/image_210.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Setting_up_the_script">Setting up the script</h2>
+<p>Now go to to Rules menu and click “Customize Rules…” to open the CustomRules.js file in the FiddlerScript Editor that we installed before.</p>
+<div class="imgwrapper" style=""><div><a href="/using-fiddler-to-automatically-download-streamed-mp3s/image_44.png" class="fancy"><img src="/using-fiddler-to-automatically-download-streamed-mp3s/image_44.png" style="max-height: 250px"/></a></div></div>
+
+<p>Go to the OnBeforeResponse function and add the following bit of code to the end:</p>
+<figure class="highlight csharp"><pre>if(oSession<span class="preprocessor">.url</span><span class="preprocessor">.Contains</span>(<span class="string">"SomeStream.aspx"</span>)) {
+	var directory: String = <span class="string">"D:\Files\MP3"</span><span class="comment">;</span>
+	var path: String = System<span class="preprocessor">.IO</span><span class="preprocessor">.Path</span><span class="preprocessor">.Combine</span>(directory, Guid<span class="preprocessor">.NewGuid</span>() + <span class="string">".mp3"</span>)<span class="comment">;</span>
+
+	oSession<span class="preprocessor">.SaveResponseBody</span>(path)<span class="comment">;</span>
+	var file: TagLib<span class="preprocessor">.File</span> = TagLib<span class="preprocessor">.File</span><span class="preprocessor">.Create</span>(path)<span class="comment">;</span>
+
+	if(file<span class="preprocessor">.Tag</span><span class="preprocessor">.Title</span><span class="preprocessor">.Length</span> &gt; <span class="number">0</span>)
+	{
+		var target: String = System<span class="preprocessor">.IO</span><span class="preprocessor">.Path</span><span class="preprocessor">.Combine</span>(directory, file<span class="preprocessor">.Tag</span><span class="preprocessor">.AlbumArtists</span> + <span class="string">" - "</span> + file<span class="preprocessor">.Tag</span><span class="preprocessor">.Title</span> + <span class="string">".mp3"</span>)<span class="comment">;</span>
+
+		if(!System<span class="preprocessor">.IO</span><span class="preprocessor">.File</span><span class="preprocessor">.Exists</span>(target))
+			System<span class="preprocessor">.IO</span><span class="preprocessor">.File</span><span class="preprocessor">.Move</span>(path, target)<span class="comment">;</span>
+		else
+			System<span class="preprocessor">.IO</span><span class="preprocessor">.File</span><span class="preprocessor">.Delete</span>(path)<span class="comment">;</span>
+	}
+}
+</pre></figure>
+
+<p>The first line identifies the requests that are for MP3 files. Depending on where you’re streaming from, you’ll obviously need to change this line to match your specific requirements.</p>
+<p>Once an MP3 response has been detected, we save the file using a GUID as the name. If TagLib Sharp detects a song title, the file is renamed in the “AlbumArtists – Title.mp3” form. If no title is present, we just let the file stay with the GUID name for manual renaming later on.</p>
+<p>Save the CustomRules.js file and Fiddler will automatically pick up on the changes and start saving those precious MP3s!</p>
+<h2 id="Disclaimer">Disclaimer</h2>
+<p>Obviously the above code should only be used to save MP3 files from streams to which you own the rights.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">31</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/saving-space-by-storing-real-values-in-smallints/" title="Saving Space by Storing Decimal Values in Integer Data Types" rel="bookmark">Saving Space by Storing Decimal Values in Integer Data Types</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I recently stumbled upon a <a href="http://stackoverflow.com/questions/6015605/design-question-on-storing-meteorological-data-on-sql-server-2008/6016237#6016237" target="_blank">question on Stack Overflow</a> on how best to reduce their data size as it’s growing out of hand. As the original author hasn’t replied back yet (as of writing this post, I’m making some assumptions on the scenario – so take it as an abstract scenario). The basic scenario is that they have a number of measuring stations, each one of those containing a lot of equipment reporting back to a SQL Server in a schema like the following abstract:</p>
+<a id="more"></a>
+
+
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> Measurements
+(
+	DataID bigint <span class="keyword">IDENTITY</span>,
+	StationID <span class="keyword">int</span>,
+	MeasurementA <span class="keyword">real</span>,
+	MeasurementB <span class="keyword">real</span>,
+	MeasurementC <span class="keyword">real</span>
+	... <span class="number">100</span> more columns
+)</span>
+</pre></figure>
+
+<p>They’re willing to loose some precision of the data, for the purpose of saving space. As some of the data is measuring wind speed in meters/sec and air pressure, I’m making the assumptions that most of the data will be in the 0-200 and 500-2000 ranges, depending on the scale used.</p>
+<p>If the wind speed does not need accuracy further than two decimals, storing it in a 4 byte real column is a lot of waste. Instead we might store it in a smallint column, saving 2 bytes per column. The data would be converted like so:</p>
+<figure class="highlight sql"><pre>35.7   =&gt; 35.7   * 100 = 3,570
+1.38   =&gt; 1.38   * 100 = 138
+155.29 =&gt; 155.29 * 100 = 15,529
+84.439 =&gt; 84.439 * 100 = 8,443 (with the .9 being rounded off due to integer math)
+</pre></figure>
+
+<p>So by multiplying all the values by 100, we achieve a precision of two decimal points, with all further decimal points being cropped. As the smallint max value is 32,767, the maximum value we could store in this format would be:</p>
+<figure class="highlight sql"><pre>327.67 =&gt; 327.67 * 100 = 32,767
+</pre></figure>
+
+<p>Which is probably enough for most wind measurements. Hopefully.</p>
+<p>For the larger values in the 500-2000 ranges, we can employ the same technique by multiplying by 10. This only gives us a single digit of precision, but allows for values in the –3,276.8 to 3,276.7 range, stored using just 2 bytes per column. Employing the same technique we could also store values between 0 and 2.55 in a single byte tinyint column, with a precision of two digits.</p>
+<p>Unless you really need to save those bytes, I wouldn’t recommend you do this as it’s usually better to store the full precision. However, this does show that we can store decimals in integer data types with a bit of math involved.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">24</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/avoiding-page-splits-byhellip-splitting-pages/" title="Avoiding Page Splits By Splitting Pages" rel="bookmark">Avoiding Page Splits By Splitting Pages</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Optimization/">SQL Server - Optimization</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Continuing my review of my old database designs, I stumbled upon yet another mind numbing design decision. Back then, I’d just recently learned about the whole page split problem and how you should always use sequentially valued clustered keys.  </p>
+<a id="more"></a>
+
+<p>This specific table needed to track a number of views for a given entity, storing a reference to the entity and the time of the view. As I knew page splits where bad, I added a clustered index key like so:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> EntityViews
+(
+	ViewID <span class="keyword">int</span> <span class="keyword">identity</span> <span class="keyword">PRIMARY</span> <span class="keyword">KEY</span> CLUSTERED,
+	EntityID <span class="keyword">int</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span>,
+	Created datetime <span class="keyword">NOT</span> <span class="keyword">NULL</span>,
+	OtherData <span class="keyword">char</span>(<span class="number">20</span>)
+)</span>
+</pre></figure>
+
+<p>With a schema like this, insertions won’t cause fragmentation as they’ll follow the nice &amp; sequential ViewID identity value. However, I did realize that all of my queries would be using EntityID and Created as a predicate, reading most, if not all, of the columns. By clustering on ViewID, I’d have to scan the entire table for all queries. As that obviously wouldn’t be efficient, I added a nonclustered index:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> NONCLUSTERED INDEX IDX_EntityID_Created <span class="keyword">ON</span> EntityViews (EntityID, Created) INCLUDE (OtherData)</span>
+</pre></figure>
+
+<p>If you’re shaking your head by now, good. This index solved my querying issue as I could now properly seek my data using (WHERE EntityID = x AND Created BETWEEN y AND z) predicates. However, the nonclustered index contains all of my columns, including ViewID as that’s the referenced clustered key. And thus I’m storing all my data twice! My clustered index is neatly avoiding fragmentation, but my nonclustered index (that contains all the same data!) is experiencing the exact fragmentation issues that I originally wanted to avoid!</p>
+<p>Realizing this fact, the correct schema would’ve been:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> EntityViews
+(
+	EntityID <span class="keyword">int</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span>,
+	Created datetime <span class="keyword">NOT</span> <span class="keyword">NULL</span>,
+	OtherData <span class="keyword">char</span>(<span class="number">20</span>)
+)
+<span class="keyword">CREATE</span> CLUSTERED INDEX CX_EntityID_Created <span class="keyword">ON</span> EntityViews (EntityID, Created)</span>
+</pre></figure>
+
+<p>We save the surrogate key value bytes for each row and all the data is stored only once. There’s no need for secondary indexes as all the data is stored in the natural querying order. However, page splitting will occur as EntityID won’t be sequential. This is easily avoided by scheduling REINDEX &amp; REUBILD as appropriate.</p>
+<p>Furthermore, as the clustered key is sorted on Created secondarily, older non-fragmented data won’t be affected – it’ll only affect the most recently added pages, which are probably in memory anyways and thus won’t cause problems for querying.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">19</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/reverse-engineering-sql-server-page-headers/" title="Reverse Engineering SQL Server Page Headers" rel="bookmark">Reverse Engineering SQL Server Page Headers</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>One of the first challenges I faced when starting out the development of <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a> was parsing page headers. We all know that <a href="/deciphering-a-sql-server-data-page/">pages are basically split in two parts</a>, the 96 byte header and the 8096 byte body of remaining bytes. Much has been written about headers and Paul Randal (<a href="http://www.sqlskills.com/BLOGS/PAUL/" target="_blank">b</a>|<a href="http://twitter.com/#!/paulrandal" target="_blank">t</a>) has a great post describing the <a href="http://www.sqlskills.com/blogs/paul/post/Inside-the-Storage-Engine-Anatomy-of-a-page.aspx" target="_blank">contents of the header</a> as well. However, though the contents have been described, I’ve been completely unable to find any kind of details on the storage format. What data types are the individual fields, and what’s the order? Oh well, we’ve always got DBCC PAGE.</p>
+<a id="more"></a>
+
+<p>Firing up DBCC PAGE, I scoured for a random data page whose header I could dump, in this case page (1:101):</p>
+<figure class="highlight sql"><pre>DBCC TRACEON (3604)
+DBCC PAGE (TextTest, 1, 101, 2)
+</pre></figure>
+
+<p>The result comes in two parts, first we’ve got the header contents as DBCC PAGE kindly parses for us, while the second part is a dump of the 96 bytes that make up the header data:</p>
+<div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_2.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_2.png" style="max-height: 250px"/></a></div></div>
+
+<p>Armed with this, the hunt begins! What we’re looking for is a match between the parsed values and the bytes in the header. To make it easy, we need to spot some unique values so we don’t get a lot of ambiguity in where the value might be stored. Starting out with m_freeCnt, we see it has a value of 4066. The body size is 8060 bytes so it’s clear that the number can’t be a tinyint. It wouldn’t make sense to make it an int as that supporst way larger values than we need. An educated guess would be that m_freeCnt is probably stored as a smallint, leaving plenty of space for the 0-8060 range we need.</p>
+<p>Now, 4066 represented in hex is 0x0FE2. Byte swapped, that becomes 0xE20F, and what do you know, we have a match!</p>
+<div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_4.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_4.png" style="max-height: 250px"/></a></div></div>
+
+<p>And thus we have identified the first field of our header:</p>
+<figure class="highlight csharp"><pre>/*
+	Bytes	Content
+	-----	-------
+	00-27	?
+	28-29	FreeCnt (smallint)
+	30-95	?
+*/
+</pre></figure>
+
+<p>Continuing the search we see that m_freeData = 3895. In hex that’s 0x0F37 and 0x370F when swapped. And voilá, that’s stored right next to m_freeCnt:</p>
+<div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_6.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_6.png" style="max-height: 250px"/></a></div></div>
+
+<p>Continuing on with this technique, we can map all the distinct header values where there’s no ambiguity as to where they’re stored. But what about a field like m_level? It has the same value as m_xactReserved, m_reservedCnt, m_ghostRecCnt, etc. How do we know which one of those zero values is really m_level? And how do we find out what the data type is? It could be anything from a tinyint to bigint!</p>
+<p>Time to bring out the big guns! We’ll start out by shutting down MSSQL / SQL Server:</p>
+<div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_8.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_8.png" style="max-height: 250px"/></a></div></div>
+
+<p>Then we’ll open up the .mdf file in Visual Studio:</p>
+<div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_10.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_10.png" style="max-height: 250px"/></a></div></div>
+
+<p>This’ll open up the file in hex editor mode, allowing direct access to all the yummy data! As we know the page id was 101, we need to jump to byte offset 101 * 8192 = 827,392 to get to the first byte of page 101:</p>
+<div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_12.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_12.png" style="max-height: 250px"/></a></div></div>
+
+<p>Looking at these bytes we see that they’re identical to our header contents, thus confirming we’ve jumped to the correct offset:</p>
+<div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_16.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_16.png" style="max-height: 250px"/></a></div></div>
+
+<p>Now I’m going to ask you to do something that will make sheep loving people cry – write some gibberish in there and save the file! Please <strong>do not</strong> do this to a database with any kind of important data in it. Before:</p>
+<div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_18.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_18.png" style="max-height: 250px"/></a></div></div>
+
+<p>After:</p>
+<div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_22.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_22.png" style="max-height: 250px"/></a></div></div>
+
+<p>Oh the horrors! Now restart MSSQL / SQL Server and rerun the DBCC PAGE query from before:</p>
+<figure class="highlight sql"><pre>DBCC TRACEON (3604)
+DBCC PAGE (TextTest, 1, 101, 2)
+</pre></figure>
+
+<p>And notice the header we get as a result:</p>
+<div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_24.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_24.png" style="max-height: 250px"/></a></div></div>
+
+<p>Several values have changed! m_xactReserved had an ambiguous value of 0 before, now it’s at 30,806. Converting that to byte swapped hex we get a value of 0x5678. Looking at the header, we’ve now pinpointed yet another field and datatype (smallint):</p>
+<div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_26.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_26.png" style="max-height: 250px"/></a></div></div>
+
+<p>And thus we can update our header reference table:</p>
+<figure class="highlight csharp"><pre>/*
+	Bytes	Content
+	-----	-------
+	00-27	?
+	28-29	FreeCnt (smallint)
+	30-49	?
+	50-51	XactReserved (smallint)
+	30-95	?
+*/
+</pre></figure>
+
+<p>Continuing down this path, messing up the header, correlating messed up values with values parsed by DBCC PAGE, it’s possible to locate all the fields and their corresponding data types. If you see the following message, you know you’ve messed it up properly:</p>
+<div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_28.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_28.png" style="max-height: 250px"/></a></div></div>
+
+<p>You should be proud of yourself. No go clean up the mess you’ve made!</p>
+<p>Jumping forward, I’ve compiled a reference to the page header structure:</p>
+<figure class="highlight csharp"><pre>/*
+	Bytes	Content
+	-----	-------
+	00	HeaderVersion (tinyint)
+	01	Type (tinyint)
+	02	TypeFlagBits (tinyint)
+	03	Level (tinyint)
+	04-05	FlagBits (smallint)
+	06-07	IndexID (smallint)
+	08-11	PreviousPageID (int)
+	12-13	PreviousFileID (smallint)
+	14-15	Pminlen (smallint)
+	16-19	NextPageID (int)
+	20-21	NextPageFileID (smallint)
+	22-23	SlotCnt (smallint)
+	24-27	ObjectID (int)
+	28-29	FreeCnt (smallint)
+	30-31	FreeData (smallint)
+	32-35	PageID (int)
+	36-37	FileID (smallint)
+	38-39	ReservedCnt (smallint)
+	40-43	Lsn1 (int)
+	44-47	Lsn2 (int)
+	48-49	Lsn3 (smallint)
+	50-51	XactReserved (smallint)
+	52-55	XdesIDPart2 (int)
+	56-57	XdesIDPart1 (smallint)
+	58-59	GhostRecCnt (smallint)
+	60-95	?
+*/
+</pre></figure>
+
+<p>I’m not sure what lies in the remaining bytes of the header as DBCC PAGE doesn’t seem to parse stuff there, and it seems to be zeroed out for all pages I’ve tested. I’m assuming it’s reserved bytes for future usage. Once we’ve got the format, parsing becomes a simple task of reading each field, field by field:</p>
+<figure class="highlight csharp"><pre>HeaderVersion = header[<span class="number">0</span>]<span class="comment">;</span>
+Type = (PageType)header[<span class="number">1</span>]<span class="comment">;</span>
+TypeFlagBits = header[<span class="number">2</span>]<span class="comment">;</span>
+Level = header[<span class="number">3</span>]<span class="comment">;</span>
+FlagBits = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">4</span>)<span class="comment">;</span>
+IndexID = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">6</span>)<span class="comment">;</span>
+PreviousPage = new PagePointer(BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">12</span>), BitConverter<span class="preprocessor">.ToInt</span>32(header, <span class="number">8</span>))<span class="comment">;</span>
+Pminlen = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">14</span>)<span class="comment">;</span>
+NextPage = new PagePointer(BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">20</span>), BitConverter<span class="preprocessor">.ToInt</span>32(header, <span class="number">16</span>))<span class="comment">;</span>
+SlotCnt = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">22</span>)<span class="comment">;</span>
+ObjectID = BitConverter<span class="preprocessor">.ToInt</span>32(header, <span class="number">24</span>)<span class="comment">;</span>
+FreeCnt = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">28</span>)<span class="comment">;</span>
+FreeData = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">30</span>)<span class="comment">;</span>
+Pointer = new PagePointer(BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">36</span>), BitConverter<span class="preprocessor">.ToInt</span>32(header, <span class="number">32</span>))<span class="comment">;</span>
+ReservedCnt = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">38</span>)<span class="comment">;</span>
+Lsn = <span class="string">"("</span> + BitConverter<span class="preprocessor">.ToInt</span>32(header, <span class="number">40</span>) + <span class="string">":"</span> + BitConverter<span class="preprocessor">.ToInt</span>32(header, <span class="number">44</span>) + <span class="string">":"</span> + BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">48</span>) + <span class="string">")"</span><span class="comment">;</span>
+XactReserved = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">50</span>)<span class="comment">;</span>
+XdesID = <span class="string">"("</span> + BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">56</span>) + <span class="string">":"</span> + BitConverter<span class="preprocessor">.ToInt</span>32(header, <span class="number">52</span>) + <span class="string">")"</span><span class="comment">;</span>
+GhostRecCnt = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">58</span>)<span class="comment">;</span>
+</pre></figure>
+
+<p>You can also see the <a href="https://github.com/improvedk/OrcaMDF/blob/master/src/OrcaMDF.Core/Engine/Pages/PageHeader.cs" target="_blank">full source of the header parsing at GitHub</a>.</p>
+<h2 id="Wan’t_more?">Wan’t more?</h2>
+<p>If this isn’t enough for you, you should go and <a href="http://www.sqlpass.org/summit/2011/Speakers/SessionPreferencing.aspx?spid=245&amp;p=1&amp;preferred=False" target="_blank">vote for one or more of my OrcaMDF related sessions</a> at the PASS Summit.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">19</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/bridging-the-gap-between-smallint-and-int/" title="Bridging the Gap Between Smallint and Int" rel="bookmark">Bridging the Gap Between Smallint and Int</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Optimization/">SQL Server - Optimization</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Being a proponent of <a href="/wasted-bytes-add-up-consider-your-data-types-carefully">carefully choosing your data types</a>, I’ve often longed for the <a href="http://dev.mysql.com/doc/refman/5.0/en/numeric-types.html" target="_blank">mediumint data type</a> that MySQL has. Both smallint and int are signed data types, meaning their ranges are –32,768 to 32,767 for smallint and –2,147,483,648 to 2,147,483,647 for int. For most relational db schemas, positive identity values are used, meaning we’re looking at a possible 32,767 vs 2,147,483,647 values for smallint vs int. That’s a humongous difference, and it comes at a storage cost as well – 2 vs 4 bytes per column. If only there was something in between…</p>
+<a id="more"></a>
+
+<h2 id="You_say_mediumint,_I_say_binary(3)">You say mediumint, I say binary(3)</h2>
+<p>While there’s no native mediumint data type in SQL Server, there is a binary data type. Internally it’s basically just a byte array, just as any other data type. An int is just a binary(4) with some custom processing on top of it, smallint being a binary(2) and nvarchar being a binary(length * 2). What that means is there’s no stopping us from saving whatever bytes we want into a binary(3) column, including numbers. Using the following sample table:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> ThreeByteInt
+(
+	MediumInt binary(<span class="number">3</span>),
+	Filler <span class="keyword">char</span>(<span class="number">20</span>) <span class="keyword">NULL</span>
+)
+
+<span class="keyword">CREATE</span> CLUSTERED INDEX CX_ThreeByteInt <span class="keyword">ON</span> ThreeByteInt (MediumInt)</span>
+</pre></figure>
+
+<p>We can insert values through SQL either using byte constants or using numbers as normal:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> ThreeByteInt (MediumInt) <span class="keyword">VALUES</span> (<span class="number">0xC9DF48</span>)
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> ThreeByteInt (MediumInt) <span class="keyword">VALUES</span> (<span class="number">0x000000</span>)
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> ThreeByteInt (MediumInt) <span class="keyword">VALUES</span> (<span class="number">0xFFFFFF</span>)
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> ThreeByteInt (MediumInt) <span class="keyword">VALUES</span> (<span class="number">13229896</span>)
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> ThreeByteInt (MediumInt) <span class="keyword">VALUES</span> (<span class="number">1500</span>)
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> ThreeByteInt (MediumInt) <span class="keyword">VALUES</span> (<span class="number">0</span>)
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> ThreeByteInt (MediumInt) <span class="keyword">VALUES</span> (<span class="number">16777215</span>)</span>
+</pre></figure>
+
+<p>And querying works like normal as well:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> ThreeByteInt</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/bridging-the-gap-between-smallint-and-int/image_23.png" class="fancy"><img src="/bridging-the-gap-between-smallint-and-int/image_23.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Scans_ahoy!">Scans ahoy!</h2>
+<p>However, take a look at the plans for these two queries:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> ThreeByteInt <span class="keyword">WHERE</span> MediumInt = <span class="number">1500</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> ThreeByteInt <span class="keyword">WHERE</span> MediumInt = <span class="number">0x0005DC</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/bridging-the-gap-between-smallint-and-int/image_41.png" class="fancy"><img src="/bridging-the-gap-between-smallint-and-int/image_41.png" style="max-height: 250px"/></a></div></div>
+
+<p>They both contain a predicate looking for a value of 1500, one written as an integer constant, the other as a hex constant. One is causing a scan, the other is using a seek. Taking a closer look at the scan reveals an IMPLICIT_CONVERT which renders are index useless and thus causing the scan:</p>
+<div class="imgwrapper" style=""><div><a href="/bridging-the-gap-between-smallint-and-int/image_61.png" class="fancy"><img src="/bridging-the-gap-between-smallint-and-int/image_61.png" style="max-height: 250px"/></a></div></div>
+
+<p>The easiest way of avoiding this is just to replace the implicit conversion with an explicit cast in the query:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> ThreeByteInt <span class="keyword">WHERE</span> MediumInt = <span class="keyword">CAST</span>(<span class="number">1500</span> <span class="keyword">as</span> binary(<span class="number">3</span>))</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/bridging-the-gap-between-smallint-and-int/image_81.png" class="fancy"><img src="/bridging-the-gap-between-smallint-and-int/image_81.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Unsigned_integers_&amp;_overflow">Unsigned integers &amp; overflow</h2>
+<p>Whereas smallint, int and bigint are all signed integer types (the ability to have negative values), tinyint is not. Tinyint is able to store values in the 0-255 range. Had it been a signed type, it would be able to handle values in the –128 to 127 range. Just like tinyint, binary(3)/mediumint is an unsigned type, giving us a range of 0 to 16,777,215.</p>
+<p>Most developers &amp; DBAs have experienced <a href="http://en.wikipedia.org/wiki/Integer_overflow" target="_blank">integer overflow</a> at some point, usually causing havoc in the application. In short, an overflow occurs when you assign a value larger or smaller than what the data type can handle. In our case, that might be –1 or 16,777,216. We can easily demonstrate what’s happening by casting an integer to binary(3) and back to int again like so:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	<span class="keyword">CAST</span>(<span class="keyword">CAST</span>(<span class="number">16777214</span> <span class="keyword">AS</span> binary(<span class="number">3</span>)) <span class="keyword">AS</span> <span class="keyword">int</span>),
+	<span class="keyword">CAST</span>(<span class="keyword">CAST</span>(<span class="number">16777215</span> <span class="keyword">AS</span> binary(<span class="number">3</span>)) <span class="keyword">AS</span> <span class="keyword">int</span>),
+	<span class="keyword">CAST</span>(<span class="keyword">CAST</span>(<span class="number">16777216</span> <span class="keyword">AS</span> binary(<span class="number">3</span>)) <span class="keyword">AS</span> <span class="keyword">int</span>)
+
+<span class="keyword">UNION</span> <span class="keyword">ALL</span>
+
+<span class="keyword">SELECT</span>
+	<span class="keyword">CAST</span>(<span class="keyword">CAST</span>(-<span class="number">1</span> <span class="keyword">AS</span> binary(<span class="number">3</span>)) <span class="keyword">AS</span> <span class="keyword">int</span>),
+	<span class="keyword">CAST</span>(<span class="keyword">CAST</span>(<span class="number">0</span> <span class="keyword">AS</span> binary(<span class="number">3</span>)) <span class="keyword">AS</span> <span class="keyword">int</span>),
+	<span class="keyword">CAST</span>(<span class="keyword">CAST</span>(<span class="number">1</span> <span class="keyword">AS</span> binary(<span class="number">3</span>)) <span class="keyword">AS</span> <span class="keyword">int</span>)
+
+<span class="keyword">UNION</span> <span class="keyword">ALL</span>
+
+<span class="keyword">SELECT</span>
+	<span class="keyword">CAST</span>(<span class="keyword">CAST</span>(<span class="number">33554430</span> <span class="keyword">AS</span> binary(<span class="number">3</span>)) <span class="keyword">AS</span> <span class="keyword">int</span>),
+	<span class="keyword">CAST</span>(<span class="keyword">CAST</span>(<span class="number">33554431</span> <span class="keyword">AS</span> binary(<span class="number">3</span>)) <span class="keyword">AS</span> <span class="keyword">int</span>),
+	<span class="keyword">CAST</span>(<span class="keyword">CAST</span>(<span class="number">33554432</span> <span class="keyword">AS</span> binary(<span class="number">3</span>)) <span class="keyword">AS</span> <span class="keyword">int</span>)</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/bridging-the-gap-between-smallint-and-int/image_101.png" class="fancy"><img src="/bridging-the-gap-between-smallint-and-int/image_101.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Working_with_binary(3)_on_the_client_side">Working with binary(3) on the client side</h2>
+<p>Now that we’ve got our mediumint data type, all we need is to be able to insert &amp; query data from the client.</p>
+<p>Inserting is easy – just send values is as integers and it’ll be converted as appropriate – just make sure to check for over/underflows as necessary:</p>
+<figure class="highlight csharp"><pre>using(var conn = new SqlConnection("Data Source=.;Initial Catalog=MediumIntTest;Integrated Security=SSPI;"))
+{
+	var <span class="operator"><span class="keyword">insert</span> = new SqlCommand(<span class="string">"INSERT INTO ThreeByteInt (MediumInt) VALUES (@MediumInt)"</span>);</span>
+	<span class="operator"><span class="keyword">insert</span>.Parameters.<span class="keyword">Add</span>(<span class="string">"@MediumInt"</span>, SqlDbType.<span class="keyword">Int</span>).<span class="keyword">Value</span> = <span class="number">439848</span>;</span>
+	<span class="operator"><span class="keyword">insert</span>.<span class="keyword">Connection</span> = conn;</span>
+
+	conn.Open();
+	<span class="operator"><span class="keyword">insert</span>.ExecuteNonQuery();</span>
+	conn.Close();
+}
+</pre></figure>
+
+<p>Querying requires slightly more effort. We’ll still pass in the value as an integer, but we’ll have to perform a CAST in the query to avoid scans. We could also pass the value in as a three byte array, but provided we have access to the query text, it’s easier to perform the conversion there. Furthermore there’s no standard three byte integer type in C#, so we’ll have do perform some ugly magic to convert the three bytes into a normal .NET integer:</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span>(<span class="keyword">var</span> conn = <span class="keyword">new</span> SqlConnection(<span class="string">"Data Source=.;Initial Catalog=MediumIntTest;Integrated Security=SSPI;"</span>))
+{
+	<span class="keyword">var</span> <span class="keyword">select</span> = <span class="keyword">new</span> SqlCommand(<span class="string">"SELECT MediumInt FROM ThreeByteInt WHERE MediumInt = CAST(@MediumInt AS binary(3))"</span>);
+	<span class="keyword">select</span>.Parameters.Add(<span class="string">"@MediumInt"</span>, SqlDbType.Int).Value = <span class="number">439848</span>;
+	<span class="keyword">select</span>.Connection = conn;
+
+	conn.Open();
+	<span class="keyword">byte</span>[] bytes = (<span class="keyword">byte</span>[])<span class="keyword">select</span>.ExecuteScalar();
+	<span class="keyword">int</span> result = BitConverter.ToInt32(<span class="keyword">new</span> <span class="keyword">byte</span>[] { bytes[<span class="number">2</span>], bytes[<span class="number">1</span>], bytes[<span class="number">0</span>], <span class="number">0</span> }, <span class="number">0</span>);
+	conn.Close();
+
+	Console.WriteLine(result);
+}
+</pre></figure>
+
+<h2 id="Summing_it_up">Summing it up</h2>
+<p>As I’ve shown, we can easily create our own mediumint data type, just as we can create a 5 byte integer, 6 byte… Well, you get it. However, there are obviously some trade offs in that you’ll have to manage this data type yourself. While you can query it more or less like a normal data type, you have to be wary of scans. Finally, retrieving values will require some extra work, though that could easily be abstracted away in a custom type.</p>
+<p>So should you do it? Probably not. Saving a single byte per column will gain you very little, unless you have a humongous table, especially so if you have a lot of columns that fit in between the smallint and int value range. For those humongous archival tables, this might just be a way to shave an extra byte off per <em>mediumint</em> column.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+
+<div class="paging">
+	<a href="/page/10/"><div class="past">« Past</div></a>
+	<a href="/page/8/"><div class="future">Future »</div></a>
+	<div class="clear"></div>
+</div>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

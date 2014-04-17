@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Creating a .NET Bootstrapped Installer Using NSIS | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jun</span>
+			<span class="day">10</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/creating-a-dotnet-bootstrapped-installer-using-nsis/" title="Creating a .NET Bootstrapped Installer Using NSIS" rel="bookmark">Creating a .NET Bootstrapped Installer Using NSIS</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on Creating a .NET Bootstrapped Installer Using NSIS">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>If you have ever deployed .NET windows applications, you have without doubt tried the Visual Studio Install project type. The Install project will create .MSI install applications for you, they’re great for basic installations, but nothing more than that. The .NET bootstrapper is quite lacking, at times it won’t be able to find the framework download file as it’s changed it’s location, at other times it’s not able to download it. And finally, if it does determine that the user needs the framework, it’s shown in an ugly uncustomizable GUI.</p>
+<a id="more"></a>
+
+<p>I’ve looked for an alternative, I’d prefer not to pay for using some of the well established installers such as Wise, InstallShield, ActiveInstall and so forth. What I found is a remnant of WinAmp, the <a href="http://nsis.sourceforge.net/Main_Page" target="_blank">NSIS (Nullsoft Scriptable Install System) project</a>.</p>
+<p>NSIS is both free and open source and it’s very much community driven. There are a plethora of plugins available for all sorts of different tasks, and of course you can write your own plugins for special needs.</p>
+<p>I won’t delve too deeply into why you should choose NSIS over any of the competitors, instead I’ll show you a step by step guide of how to create an NSIS installer that bootstraps the .NET 2.0 framework as well as running custom install and uninstall actions in .NET code.</p>
+<p>You will need two tools. The first (and actually the only required tool) is NSIS itself: <a href="http://nsis.sourceforge.net/Main_Page" target="_blank">Download NSIS from nsis.sourceforge.net</a>. While you can edit the install script in any text editor, using an IDE like HM NIS Edit (HMNE) makes it a whole lot easier: <a href="http://hmne.sourceforge.net/" target="_blank">Download HMNE from hmne.sourceforge.net</a>.</p>
+<p>Let’s first create the simple application that we will be installing. It doesn’t really matter what it is, in this example I’ve made a single Windows Forms Application:</p>
+<div class="imgwrapper" style=""><div><a href="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_1_2.jpg" class="fancy"><img src="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Now let’s start up HMNE. Click File -&gt; New Script From Wizard. Fill in the relevant application date on the first page.</p>
+<div class="imgwrapper" style=""><div><a href="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_2_2.jpg" class="fancy"><img src="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_2_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>You may choose a custom icon for the installer, the default icon is an NSIS standard icon. You can also choose the resulting installation files name as well as it’s output location. If no location is specified, it will be outputted to the location that contains our script file. A great feature of NSIS is that it’s got localized versions for a lot of different languages built in, simply select the languages that the user should be able to select and the installer will automatically be localized. You can choose a couple of different GUIs, I personally prefer the Modern one. As for compression, in my tests the LZMA compression works the best, though compression time and CPU usage might be a factor for very large projects.</p>
+<div class="imgwrapper" style=""><div><a href="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_3_2.jpg" class="fancy"><img src="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_3_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Now you specify where you want your application to be installed, notice the general use of variables like $PROGRAMFILES, $NSISDIR, $INSTDIR and so forth. You can also optionally choose a license file that the user must accept to continue the installation.</p>
+<div class="imgwrapper" style=""><div><a href="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_4_2.jpg" class="fancy"><img src="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_4_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Now you can setup the actual files that will be installed as part of the project. You cannot select a whole project output as you can in the Visual Studio Install project, instead you must manually select the files that should be installed, usually from the Debug/Release directories of your project(s).</p>
+<div class="imgwrapper" style=""><div><a href="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_5_2.jpg" class="fancy"><img src="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_5_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Optionally you can select which links you want to be placed in the application program group in the start menu, if such one should be created at all.</p>
+<div class="imgwrapper" style=""><div><a href="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_6_2.jpg" class="fancy"><img src="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_6_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>When the installation is done, the user can choose to view the Readme file and/or start the application - that is, if you specify an application and/or a readme file.</p>
+<div class="imgwrapper" style=""><div><a href="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_7_2.jpg" class="fancy"><img src="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_7_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Finally we can choose to include an uninstaller, as well as specifying our custom uninstallation confirmation and report texts. If no custom text is specified, the default texts will be used.</p>
+<p>When the wizard finishes, make sure to click “Save script” and “Convert file paths to relative paths”.</p>
+<p>Finally the install script is made and ready to run. Press Ctrl+9 to compile the script. If everything succeeds, you’ll see the Setup.exe file in the same directory as the one where you saved the install script. I will not be going over the various commands and settings that are being set in the script, for that I strongly recommend the excellent built in help documents, as well as the <a href="http://forums.winamp.com/forumdisplay.php?s=&amp;forumid=65" target="_blank">WinAmp NSIS forums</a>. Instead I’ll focus on how to bootstrap the .NET Framework 2.0 and how to run custom install and uninstall actions.</p>
+<p>Add these three lines to the top of your nsi file, they include some functions that we will need:</p>
+<figure class="highlight nsi"><pre>; Script generated <span class="keyword">by</span> <span class="operator">the</span> HM NIS Edit Script Wizard.
+!<span class="built_in">include</span> WordFunc.nsh
+!insertmacro VersionCompare
+!<span class="built_in">include</span> LogicLib.nsh
+</pre></figure>
+
+<p>Add this line right above the .onInit function, it makes a variable (untyped) that’ll contain a Yes/No value, depending on whether we need to install the .NET Framework or not.</p>
+<figure class="highlight nsi"><pre><span class="keyword">Var</span> InstallDotNET
+</pre></figure>
+
+<p>Now modify the .onInit function so it matches the below, as well as adding the GetDotNETVersion function. First we ask the user what language they want to continue in (!insertmacro MUI_LANGDLL_DISPLAY). After that we initialize the InstallDotNET variable to “No”. Depending on the result of the GetDotNETVersion we tell the user that we need to install the framework, either because the user does not have the framework at all, or because the version is less than 2.0. We won’t actually install the framework yet, we’ll just remember whether we have to or not.</p>
+<figure class="highlight nsi"><pre>Function .onInit
+  !insertmacro MUI_LANGDLL_DISPLAY
+
+  ; Check .NET version
+  StrCpy <span class="variable">$InstallDotNET</span> <span class="string">"No"</span>
+  Call GetDotNETVersion
+  Pop <span class="variable">$0</span>
+
+  <span class="variable">${If}</span> <span class="variable">$0</span> == <span class="string">"not found"</span>
+        StrCpy <span class="variable">$InstallDotNET</span> <span class="string">"Yes"</span>
+  	MessageBox MB_OK|MB_ICONINFORMATION <span class="string">"<span class="subst">${PRODUCT_NAME}</span> requires that the .NET Framework 2.0 is installed. The .NET Framework will be downloaded and installed automatically during installation of <span class="subst">${PRODUCT_NAME}</span>."</span>
+   	Return
+  <span class="variable">${EndIf}</span>
+
+  StrCpy <span class="variable">$0</span> <span class="variable">$0</span> <span class="string">""</span> <span class="number">1</span> <span class="comment"># skip "v"</span>
+
+  <span class="variable">${VersionCompare}</span> <span class="variable">$0</span> <span class="string">"2.0"</span> <span class="variable">$1</span>
+  <span class="variable">${If}</span> <span class="variable">$1</span> == <span class="number">2</span>
+        StrCpy <span class="variable">$InstallDotNET</span> <span class="string">"Yes"</span>
+  	MessageBox MB_OK|MB_ICONINFORMATION <span class="string">"<span class="subst">${PRODUCT_NAME}</span> requires that the .NET Framework 2.0 is installed. The .NET Framework will be downloaded and installed automatically during installation of <span class="subst">${PRODUCT_NAME}</span>."</span>
+   	Return
+  <span class="variable">${EndIf}</span>
+FunctionEnd
+
+Function GetDotNETVersion
+	Push <span class="variable">$0</span>
+	Push <span class="variable">$1</span>
+
+	System::Call <span class="string">"mscoree::GetCORVersion(w .r0, i <span class="subst">${NSIS_MAX_STRLEN}</span>, <span class="variable">*i</span>) i .r1"</span>
+	StrCmp <span class="variable">$1</span> <span class="string">"error"</span> <span class="number">0</span> +<span class="number">2</span>
+	StrCpy <span class="variable">$0</span> <span class="string">"not found"</span>
+
+	Pop <span class="variable">$1</span>
+	Exch <span class="variable">$0</span>
+FunctionEnd
+</pre></figure>
+
+<p>Before we continue, you’ll have to <a href="http://nsis.sourceforge.net/Inetc_plug-in" target="_blank">install the InetC plugin</a>.</p>
+<p>Now find the “MainSection” section (depending on what you called it in the wizard).</p>
+<p>Modify the section so it looks like the below. Your file names and amount may vary, the primary part of our concern is the first part. It will test whether the $InstallDotNET variable implies that we have to install the framework. If it does, it’ll hide the usual GUI elements of the installer and start the download of the .NET Framework from any URL you specify, this could be the official download URL or a location you host yourself. If the user cancels the download we’ll delete the half-finished file and abort. Otherwise we’ll execute the dotnetfx.exe file and wait for it to complete (hence we’ll now have the .NET Framework 2.0). After having installed the framework we delete the dotnetfx.exe file again. Finally we show the GUI again.</p>
+<figure class="highlight nsi"><pre>Section <span class="string">"MainSection"</span> SEC01
+  SetOutPath <span class="string">"<span class="variable">$INSTDIR</span>"</span>
+  SetOverwrite ifnewer
+
+  ; Get .NET <span class="keyword">if</span> required
+  <span class="variable">${If}</span> <span class="variable">$InstallDotNET</span> == <span class="string">"Yes"</span>
+     SetDetailsView hide
+     inetc::get /caption <span class="string">"Downloading .NET Framework 2.0"</span> /canceltext <span class="string">"Cancel"</span> <span class="string">"http://www.url_of_the_dotnetfx.exe_file"</span> <span class="string">"<span class="variable">$INSTDIRdotnetfx</span>.exe"</span> /end
+     Pop <span class="variable">$1</span>
+
+     <span class="variable">${If}</span> <span class="variable">$1</span> != <span class="string">"OK"</span>
+           Delete <span class="string">"<span class="variable">$INSTDIRdotnetfx</span>.exe"</span>
+           Abort <span class="string">"Installation cancelled."</span>
+     <span class="variable">${EndIf}</span>
+
+     ExecWait <span class="string">"<span class="variable">$INSTDIRdotnetfx</span>.exe"</span>
+     Delete <span class="string">"<span class="variable">$INSTDIRdotnetfx</span>.exe"</span>
+
+     SetDetailsView show
+  <span class="variable">${EndIf}</span> 
+
+  File <span class="string">"InstallbinDebugInstall.exe"</span>
+
+  File <span class="string">"InstallbinDebugUninstall.exe"</span>
+
+  File <span class="string">"MyApplicationbinDebugMyApplication.exe"</span>
+  CreateDirectory <span class="string">"<span class="variable">$SMPROGRAMSMy</span> application"</span>
+  CreateShortCut <span class="string">"<span class="variable">$SMPROGRAMSMy</span> applicationMy application.lnk"</span> <span class="string">"<span class="variable">$INSTDIRMyApplication</span>.exe"</span>
+  CreateShortCut <span class="string">"<span class="variable">$DESKTOPMy</span> application.lnk"</span> <span class="string">"<span class="variable">$INSTDIRMyApplication</span>.exe"</span>
+SectionEnd
+</pre></figure>
+
+<p>Now comes the part where I’ll introduce our custom .NET install and uninstall actions. Create two new Console Application projects in the solution called Uninstall and Install, like the following:</p>
+<div class="imgwrapper" style=""><div><a href="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_9_2.jpg" class="fancy"><img src="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_9_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Add the below function to your code, it’ll run the Install.exe file after the installation has successfully completed:</p>
+<figure class="highlight nsi"><pre><span class="title">Function</span> .<span class="built_in">on</span>InstSuccess
+         ExecWait <span class="string">"<span class="variable">$InstDirInstall</span>.exe"</span>
+FunctionEnd
+</pre></figure>
+
+<p>Locate the “Section Uninstall” part and add the following line as the very first:</p>
+<figure class="highlight nsi"><pre>ExecWait <span class="string">"<span class="variable">$InstDirUninstall</span>.exe"</span>
+</pre></figure>
+
+<p>Make sure to add both Install.exe and Uninstall.exe to the list of files that will be installed, in the Main Section. It will run the Uninstall.exe application before anything else, and wait for it to finish before continuing. After it’s done we’ll delete all the installed files, including the Install and Uninstall.exe applications - remember to add those to file deletions manually, following the syntax of the other file deletions.</p>
+<p>Now press Ctrl+9 to build the installer, and look at it run in all of its awesomeness:</p>
+<div class="imgwrapper" style=""><div><a href="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_10_2.jpg" class="fancy"><img src="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_10_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_11_2.jpg" class="fancy"><img src="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_11_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>After having downloaded the .NET Framework 2.0, it’ll start the .NET installer and run it through as usual, the installation will continue as soon as the .NET installer finishes. There is currently no check for whether the user cancels the .NET installation midways or if it fails. A simple check could be made right afterwards by simple calling the GetDotNETVersion function again like we did just before, if it fails, the user hasn’t installed .NET for some unknown reason and we’ll have to abort.</p>
+<p>You can see <a href="http://www.improve.dk/downloads/InstallScript.txt" target="_blank">my complete install script here</a>. Download and rename to *.nsi to compile it.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=Creating%20a%20.NET%20Bootstrapped%20Installer%20Using%20NSIS%20http%3A%2F%2Fimprove.dk%2Fcreating-a-dotnet-bootstrapped-installer-using-nsis%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fcreating-a-dotnet-bootstrapped-installer-using-nsis%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fcreating-a-dotnet-bootstrapped-installer-using-nsis%2F&title=Creating%20a%20.NET%20Bootstrapped%20Installer%20Using%20NSIS" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/creating-a-dotnet-bootstrapped-installer-using-nsis/creating-a-dotnet-bootstrapped-installer-using-nsis.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'creating-a-dotnet-bootstrapped-installer-using-nsis';
+	var disqus_url = 'http://improve.dk/creating-a-dotnet-bootstrapped-installer-using-nsis/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

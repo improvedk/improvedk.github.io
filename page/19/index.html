@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">12</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/activating-windows/" title="Activating Windows Using PInvoke" rel="bookmark">Activating Windows Using PInvoke</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Now we’ll see how to activate windows and sending them to the foreground. I will be using the <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">WindowFinder class</a> that I introduced in the blog <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">Finding specific windows</a>.</p>
+<a id="more"></a>
+
+
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Runtime.InteropServices;
+<span class="keyword">using</span> System.Text.RegularExpressions;
+
+namespace Activating_windows
+{
+	class Program
+	{
+		<span class="comment">// This enumeration holds all the possible values that can be passed onto the ShowWindow function.</span>
+		<span class="keyword">public</span> <span class="keyword">enum</span> SW : <span class="keyword">int</span>
+		{
+			HIDE = <span class="number">0</span>,
+			SHOWNORMAL = <span class="number">1</span>,
+			SHOWMINIMIZED = <span class="number">2</span>,
+			SHOWMAXIMIZED = <span class="number">3</span>,
+			SHOWNOACTIVATE = <span class="number">4</span>,
+			SHOW = <span class="number">5</span>,
+			MINIMIZE = <span class="number">6</span>,
+			SHOWMINNOACTIVE = <span class="number">7</span>,
+			SHOWNA = <span class="number">8</span>,
+			RESTORE = <span class="number">9</span>,
+			SHOWDEFAULT = <span class="number">10</span>
+		}
+
+		<span class="comment">// The SetForegroundWindow will activate the window, setting the window thread to the foreground thread, as</span>
+		<span class="comment">// well as activating keyboard input for the specified window.</span>
+		[DllImport(<span class="string">"user32.dll"</span>)]
+		<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">extern</span> <span class="keyword">long</span> <span class="title">SetForegroundWindow</span>(<span class="keyword">int</span> hWnd);
+
+		<span class="comment">// The ShowWindow function can do the same as SetForegroundWindow, but it gives much greater control</span>
+		<span class="comment">// over what happens, by customizing the parameters sent through the cmd parameter.</span>
+		[DllImport(<span class="string">"user32.dll"</span>)]
+		<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">extern</span> <span class="keyword">bool</span> <span class="title">ShowWindow</span>(<span class="keyword">int</span> hWnd, <span class="keyword">int</span> cmd);
+
+		<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
+		{
+			<span class="comment">// Introduced in the "Finding specific windows" blog, we use the WindowFinder class to find all Internet Explorer main window instances.</span>
+			Finding_specific_windows.WindowFinder wf = <span class="keyword">new</span> Finding_specific_windows.WindowFinder();
+			wf.FindWindows(<span class="number">0</span>, <span class="keyword">null</span>, <span class="keyword">new</span> Regex(<span class="string">"- (Windows|Microsoft) Internet Explorer"</span>), <span class="keyword">new</span> Regex(<span class="string">"iexplore"</span>), <span class="keyword">new</span> Finding_specific_windows.WindowFinder.FoundWindowCallback(foundWindow));
+
+			Console.Read();
+		}
+
+		<span class="keyword">static</span> <span class="keyword">bool</span> foundWindow(<span class="keyword">int</span> handle)
+		{
+			<span class="comment">// We'll activate the window by calling the SetForegroundWindow function, passing in the handle to the window.</span>
+			SetForegroundWindow(handle);
+
+			<span class="comment">// Calling the ShowWindow function with the SHOWNA parameter will put the window in the foreground,</span>
+			<span class="comment">// but it won't be activated.</span>
+			ShowWindow(handle, (<span class="keyword">int</span>)SW.SHOWNA);
+
+			Console.WriteLine(<span class="string">"Window activated."</span>);
+
+			<span class="keyword">return</span> <span class="keyword">false</span>;
+		}
+	}
+}
+</pre></figure>
+
+<p>And the result:</p>
+<div class="imgwrapper" style=""><div><a href="/activating-windows/win32_11_1_2.jpg" class="fancy"><img src="/activating-windows/win32_11_1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">11</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/getting-key-state/" title="Getting Key State Using PInvoke" rel="bookmark">Getting Key State Using PInvoke</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Here’s an example of how to retrieve the state of any keyboard key.</p>
+<a id="more"></a>
+
+
+<figure class="highlight csharp"><pre>using System;
+using System.Runtime.InteropServices;
+
+namespace Getting_key_state
+{
+	class Program
+	{
+		// The GetAsyncKeyState takes a virtual key code as the nVirtKey parameter. It then checks on the state of
+		// this key (down/up). The return code is either zero for up or any non-zero value for pressed,
+		// thus it's easiest to convert the result to a boolean and use that result.
+		[DllImport(<span class="string">"user32.dll"</span>)]
+		public static extern short GetAsyncKeyState(int nVirtKey);
+
+		// These are all the possible values in the VK enumeration. It covers most of the special buttons on a keyboard.
+		// See http://msdn.microsoft.com/library/default.asp?url=/library/en-us/winui/winui/WindowsUserInterface/UserInput/VirtualKeyCodes.asp
+		// for full documentation.
+		public enum VK : int
+		{
+			NUMPAD7 = 0x67,
+			NUMPAD8 = 0x68,
+			NUMPAD9 = 0x69,
+			MULTIPLY = 0x6A,
+			ADD = 0x6B,
+			SEPARATOR = 0x6C,
+			SUBTRACT = 0x6D,
+			DECIMAL = 0x6E,
+			DIVIDE = 0x6F,
+			F1 = 0x70,
+			F2 = 0x71,
+			F3 = 0x72,
+			F4 = 0x73,
+			F5 = 0x74,
+			F6 = 0x75,
+			F7 = 0x76,
+			F8 = 0x77,
+			F9 = 0x78,
+			F10 = 0x79,
+			F11 = 0x7A,
+			F12 = 0x7B,
+			NUMLOCK = 0x90,
+			SCROLL = 0x91,
+			LSHIFT = 0xA0,
+			RSHIFT = 0xA1,
+			LCONTROL = 0xA2,
+			RCONTROL = 0xA3,
+			LMENU = 0xA4,
+			RMENU = 0xA5,
+			BACK = 0x08,
+			TAB = 0x09,
+			RETURN = 0x0D,
+			SHIFT = 0x10,
+			CONTROL = 0x11,
+			MENU = 0x12,
+			PAUSE = 0x13,
+			CAPITAL = 0x14,
+			ESCAPE = 0x1B,
+			SPACE = 0x20,
+			END = 0x23,
+			HOME = 0x24,
+			LEFT = 0x25,
+			UP = 0x26,
+			RIGHT = 0x27,
+			DOWN = 0x28,
+			PRINT = 0x2A,
+			SNAPSHOT = 0x2C,
+			INSERT = 0x2D,
+			DELETE = 0x2E,
+			LWIN = 0x5B,
+			RWIN = 0x5C,
+			NUMPAD0 = 0x60,
+			NUMPAD1 = 0x61,
+			NUMPAD2 = 0x62,
+			NUMPAD3 = 0x63,
+			NUMPAD4 = 0x64,
+			NUMPAD5 = 0x65,
+			NUMPAD6 = 0x66,
+			A = 0x41,
+			B = 0x42,
+			C = 0x43,
+			D = 0x44,
+			E = 0x45,
+			F = 0x46,
+			G = 0x47,
+			H = 0x48,
+			I = 0x49,
+			J = 0x4A,
+			K = 0x4B,
+			L = 0x4C,
+			M = 0x4D,
+			N = 0x4E,
+			O = 0x4F,
+			P = 0x50,
+			Q = 0x51,
+			R = 0x52,
+			S = 0x53,
+			T = 0x54,
+			U = 0x55,
+			V = 0x56,
+			W = 0x57,
+			X = 0x58,
+			Y = 0x59,
+			Z = 0x5A
+		}
+
+		static void Main(string[] args)
+		{
+			// We'll call GetAsyncKeyState passing in the A keycode as a parameter.
+			Console.WriteLine(Convert.ToBoolean(GetAsyncKeyState((int)VK.A)));
+
+			// And then we'll pass the shift keycode as a control check.
+			Console.WriteLine(Convert.ToBoolean(GetAsyncKeyState((int)VK.SHIFT)));
+
+			Console.ReadLine();
+		}
+	}
+}
+</pre></figure>
+
+<p>And the result:</p>
+<div class="imgwrapper" style=""><div><a href="/getting-key-state/win32_10_1_2.jpg" class="fancy"><img src="/getting-key-state/win32_10_1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">11</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/minimizing-and-maximizing-windows/" title="Minimizing and Maximizing Windows Using PInvoke" rel="bookmark">Minimizing and Maximizing Windows Using PInvoke</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>This time I will show how to maximize and minimize windows. I will be using the <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">WindowFinder class</a> that I introduced in the blog <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">Finding specific windows</a>.</p>
+<a id="more"></a>
+
+
+<figure class="highlight csharp"><pre>using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
+
+namespace Minimizing_and_maximizing_windows
+{
+	class Program
+	{
+		// The ShowWindowAsync method alters the windows show state through the nCmdShow parameter.
+		// The nCmdShow parameter can have any of the SW values.
+		// See http://msdn.microsoft.com/library/en-us/winui/winui/windowsuserinterface/windowing/windows/windowreference/windowfunctions/showwindowasync.asp
+		// for full documentation.
+		[DllImport(<span class="string">"user32.dll"</span>)]
+		public static extern bool ShowWindowAsync(int hWnd, int nCmdShow);
+
+		// An enumeration containing all the possible SW values.
+		public enum SW : int
+		{
+			HIDE = 0,
+			SHOWNORMAL = 1,
+			SHOWMINIMIZED = 2,
+			SHOWMAXIMIZED = 3,
+			SHOWNOACTIVATE = 4,
+			SHOW = 5,
+			MINIMIZE = 6,
+			SHOWMINNOACTIVE = 7,
+			SHOWNA = 8,
+			RESTORE = 9,
+			SHOWDEFAULT = 10
+		}
+
+		static void Main(string[] args)
+		{
+			// Introduced in the <span class="string">"Finding specific windows"</span> blog, we use the WindowFinder class to find all Internet Explorer main window instances.
+			Finding_specific_windows.WindowFinder wf = new Finding_specific_windows.WindowFinder();
+			wf.FindWindows(0, null, new Regex(<span class="string">"- (Windows|Microsoft) Internet Explorer"</span>), new Regex(<span class="string">"iexplore"</span>), new Finding_specific_windows.WindowFinder.FoundWindowCallback(foundWindow));
+
+			Console.Read();
+		}
+
+		static bool foundWindow(int handle)
+		{
+			// After an Internet Explorer window has been found, randomly either maximize or minimize it.
+			if (new Random().Next(0, 2) == 0)
+			{
+				// Maximize the window.
+				ShowWindowAsync(handle, (int)SW.SHOWMAXIMIZED);
+
+				Console.WriteLine(<span class="string">"Window maximized"</span>);
+			}
+			else
+			{
+				// Minimize the window.
+				ShowWindowAsync(handle, (int)SW.MINIMIZE);
+
+				Console.WriteLine(<span class="string">"Window minimized"</span>);
+			}
+
+			// Since we return true, this will be done for any and all Internet Explorer instances.
+			return true;
+		}
+	}
+}
+</pre></figure>
+
+<p>And the result:</p>
+<div class="imgwrapper" style=""><div><a href="/minimizing-and-maximizing-windows/win32_9_1_2.jpg" class="fancy"><img src="/minimizing-and-maximizing-windows/win32_9_1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">09</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/modifying-window-location-and-size/" title="Modifying Window Location and Size Using PInvoke" rel="bookmark">Modifying Window Location and Size Using PInvoke</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Last time we saw how to obtain a windows location and size. This time I’ll show how to change a windows size and location. I will be using the <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">WindowFinder class</a> that I introduced in the blog <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">Finding specific windows</a>.</p>
+<a id="more"></a>
+
+
+<figure class="highlight csharp"><pre>using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
+using System.Drawing;
+
+namespace Modifying_window_location_and_size
+{
+	class Program
+	{
+		// The SetWindowPos function is used to both resize and change the location of windows. The uFlags parameter
+		// can take any number of flags, with zero being a neutral flag, the same goes for the hWndInsertAfter parameter.
+		// X, Y is the new location of the window, cx and cy is the new height / width of the window. Via uFlags it can
+		// be set to ignore the new location and/or the new size of the window.
+		// See http://msdn2.microsoft.com/en-us/library/ms633545.aspx for full documentation.
+		[DllImport(<span class="string">"user32.dll"</span>)]
+		public static extern bool SetWindowPos(int hWnd, int hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+
+		// An enumeration containing all the possible HWND values.
+		public enum HWND : int
+		{
+			BOTTOM = 1,
+			NOTOPMOST = -2,
+			TOPMOST = -1,
+			TOP = 0
+		}
+
+		// And enumeration containing all the possible SWP values.
+		public enum SWP : uint
+		{
+			ASYNCWINDOWPOS = 0x4000,
+			DEFERERASE = 0x2000,
+			FRAMECHANGED = 0x0020,
+			HIDEWINDOW = 0x0080,
+			NOACTIVATE = 0x0010,
+			NOCOPYBITS = 0x0100,
+			NOMOVE = 0x0002,
+			NOOWNERZORDER = 0x0200,
+			NOREDRAW = 0x0008,
+			NOSENDCHANGING = 0x0400,
+			NOSIZE = 0x0001,
+			NOZORDER = 0x0004,
+			SHOWWINDOW = 0x0040
+		}
+
+		static void Main(string[] args)
+		{
+			// Introduced in the <span class="string">"Finding specific windows"</span> blog, we use the WindowFinder class to find all Internet Explorer main window instances.
+			Finding_specific_windows.WindowFinder wf = new Finding_specific_windows.WindowFinder();
+			wf.FindWindows(0, null, new Regex(<span class="string">"- (Windows|Microsoft) Internet Explorer"</span>), new Regex(<span class="string">"iexplore"</span>), new Finding_specific_windows.WindowFinder.FoundWindowCallback(foundWindow));
+
+			Console.Read();
+		}
+
+		static bool foundWindow(int handle)
+		{
+			// After an Internet Explorer window has been found, relocate it to (50,50) and set it's size to 600x500px.
+			SetWindowPos(handle, 0, 50, 50, 600, 500, 0);
+
+			Console.WriteLine(<span class="string">"Window resized and relocated"</span>);
+
+			// Since we return true, this will be done for any and all Internet Explorer instances.
+			return true;
+		}
+	}
+}
+</pre></figure>
+
+<p>And the result:</p>
+<div class="imgwrapper" style=""><div><a href="/modifying-window-location-and-size/win32_8_1_2.jpg" class="fancy"><img src="/modifying-window-location-and-size/win32_8_1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/modifying-window-location-and-size/win32_8_2_2.jpg" class="fancy"><img src="/modifying-window-location-and-size/win32_8_2_2.jpg" style="max-height: 250px"/></a></div></div>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">09</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/getting-window-location-and-size/" title="Getting Window Location and Size Using PInvoke" rel="bookmark">Getting Window Location and Size Using PInvoke</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>This time I’ll show how to obtain the size and location of a window. I will be using the <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">WindowFinder class</a> that I introduced in the blog <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">Finding specific windows</a>.</p>
+<a id="more"></a>
+
+<p>Note that the location is not in relation to it’s parent windows location, it is always the absolute screen position.</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System.Runtime.InteropServices;
+<span class="keyword">using</span> System.Drawing;
+<span class="keyword">using</span> System.Text.RegularExpressions;
+<span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Text;
+<span class="keyword">using</span> System.Globalization;
+
+namespace Getting_window_location_and_size
+{
+	class Program
+	{
+		<span class="comment">// Win32 constants.</span>
+		<span class="keyword">const</span> <span class="keyword">int</span> WM_GETTEXT = <span class="number">0x000D</span>;
+		<span class="keyword">const</span> <span class="keyword">int</span> WM_GETTEXTLENGTH = <span class="number">0x000E</span>;
+
+		<span class="comment">// Win32 functions that have all been used in previous blogs.</span>
+		[DllImport(<span class="string">"User32.Dll"</span>)]
+		<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">extern</span> <span class="keyword">void</span> <span class="title">GetClassName</span>(<span class="keyword">int</span> hWnd, StringBuilder s, <span class="keyword">int</span> nMaxCount);
+
+		[DllImport(<span class="string">"User32.dll"</span>)]
+		<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">extern</span> Int32 <span class="title">SendMessage</span>(<span class="keyword">int</span> hWnd, <span class="keyword">int</span> Msg, <span class="keyword">int</span> wParam, StringBuilder lParam);
+
+		[DllImport(<span class="string">"User32.dll"</span>)]
+		<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">extern</span> Int32 <span class="title">SendMessage</span>(<span class="keyword">int</span> hWnd, <span class="keyword">int</span> Msg, <span class="keyword">int</span> wParam, <span class="keyword">int</span> lParam);
+
+		<span class="comment">// The GetWindowRect function takes a handle to the window as the first parameter. The second parameter</span>
+		<span class="comment">// must include a reference to a Rectangle object. This Rectangle object will then have it's values set</span>
+		<span class="comment">// to the window rectangle properties.</span>
+		[DllImport(<span class="string">"user32.dll"</span>)]
+		<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">extern</span> <span class="keyword">long</span> <span class="title">GetWindowRect</span>(<span class="keyword">int</span> hWnd, <span class="keyword">ref</span> Rectangle lpRect);
+
+		<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
+		{
+			<span class="comment">// Introduced in the "Finding specific windows" blog, we use the WindowFinder class to find all Internet Explorer main window instances.</span>
+			Finding_specific_windows.WindowFinder wf = <span class="keyword">new</span> Finding_specific_windows.WindowFinder();
+			wf.FindWindows(<span class="number">0</span>, <span class="keyword">null</span>, <span class="keyword">new</span> Regex(<span class="string">"- (Windows|Microsoft) Internet Explorer"</span>), <span class="keyword">new</span> Regex(<span class="string">"iexplore"</span>), <span class="keyword">new</span> Finding_specific_windows.WindowFinder.FoundWindowCallback(foundWindow));
+
+			Console.Read();
+		}
+
+		<span class="keyword">static</span> <span class="keyword">bool</span> foundWindow(<span class="keyword">int</span> handle)
+		{
+			<span class="comment">// First we intialize an empty Rectangle object.</span>
+			Rectangle rect = <span class="keyword">new</span> Rectangle();
+
+			<span class="comment">// Then we call the GetWindowRect function, passing in a reference to the rect object.</span>
+			GetWindowRect(handle, <span class="keyword">ref</span> rect);
+
+			<span class="comment">// And then we get the resulting rectangle. The tricky part here is that this rectangle includes</span>
+			<span class="comment">// not only the location of the window, but also the size, but not in the form we're used to.</span>
+			Console.WriteLine(rect.ToString());
+
+			<span class="comment">// If the window is 100 x 100 pixels and is located at (10,10), then the rectangle would look like this:</span>
+			<span class="comment">// rect.X = 10;</span>
+			<span class="comment">// rect.Y = 10;</span>
+			<span class="comment">// rect.Width = 110;</span>
+			<span class="comment">// rect.Height = 110;</span>
+			<span class="comment">// We simply have to subtract the rect.X value from the rect.Width value to obtain the "real" width of</span>
+			<span class="comment">// the window, similarly we have to subtract the Y value from the Height value to obtain the real height.</span>
+			<span class="comment">// After this we have the real window properties through the X, Y, Width and Height values.</span>
+			rect.Width = rect.Width - rect.X;
+			rect.Height = rect.Height - rect.Y;
+
+			<span class="comment">// Lets print the rectangle after we've fixed it so we can confirm it's correct.</span>
+			Console.WriteLine(rect.ToString());
+
+			<span class="comment">// As used earlier, we print the basic properties of the window.</span>
+			printWindowInfo(handle);
+
+			<span class="keyword">return</span> <span class="keyword">true</span>;
+		}
+
+		<span class="comment">// Prints basic properties of a window, uses function already used in previous blogs.</span>
+		<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">printWindowInfo</span>(<span class="keyword">int</span> handle)
+		{
+			<span class="comment">// Get the class.</span>
+			StringBuilder sbClass = <span class="keyword">new</span> StringBuilder(<span class="number">256</span>);
+			GetClassName(handle, sbClass, sbClass.Capacity);
+
+			<span class="comment">// Get the text.</span>
+			<span class="keyword">int</span> txtLength = SendMessage(handle, WM_GETTEXTLENGTH, <span class="number">0</span>, <span class="number">0</span>);
+			StringBuilder sbText = <span class="keyword">new</span> StringBuilder(txtLength + <span class="number">1</span>);
+			SendMessage(handle, WM_GETTEXT, sbText.Capacity, sbText);
+
+			<span class="comment">// Now we can write out the information we have on the window.</span>
+			Console.WriteLine(<span class="string">"Handle: "</span> + handle);
+			Console.WriteLine(<span class="string">"Class : "</span> + sbClass);
+			Console.WriteLine(<span class="string">"Text  : "</span> + sbText);
+			Console.WriteLine();
+		}
+	}
+}
+</pre></figure>
+
+<p>And the result:</p>
+<div class="imgwrapper" style=""><div><a href="/getting-window-location-and-size/win32_7_1_2.jpg" class="fancy"><img src="/getting-window-location-and-size/win32_7_1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/getting-window-location-and-size/win32_7_2_2.jpg" class="fancy"><img src="/getting-window-location-and-size/win32_7_2_2.jpg" style="max-height: 250px"/></a></div></div>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">07</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/finding-specific-windows/" title="Finding Specific Windows Using PInvoke" rel="bookmark">Finding Specific Windows Using PInvoke</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Last time I made an example of how to enumerate windows. This time I present to you a class that greatly simplifies the process of searching for specific windows, types of windows, windows belonging to a specific process, having a specific text. You can search for any number of these parameters at the same time, using regular expressions for all string matches to provide optimal flexibility.</p>
+<a id="more"></a>
+
+
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System.Runtime.InteropServices;
+<span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Text;
+<span class="keyword">using</span> System.Text.RegularExpressions;
+<span class="keyword">using</span> System.Diagnostics;
+
+namespace Searching_for_windows
+{
+	class Program
+	{
+		<span class="comment">// Win32 constants.</span>
+		<span class="keyword">const</span> <span class="keyword">int</span> WM_GETTEXT = <span class="number">0x000D</span>;
+		<span class="keyword">const</span> <span class="keyword">int</span> WM_GETTEXTLENGTH = <span class="number">0x000E</span>;
+
+		<span class="comment">// Win32 functions that have all been used in previous blogs.</span>
+		[DllImport(<span class="string">"User32.Dll"</span>)]
+		<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">extern</span> <span class="keyword">void</span> <span class="title">GetClassName</span>(<span class="keyword">int</span> hWnd, StringBuilder s, <span class="keyword">int</span> nMaxCount);
+
+		[DllImport(<span class="string">"User32.dll"</span>)]
+		<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">extern</span> <span class="keyword">int</span> <span class="title">GetWindowText</span>(<span class="keyword">int</span> hWnd, StringBuilder text, <span class="keyword">int</span> count);
+
+		[DllImport(<span class="string">"User32.dll"</span>)]
+		<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">extern</span> Int32 <span class="title">SendMessage</span>(<span class="keyword">int</span> hWnd, <span class="keyword">int</span> Msg, <span class="keyword">int</span> wParam, StringBuilder lParam);
+
+		[DllImport(<span class="string">"User32.dll"</span>)]
+		<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">extern</span> Int32 <span class="title">SendMessage</span>(<span class="keyword">int</span> hWnd, <span class="keyword">int</span> Msg, <span class="keyword">int</span> wParam, <span class="keyword">int</span> lParam);
+
+		<span class="comment">// Main entrypoint function</span>
+		<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
+		{
+			WindowFinder wf = <span class="keyword">new</span> WindowFinder();
+
+			<span class="comment">// Find all Internet Explorer instances</span>
+			wf.FindWindows(<span class="number">0</span>, <span class="keyword">null</span>, <span class="keyword">null</span>, <span class="keyword">new</span> Regex(<span class="string">"iexplore"</span>), <span class="keyword">new</span> WindowFinder.FoundWindowCallback(foundWindow));
+
+			<span class="comment">// Find all visual studio instances</span>
+			wf.FindWindows(<span class="number">0</span>, <span class="keyword">null</span>, <span class="keyword">new</span> Regex(<span class="string">" - Microsoft Visual Studio"</span>), <span class="keyword">new</span> Regex(<span class="string">"devenv"</span>), <span class="keyword">new</span> WindowFinder.FoundWindowCallback(foundWindow));
+
+			Console.WriteLine(<span class="string">"Done"</span>);
+			Console.Read();
+		}
+
+		<span class="comment">// Gets called each time a window is found by the WindowFinder class.</span>
+		<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">foundWindow</span>(<span class="keyword">int</span> handle)
+		{
+			<span class="comment">// Print the window info.</span>
+			printWindowInfo(handle);
+
+			<span class="comment">// Continue on with next window.</span>
+			<span class="keyword">return</span> <span class="keyword">true</span>;
+		}
+
+		<span class="comment">// Prints basic properties of a window, uses function already used in previous blogs.</span>
+		<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">printWindowInfo</span>(<span class="keyword">int</span> handle)
+		{
+			<span class="comment">// Get the class.</span>
+			StringBuilder sbClass = <span class="keyword">new</span> StringBuilder(<span class="number">256</span>);
+			GetClassName(handle, sbClass, sbClass.Capacity);
+
+			<span class="comment">// Get the text.</span>
+			<span class="keyword">int</span> txtLength = SendMessage(handle, WM_GETTEXTLENGTH, <span class="number">0</span>, <span class="number">0</span>);
+			StringBuilder sbText = <span class="keyword">new</span> StringBuilder(txtLength + <span class="number">1</span>);
+			SendMessage(handle, WM_GETTEXT, sbText.Capacity, sbText);
+
+			<span class="comment">// Now we can write out the information we have on the window.</span>
+			Console.WriteLine(<span class="string">"Handle: "</span> + handle);
+			Console.WriteLine(<span class="string">"Class : "</span> + sbClass);
+			Console.WriteLine(<span class="string">"Text  : "</span> + sbText);
+			Console.WriteLine();
+		}
+	}
+
+	<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+	<span class="comment"><span class="xmlDocTag">///</span> A class used for finding windows based upon their class, title, process and parent window handle.</span>
+	<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+	<span class="keyword">public</span> <span class="keyword">class</span> WindowFinder
+	{
+		<span class="comment">// Win32 constants.</span>
+		<span class="keyword">const</span> <span class="keyword">int</span> WM_GETTEXT = <span class="number">0x000D</span>;
+		<span class="keyword">const</span> <span class="keyword">int</span> WM_GETTEXTLENGTH = <span class="number">0x000E</span>;
+
+		<span class="comment">// Win32 functions that have all been used in previous blogs.</span>
+		[DllImport(<span class="string">"User32.Dll"</span>)]
+		<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">extern</span> <span class="keyword">void</span> <span class="title">GetClassName</span>(<span class="keyword">int</span> hWnd, StringBuilder s, <span class="keyword">int</span> nMaxCount);
+
+		[DllImport(<span class="string">"User32.dll"</span>)]
+		<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">extern</span> <span class="keyword">int</span> <span class="title">GetWindowText</span>(<span class="keyword">int</span> hWnd, StringBuilder text, <span class="keyword">int</span> count);
+
+		[DllImport(<span class="string">"User32.dll"</span>)]
+		<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">extern</span> Int32 <span class="title">SendMessage</span>(<span class="keyword">int</span> hWnd, <span class="keyword">int</span> Msg, <span class="keyword">int</span> wParam, StringBuilder lParam);
+
+		[DllImport(<span class="string">"User32.dll"</span>)]
+		<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">extern</span> Int32 <span class="title">SendMessage</span>(<span class="keyword">int</span> hWnd, <span class="keyword">int</span> Msg, <span class="keyword">int</span> wParam, <span class="keyword">int</span> lParam);
+
+		[DllImport(<span class="string">"user32"</span>)]
+		<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">extern</span> <span class="keyword">int</span> <span class="title">GetWindowThreadProcessId</span>(<span class="keyword">int</span> hWnd, <span class="keyword">out</span> <span class="keyword">int</span> lpdwProcessId);
+
+		<span class="comment">// EnumChildWindows works just like EnumWindows, except we can provide a parameter that specifies the parent</span>
+		<span class="comment">// window handle. If this is NULL or zero, it works just like EnumWindows. Otherwise it'll only return windows</span>
+		<span class="comment">// whose parent window handle matches the hWndParent parameter.</span>
+		[DllImport(<span class="string">"user32.Dll"</span>)]
+		<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">extern</span> Boolean <span class="title">EnumChildWindows</span>(<span class="keyword">int</span> hWndParent, PChildCallBack lpEnumFunc, <span class="keyword">int</span> lParam);
+
+		<span class="comment">// The PChildCallBack delegate that we used with EnumWindows.</span>
+		<span class="keyword">private</span> <span class="keyword">delegate</span> <span class="keyword">bool</span> <span class="title">PChildCallBack</span>(<span class="keyword">int</span> hWnd, <span class="keyword">int</span> lParam);
+
+		<span class="comment">// This is an event that is run each time a window was found that matches the search criterias. The boolean</span>
+		<span class="comment">// return value of the delegate matches the functionality of the PChildCallBack delegate function.</span>
+		<span class="keyword">private</span> <span class="keyword">event</span> FoundWindowCallback foundWindow;
+		<span class="keyword">public</span> <span class="keyword">delegate</span> <span class="keyword">bool</span> <span class="title">FoundWindowCallback</span>(<span class="keyword">int</span> hWnd);
+
+		<span class="comment">// Members that'll hold the search criterias while searching.</span>
+		<span class="keyword">private</span> <span class="keyword">int</span> parentHandle;
+		<span class="keyword">private</span> Regex className;
+		<span class="keyword">private</span> Regex windowText;
+		<span class="keyword">private</span> Regex process;
+
+		<span class="comment">// The main search function of the WindowFinder class. The parentHandle parameter is optional, taking in a zero if omitted.</span>
+		<span class="comment">// The className can be null as well, in this case the class name will not be searched. For the window text we can input</span>
+		<span class="comment">// a Regex object that will be matched to the window text, unless it's null. The process parameter can be null as well,</span>
+		<span class="comment">// otherwise it'll match on the process name (Internet Explorer = "iexplore"). Finally we take the FoundWindowCallback</span>
+		<span class="comment">// function that'll be called each time a suitable window has been found.</span>
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">FindWindows</span>(<span class="keyword">int</span> parentHandle, Regex className, Regex windowText, Regex process, FoundWindowCallback fwc)
+		{
+			<span class="keyword">this</span>.parentHandle = parentHandle;
+			<span class="keyword">this</span>.className = className;
+			<span class="keyword">this</span>.windowText = windowText;
+			<span class="keyword">this</span>.process = process;
+
+			<span class="comment">// Add the FounWindowCallback to the foundWindow event.</span>
+			foundWindow = fwc;
+
+			<span class="comment">// Invoke the EnumChildWindows function.</span>
+			EnumChildWindows(parentHandle, <span class="keyword">new</span> PChildCallBack(enumChildWindowsCallback), <span class="number">0</span>);
+		}
+
+		<span class="comment">// This function gets called each time a window is found by the EnumChildWindows function. The foun windows here</span>
+		<span class="comment">// are NOT the final found windows as the only filtering done by EnumChildWindows is on the parent window handle.</span>
+		<span class="keyword">private</span> <span class="keyword">bool</span> <span class="title">enumChildWindowsCallback</span>(<span class="keyword">int</span> handle, <span class="keyword">int</span> lParam)
+		{
+			<span class="comment">// If a class name was provided, check to see if it matches the window.</span>
+			<span class="keyword">if</span> (className != <span class="keyword">null</span>)
+			{
+				StringBuilder sbClass = <span class="keyword">new</span> StringBuilder(<span class="number">256</span>);
+				GetClassName(handle, sbClass, sbClass.Capacity);
+
+				<span class="comment">// If it does not match, return true so we can continue on with the next window.</span>
+				<span class="keyword">if</span> (!className.IsMatch(sbClass.ToString()))
+					<span class="keyword">return</span> <span class="keyword">true</span>;
+			}
+
+			<span class="comment">// If a window text was provided, check to see if it matches the window.</span>
+			<span class="keyword">if</span> (windowText != <span class="keyword">null</span>)
+			{
+				<span class="keyword">int</span> txtLength = SendMessage(handle, WM_GETTEXTLENGTH, <span class="number">0</span>, <span class="number">0</span>);
+				StringBuilder sbText = <span class="keyword">new</span> StringBuilder(txtLength + <span class="number">1</span>);
+				SendMessage(handle, WM_GETTEXT, sbText.Capacity, sbText);
+
+				<span class="comment">// If it does not match, return true so we can continue on with the next window.</span>
+				<span class="keyword">if</span> (!windowText.IsMatch(sbText.ToString()))
+					<span class="keyword">return</span> <span class="keyword">true</span>;
+			}
+
+			<span class="comment">// If a process name was provided, check to see if it matches the window.</span>
+			<span class="keyword">if</span> (process != <span class="keyword">null</span>)
+			{
+				<span class="keyword">int</span> processID;
+				GetWindowThreadProcessId(handle, <span class="keyword">out</span> processID);
+
+				<span class="comment">// Now that we have the process ID, we can use the built in .NET function to obtain a process object.</span>
+				Process p = Process.GetProcessById(processID);
+
+				<span class="comment">// If it does not match, return true so we can continue on with the next window.</span>
+				<span class="keyword">if</span> (!process.IsMatch(p.ProcessName))
+					<span class="keyword">return</span> <span class="keyword">true</span>;
+			}
+
+			<span class="comment">// If we get to this point, the window is a match. Now invoke the foundWindow event and based upon</span>
+			<span class="comment">// the return value, whether we should continue to search for windows.</span>
+			<span class="keyword">return</span> foundWindow(handle);
+		}
+	}
+}
+</pre></figure>
+
+<p>And the result:</p>
+<div class="imgwrapper" style=""><div><a href="/finding-specific-windows/win32_6_1_2.jpg" class="fancy"><img src="/finding-specific-windows/win32_6_1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">06</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/sending-keypresses-to-a-window/" title="Sending Keypresses to a Window Using PInvoke" rel="bookmark">Sending Keypresses to a Window Using PInvoke</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Now to complete the toolset required to make a great spyware / browser hijacking application, we’ll make Internet Explorer navigate to the address we set.</p>
+<a id="more"></a>
+
+<p><a href="http://www.improve.dk/blog/2007/04/03/getting-text-from-handle" target="_blank">Like before</a>, open an Internet Explorer browser and obtain a handle to the address field.</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Runtime.InteropServices;
+<span class="keyword">using</span> System.Globalization;
+
+namespace Sending_keypresses_to_a_window
+{
+	class Program
+	{
+		<span class="comment">// A Win32 constant</span>
+		<span class="keyword">const</span> <span class="keyword">int</span> WM_SETTEXT = <span class="number">0x000C</span>;
+		<span class="keyword">const</span> <span class="keyword">int</span> WM_KEYDOWN = <span class="number">0x0100</span>;
+		<span class="keyword">const</span> <span class="keyword">int</span> VK_RETURN  = <span class="number">0x0D</span>;
+
+		<span class="comment">// An overload of the SendMessage function, this time taking in a string as the lParam.</span>
+		[DllImport(<span class="string">"User32.dll"</span>)]
+		<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">extern</span> Int32 <span class="title">SendMessage</span>(<span class="keyword">int</span> hWnd, <span class="keyword">int</span> Msg, <span class="keyword">int</span> wParam, <span class="keyword">string</span> lParam);
+
+		<span class="comment">// PostMessage is very similar to SendMessage. They both send a message to the given</span>
+		<span class="comment">// handle / window, the difference being that SendMessage sends the message and waits</span>
+		<span class="comment">// for the window to "handle" the message and return a return code. PostMessage on the</span>
+		<span class="comment">// other hand simply posts the message and returns instantly, whether the window</span>
+		<span class="comment">// handles the message or not, we don't care.</span>
+		[DllImport(<span class="string">"User32.Dll"</span>)]
+		<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">extern</span> Int32 <span class="title">PostMessage</span>(<span class="keyword">int</span> hWnd, <span class="keyword">int</span> msg, <span class="keyword">int</span> wParam, <span class="keyword">int</span> lParam);
+
+		<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
+		{
+			<span class="comment">// First, read the handle from the console, remember this has to be in HEX format!</span>
+			<span class="keyword">int</span> handle = <span class="keyword">int</span>.Parse(Console.ReadLine(), NumberStyles.HexNumber);
+
+			<span class="comment">// Now we'll send the WM_SETTEXT message to the window, passing the text</span>
+			<span class="comment">// through the lParam parameter.</span>
+			SendMessage(handle, WM_SETTEXT, <span class="number">0</span>, <span class="string">"http://www.improve.dk"</span>);
+			Console.WriteLine(<span class="string">"Text set!"</span>);
+
+			<span class="comment">// Now send a message telling the Edit box that the Return key has been pressed,</span>
+			<span class="comment">// resulting in Internet Explorer navigating to the page.</span>
+			PostMessage(handle, WM_KEYDOWN, VK_RETURN, <span class="number">1</span>);
+			Console.WriteLine(<span class="string">"Return keypress sent!"</span>);
+
+			<span class="comment">// And we're done</span>
+			Console.Read();
+		}
+	}
+}
+</pre></figure>
+
+<p>And the result:</p>
+<div class="imgwrapper" style=""><div><a href="/sending-keypresses-to-a-window/win32_4_1_2.jpg" class="fancy"><img src="/sending-keypresses-to-a-window/win32_4_1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/sending-keypresses-to-a-window/win32_4_2_2.jpg" class="fancy"><img src="/sending-keypresses-to-a-window/win32_4_2_2.jpg" style="max-height: 250px"/></a></div></div>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">06</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/enumerating-windows/" title="Enumerating Windows Using PInvoke" rel="bookmark">Enumerating Windows Using PInvoke</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Until now we’ve seen how to retrieve basic properties of windows as well as how to interact with them by sending keypresses. Up until now we’ve had to find the handle by using Winspector or a similar program. This time I’ll present a way of finding the handles programmatically.</p>
+<a id="more"></a>
+
+
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System.Runtime.InteropServices;
+<span class="keyword">using</span> System.Text;
+<span class="keyword">using</span> System;
+
+namespace Enumerating_windows
+{
+	class Program
+	{
+		<span class="comment">// These are two Win32 constants that we'll need, they were explained in an earlier blog.</span>
+		<span class="keyword">const</span> <span class="keyword">int</span> WM_GETTEXT		= <span class="number">0x000D</span>;
+		<span class="keyword">const</span> <span class="keyword">int</span> WM_GETTEXTLENGTH	= <span class="number">0x000E</span>;
+
+		<span class="comment">// SendMessage overload.</span>
+		[DllImport(<span class="string">"User32.dll"</span>)]
+		<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">extern</span> Int32 <span class="title">SendMessage</span>(<span class="keyword">int</span> hWnd, <span class="keyword">int</span> Msg, <span class="keyword">int</span> wParam, <span class="keyword">int</span> lParam);
+
+		<span class="comment">// SendMessage overload.</span>
+		[DllImport(<span class="string">"User32.dll"</span>)]
+		<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">extern</span> Int32 <span class="title">SendMessage</span>(<span class="keyword">int</span> hWnd, <span class="keyword">int</span> Msg, <span class="keyword">int</span> wParam, StringBuilder lParam);
+
+		<span class="comment">// The GetClassName function takes a handle as a parameter as well as a StringBuilder</span>
+		<span class="comment">// and the max capacity of the StringBuilder as parameters. It'll return the windows</span>
+		<span class="comment">// class name by filling up the StringBuilder - though not any longer than the max capacity.</span>
+		<span class="comment">// If the class is longer than the max capacity it will simply be cropped. Having a larger</span>
+		<span class="comment">// capacity than necessary is simply a matter of performance.</span>
+		[DllImport(<span class="string">"User32.Dll"</span>)]
+		<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">extern</span> <span class="keyword">void</span> <span class="title">GetClassName</span>(<span class="keyword">int</span> hWnd, StringBuilder s, <span class="keyword">int</span> nMaxCount);
+
+		<span class="comment">// The EnumWindows function will enumerate all windows in the system. Each window will cause</span>
+		<span class="comment">// the PCallBack callback function to be called.</span>
+		[DllImport(<span class="string">"user32.Dll"</span>)]
+		<span class="keyword">static</span> <span class="keyword">extern</span> <span class="keyword">bool</span> EnumWindows(PCallBack callback, <span class="keyword">int</span> lParam);
+
+		<span class="comment">// This is the delegate that sets the signature for the callback function of the EnumWindows function.</span>
+		<span class="keyword">private</span> <span class="keyword">delegate</span> <span class="keyword">bool</span> <span class="title">PCallBack</span>(<span class="keyword">int</span> hwnd, <span class="keyword">int</span> lParam);
+
+		<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
+		{
+			<span class="comment">// All we'll do is to invoke the EnumWindows function, passing in a new delegate specifying the EnumWindowsCallback</span>
+			<span class="comment">// function as the callback function. The lParam parameter can be used to send in an integer that will be passed</span>
+			<span class="comment">// onto the callback function unmodified. It's optional, but it may be useful in some situations.</span>
+			EnumWindows(<span class="keyword">new</span> PCallBack(EnumWindowsCallback), <span class="number">0</span>);
+
+			Console.Read();
+		}
+
+		<span class="comment">// This function will be called exactly once for each window the EnumWindows function finds. We have no idea what</span>
+		<span class="comment">// window / type of windows it'll get called for, so we'll have to identify the windows somehow. The lParam</span>
+		<span class="comment">// parameter contains the value we passed when we called the EnumWindows function.</span>
+		<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">EnumWindowsCallback</span>(<span class="keyword">int</span> handle, <span class="keyword">int</span> lParam)
+		{
+			<span class="comment">// First we'll find the class of the window as that is usually the parameter that narrows our search down the furthest.</span>
+			<span class="comment">// As classes are usually rather short, a capacity of 256 ought to be plenty.</span>
+			StringBuilder sbClass = <span class="keyword">new</span> StringBuilder(<span class="number">256</span>);
+			GetClassName(handle, sbClass, sbClass.Capacity);
+
+			<span class="comment">// As explained in an earlier blog we then get the text of the window.</span>
+			<span class="keyword">int</span> txtLength = SendMessage(handle, WM_GETTEXTLENGTH, <span class="number">0</span>, <span class="number">0</span>);
+			StringBuilder sbText = <span class="keyword">new</span> StringBuilder(txtLength + <span class="number">1</span>);
+			SendMessage(handle, WM_GETTEXT, sbText.Capacity, sbText);
+
+			<span class="comment">// Now we can write out the information we have on the window:</span>
+			Console.WriteLine(<span class="string">"Handle: "</span> + handle);
+			Console.WriteLine(<span class="string">"Class : "</span> + sbClass);
+			Console.WriteLine(<span class="string">"Text  : "</span> + sbText);
+			Console.WriteLine();
+
+			<span class="comment">// When we return true, the EnumWindows function will proceed to call the callback function with the next window.</span>
+			<span class="comment">// If we returned false, the EnumWindows function would stop and the callback function wouldn't get called again.</span>
+			<span class="comment">// This can be useful if we're looking for a specific window - once it's found we can just return false, no reason</span>
+			<span class="comment">// to handle any other windows.</span>
+			<span class="keyword">return</span> <span class="keyword">true</span>;
+		}
+	}
+}
+</pre></figure>
+
+<p>And the result:</p>
+<div class="imgwrapper" style=""><div><a href="/enumerating-windows/win32_5_1_2.jpg" class="fancy"><img src="/enumerating-windows/win32_5_1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">04</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/set-text-by-handle/" title="Set Text By Window Handle Using PInvoke" rel="bookmark">Set Text By Window Handle Using PInvoke</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>This time we won’t be reading the text from a window, we’ll be setting it.</p>
+<a id="more"></a>
+
+<p><a href="http://www.improve.dk/blog/2007/04/03/getting-text-from-handle" target="_blank">Like last time</a>, open an Internet Explorer browser and obtain a handle to the address field.</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Collections.Generic;
+<span class="keyword">using</span> System.Text;
+<span class="keyword">using</span> System.Runtime.InteropServices;
+<span class="keyword">using</span> System.Globalization;
+
+<span class="class"><span class="keyword">namespace</span> <span class="title">Set_text_by_handle</span>
+{</span>
+	<span class="class"><span class="keyword">class</span> <span class="title">Program</span>
+	{</span>
+		<span class="comment">// A Win32 constant</span>
+		<span class="keyword">const</span> <span class="keyword">int</span><span class="constant"> WM_SETTEXT </span>= <span class="number">0x000C</span>;
+
+		<span class="comment">// An overload of the SendMessage function, this time taking in a string as the lParam.</span>
+		[DllImport(<span class="string">"User32.dll"</span>)]
+		<span class="keyword">public</span> <span class="keyword">static</span> extern Int32 SendMessage(<span class="keyword">int</span> hWnd, <span class="keyword">int</span> Msg, <span class="keyword">int</span> wParam, <span class="keyword">string</span> lParam);
+
+		<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
+		{
+			<span class="comment">// First, read the handle from the console, remember this has to be in HEX format!</span>
+			<span class="keyword">int</span> handle = <span class="keyword">int</span>.Parse(Console.ReadLine(), NumberStyles.HexNumber);
+
+			<span class="comment">// Now we'll send the WM_SETTEXT message to the window, passing the text</span>
+			<span class="comment">// through the lParam parameter.</span>
+			SendMessage(handle, WM_SETTEXT, <span class="number">0</span>, <span class="string">"http://www.improve.dk"</span>);
+
+			<span class="comment">// And we're done</span>
+			Console.Write(<span class="string">"Text set!"</span>);
+			Console.Read();
+		}
+	}
+}
+</pre></figure>
+
+<p>And the result:</p>
+<div class="imgwrapper" style=""><div><a href="/set-text-by-handle/win32_3_2_2.jpg" class="fancy"><img src="/set-text-by-handle/win32_3_2_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Note that we have not navigated to the address, we have only set it!</p>
+<div class="imgwrapper" style=""><div><a href="/set-text-by-handle/win32_3_1_2.jpg" class="fancy"><img src="/set-text-by-handle/win32_3_1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">04</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/getting-text-from-handle/" title="Getting Text From Window Handle Using PInvoke" rel="bookmark">Getting Text From Window Handle Using PInvoke</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>This time we want to retrieve the text from a given window, represented by a handle. Like last time, open an Internet Explorer instance. Now open Winspector and select the address field, ensure that it is the address field itself (class = Edit) and not the ComboBox that you select.</p>
+<a id="more"></a>
+
+<div class="imgwrapper" style=""><div><a href="/getting-text-from-handle/win32_2_1_2.jpg" class="fancy"><img src="/getting-text-from-handle/win32_2_1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Collections.Generic;
+<span class="keyword">using</span> System.Text;
+<span class="keyword">using</span> System.Runtime.InteropServices;
+<span class="keyword">using</span> System.Globalization;
+
+namespace Get_text_from_handle
+{
+	class Program
+	{
+		<span class="comment">// These are two Win32 constants that we'll need, they'll be explained later.</span>
+		<span class="keyword">const</span> <span class="keyword">int</span> WM_GETTEXT		= <span class="number">0x000D</span>;
+		<span class="keyword">const</span> <span class="keyword">int</span> WM_GETTEXTLENGTH = <span class="number">0x000E</span>;
+
+		<span class="comment">// The SendMessage function sends a Win32 message to the specified handle, it takes three</span>
+		<span class="comment">// ints as parameters, the message to send, and to optional parameters (pass 0 if not required).</span>
+		[DllImport(<span class="string">"User32.dll"</span>)]
+		<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">extern</span> Int32 <span class="title">SendMessage</span>(<span class="keyword">int</span> hWnd, <span class="keyword">int</span> Msg, <span class="keyword">int</span> wParam, <span class="keyword">int</span> lParam);
+
+		<span class="comment">// An overload of the SendMessage function, this time taking in a StringBuilder as the lParam.</span>
+		<span class="comment">// Through the series we'll use a lot of different SendMessage overloads as SendMessage is one</span>
+		<span class="comment">// of the most fundamental Win32 functions.</span>
+		[DllImport(<span class="string">"User32.dll"</span>)]
+		<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">extern</span> Int32 <span class="title">SendMessage</span>(<span class="keyword">int</span> hWnd, <span class="keyword">int</span> Msg, <span class="keyword">int</span> wParam, StringBuilder lParam);
+
+		<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
+		{
+			<span class="comment">// First, read the handle from the console, remember this has to be in HEX format!</span>
+			<span class="keyword">int</span> handle = <span class="keyword">int</span>.Parse(Console.ReadLine(), NumberStyles.HexNumber);
+
+			<span class="comment">// This is a bit tricky. To retrieve the text from a window, we have to know it's length beforehand.</span>
+			<span class="comment">// This is because we have to send a StringBuilder of the correct length as a parameter. If it's too</span>
+			<span class="comment">// small, it won't be able to contain the full text. If it's too large, it's inefficient. When using</span>
+			<span class="comment">// the SendMessage function with the WM_GETTEXTLENGTH message, it returns the length of the</span>
+			<span class="comment">// window text.</span>
+			<span class="keyword">int</span> txtLength = SendMessage(handle, WM_GETTEXTLENGTH, <span class="number">0</span>, <span class="number">0</span>);
+
+			<span class="comment">// After having retrieved the length of the string, we create a StringBuilder to hold it.</span>
+			StringBuilder sb = <span class="keyword">new</span> StringBuilder(txtLength + <span class="number">1</span>);
+
+			<span class="comment">// Sending the message WM_GETTEXT to the window, passing int he length of the text (the capacity</span>
+			<span class="comment">// of the StringBuilder) as well as a reference to the StringBuilder will result in the</span>
+			<span class="comment">// StringBuilder being filled up with the windows text.</span>
+			SendMessage(handle, WM_GETTEXT, sb.Capacity, sb);
+
+			<span class="comment">// Finally we'll write out the window text by ToString()'ing the StringBuilder.</span>
+			Console.Write(sb.ToString());
+			Console.Read();
+		}
+	}
+}
+</pre></figure>
+
+<p>And the result:</p>
+<div class="imgwrapper" style=""><div><a href="/getting-text-from-handle/win32_2_2_2.jpg" class="fancy"><img src="/getting-text-from-handle/win32_2_2_2.jpg" style="max-height: 250px"/></a></div></div>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+
+<div class="paging">
+	<a href="/page/20/"><div class="past">« Past</div></a>
+	<a href="/page/18/"><div class="future">Future »</div></a>
+	<div class="clear"></div>
+</div>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

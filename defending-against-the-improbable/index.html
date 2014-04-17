@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Defending Against the Improbable | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Nov</span>
+			<span class="day">05</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/defending-against-the-improbable/" title="Defending Against the Improbable" rel="bookmark">Defending Against the Improbable</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on Defending Against the Improbable">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>As little children we’ve all been taught that it’s better to program defensively than relying on exceptions being thrown. However, sometimes it’s preferably to just hope for the best and catch exceptions if they happen.</p>
+<a id="more"></a>
+
+<h2 id="Defending_against_the_improbable">Defending against the improbable</h2>
+<p>Say we have a web application that receives and ID through the query string and serves a file accordingly, usually we’d write that like:</p>
+<figure class="highlight csharp"><pre><span class="function">if(File.<span class="function">Exists(path)</span>)</span>
+    <span class="function">serveFile(path)</span>;
+else
+    <span class="function">serve404()</span>;
+</pre></figure>
+
+<p>This is what I’ve been doing in a large image serving website I run. However, it recently struck me that on average about 99.9% of all requests map to existing files, only those few .01% of all requests actually resulted in 404 errors being thrown.</p>
+<p>Given the above ratio, if we dropped the File.Exists() check, out of 10,000 requests only 10 of those would result in a FileNotFoundException being thrown while the rest would just be served as usual. That means in 99.9% of all requests we waste resources on performing a trivial File.Exists() request that we know will most likely come back true anyways. What’s worse is that this will hit the harddrive and actually cost us an IO operation!</p>
+<h2 id="A_local_test">A local test</h2>
+<p>Observe the following two methods. serveFileUnsafely will serve a file under the assumption that it probably exists and will rely on a FileNotFoundException being throw if it doesn’t exist. serveFileSafely will ensure the file exists before actually serving it (trusting nothing happens between File.Exists() and File.ReadAllText()).</p>
+<figure class="highlight csharp"><pre><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">serveFileUnsafely</span>(<span class="keyword">string</span> path)
+{
+    <span class="keyword">try</span>
+    {
+        File.ReadAllText(path);
+    }
+    <span class="keyword">catch</span> (FileNotFoundException)
+    {
+        Console.WriteLine(<span class="string">"File does not exist!"</span>);
+    }
+}
+
+<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">serveFileSafely</span>(<span class="keyword">string</span> path)
+{
+    <span class="keyword">if</span> (File.Exists(path))
+        File.ReadAllText(path);
+    <span class="keyword">else</span>
+
+        Console.WriteLine(<span class="string">"File does not exist!"</span>);
+}
+</pre></figure>
+
+<p>The following two methods will be used to measure the time taken to serve 100 requests. I have created 100 identical files named [1-100].txt, each containing just the text “Hello world!”. I have then deleted a random file so there’s only 99 left. Thus in this example we assume that only 99% of all requests map to existing files even though the actual app has a success rate in excess of 99.9%. Note that the two methods each hit a separate folder - Test and Test2. This is to avoid any advantage of prewarming the cache before running the second test.</p>
+<figure class="highlight csharp"><pre><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">testLocalUnsafely</span>()
+{
+    <span class="keyword">for</span> (<span class="keyword">int</span> file = <span class="number">1</span>; file &lt;= <span class="number">100</span>; file++)
+        serveFileUnsafely(<span class="string">@"E:\Test"</span> + file + <span class="string">".txt"</span>);
+}
+
+<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">testLocalSafely</span>()
+{
+    <span class="keyword">for</span> (<span class="keyword">int</span> file = <span class="number">1</span>; file &lt;= <span class="number">100</span>; file++)
+        serveFileSafely(<span class="string">@"E:\Test2"</span> + file + <span class="string">".txt"</span>);
+}
+</pre></figure>
+
+<p>The actual profiling goes like this. I’ll be using my <a href="http://www.improve.dk/blog/2008/04/16/profiling-code-the-easy-way" target="_blank">CodeProfiler</a> class to make the measurements, running a total of 500 iterations using a single thread - as well as running an automatic warmup iteration.</p>
+<figure class="highlight csharp"><pre>TimeSpan safeLocalTime = CodeProfiler.ProfileAction<span class="function"><span class="params">(() =&gt; testLocalSafely(), <span class="number">500</span>, <span class="number">1</span>)</span>;
+<span class="title">TimeSpan</span> <span class="title">unsafeLocalTime</span> = <span class="title">CodeProfiler</span>.<span class="title">ProfileAction</span><span class="params">(() =&gt; testLocalUnsafely(), <span class="number">500</span>, <span class="number">1</span>)</span>;
+
+<span class="title">Console</span>.<span class="title">WriteLine</span><span class="params">(<span class="string">"Safe: "</span> + safeLocalTime.TotalSeconds)</span>;
+<span class="title">Console</span>.<span class="title">WriteLine</span><span class="params">(<span class="string">"Unsafe: "</span> + unsafeLocalTime.TotalSeconds)</span>;</span>
+</pre></figure>
+
+<p>And the results?</p>
+<blockquote>
+<p>Safe: 4,211061<br>Unsafe: 4,9368481  </p>
+<p>Conclusion: Unsafe is 17% slower than safe.</p>
+</blockquote>
+<p>Interestingly the defensive method actual performs the best! It’s easy to conclude that throwing the exception is somewhat more expensive than hitting the IO layer to check for the files existance.</p>
+<p>It’s no coincidence that I mention the IO layer and not the disk in the above statement. As this is run locally on a machine with 8GBs of memory all 200 files are easily cached in memory - making it a pure in-memory operation to both check for the files existance as well as reading the file contents. This can be verified as well by the CPU taking up 100% resources while the test is running.</p>
+<h2 id="A_remote_test">A remote test</h2>
+<p>Back to the real scenario. The web servers are not serving files off of local disks, they’re serving the files from a backend SAN exposed as CIFS shares.</p>
+<p>I’ve copied the two test file directories onto two directories on a remote share.</p>
+<p>Two new methods have been added. They’re identical to the last ones except that they access a remote share mapped to the local drive Z.</p>
+<figure class="highlight csharp"><pre><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">testShareUnsafely</span>()
+{
+    <span class="keyword">for</span> (<span class="keyword">int</span> file = <span class="number">1</span>; file &lt;= <span class="number">100</span>; file++)
+        serveFileUnsafely(<span class="string">@"Z:\Test"</span> + file + <span class="string">".txt"</span>);
+}
+
+<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">testShareSafely</span>()
+{
+    <span class="keyword">for</span> (<span class="keyword">int</span> file = <span class="number">1</span>; file &lt;= <span class="number">100</span>; file++)
+        serveFileSafely(<span class="string">@"Z:\Test2"</span> + file + <span class="string">".txt"</span>);
+}
+</pre></figure>
+
+<p>The testing is performed like this. Note that I’m only running 10 iterations + warmup here as it’d otherwise take far too long time.</p>
+<figure class="highlight csharp"><pre>TimeSpan safeShareTime = CodeProfiler.ProfileAction<span class="function"><span class="params">(() =&gt; testShareSafely(), <span class="number">10</span>, <span class="number">1</span>)</span>;
+<span class="title">TimeSpan</span> <span class="title">unsafeShareTime</span> = <span class="title">CodeProfiler</span>.<span class="title">ProfileAction</span><span class="params">(() =&gt; testShareUnsafely(), <span class="number">10</span>, <span class="number">1</span>)</span>;
+
+<span class="title">Console</span>.<span class="title">WriteLine</span><span class="params">(<span class="string">"Safe: "</span> + safeShareTime.TotalSeconds)</span>;
+<span class="title">Console</span>.<span class="title">WriteLine</span><span class="params">(<span class="string">"Unsafe: "</span> + unsafeShareTime.TotalSeconds)</span>;</span>
+</pre></figure>
+
+<p>The results?</p>
+<blockquote>
+<p>Safe: 4,1287161<br>Unsafe: 3,1327967  </p>
+<p>Conclusion: Unsafe is 25% faster than safe.</p>
+</blockquote>
+<h2 id="As_usual_-_it_depends!">As usual - it depends!</h2>
+<p>As can be seen, sometimes it’s best to defend against exceptions and sometimes it’s better to just hope for the best and catch the exception if it occurs. In my scenario throwing an exception was… Well. The exception. Make sure you always consider the cost of avoiding exceptions before you do so blindly.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=Defending%20Against%20the%20Improbable%20http%3A%2F%2Fimprove.dk%2Fdefending-against-the-improbable%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fdefending-against-the-improbable%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fdefending-against-the-improbable%2F&title=Defending%20Against%20the%20Improbable" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/defending-against-the-improbable/defending-against-the-improbable.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'defending-against-the-improbable';
+	var disqus_url = 'http://improve.dk/defending-against-the-improbable/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

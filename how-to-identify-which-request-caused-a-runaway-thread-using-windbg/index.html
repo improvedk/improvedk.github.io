@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>How to Identify Which Request Caused a Runaway Thread, Using Windbg | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">07</span>
+		</div>
+		<div class="lower">2013</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/how-to-identify-which-request-caused-a-runaway-thread-using-windbg/" title="How to Identify Which Request Caused a Runaway Thread, Using Windbg" rel="bookmark">How to Identify Which Request Caused a Runaway Thread, Using Windbg</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				, 
+			
+				<a href="http://improve.dk/category/IIS/">IIS</a>
+				, 
+			
+				<a href="http://improve.dk/category/Windbg/">Windbg</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on How to Identify Which Request Caused a Runaway Thread, Using Windbg">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>When your w3wp process is stuck at 100% like, <a href="/debugging-in-production-part-1-analyzing-100-cpu-usage-using-windbg/">like when I used a non-thread-safe Dictionary concurrently</a>, you may want to identify what request the runaway thread is actually serving. Let me show you how to identify which request caused a runaway thread, using windbg.</p>
+<a id="more"></a>
+
+<p>First you’ll want to identify the process ID (PID) of the w3wp process. In my case, that’s <strong>102600</strong>:</p>
+<div class="imgwrapper" style=""><div><a href="/how-to-identify-which-request-caused-a-runaway-thread-using-windbg/Taskmgr.png" class="fancy"><img src="/how-to-identify-which-request-caused-a-runaway-thread-using-windbg/Taskmgr.png" style="max-height: 250px"/></a></div></div>
+
+<p>Next you’ll want to start up Windbg (make sure to use the correct bitness (x86 vs x64) that corresponds to the bitness of your process). Once started, press <strong>F6</strong> to open up the <em>Attach to Process</em> dialog. Once open, enter your process ID and click OK.</p>
+<div class="imgwrapper" style=""><div><a href="/how-to-identify-which-request-caused-a-runaway-thread-using-windbg/Attach-to-Process.png" class="fancy"><img src="/how-to-identify-which-request-caused-a-runaway-thread-using-windbg/Attach-to-Process.png" style="max-height: 250px"/></a></div></div>
+
+<p>Doing so should bring up the Command window, ready for your command:</p>
+<div class="imgwrapper" style=""><div><a href="/how-to-identify-which-request-caused-a-runaway-thread-using-windbg/Windbg11.png" class="fancy"><img src="/how-to-identify-which-request-caused-a-runaway-thread-using-windbg/Windbg11.png" style="max-height: 250px"/></a></div></div>
+
+<p>As the first thing, start out by loading the <a href="http://msdn.microsoft.com/en-us/library/bb190764.aspx" target="_blank">Son of Strike</a> extension, allowing us to debug managed code.</p>
+<figure class="highlight"><pre><span class="number">0</span>:<span class="number">039</span>&gt; <span class="preprocessor">.loadby</span> sos <span class="keyword">clr</span>
+</pre></figure>
+
+<p>Then continue by running the !runaway command to get a list of runaway (basically threads using lots of CPU) threads:</p>
+<figure class="highlight"><pre>0<span class="pseudo">:039</span>&gt; !<span class="tag">runaway</span>
+
+ <span class="tag">User</span> <span class="tag">Mode</span> <span class="tag">Time</span>
+  <span class="tag">Thread</span>       <span class="tag">Time</span>
+  20<span class="pseudo">:14930</span>      0 <span class="tag">days</span> 0<span class="pseudo">:21</span><span class="pseudo">:44</span><span class="class">.261</span>
+  21<span class="pseudo">:15204</span>      0 <span class="tag">days</span> 0<span class="pseudo">:21</span><span class="pseudo">:00</span><span class="class">.878</span>
+  27<span class="pseudo">:19d48</span>      0 <span class="tag">days</span> 0<span class="pseudo">:04</span><span class="pseudo">:23</span><span class="class">.860</span>
+  32<span class="pseudo">:18748</span>      0 <span class="tag">days</span> 0<span class="pseudo">:02</span><span class="pseudo">:59</span><span class="class">.260</span>
+  31<span class="pseudo">:18bcc</span>      0 <span class="tag">days</span> 0<span class="pseudo">:02</span><span class="pseudo">:19</span><span class="class">.277</span>
+  30<span class="pseudo">:19d80</span>      0 <span class="tag">days</span> 0<span class="pseudo">:01</span><span class="pseudo">:44</span><span class="class">.083</span>
+  25<span class="pseudo">:19ec0</span>      0 <span class="tag">days</span> 0<span class="pseudo">:01</span><span class="pseudo">:32</span><span class="class">.446</span>
+  24<span class="pseudo">:16534</span>      0 <span class="tag">days</span> 0<span class="pseudo">:01</span><span class="pseudo">:31</span><span class="class">.135</span>
+  29<span class="pseudo">:19a80</span>      0 <span class="tag">days</span> 0<span class="pseudo">:01</span><span class="pseudo">:08</span><span class="class">.297</span>
+  23<span class="pseudo">:19110</span>      0 <span class="tag">days</span> 0<span class="pseudo">:00</span><span class="pseudo">:30</span><span class="class">.591</span>
+   6<span class="pseudo">:19b40</span>      0 <span class="tag">days</span> 0<span class="pseudo">:00</span><span class="pseudo">:00</span><span class="class">.109</span>
+  26<span class="pseudo">:18a14</span>      0 <span class="tag">days</span> 0<span class="pseudo">:00</span><span class="pseudo">:00</span><span class="class">.015</span>
+   0<span class="pseudo">:19dcc</span>      0 <span class="tag">days</span> 0<span class="pseudo">:00</span><span class="pseudo">:00</span><span class="class">.015</span>
+  39<span class="pseudo">:16fa8</span>      0 <span class="tag">days</span> 0<span class="pseudo">:00</span><span class="pseudo">:00</span><span class="class">.000</span>
+  ...
+</pre></figure>
+
+<p>Threads 20 &amp; 21 seem to be the interesting ones. Let’s start out by selecting thread #20 as the active thread:</p>
+<figure class="highlight"><pre>0<span class="pseudo">:039</span>&gt; ~20<span class="tag">s</span>
+
+000007<span class="tag">fe</span>`913<span class="tag">a15d9</span> 3<span class="tag">bc5</span>            <span class="tag">cmp</span>     <span class="tag">eax</span>,<span class="tag">ebp</span>
+</pre></figure>
+
+<p>Once selected, we can analyze the stack and its parameters by running the !CLRStack command with the -p parameter:</p>
+<figure class="highlight"><pre><span class="number">0</span>:<span class="number">020</span>&gt; !CLRStack -p
+
+OS Thread Id: <span class="number">0x14930</span> (<span class="number">20</span>)
+        Child SP               IP <span class="keyword">Call</span> Site
+<span class="number">000000000</span>dccdb00 <span class="number">000007</span>fe913a15d9 System<span class="preprocessor">.Collections</span><span class="preprocessor">.Generic</span><span class="preprocessor">.Dictionary</span>`<span class="number">2</span>[[System<span class="preprocessor">.Int</span>16, mscorlib],[System.__Canon, mscorlib]]<span class="preprocessor">.FindEntry</span>(Int16)
+    PARAMETERS:
+        this = &lt;no data&gt;
+        key = &lt;no data&gt;
+
+<span class="number">000000000</span>dccdb50 <span class="number">000007</span>fe913a14c0 System<span class="preprocessor">.Collections</span><span class="preprocessor">.Generic</span><span class="preprocessor">.Dictionary</span>`<span class="number">2</span>[[System<span class="preprocessor">.Int</span>16, mscorlib],[System.__Canon, mscorlib]]<span class="preprocessor">.get</span>_Item(Int16)
+    PARAMETERS:
+        this = &lt;no data&gt;
+        key = &lt;no data&gt;
+
+<span class="number">000000000</span>dccdb80 <span class="number">000007</span>fe91421cbb iPaper<span class="preprocessor">.BL</span><span class="preprocessor">.Backend</span><span class="preprocessor">.Modules</span><span class="preprocessor">.Languages</span><span class="preprocessor">.LanguageCache</span><span class="preprocessor">.GetLanguageByID</span>(Int32, iPaper<span class="preprocessor">.BL</span><span class="preprocessor">.Backend</span><span class="preprocessor">.Infrastructure</span><span class="preprocessor">.PartnerConfiguration</span><span class="preprocessor">.IPartnerConfig</span>) [e:\iPaperCMS\BL\Backend\Modules\Languages\LanguageCache<span class="preprocessor">.cs</span> @ <span class="number">44</span>]
+    PARAMETERS:
+        languageID (<span class="number">0x000000000dccdc20</span>) = <span class="number">0x0000000000000001</span>
+        partnerConfig (<span class="number">0x000000000dccdc28</span>) = <span class="number">0x00000000fffc3e50</span>
+
+<span class="number">000000000</span>dccdc20 <span class="number">000007</span>fe91421dfa iPaper<span class="preprocessor">.BL</span><span class="preprocessor">.Backend</span><span class="preprocessor">.Modules</span><span class="preprocessor">.Languages</span><span class="preprocessor">.Language</span><span class="preprocessor">.GetFontFileForLanguage</span>(Int32, iPaper<span class="preprocessor">.BL</span><span class="preprocessor">.Backend</span><span class="preprocessor">.Infrastructure</span><span class="preprocessor">.PartnerConfiguration</span><span class="preprocessor">.IPartnerConfig</span>) [e:\iPaperCMS\BL\Backend\Modules\Languages\Language<span class="preprocessor">.cs</span> @ <span class="number">37</span>]
+    PARAMETERS:
+        languageID (<span class="number">0x000000000dccdc70</span>) = <span class="number">0x0000000000000001</span>
+        partnerConfig (<span class="number">0x000000000dccdc78</span>) = <span class="number">0x00000000fffc3e50</span>
+
+<span class="number">000000000</span>dccdc70 <span class="number">000007</span>fe91417400 iPaper<span class="preprocessor">.Web</span><span class="preprocessor">.FlexFrontend</span><span class="preprocessor">.BL</span><span class="preprocessor">.Common</span><span class="preprocessor">.CachedUrlInformation</span><span class="preprocessor">.GetFromUrlDirectoryPath</span>(System<span class="preprocessor">.String</span>, System<span class="preprocessor">.String</span>, iPaper<span class="preprocessor">.BL</span><span class="preprocessor">.Backend</span><span class="preprocessor">.Infrastructure</span><span class="preprocessor">.PartnerConfiguration</span><span class="preprocessor">.IPartnerConfig</span>) [e:\iPaperCMS\Frontend\BL\Common\CachedUrlInformation<span class="preprocessor">.cs</span> @ <span class="number">89</span>]
+    PARAMETERS:
+        url (<span class="number">0x000000000dccde80</span>) = <span class="number">0x00000003fff27e30</span>
+        host (<span class="number">0x000000000dccde88</span>) = <span class="number">0x00000003fff29618</span>
+        partnerConfig (<span class="number">0x000000000dccde90</span>) = <span class="number">0x00000000fffc3e50</span>
+
+<span class="number">000000000</span>dccde80 <span class="number">000007</span>fe91417576 iPaper<span class="preprocessor">.Web</span><span class="preprocessor">.FlexFrontend</span><span class="preprocessor">.BL</span><span class="preprocessor">.Common</span><span class="preprocessor">.CachedUrlInformation</span><span class="preprocessor">.GetFromHttpContext</span>(System<span class="preprocessor">.String</span>, System<span class="preprocessor">.Web</span><span class="preprocessor">.HttpContext</span>, iPaper<span class="preprocessor">.BL</span><span class="preprocessor">.Backend</span><span class="preprocessor">.Infrastructure</span><span class="preprocessor">.PartnerConfiguration</span><span class="preprocessor">.IPartnerConfig</span>) [e:\iPaperCMS\Frontend\BL\Common\CachedUrlInformation<span class="preprocessor">.cs</span> @ <span class="number">122</span>]
+    PARAMETERS:
+        paperPath (<span class="number">0x000000000dcce010</span>) = <span class="number">0x00000003fff27e30</span>
+        context (<span class="number">0x000000000dcce018</span>) = <span class="number">0x00000000fffa6040</span>
+        partnerConfig (<span class="number">0x000000000dcce020</span>) = <span class="number">0x00000000fffc3e50</span>
+
+<span class="number">000000000</span>dcce010 <span class="number">000007</span>fe91415529 iPaper<span class="preprocessor">.Web</span><span class="preprocessor">.FlexFrontend</span><span class="preprocessor">.BL</span><span class="preprocessor">.RequestHandler</span><span class="preprocessor">.RequestHandler</span><span class="preprocessor">.loadFrontendContext</span>(System<span class="preprocessor">.String</span>) [e:\iPaperCMS\Frontend\BL\RequestHandler\RequestHandler<span class="preprocessor">.cs</span> @ <span class="number">469</span>]
+    PARAMETERS:
+        this (<span class="number">0x000000000dcce260</span>) = <span class="number">0x00000000fffa9590</span>
+        paperPath (<span class="number">0x000000000dcce268</span>) = <span class="number">0x00000003fff27e30</span>
+
+<span class="number">000000000</span>dcce260 <span class="number">000007</span>fe91414b73 iPaper<span class="preprocessor">.Web</span><span class="preprocessor">.FlexFrontend</span><span class="preprocessor">.BL</span><span class="preprocessor">.RequestHandler</span><span class="preprocessor">.RequestHandler</span><span class="preprocessor">.context</span>_PostAcquireRequestState(System<span class="preprocessor">.Object</span>, System<span class="preprocessor">.EventArgs</span>) [e:\iPaperCMS\Frontend\BL\RequestHandler\RequestHandler<span class="preprocessor">.cs</span> @ <span class="number">95</span>]
+    PARAMETERS:
+        this (<span class="number">0x000000000dcce5f0</span>) = <span class="number">0x00000000fffa9590</span>
+        sender (<span class="number">0x000000000dcce5f8</span>) = <span class="number">0x00000000fffa8a50</span>
+        e (<span class="number">0x000000000dcce600</span>) = <span class="number">0x00000000fffaebb0</span>
+
+<span class="number">000000000</span>dcce5f0 <span class="number">000007</span>fedb72c520 System<span class="preprocessor">.Web</span><span class="preprocessor">.HttpApplication</span>+SyncEventExecutionStep<span class="preprocessor">.System</span><span class="preprocessor">.Web</span><span class="preprocessor">.HttpApplication</span><span class="preprocessor">.IExecutionStep</span><span class="preprocessor">.Execute</span>()
+    PARAMETERS:
+        this = &lt;no data&gt;
+
+<span class="number">000000000</span>dcce650 <span class="number">000007</span>fedb70b745 System<span class="preprocessor">.Web</span><span class="preprocessor">.HttpApplication</span><span class="preprocessor">.ExecuteStep</span>(IExecutionStep, Boolean ByRef)
+    PARAMETERS:
+        this (<span class="number">0x000000000dcce6f0</span>) = <span class="number">0x00000000fffa8a50</span>
+        step (<span class="number">0x000000000dcce6f8</span>) = <span class="number">0x00000000fffabc28</span>
+        completedSynchronously (<span class="number">0x000000000dcce700</span>) = <span class="number">0x000000000dcce77a</span>
+
+<span class="number">000000000</span>dcce6f0 <span class="number">000007</span>fedb72a4e1 System<span class="preprocessor">.Web</span><span class="preprocessor">.HttpApplication</span>+PipelineStepManager<span class="preprocessor">.ResumeSteps</span>(System<span class="preprocessor">.Exception</span>)
+    PARAMETERS:
+        this (<span class="number">0x000000000dcce7d0</span>) = <span class="number">0x00000000fffac718</span>
+        error = &lt;no data&gt;
+
+<span class="number">000000000</span>dcce7d0 <span class="number">000007</span>fedb70b960 System<span class="preprocessor">.Web</span><span class="preprocessor">.HttpApplication</span><span class="preprocessor">.BeginProcessRequestNotification</span>(System<span class="preprocessor">.Web</span><span class="preprocessor">.HttpContext</span>, System<span class="preprocessor">.AsyncCallback</span>)
+    PARAMETERS:
+        this = &lt;no data&gt;
+        context = &lt;no data&gt;
+        cb = &lt;no data&gt;
+
+<span class="number">000000000</span>dcce820 <span class="number">000007</span>fedb704c8e System<span class="preprocessor">.Web</span><span class="preprocessor">.HttpRuntime</span><span class="preprocessor">.ProcessRequestNotificationPrivate</span>(System<span class="preprocessor">.Web</span><span class="preprocessor">.Hosting</span><span class="preprocessor">.IIS</span>7WorkerRequest, System<span class="preprocessor">.Web</span><span class="preprocessor">.HttpContext</span>)
+    PARAMETERS:
+        this (<span class="number">0x000000000dcce8c0</span>) = <span class="number">0x00000000fff3fb20</span>
+        wr (<span class="number">0x000000000dcce8c8</span>) = <span class="number">0x00000000fffa5eb0</span>
+        context (<span class="number">0x000000000dcce8d0</span>) = <span class="number">0x00000000fffa6040</span>
+
+<span class="number">000000000</span>dcce8c0 <span class="number">000007</span>fedb70e771 System<span class="preprocessor">.Web</span><span class="preprocessor">.Hosting</span><span class="preprocessor">.PipelineRuntime</span><span class="preprocessor">.ProcessRequestNotificationHelper</span>(IntPtr, IntPtr, IntPtr, Int32)
+    PARAMETERS:
+        rootedObjectsPointer = &lt;no data&gt;
+        nativeRequestContext (<span class="number">0x000000000dccea58</span>) = <span class="number">0x0000000000ccccc0</span>
+        moduleData = &lt;no data&gt;
+        flags = &lt;no data&gt;
+
+<span class="number">000000000</span>dccea50 <span class="number">000007</span>fedb70e2c2 System<span class="preprocessor">.Web</span><span class="preprocessor">.Hosting</span><span class="preprocessor">.PipelineRuntime</span><span class="preprocessor">.ProcessRequestNotification</span>(IntPtr, IntPtr, IntPtr, Int32)
+    PARAMETERS:
+        rootedObjectsPointer = &lt;no data&gt;
+        nativeRequestContext = &lt;no data&gt;
+        moduleData = &lt;no data&gt;
+        flags = &lt;no data&gt;
+
+<span class="number">000000000</span>dcceaa0 <span class="number">000007</span>fedbe6b461 DomainNeutralILStubClass<span class="preprocessor">.IL</span>_STUB_ReversePInvoke(Int64, Int64, Int64, Int32)
+    PARAMETERS:
+        &lt;no data&gt;
+        &lt;no data&gt;
+        &lt;no data&gt;
+        &lt;no data&gt;
+
+<span class="number">000000000</span>dccf298 <span class="number">000007</span>fef0a9334e [InlinedCallFrame: <span class="number">000000000</span>dccf298] System<span class="preprocessor">.Web</span><span class="preprocessor">.Hosting</span><span class="preprocessor">.UnsafeIISMethods</span><span class="preprocessor">.MgdIndicateCompletion</span>(IntPtr, System<span class="preprocessor">.Web</span><span class="preprocessor">.RequestNotificationStatus</span> ByRef)
+<span class="number">000000000</span>dccf298 <span class="number">000007</span>fedb7b9c4b [InlinedCallFrame: <span class="number">000000000</span>dccf298] System<span class="preprocessor">.Web</span><span class="preprocessor">.Hosting</span><span class="preprocessor">.UnsafeIISMethods</span><span class="preprocessor">.MgdIndicateCompletion</span>(IntPtr, System<span class="preprocessor">.Web</span><span class="preprocessor">.RequestNotificationStatus</span> ByRef)
+<span class="number">000000000</span>dccf270 <span class="number">000007</span>fedb7b9c4b DomainNeutralILStubClass<span class="preprocessor">.IL</span>_STUB_PInvoke(IntPtr, System<span class="preprocessor">.Web</span><span class="preprocessor">.RequestNotificationStatus</span> ByRef)
+    PARAMETERS:
+        &lt;no data&gt;
+        &lt;no data&gt;
+
+<span class="number">000000000</span>dccf340 <span class="number">000007</span>fedb70e923 System<span class="preprocessor">.Web</span><span class="preprocessor">.Hosting</span><span class="preprocessor">.PipelineRuntime</span><span class="preprocessor">.ProcessRequestNotificationHelper</span>(IntPtr, IntPtr, IntPtr, Int32)
+    PARAMETERS:
+        rootedObjectsPointer = &lt;no data&gt;
+        nativeRequestContext = &lt;no data&gt;
+        moduleData = &lt;no data&gt;
+        flags = &lt;no data&gt;
+
+<span class="number">000000000</span>dccf4d0 <span class="number">000007</span>fedb70e2c2 System<span class="preprocessor">.Web</span><span class="preprocessor">.Hosting</span><span class="preprocessor">.PipelineRuntime</span><span class="preprocessor">.ProcessRequestNotification</span>(IntPtr, IntPtr, IntPtr, Int32)
+    PARAMETERS:
+        rootedObjectsPointer = &lt;no data&gt;
+        nativeRequestContext = &lt;no data&gt;
+        moduleData = &lt;no data&gt;
+        flags = &lt;no data&gt;
+
+<span class="number">000000000</span>dccf520 <span class="number">000007</span>fedbe6b461 DomainNeutralILStubClass<span class="preprocessor">.IL</span>_STUB_ReversePInvoke(Int64, Int64, Int64, Int32)
+    PARAMETERS:
+        &lt;no data&gt;
+        &lt;no data&gt;
+        &lt;no data&gt;
+        &lt;no data&gt;
+
+<span class="number">000000000</span>dccf768 <span class="number">000007</span>fef0a935a3 [ContextTransitionFrame: <span class="number">000000000</span>dccf768]
+</pre></figure>
+
+<p>This returns the full stack with a lot of frames that we’re not really interested in. What we’re looking for is the first instance of an HttpContext. If we start from the bottom and work our way up, this seems to be the first time an HttpContext is present:</p>
+<figure class="highlight"><pre><span class="number">000000000</span>dcce820 <span class="number">000007</span>fedb704c8e System<span class="preprocessor">.Web</span><span class="preprocessor">.HttpRuntime</span><span class="preprocessor">.ProcessRequestNotificationPrivate</span>(System<span class="preprocessor">.Web</span><span class="preprocessor">.Hosting</span><span class="preprocessor">.IIS</span>7WorkerRequest, System<span class="preprocessor">.Web</span><span class="preprocessor">.HttpContext</span>)
+    PARAMETERS:
+        this (<span class="number">0x000000000dcce8c0</span>) = <span class="number">0x00000000fff3fb20</span>
+        wr (<span class="number">0x000000000dcce8c8</span>) = <span class="number">0x00000000fffa5eb0</span>
+        context (<span class="number">0x000000000dcce8d0</span>) = <span class="number">0x00000000fffa6040</span>
+</pre></figure>
+
+<p>Knowing that the HttpContext contains a reference to an HttpRequest, and that HttpRequest contains the RawUrl string value, we’ll start digging in. Start out by dumping the HttpContext object using the !do command:</p>
+<figure class="highlight"><pre><span class="number">0</span>:<span class="number">020</span>&gt; !do <span class="number">0x00000000fffa6040</span>
+
+<span class="label">Name:</span>        System<span class="preprocessor">.Web</span><span class="preprocessor">.HttpContext</span>
+<span class="label">MethodTable:</span> <span class="number">000007</span>fedb896398
+<span class="label">EEClass:</span>     <span class="number">000007</span>fedb4882e0
+<span class="label">Size:</span>        <span class="number">416</span>(<span class="number">0x1a0</span>) bytes
+<span class="label">File:</span>        C:\Windows\Microsoft<span class="preprocessor">.Net</span>\assembly\GAC_64\System<span class="preprocessor">.Web</span>\v4<span class="number">.0</span>_4<span class="number">.0</span><span class="number">.0</span><span class="number">.0</span>__b03f5f7f11d50a3a\System<span class="preprocessor">.Web</span><span class="preprocessor">.dll</span>
+<span class="label">Fields:</span>
+              MT    Field   Offset                 Type VT     Attr            Value Name
+<span class="number">000007</span>fedb897c80  <span class="number">40010</span>a3        <span class="number">8</span> ..<span class="preprocessor">.IHttpAsyncHandler</span>  <span class="number">0</span> instance <span class="number">0000000000000000</span> _asyncAppHandler
+<span class="number">000007</span>fedb88e618  <span class="number">40010</span>a4      <span class="number">158</span>         System<span class="preprocessor">.Int</span>32  <span class="number">1</span> instance                <span class="number">0</span> _asyncPreloadModeFlags
+<span class="number">000007</span>feef9fdc30  <span class="number">40010</span>a5      <span class="number">168</span>       System<span class="preprocessor">.Boolean</span>  <span class="number">1</span> instance                <span class="number">0</span> _asyncPreloadModeFlagsSet
+<span class="number">000007</span>fedb895610  <span class="number">40010</span>a6       <span class="number">10</span> ..<span class="preprocessor">.b</span><span class="preprocessor">.HttpApplication</span>  <span class="number">0</span> instance <span class="number">00000000</span>fffa8a50 _appInstance
+<span class="number">000007</span>fedb897ce8  <span class="number">40010</span>a7       <span class="number">18</span> ...<span class="preprocessor">.Web</span><span class="preprocessor">.IHttpHandler</span>  <span class="number">0</span> instance <span class="number">00000003</span>fff28c20 _handler
+<span class="number">000007</span>fedb898170  <span class="number">40010</span>a8       <span class="number">20</span> ..<span class="preprocessor">.m</span><span class="preprocessor">.Web</span><span class="preprocessor">.HttpRequest</span>  <span class="number">0</span> instance <span class="number">00000000</span>fffa61f8 _request
+<span class="number">000007</span>fedb898550  <span class="number">40010</span>a9       <span class="number">28</span> ...<span class="preprocessor">.Web</span><span class="preprocessor">.HttpResponse</span>  <span class="number">0</span> instance <span class="number">00000000</span>fffa6378 _response
+<span class="number">000007</span>fedb893cb0  <span class="number">40010</span>aa       <span class="number">30</span> ..<span class="preprocessor">.HttpServerUtility</span>  <span class="number">0</span> instance <span class="number">00000003</span>fff27ed8 _server
+<span class="number">000007</span>feefa05ac0  <span class="number">40010</span>ab       <span class="number">38</span> ..<span class="preprocessor">.Collections</span><span class="preprocessor">.Stack</span>  <span class="number">0</span> instance <span class="number">0000000000000000</span> _traceContextStack
+<span class="number">000007</span>fedb8a41d8  <span class="number">40010</span>ac       <span class="number">40</span> ...<span class="preprocessor">.Web</span><span class="preprocessor">.TraceContext</span>  <span class="number">0</span> instance <span class="number">0000000000000000</span> _topTraceContext
+<span class="number">000007</span>feefa00548  <span class="number">40010</span>ad       <span class="number">48</span> ..<span class="preprocessor">.ections</span><span class="preprocessor">.Hashtable</span>  <span class="number">0</span> instance <span class="number">00000000</span>fffab198 _items
+<span class="number">000007</span>feef9f85e0  <span class="number">40010</span>ae       <span class="number">50</span> ..<span class="preprocessor">.ections</span><span class="preprocessor">.ArrayList</span>  <span class="number">0</span> instance <span class="number">0000000000000000</span> _errors
+<span class="number">000007</span>feef9fc588  <span class="number">40010</span>af       <span class="number">58</span>     System<span class="preprocessor">.Exception</span>  <span class="number">0</span> instance <span class="number">0000000000000000</span> _tempError
+...
+</pre></figure>
+
+<p>This contains a lot of fields (some of which I’ve snipped out). The interesting part however, is this line:</p>
+<figure class="highlight"><pre><span class="number">000007</span>fedb898170  <span class="number">40010</span>a8       <span class="number">20</span> ..<span class="preprocessor">.m</span><span class="preprocessor">.Web</span><span class="preprocessor">.HttpRequest</span>  <span class="number">0</span> instance <span class="number">00000000</span>fffa61f8 _request
+</pre></figure>
+
+<p>This contains a pointer to the HttpRequest instance. Let’s try dumping that one:</p>
+<figure class="highlight"><pre><span class="number">0</span>:<span class="number">020</span>&gt; !do <span class="number">00000000</span>fffa61f8 
+
+<span class="label">Name:</span>        System<span class="preprocessor">.Web</span><span class="preprocessor">.HttpRequest</span>
+<span class="label">MethodTable:</span> <span class="number">000007</span>fedb898170
+<span class="label">EEClass:</span>     <span class="number">000007</span>fedb488c00
+<span class="label">Size:</span>        <span class="number">384</span>(<span class="number">0x180</span>) bytes
+<span class="label">File:</span>        C:\Windows\Microsoft<span class="preprocessor">.Net</span>\assembly\GAC_64\System<span class="preprocessor">.Web</span>\v4<span class="number">.0</span>_4<span class="number">.0</span><span class="number">.0</span><span class="number">.0</span>__b03f5f7f11d50a3a\System<span class="preprocessor">.Web</span><span class="preprocessor">.dll</span>
+<span class="label">Fields:</span>
+              MT    Field   Offset                 Type VT     Attr            Value Name
+<span class="number">000007</span>fedb89aa30  <span class="number">4001150</span>        <span class="number">8</span> ..<span class="preprocessor">.HttpWorkerRequest</span>  <span class="number">0</span> instance <span class="number">00000000</span>fffa5eb0 _wr
+<span class="number">000007</span>fedb896398  <span class="number">4001151</span>       <span class="number">10</span> ..<span class="preprocessor">.m</span><span class="preprocessor">.Web</span><span class="preprocessor">.HttpContext</span>  <span class="number">0</span> instance <span class="number">00000000</span>fffa6040 _context
+...
+<span class="number">000007</span>fee6e1dc48  <span class="number">4001165</span>       <span class="number">90</span>           System<span class="preprocessor">.Uri</span>  <span class="number">0</span> instance <span class="number">00000003</span>fff29588 _url
+<span class="number">000007</span>fee6e1dc48  <span class="number">4001166</span>       <span class="number">98</span>           System<span class="preprocessor">.Uri</span>  <span class="number">0</span> instance <span class="number">0000000000000000</span> _referrer
+<span class="number">000007</span>fedb900718  <span class="number">4001167</span>       a0 ..<span class="preprocessor">.b</span><span class="preprocessor">.HttpInputStream</span>  <span class="number">0</span> instance <span class="number">0000000000000000</span> _inputStream
+<span class="number">000007</span>fedb8c43d0  <span class="number">4001168</span>       a8 ..<span class="preprocessor">.ClientCertificate</span>  <span class="number">0</span> instance <span class="number">0000000000000000</span> _clientCertificate
+<span class="number">000007</span>feefa07e90  <span class="number">4001169</span>       b0 ..<span class="preprocessor">.l</span><span class="preprocessor">.WindowsIdentity</span>  <span class="number">0</span> instance <span class="number">0000000000000000</span> _logonUserIdentity
+<span class="number">000007</span>fedb8d7fd0  <span class="number">400116</span>a       b8 ..<span class="preprocessor">.ng</span><span class="preprocessor">.RequestContext</span>  <span class="number">0</span> instance <span class="number">0000000000000000</span> _requestContext
+<span class="number">000007</span>feef9fc358  <span class="number">400116</span>b       c0        System<span class="preprocessor">.String</span>  <span class="number">0</span> instance <span class="number">00000000</span>fffa64f0 _rawUrl
+<span class="number">000007</span>feefa008b8  <span class="number">400116</span>c       c8     System<span class="preprocessor">.IO</span><span class="preprocessor">.Stream</span>  <span class="number">0</span> instance <span class="number">0000000000000000</span> _readEntityBodyStream
+<span class="number">000007</span>fedb8d5ac8  <span class="number">400116</span>d      <span class="number">160</span>         System<span class="preprocessor">.Int</span>32  <span class="number">1</span> instance                <span class="number">0</span> _readEntityBodyMode
+<span class="number">000007</span>fedb8bbcb0  <span class="number">400116</span>e       d0 ..<span class="preprocessor">.atedRequestValues</span>  <span class="number">0</span> instance <span class="number">00000003</span>fff27fe8 _unvalidatedRequestValues
+...
+</pre></figure>
+
+<p>Once again there are a lot of fields that we don’t care about. The interesting one is this one:</p>
+<figure class="highlight"><pre><span class="number">000007f</span>eef9fc358  <span class="number">400116</span>b       c0        System.String  <span class="number">0</span> instance <span class="number">00000000f</span>ffa64f0 _rawUrl
+</pre></figure>
+
+<p>Dumping the RawUrl property reveals the actual URL that made the request which eventually ended up causing a runaway thread:</p>
+<figure class="highlight"><pre><span class="number">0</span>:<span class="number">020</span>&gt; !do <span class="number">00000000</span>fffa64f0 
+
+<span class="label">Name:</span>        System<span class="preprocessor">.String</span>
+<span class="label">MethodTable:</span> <span class="number">000007</span>feef9fc358
+<span class="label">EEClass:</span>     <span class="number">000007</span>feef363720
+<span class="label">Size:</span>        <span class="number">150</span>(<span class="number">0x96</span>) bytes
+<span class="label">File:</span>        C:\Windows\Microsoft<span class="preprocessor">.Net</span>\assembly\GAC_64\mscorlib\v4<span class="number">.0</span>_4<span class="number">.0</span><span class="number">.0</span><span class="number">.0</span>__b77a5c561934e089\mscorlib<span class="preprocessor">.dll</span>
+<span class="label">String:</span>      /Catalogs/SomeClient/Uge45/Image<span class="preprocessor">.ashx</span>?PageNumber=<span class="number">1</span>&ImageType=Thumb
+<span class="label">Fields:</span>
+              MT    Field   Offset                 Type VT     Attr            Value Name
+<span class="number">000007</span>feef9ff108  <span class="number">40000</span>aa        <span class="number">8</span>         System<span class="preprocessor">.Int</span>32  <span class="number">1</span> instance               <span class="number">62</span> m_stringLength
+<span class="number">000007</span>feef9fd640  <span class="number">40000</span>ab        c          System<span class="preprocessor">.Char</span>  <span class="number">1</span> instance               <span class="number">2</span>f m_firstChar
+<span class="number">000007</span>feef9fc358  <span class="number">40000</span>ac       <span class="number">18</span>        System<span class="preprocessor">.String</span>  <span class="number">0</span>   shared           static Empty
+                                 &gt;&gt; Domain:Value  <span class="number">0000000001</span>ec80e0:NotInit  <span class="number">0000000001</span>f8e840:NotInit
+</pre></figure>
+
+<p>And there we go! The offending URL seems to be:</p>
+<figure class="highlight"><pre>/Catalogs/SomeClient/Uge45/<span class="keyword">Image</span>.ashx?PageNumber=<span class="number">1</span>&<span class="keyword">ImageType</span>=Thumb
+</pre></figure>
+
+<p>If you want the complete URL, including hostname, you could dig your way into the _url field on the HttpRequest object and work your way from there. In just the same way you can dig into pretty much any object, whether it’s in your code or in the IIS codebase.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=How%20to%20Identify%20Which%20Request%20Caused%20a%20Runaway%20Thread%2C%20Using%20Windbg%20http%3A%2F%2Fimprove.dk%2Fhow-to-identify-which-request-caused-a-runaway-thread-using-windbg%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fhow-to-identify-which-request-caused-a-runaway-thread-using-windbg%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fhow-to-identify-which-request-caused-a-runaway-thread-using-windbg%2F&title=How%20to%20Identify%20Which%20Request%20Caused%20a%20Runaway%20Thread%2C%20Using%20Windbg" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/how-to-identify-which-request-caused-a-runaway-thread-using-windbg/how-to-identify-which-request-caused-a-runaway-thread-using-windbg.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'how-to-identify-which-request-caused-a-runaway-thread-using-windbg';
+	var disqus_url = 'http://improve.dk/how-to-identify-which-request-caused-a-runaway-thread-using-windbg/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">19</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/checking-which-database-is-stored-in-a-deattached-mdf-file/" title="Checking Which Database is Stored in a Detached MDF File" rel="bookmark">Checking Which Database is Stored in a Detached MDF File</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Inspired by <a href="http://stackoverflow.com/questions/6061510/any-way-to-quickly-tell-which-database-if-any-is-attached-to-a-mdf-file" target="_blank">this</a> question on StackOverflow, I’ve made a quick script to demonstrate how this might be done using <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a>.</p>
+<a id="more"></a>
+
+<p>In this example I’m looping all .mdf files in my local SQL Server data directory. Each one is loaded using OrcaMDF, the boot page is fetched and finally the database name is printed:</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.IO;
+<span class="keyword">using</span> OrcaMDF.Core.Engine;
+
+<span class="class"><span class="keyword">namespace</span> <span class="title">OrcaMDF</span>.<span class="title">Adhoc</span>
+{</span>
+    <span class="class"><span class="keyword">class</span> <span class="title">Program</span>
+    {</span>
+        <span class="keyword">static</span> <span class="keyword">void</span> Main()
+        {
+			<span class="keyword">foreach</span> (<span class="keyword">string</span> mdfPath in Directory.GetFiles(@<span class="string">"C:\Program Files\Microsoft SQL Server\MSSQL10_50.MSSQLSERVER\MSSQL\DATA"</span>))
+			{
+				if (!mdfPath.ToLower().EndsWith(<span class="string">".mdf"</span>))
+					continue;
+
+				<span class="keyword">using</span> (<span class="keyword">var</span> file = <span class="keyword">new</span> MdfFile(mdfPath))
+				{
+					<span class="keyword">var</span> bootPage = file.GetBootPage();
+					Console.WriteLine(bootPage.DatabaseName);
+				}
+			}
+        }
+    }
+}
+</pre></figure>
+
+<p>And the following is the output we get:</p>
+<div class="imgwrapper" style=""><div><a href="/checking-which-database-is-stored-in-a-deattached-mdf-file/image_21.png" class="fancy"><img src="/checking-which-database-is-stored-in-a-deattached-mdf-file/image_21.png" style="max-height: 250px"/></a></div></div>
+
+<p>Which, coincidentally, matches up to the databases I’ve got attached to my local SQL Server. At this point we could match this list up to the one we’d get from sys.databases and see which files didn’t have a matching database, and thus weed out the non-attached mdf files from our data directory.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">17</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/wasted-bytes-add-up-consider-your-data-types-carefully/" title="Wasted Bytes Add Up, Consider Your Data Types Carefully" rel="bookmark">Wasted Bytes Add Up, Consider Your Data Types Carefully</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Optimization/">SQL Server - Optimization</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I recently had a look at the statistics storage of a system I designed some time ago. As is usually the case, back when I made it, I neither expected nor planned for a large amount data, and yet somehow that table currently has about 750m rows in it.</p>
+<a id="more"></a>
+
+<p>The basic schema for the table references a given entity and a page number, both represented by ints. Furthermore we register the users Flash version, their IP and the date of the hit.</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> #HitsV1
+(
+	EntityID <span class="keyword">int</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span>,
+	PageNumber <span class="keyword">int</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span>,
+	Created datetime <span class="keyword">NOT</span> <span class="keyword">NULL</span>,
+	FlashVersion <span class="keyword">int</span> <span class="keyword">NULL</span>,
+	IP <span class="keyword">varchar</span>(<span class="number">15</span>) <span class="keyword">NULL</span>
+)</span>
+</pre></figure>
+
+<p>Taking a look at the schema, we can calculate the size of the data in the record (synonymous to a row, indicating the structure on disk) to be 4 + 4 + 8 + 4 + 15 = 35 bytes. However, there’s overhead to a record as well, and the narrower the row, the more overhead, relatively.</p>
+<p>In this case, the overhead consists of:</p>
+<table>
+<thead>
+<tr>
+<th>Bytes</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2</td>
+<td>Status bits A &amp; B</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Length of fixed-length data</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Number of columns</td>
+</tr>
+<tr>
+<td>1</td>
+<td>NULL bitmap</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Number of variable length columns</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Variable length column offset array</td>
+</tr>
+</tbody>
+</table>
+<p>Finally, each record has an accompanying two byte pointer in the row offset array, meaning the total overhead per record amounts to 13 bytes. Thus we’ve got 48 bytes in total per record, and with 8096 bytes of available data space per page, that amounts to a max of about 168 rows per page.</p>
+<p>To test things out, we’ll insert 100k rows into the table:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">BEGIN</span> TRAN
+<span class="keyword">DECLARE</span> @Cnt <span class="keyword">int</span> = <span class="number">0</span>
+WHILE @Cnt &lt; <span class="number">100000</span> <span class="keyword">BEGIN</span>
+
+	<span class="keyword">INSERT</span> <span class="keyword">INTO</span> #HitsV1 <span class="keyword">VALUES</span> (<span class="number">1</span>, <span class="number">1</span>, getdate(), <span class="number">1</span>, <span class="string">'255.255.255.255'</span>)
+
+	<span class="keyword">SET</span> @Cnt = @Cnt + <span class="number">1</span>
+<span class="keyword">END</span>
+<span class="keyword">COMMIT</span></span>
+</pre></figure>
+
+<p>Note that the actual values doesn’t matter as we’re only looking at the storage effects. Given 168 rows per page, 100.000 rows should fit in about 100.000 / 168 ~= 596 pages. Taking a look at the currently used page count, it’s a pretty close estimate:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	AU.*
+<span class="keyword">FROM</span>
+	sys.allocation_units AU
+<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
+	sys.partitions P <span class="keyword">ON</span> AU.container_id = P.partition_id
+<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
+	sys.objects O <span class="keyword">ON</span> O.object_id = P.object_id
+<span class="keyword">WHERE</span>
+	O.name <span class="keyword">LIKE</span> <span class="string">'#HitsV1%'</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/wasted-bytes-add-up-consider-your-data-types-carefully/image_25.png" class="fancy"><img src="/wasted-bytes-add-up-consider-your-data-types-carefully/image_25.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Reconsidering_data_types_by_looking_at_reality_and_business_specs?">Reconsidering data types by looking at reality and business specs?</h2>
+<p>If we start out by looking at the overhead, we’ve got a total of four bytes spent on managing the single variable-length IP field. We could change it into a char(15), but then we’d waste space for IP’s like 127.0.0.1 and there’s the whole spaces-at-the-end issue. If we instead convert the IP into an 8-byte bigint on the application side, we save 7 bytes on the column itself, plus 4 for the overhead!</p>
+<p>Looking at the FlashVersion field, why do we need a 4-byte integer capable of storing values between –2.147.483.468 and 2.147.483.647 when the actual Flash version range between 1 and 11? Changing that field into a tinyint just saved us 3 bytes more per record!</p>
+<p>Reading through our product specs I realize we’ll never need to support more than 1000 pages per entity, and we don’t need to store statistics more precisely than to-the-hour. Converting PageNumber to a smallint just saved 2 extra bytes per record!</p>
+<p>As for the Created field, it currently takes up 8 bytes per record and has the ability to store the time with a precision down to one thee-hundredth of a second – obviously way more precise than what we need. Smalldatetime would be much more fitting, storing the precision down to the minute and taking up only 4 bytes – saving a final 4 bytes per record. I we wanted to push it to the extreme we could split Created into two fields – a 3 byte date field and a 1 byte tinyint field for the hour. Though it’d take up the same space, we just gained the ability to store dates all the way up to year 9999 instead of <em>only </em>2079. As the rapture is coming up shortly, we’ll skip that for now.</p>
+<p>So to sum it up, we just saved:</p>
+<table>
+<thead>
+<tr>
+<th>Bytes</th>
+<th>Cause</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>11</td>
+<td>Converting IP to bigint</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Converting FlashVersion to tinyint</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Converting PageNumber to smallint</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Converting Created to smalldatetime</td>
+</tr>
+</tbody>
+</table>
+<p>In total, 20 bytes per record, resulting in a new total record size of 26 – 28 including the slot offset array pointer. This means we can now fit in 289 rows per page instead of the previous 168.</p>
+<p>Testing the new format reveals we’re down to just 364 pages now:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> #HitsV2
+(
+	EntityID <span class="keyword">int</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span>,
+	CategoryID <span class="keyword">smallint</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span>,
+	Created smalldatetime <span class="keyword">NOT</span> <span class="keyword">NULL</span>,
+	FlashVersion tinyint <span class="keyword">NULL</span>,
+	IP bigint <span class="keyword">NULL</span>
+)
+
+<span class="keyword">BEGIN</span> TRAN
+<span class="keyword">DECLARE</span> @Cnt <span class="keyword">int</span> = <span class="number">0</span>
+WHILE @Cnt &lt; <span class="number">100000</span> <span class="keyword">BEGIN</span>
+
+	<span class="keyword">INSERT</span> <span class="keyword">INTO</span> #HitsV2 <span class="keyword">VALUES</span> (<span class="number">1</span>, <span class="number">1</span>, getdate(), <span class="number">1</span>, <span class="number">1</span>)
+
+	<span class="keyword">SET</span> @Cnt = @Cnt + <span class="number">1</span>
+<span class="keyword">END</span>
+<span class="keyword">COMMIT</span>
+
+<span class="keyword">SELECT</span>
+	AU.*
+<span class="keyword">FROM</span>
+	sys.allocation_units AU
+<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
+	sys.partitions P <span class="keyword">ON</span> AU.container_id = P.partition_id
+<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
+	sys.objects O <span class="keyword">ON</span> O.object_id = P.object_id
+<span class="keyword">WHERE</span>
+	O.name <span class="keyword">LIKE</span> <span class="string">'#HitsV2%'</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/wasted-bytes-add-up-consider-your-data-types-carefully/image_42.png" class="fancy"><img src="/wasted-bytes-add-up-consider-your-data-types-carefully/image_42.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="The_more_rows,_the_more_waste">The more rows, the more waste</h2>
+<p>Looking back at the 750m table, the original format would (assuming an utopian zero fragmentation) take up just about:</p>
+<blockquote>
+<p>750.000.000 / 168 * 8 / 1024 / 1024 ~= 34 gigabytes.</p>
+</blockquote>
+<p>Whereas the new format takes up a somewhat lower:</p>
+<blockquote>
+<p>750.000.000 / 289 * 8 / 1024 / 1024 ~= 20 gigabytes.</p>
+</blockquote>
+<p>And there we have it – spending just a short while longer considering the actual business &amp; data needs when designing your tables can save you some considerable space, resulting in better performance and lower IO subsystem requirements.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">12</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/reading-bits-in-orcamdf/" title="Reading Bits in OrcaMDF" rel="bookmark">Reading Bits in OrcaMDF</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Bits are stored very differently from other fixed length data types in SQL Server. Usually all fixed length columns will be present, one after the other, in the fixed data part of a record. As the smallest unit of data we can write to disk is a byte, the naïve approach to storing bits would be to use a whole bit for each bit. It would be very simple to parse as it would follow the usual scheme, but it would also waste quite some space.</p>
+<a id="more"></a>
+
+<h2 id="How_are_bits_stored_internally_on_records?">How are bits stored internally on records?</h2>
+<p>Instead, several bit columns values are stored in a single byte, up to a total of 8 max, naturally. Say we had a table definition like this:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> BitTest
+(
+	A <span class="keyword">bit</span>
+	B <span class="keyword">bit</span>
+	C <span class="keyword">bit</span>
+	D <span class="keyword">int</span>
+)</span>
+</pre></figure>
+
+<p>The fixed length data part of our record would be 5 bytes, 4 for the integer column and a single byte, of which only three bits are used, for the bit columns.</p>
+<div class="imgwrapper" style=""><div><a href="/reading-bits-in-orcamdf/image_27.png" class="fancy"><img src="/reading-bits-in-orcamdf/image_27.png" style="max-height: 250px"/></a></div></div>
+
+<p>Let’s add some more columns:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> BitTest
+(
+	A <span class="keyword">bit</span>
+	B <span class="keyword">bit</span>
+	C <span class="keyword">bit</span>
+	D <span class="keyword">int</span>
+	E <span class="keyword">bit</span>
+	F <span class="keyword">bit</span>
+	G <span class="keyword">bit</span>
+	H <span class="keyword">smallint</span>
+	I <span class="keyword">bit</span>
+	J <span class="keyword">bit</span>
+	K <span class="keyword">bit</span>
+)</span>
+</pre></figure>
+
+<p>The bit columns E-G’s ordinal position is after D, but they’ll continue to use the first “bit byte” until it’s full. The following diagram shows that the H smallint column is stored directly after the int column, and not until we add the 9th bit is a new bit byte added:</p>
+<div class="imgwrapper" style=""><div><a href="/reading-bits-in-orcamdf/image_43.png" class="fancy"><img src="/reading-bits-in-orcamdf/image_43.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="The_need_for_state_while_reading_bits_from_records">The need for state while reading bits from records</h2>
+<p>Obviously we can’t just read one field at a time, incrementing the fixed length data offset pointer for each read, as we usually do for normal fixed length data types. We need some kind of state that will tell us which byte we’re currently reading bits from, and when to read a new bit byte. Allow me to introduce RecordReadState:</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> RecordReadState
+{
+	<span class="comment">// We start out having consumed all bits as none have been read</span>
+	<span class="keyword">private</span> <span class="keyword">int</span> currentBitIndex = <span class="number">8</span>;
+	<span class="keyword">private</span> <span class="keyword">byte</span> bits;
+
+	<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">LoadBitByte</span>(<span class="keyword">byte</span> bits)
+	{
+		<span class="keyword">this</span>.bits = bits;
+		currentBitIndex = <span class="number">0</span>;
+	}
+
+	<span class="keyword">public</span> <span class="keyword">bool</span> AllBitsConsumed
+	{
+		<span class="keyword">get</span> { <span class="keyword">return</span> currentBitIndex == <span class="number">8</span>; }
+	}
+
+	<span class="keyword">public</span> <span class="keyword">bool</span> <span class="title">GetNextBit</span>()
+	{
+		<span class="keyword">return</span> (bits & (<span class="number">1</span> &lt;&lt; currentBitIndex++)) != <span class="number">0</span>;
+	}
+}
+</pre></figure>
+
+<p>RecordReadState is currently only used for handling bits, but I’ve decided on not creating a BitReadState as we may need to save further read state further along. RecordReadState holds a single byte as well as a pointer that points to the next available bit in that byte. If the byte is exhausted (currentBixIndex = 8 (0-7 being the available bits)), AllBitsConsumed will return true, indicating we need to read in a new bit byte. GetNextBit simply reads the current bit from the bit byte, after which it increases the current bit index. <a href="https://github.com/improvedk/OrcaMDF/blob/58250bef24265900b6d94ec90be41b0647508b35/src/OrcaMDF.Core.Tests/Engine/Records/RecordReadStateTests.cs" target="_blank">See the tests</a> for demonstration.</p>
+<h2 id="Implementing_SqlBit">Implementing SqlBit</h2>
+<p>Once we have the read state implemented, we can implement the SqlBit type:</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlBit : ISqlType
+{
+	<span class="keyword">private</span> <span class="keyword">readonly</span> RecordReadState readState;
+
+	<span class="keyword">public</span> <span class="title">SqlBit</span>(RecordReadState readState)
+	{
+		<span class="keyword">this</span>.readState = readState;
+	}
+
+	<span class="keyword">public</span> <span class="keyword">bool</span> IsVariableLength
+	{
+		<span class="keyword">get</span> { <span class="keyword">return</span> <span class="keyword">false</span>; }
+	}
+
+	<span class="keyword">public</span> <span class="keyword">short</span>? FixedLength
+	{
+		<span class="keyword">get</span>
+		{
+			<span class="keyword">if</span> (readState.AllBitsConsumed)
+				<span class="keyword">return</span> <span class="number">1</span>;
+
+			<span class="keyword">return</span> <span class="number">0</span>;
+		}
+	}
+
+	<span class="keyword">public</span> <span class="keyword">object</span> <span class="title">GetValue</span>(<span class="keyword">byte</span>[] <span class="keyword">value</span>)
+	{
+		<span class="keyword">if</span>(readState.AllBitsConsumed && <span class="keyword">value</span>.Length != <span class="number">1</span>)
+			<span class="keyword">throw</span> <span class="keyword">new</span> ArgumentException(<span class="string">"All bits consumed, invalid value length: "</span> + <span class="keyword">value</span>.Length);
+
+		<span class="keyword">if</span> (<span class="keyword">value</span>.Length == <span class="number">1</span>)
+			readState.LoadBitByte(<span class="keyword">value</span>[<span class="number">0</span>]);
+
+		<span class="keyword">return</span> readState.GetNextBit();
+	}
+}
+</pre></figure>
+
+<p>SqlBit requires a read state in the constructor, which is scoped for the current record read operation. It’s important to note that the FixedLength depends on the current AllBitsConsumed value of the read state. Once all bits have been consumed, the current bit field will technically have a length of one – causing a byte to be read. If it’s zero, no bytes will be read, but GetValue will still be invoked. GetValue asserts that there are bits available in case a byte wasn’t read (value.Length == 0). If a value was read, we ask the read state to load a new bit byte, after which we can call GetNextBit to return the current bit from the read state. <a href="https://github.com/improvedk/OrcaMDF/blob/58250bef24265900b6d94ec90be41b0647508b35/src/OrcaMDF.Core.Tests/Engine/SqlTypes/SqlBitTests.cs" target="_blank">See tests of SqlBit</a>.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">10</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/parsing-dates-in-orcamdf/" title="Parsing Dates in OrcaMDF" rel="bookmark">Parsing Dates in OrcaMDF</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>There are several different date related data types in SQL Server. Currently <a href="introducing-orcamdf">OrcaMDF</a> supports the three most common types: <a href="http://msdn.microsoft.com/en-us/library/bb630352.aspx" target="_blank">date</a>, <a href="http://msdn.microsoft.com/en-us/library/ms187819.aspx" target="_blank">datetime</a> &amp; <a href="http://msdn.microsoft.com/en-us/library/ms182418.aspx" target="_blank">smalldatetime</a>.</p>
+<a id="more"></a>
+
+<h2 id="Implementing_SqlDate">Implementing SqlDate</h2>
+<p>The simplest of the three is date – it’s a 3 byte fixed length type that stores the number of days passed since the default value of 1900-01-01. The only tricky part is that .NET does not have any standard representation of three byte integer values, only shorts &amp; ints which are either too large or too small. Thus, to read the number of days correctly, we’ll have to perform some shift magic to get the correct number into a .NET four byte integer. Once we’ve got the date, we can just create a new default DateTime and add the number of days.</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlDate : ISqlType
+{
+	<span class="keyword">public</span> <span class="keyword">bool</span> IsVariableLength
+	{
+		<span class="keyword">get</span> { <span class="keyword">return</span> <span class="keyword">false</span>; }
+	}
+
+	<span class="keyword">public</span> <span class="keyword">short</span>? FixedLength
+	{
+		<span class="keyword">get</span> { <span class="keyword">return</span> <span class="number">3</span>; }
+	}
+
+	<span class="keyword">public</span> <span class="keyword">object</span> <span class="title">GetValue</span>(<span class="keyword">byte</span>[] <span class="keyword">value</span>)
+	{
+		<span class="keyword">if</span> (<span class="keyword">value</span>.Length != <span class="number">3</span>)
+			<span class="keyword">throw</span> <span class="keyword">new</span> ArgumentException(<span class="string">"Invalid value length: "</span> + <span class="keyword">value</span>.Length);
+
+		<span class="comment">// Magic needed to read a 3 byte integer into .NET's 4 byte representation.</span>
+		<span class="comment">// Reading backwards due to assumed little endianness.</span>
+		<span class="keyword">int</span> date = (<span class="keyword">value</span>[<span class="number">2</span>] &lt;&lt; <span class="number">16</span>) + (<span class="keyword">value</span>[<span class="number">1</span>] &lt;&lt; <span class="number">8</span>) + <span class="keyword">value</span>[<span class="number">0</span>];
+
+		<span class="keyword">return</span> <span class="keyword">new</span> DateTime(<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>).AddDays(date);
+	}
+}
+</pre></figure>
+
+<p>You can see the <a href="https://github.com/improvedk/OrcaMDF/blob/58250bef24265900b6d94ec90be41b0647508b35/src/OrcaMDF.Core.Tests/Engine/SqlTypes/SqlDateTests.cs" target="_blank">relevant tests here</a>.</p>
+<h2 id="Adding_time_–_implementing_SqlDateTime">Adding time – implementing SqlDateTime</h2>
+<p>Whereas date only stores the date, datetime also stores a time factor. Datetime is stored as a fixed length 8 byte value, the first being the time part while the second is the date part. Calculating the date is done more or less the same way as in the date example, except this time it’s stored as a normal four byte integer, so it’s much easier to handle. The time part is stored as the number of clock ticks since midnight, with one tick being 1/300th of a second. To represent the tick value, we first define a constant with the value 10d/3d.</p>
+<p>All time values are actually stored in the same integer time value, so to access the individual values, we’ll need to perform some division &amp; modulus.</p>
+<table>
+<thead>
+<tr>
+<th>Part</th>
+<th>Calculations</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hours</td>
+<td>X / 300 / 60 / 60</td>
+</tr>
+<tr>
+<td>Minutes</td>
+<td>X / 300 / 60 % 60</td>
+</tr>
+<tr>
+<td>Seconds</td>
+<td>X / 300 % 60</td>
+</tr>
+<tr>
+<td>Milliseconds</td>
+<td>X % 300 * 10d / 3d</td>
+</tr>
+</tbody>
+</table>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlDateTime : ISqlType
+{
+	<span class="keyword">private</span> <span class="keyword">const</span> <span class="keyword">double</span> CLOCK_TICK_MS = <span class="number">10</span>d/<span class="number">3</span>d;
+
+	<span class="keyword">public</span> <span class="keyword">bool</span> IsVariableLength
+	{
+		<span class="keyword">get</span> { <span class="keyword">return</span> <span class="keyword">false</span>; }
+	}
+
+	<span class="keyword">public</span> <span class="keyword">short</span>? FixedLength
+	{
+		<span class="keyword">get</span> { <span class="keyword">return</span> <span class="number">8</span>; }
+	}
+
+	<span class="keyword">public</span> <span class="keyword">object</span> <span class="title">GetValue</span>(<span class="keyword">byte</span>[] <span class="keyword">value</span>)
+	{
+		<span class="keyword">if</span> (<span class="keyword">value</span>.Length != <span class="number">8</span>)
+			<span class="keyword">throw</span> <span class="keyword">new</span> ArgumentException(<span class="string">"Invalid value length: "</span> + <span class="keyword">value</span>.Length);
+
+		<span class="keyword">int</span> time = BitConverter.ToInt32(<span class="keyword">value</span>, <span class="number">0</span>);
+		<span class="keyword">int</span> date = BitConverter.ToInt32(<span class="keyword">value</span>, <span class="number">4</span>);
+
+		<span class="keyword">return</span> <span class="keyword">new</span> DateTime(<span class="number">1900</span>, <span class="number">1</span>, <span class="number">1</span>, time/<span class="number">300</span>/<span class="number">60</span>/<span class="number">60</span>, time/<span class="number">300</span>/<span class="number">60</span>%<span class="number">60</span>, time/<span class="number">300</span>%<span class="number">60</span>, (<span class="keyword">int</span>)Math.Round(time%<span class="number">300</span>*CLOCK_TICK_MS)).AddDays(date);
+	}
+}
+</pre></figure>
+
+<p>You can see the <a href="https://github.com/improvedk/OrcaMDF/blob/58250bef24265900b6d94ec90be41b0647508b35/src/OrcaMDF.Core.Tests/Engine/SqlTypes/SqlDateTimeTests.cs" target="_blank">relevant tests here</a>.</p>
+<h2 id="Last_but_not_least,_SqlSmallDateTime">Last but not least, SqlSmallDateTime</h2>
+<p>Smalldatetime is brilliant when you need to store a date with limited range (~1900 - ~2079) and a precision down to one second. For most purposes, a time precision of one second is plenty, and we save a lot of space by limiting the precision and date range. A smalldatetime value takes up just 4 bytes, the first two being the number of minutes since midnight, and the last two being the number of days since the default values of 1900-1-1. The math processing done is the same as with datetime, though at a smaller scale.</p>
+<table>
+<thead>
+<tr>
+<th>Part</th>
+<th>Calculation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hours</td>
+<td>X / 60</td>
+</tr>
+<tr>
+<td>Minutes</td>
+<td>X % 60</td>
+</tr>
+</tbody>
+</table>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlSmallDateTime : ISqlType
+{
+	<span class="keyword">public</span> <span class="keyword">bool</span> IsVariableLength
+	{
+		<span class="keyword">get</span> { <span class="keyword">return</span> <span class="keyword">false</span>; }
+	}
+
+	<span class="keyword">public</span> <span class="keyword">short</span>? FixedLength
+	{
+		<span class="keyword">get</span> { <span class="keyword">return</span> <span class="number">4</span>; }
+	}
+
+	<span class="keyword">public</span> <span class="keyword">object</span> <span class="title">GetValue</span>(<span class="keyword">byte</span>[] <span class="keyword">value</span>)
+	{
+		<span class="keyword">if</span> (<span class="keyword">value</span>.Length != <span class="number">4</span>)
+			<span class="keyword">throw</span> <span class="keyword">new</span> ArgumentException(<span class="string">"Invalid value length: "</span> + <span class="keyword">value</span>.Length);
+
+		<span class="keyword">ushort</span> time = BitConverter.ToUInt16(<span class="keyword">value</span>, <span class="number">0</span>);
+		<span class="keyword">ushort</span> date = BitConverter.ToUInt16(<span class="keyword">value</span>, <span class="number">2</span>);
+
+		<span class="keyword">return</span> <span class="keyword">new</span> DateTime(<span class="number">1900</span>, <span class="number">1</span>, <span class="number">1</span>, time / <span class="number">60</span>, time % <span class="number">60</span>, <span class="number">0</span>).AddDays(date);
+	}
+}
+</pre></figure>
+
+<p>You can see the <a href="https://github.com/improvedk/OrcaMDF/blob/58250bef24265900b6d94ec90be41b0647508b35/src/OrcaMDF.Core.Tests/Engine/SqlTypes/SqlSmallDateTimeTests.cs" target="_blank">relevant tests here</a>.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">05</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/implementing-data-types-in-orcamdf/" title="Implementing Data Types in OrcaMDF" rel="bookmark">Implementing Data Types in OrcaMDF</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Implementing parsing support for SQL Server data types in <a href="/introducing-orcamdf">OrcaMDF</a> is a simple matter of implementing the ISqlType interface:</p>
+<a id="more"></a>
+
+
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">interface</span> ISqlType
+{
+	<span class="keyword">bool</span> IsVariableLength { <span class="keyword">get</span>; }
+	<span class="keyword">short</span>? FixedLength { <span class="keyword">get</span>; }
+	<span class="keyword">object</span> GetValue(<span class="keyword">byte</span>[] <span class="keyword">value</span>);
+}
+</pre></figure>
+
+<p><em>IsVariableLength</em> returns whether this data type has a fixed length size or is variable. <em>FixedLength</em> returns the fixed length of the data type, provided that it is fixed length, otherwise it returns null. The data type parser itself does not care about the length of variable length fields, the size of the input bytes will determine that. Finally <em>GetValue</em> parses the input bytes into and converts them into a .NET object of relevant type.</p>
+<h2 id="SqlInt_implementation">SqlInt implementation</h2>
+<p>int is very simple as it’s fixed length and is very straight forward to convert using BitConverter:</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlInt : ISqlType
+{
+	<span class="keyword">public</span> <span class="keyword">bool</span> IsVariableLength
+	{
+		<span class="keyword">get</span> { <span class="keyword">return</span> <span class="keyword">false</span>; }
+	}
+
+	<span class="keyword">public</span> <span class="keyword">short</span>? FixedLength
+	{
+		<span class="keyword">get</span> { <span class="keyword">return</span> <span class="number">4</span>; }
+	}
+
+	<span class="keyword">public</span> <span class="keyword">object</span> <span class="title">GetValue</span>(<span class="keyword">byte</span>[] <span class="keyword">value</span>)
+	{
+		<span class="keyword">if</span> (<span class="keyword">value</span>.Length != <span class="number">4</span>)
+			<span class="keyword">throw</span> <span class="keyword">new</span> ArgumentException(<span class="string">"Invalid value length: "</span> + <span class="keyword">value</span>.Length);
+
+		<span class="keyword">return</span> BitConverter.ToInt32(<span class="keyword">value</span>, <span class="number">0</span>);
+	}
+}
+</pre></figure>
+
+<p>And the related tests:</p>
+<figure class="highlight csharp"><pre>[TestFixture]
+<span class="keyword">public</span> <span class="keyword">class</span> SqlIntTests
+{
+	[Test]
+	<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">GetValue</span>()
+	{
+		<span class="keyword">var</span> type = <span class="keyword">new</span> SqlInt();
+		<span class="keyword">byte</span>[] input;
+
+		input = <span class="keyword">new</span> <span class="keyword">byte</span>[] { <span class="number">0x5e</span>, <span class="number">0x3b</span>, <span class="number">0x27</span>, <span class="number">0x2a</span> };
+		Assert.AreEqual(<span class="number">707214174</span>, Convert.ToInt32(type.GetValue(input)));
+
+		input = <span class="keyword">new</span> <span class="keyword">byte</span>[] { <span class="number">0x8d</span>, <span class="number">0xf9</span>, <span class="number">0xaa</span>, <span class="number">0x30</span> };
+		Assert.AreEqual(<span class="number">816511373</span>, Convert.ToInt32(type.GetValue(input)));
+
+		input = <span class="keyword">new</span> <span class="keyword">byte</span>[] { <span class="number">0x7a</span>, <span class="number">0x4a</span>, <span class="number">0x72</span>, <span class="number">0xe2</span> };
+		Assert.AreEqual(-<span class="number">495826310</span>, Convert.ToInt32(type.GetValue(input)));
+	}
+
+	[Test]
+	<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Length</span>()
+	{
+		<span class="keyword">var</span> type = <span class="keyword">new</span> SqlInt();
+
+		Assert.Throws&lt;ArgumentException&gt;(() =&gt; type.GetValue(<span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">3</span>]));
+		Assert.Throws&lt;ArgumentException&gt;(() =&gt; type.GetValue(<span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">5</span>]));
+	}
+}
+</pre></figure>
+
+<h2 id="SqlNVarchar_implementation">SqlNVarchar implementation</h2>
+<p>nvarchar is very simple as well – note that we return null for the length as the length varies and the ISqlType implementation must be stateless. GetValue simply converts whatever amount of input bytes it gets into the relevant .NET data type, string in this case.</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlNVarchar : ISqlType
+{
+	<span class="keyword">public</span> <span class="keyword">bool</span> IsVariableLength
+	{
+		<span class="keyword">get</span> { <span class="keyword">return</span> <span class="keyword">true</span>; }
+	}
+
+	<span class="keyword">public</span> <span class="keyword">short</span>? FixedLength
+	{
+		<span class="keyword">get</span> { <span class="keyword">return</span> <span class="keyword">null</span>; }
+	}
+
+	<span class="keyword">public</span> <span class="keyword">object</span> <span class="title">GetValue</span>(<span class="keyword">byte</span>[] <span class="keyword">value</span>)
+	{
+		<span class="keyword">return</span> Encoding.Unicode.GetString(<span class="keyword">value</span>);
+	}
+}
+</pre></figure>
+
+<p>And the relevant test in this case:</p>
+<figure class="highlight csharp"><pre>[TestFixture]
+<span class="keyword">public</span> <span class="keyword">class</span> SqlNvarcharTests
+{
+	[Test]
+	<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">GetValue</span>()
+	{
+		<span class="keyword">var</span> type = <span class="keyword">new</span> SqlNVarchar();
+		<span class="keyword">byte</span>[] input = <span class="keyword">new</span> <span class="keyword">byte</span>[] { <span class="number">0x47</span>, <span class="number">0x04</span>, <span class="number">0x2f</span>, <span class="number">0x04</span>, <span class="number">0xe6</span>, <span class="number">0x00</span> };
+
+		Assert.AreEqual(<span class="string">"u0447u042fu00e6"</span>, (<span class="keyword">string</span>)type.GetValue(input));
+	}
+}
+</pre></figure>
+
+<h2 id="Other_implementations">Other implementations</h2>
+<p>OrcaMDF currently <a href="https://github.com/improvedk/OrcaMDF/tree/2b2403c4422cc47b309857d42fb182970bbe11d8/src/OrcaMDF.Core/Engine/SqlTypes" target="_blank">supports 12 data types</a> out of the box. I’ll be covering datetime and bit later as those are a tad special compared to the rest of the current types. As the remaining types are implemented, I will be covering those too.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">03</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/introducing-orcamdf/" title="Introducing OrcaMDF" rel="bookmark">Introducing OrcaMDF</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I’ve been spamming Twitter the last couple of days with progress on my pet project, OrcaMDF. But what is OrcaMDF really?</p>
+<h2 id="Miracle_Open_World_2011">Miracle Open World 2011</h2>
+<p>I was invited to speak at <a href="http://mow2011.dk/" target="_blank">MOW2011</a> for the SQL Server track. Last year I got good reviews for my presentation on <a href="Dissecting_PDF_Documents_1.pdf">Dissecting PDF Documents</a>, a deep dive into the file format of PDF files. Wanting to stay in the same grove, I decided to take a look at the MDF format as it’s somewhat closer to SQL Server DBA’s than PDF files. Having almost worn my <a href="http://www.amazon.com/Microsoft%C2%AE-SQL-Server%C2%AE-2008-Internals/dp/0735626243" target="_blank">SQL Server 2008 Internals</a> book down from reading, I’ve always been interested in the internals, though I still felt like I was lacking a lot of knowledge.</p>
+<h2 id="A_parser_is_born">A parser is born</h2>
+<p>For my demos at MOW I wanted to at least read the records from a data page, just like the output from DBCC Page. The basic page format is well documented, and it’s not the first time I’ve taken a <a href="/deciphering-a-sql-server-data-page">deeper look</a> at pages. Surprisingly quickly, I had record parsing from data pages functioning using a hardcoded schema. Parsing a single page is fun, but really, I’d like to get all the data from a table. Restricting myself to just consider clustered tables made it simpler as it’d just be a matter of following the linked list of pages from start to end. However, that meant I’d have to parse the header as well. There’s some good information out there on the <a href="http://sqlskills.com/blogs/paul/post/Inside-the-Storage-Engine-Anatomy-of-a-page.aspx" target="_blank">anatomy of pages</a>, but everything I could find had a distinct lack of information on the actual header structure and field types.</p>
+<a id="more"></a>
+
+<p>While resorting to <a href="http://search.twitter.com/search?q=%23sqlhelp" target="_blank">#sqlhelp</a> didn’t directly help me, <a href="http://www.sqlskills.com/blogs/Kimberly/" target="_blank">Kimberly Tripp</a> was kind enough to point out that I’d probably not have any luck in finding deeper documentation out there.</p>
+<div class="imgwrapper" style=""><div><a href="/introducing-orcamdf/image_29.png" class="fancy"><img src="/introducing-orcamdf/image_29.png" style="max-height: 250px"/></a></div></div>
+
+<p>Fast forward a <em>bit</em> of patience, some help from <a href="http://search.twitter.com/search?q=%23sqlhelp" target="_blank">#sqlhelp</a> and <a href="http://twitter.com/#!/PaulRandal" target="_blank">@PaulRandal</a> in particular, I managed to reverse engineer the header format, as well as a bit more than I initially set out to do for MOW.</p>
+<h2 id="Feature_outtakes">Feature outtakes</h2>
+<p>With a lot of preconditions (2008 R2 format especially), these are some of the abilities OrcaMDF currently possesses:</p>
+<ul>
+<li>Parsing data, GAM, SGAM, IAM, PFS, TextMix, clustered index and and the boot page (preliminary).</li>
+<li>Scanning linked pages.</li>
+<li>Scanning clustered indexes, either by depth-first into linked-page scan or by forced use of the b-tree structure.</li>
+<li>Scanning heaps using IAM chains.</li>
+<li>Scanning tables (clustered or heaps) using just the table name as input – root IAM/index page is found through metadata lookup.</li>
+<li>Able to parse the following column types: bigint, binary, bit, char, datetime, int, nchar, nvarchar, smallint, tinyint, varbinary &amp; varchar. Adding remaining types is straightforward.</li>
+<li>Parsing of four crucial system tables: sysallocunits, sysschobjs, sysrowsets, sysrowsetcolumns.</li>
+<li>Parsing of key metadata like table names, types and columns.</li>
+</ul>
+<p>There’s probably some errors here and there, and I’ve liberally ignored some complexity here and there thus far, so don’t expect this to work on everything yet. I’m continuing development of OrcaMDF. My hope is to have it support 95+% of typically used features, allowing most MDF files to be parsed. If you have a specific use case or scenario you’d like covered, please get in touch and let me know.</p>
+<h2 id="Why_oh_why_are_you_doing_this?">Why oh why are you doing this?</h2>
+<p>I thought I understood most of what I  read about internals. I can now tell you, I did not. Actually parsing this stuff has taught me so much more, as well as given me a really good hands-on understanding of the internals. I’ve still never touched SSIS, SSAS, SSRS and all of that other fancy BI stuff, but I believe having a solid understanding of the internals will make the later stuff so much easier to comprehend.</p>
+<p>Furthermore, I think there’s a big opportunity for a number of community supported SQL Server tools to arise. Some possibilities that come to mind (just thinking aloud here, don’t take it too concretely):</p>
+<ul>
+<li>Easily distributable read-only access to MDF files to desktops, mobile &amp; embedded clients.</li>
+<li>Disaster recovery – forgot to backup and can’t restore your corrupt DB? You might just be able to extract important bits using OrcaMDF.</li>
+<li>Need to probe the contents of a DB without attaching it to an instance?</li>
+<li>Reading .BAK files – should be possible, will allow single-table restores and object level probing of backup files.</li>
+<li>DBCC CHECKDB of non-attached MDF files – this is probably not going to happen, but theoretically possible.</li>
+<li>Learning opportunities.</li>
+</ul>
+<p>By opening up the code to everybody, this should provide some solid teaching and learning opportunities by looking at samples of how to actually parse the contents and not just read &amp; talk about it.</p>
+<h2 id="Alright,_alright,_show_me_the_codez!">Alright, alright, show me the codez!</h2>
+<p>All source code is <a href="https://github.com/improvedk/OrcaMDF" target="_blank">available on GitHub</a> under the GPLv3 license. Feel free to fork, watch or comment. The only thing I ask for is that you respect the license. If you end up trying out the code or actually using it, please let me know – I’d love to hear about it. Want to follow the latest developments – why don’t you <a href="http://twitter.com/#!/improvedk" target="_blank">come over and say hi</a>?</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">03</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/my-pass-summit-2011-abstracts/" title="My PASS Summit 2011 Abstracts" rel="bookmark">My PASS Summit 2011 Abstracts</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/Conferences and Presenting/">Conferences and Presenting</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Last year I went on a marathon conference trip, starting out in LA at <a href="http://2010.max.adobe.com/" target="_blank">Adobe Max</a>, continuing on to <a href="http://qconsf.com/sf2010/" target="_blank">QCon</a> in San Francisco before finally ending up in lovely Seattle for the <a href="http://www.sqlpass.org/summit/na2010/" target="_blank">PASS Summit</a>.</p>
+<a id="more"></a>
+
+<div class="imgwrapper" style=""><div><a href="/my-pass-summit-2011-abstracts/71624_444201957306_724027306_5893683_5375463_n_2.jpg" class="fancy"><img src="/my-pass-summit-2011-abstracts/71624_444201957306_724027306_5893683_5375463_n_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Of the three, the one I’ll definitely be returning to this year is the PASS Summit. Last year I had the honor of getting a nice neon green “FIRST-TIMER” snippet on my badge, a snippet I wore with honor. This year however, I’m aiming for the Alumni snippet, and perhaps even the speaker snippet by submitting a couple of abstracts.</p>
+<p>As I’ve been somewhat busy with <a href="/introducing-orcamdf">OrcaMDF</a> in my spare time recently, both of my abstracts use OrcaMDF as the origin for going into the internals. I really hope I get a chance to present about this as I’m super psyched about it :)</p>
+<h2 id="Knowing_the_Internals_–_Who_Needs_SQL_Server_Anyway?">Knowing the Internals – Who Needs SQL Server Anyway?</h2>
+<p>You’re stuck on a remote island with just a laptop and your main database .MDF file. The boss calls and asks you to retrieve some data, but alas, you forgot to install SQL Server on your laptop. Luckily you have a HEX editor by your side!</p>
+<p>In this level 500 deep dive session we will go into the intimate details of the MDF file format. Think using DBCC Page is pushing it? Think again! As a learning experiment, I’ve created an open source parser for MDF files, called OrcaMDF. Using the OrcaMDF parser I’ll go through the primary storage mechanisms, how to parse page headers, boot pages, internal system tables, data &amp; index records, b-tree structures as well as the supporting IAM, GAM, SGAM &amp; PFS pages.</p>
+<p>Has your database suffered an unrecoverable disk corruption? This session might just be your way out! Using a corrupt &amp; unattachable MDF file, I’ll demo how to recover as much data as possible. This session is not for the faint of heart, there will be bytes!</p>
+<h3 id="Why_&amp;_What?">Why &amp; What?</h3>
+<p>I originally gave this presentation at <a href="http://mow2011.dk/mow2011.aspx" target="_blank">Miracle Open World 2011</a> and got some great feedback. Fueled by positive feedback I continued the development and am now at the point where I have so much content I considered doing a 3½ hour session instead. By attending this session you will not only see diagrams of internal structures on slides, you’ll actually see C# code demonstrated that parses &amp; utilizes them!</p>
+<h2 id="Demystifying_Database_Metadata">Demystifying Database Metadata</h2>
+<p>You know how to query sys.tables, sys.columns and perhaps even sys.system_internals_allocation_units to discover the metadata contents of a database. But where are these views getting their data from, and how do the core system tables relate?</p>
+<p>Based on my work with OrcaMDF, an open source C# parser for MDF files, I will demonstrate how to parse the internal system tables. Using just the boot page as origin, we’ll discover how to traverse the chain of references that ultimately end up in references to the actual system table data, from where we can parse the data records.</p>
+<p>Once we’ve got the system table data, I’ll demonstrate how to correlate the different tables to end up with the data we see in common system views.</p>
+<h3 id="Why_&amp;_What?-1">Why &amp; What?</h3>
+<p>As I continued the development of OrcaMDF I used the various system views extensively – sys.objects, tables, columns, indexes, internals_allocation_units etc. However, as development moved forward and I needed to parse that metadata myself, I had to look into the underlying tables – sysallocunits, sysschobjs, sysrowsets, sysrowsetcolumns. Join this session and let’s enter the realm of the hidden metadata and let’s explore it together!</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">28</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/converting-page-pointers-into-a-human-readable-format/" title="Converting Page Pointers Into a Humanly Readable Format" rel="bookmark">Converting Page Pointers Into a Humanly Readable Format</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I often like to spend my weekends perusing the sys.system_internals_allocation_units table, looking for the remnants of Frodo and his crew. In the sys.system_internals_allocation_units there are several references to relevant pages:</p>
+<a id="more"></a>
+
+
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">select</span>
+	first_page,
+	root_page,
+	first_iam_page
+<span class="keyword">from</span>
+	sys.system_internals_allocation_units</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/converting-page-pointers-into-a-human-readable-format/image_2.png" class="fancy"><img src="/converting-page-pointers-into-a-human-readable-format/image_2.png" style="max-height: 250px"/></a></div></div>
+
+<p>Once you get used to reading these pointers, it becomes rather trivial – byte swap the last two pointers to get the file ID (0 or 1 in all of the above rows), and byte swap the first four bytes to get the page ID. To make it a bit more easier for myself and for those who do not read HEX natively, I’ve made a simple function to convert the pointers into a more easily read format.</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">create</span> function getPageLocationFromPointer
+(
+	@Pointer binary(<span class="number">6</span>)
+)
+returns <span class="keyword">varchar</span>(<span class="number">17</span>)
+<span class="keyword">begin</span>
+
+	return 
+		<span class="string">'('</span> + 
+		<span class="keyword">cast</span>(
+			<span class="keyword">cast</span>(
+				substring(@Pointer, <span class="number">6</span>, <span class="number">1</span>) +
+				substring(@Pointer, <span class="number">5</span>, <span class="number">1</span>)
+				<span class="keyword">as</span> <span class="keyword">smallint</span>
+			) <span class="keyword">as</span> <span class="keyword">varchar</span>
+		) +
+		<span class="string">':'</span> +
+		<span class="keyword">cast</span>(
+			<span class="keyword">cast</span>(
+				substring(@Pointer, <span class="number">4</span>, <span class="number">1</span>) +
+				substring(@Pointer, <span class="number">3</span>, <span class="number">1</span>) +
+				substring(@Pointer, <span class="number">2</span>, <span class="number">1</span>) +
+				substring(@Pointer, <span class="number">1</span>, <span class="number">1</span>)
+				<span class="keyword">as</span> <span class="keyword">int</span>
+			) <span class="keyword">as</span> <span class="keyword">varchar</span>
+		) +
+		<span class="string">')'</span>
+
+<span class="keyword">end</span></span>
+</pre></figure>
+
+<p>While not beautiful, it is rather simple. The result:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">select</span>
+	first_page,
+	dbo.getPageLocationFromPointer(first_page) <span class="keyword">as</span> first_page_location,
+	root_page,
+	dbo.getPageLocationFromPointer(root_page) <span class="keyword">as</span> root_page_location,
+	first_iam_page,
+	dbo.getPageLocationFromPointer(first_iam_page) <span class="keyword">as</span> first_iam_page_location
+<span class="keyword">from</span>
+	sys.system_internals_allocation_units</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/converting-page-pointers-into-a-human-readable-format/image_4.png" class="fancy"><img src="/converting-page-pointers-into-a-human-readable-format/image_4.png" style="max-height: 250px"/></a></div></div>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">26</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/watch-out-for-implicit-uniqueidentifier-conversions/" title="Watch Out For Implicit Uniqueidentifier Conversions" rel="bookmark">Watch Out For Implicit Uniqueidentifier Conversions</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Optimization/">SQL Server - Optimization</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I recently gave a presentations on the topic of <a href="/miracle-open-world-2011-follow-up/">GUID usage</a> at <a href="http://mow2011.dk/" target="_blank">Miracle Open World</a>. After finishing off my last slide and opening to questions, one of the attendees told a story of how an implicit GUID conversion had resulted in index scans instead of index seeks.</p>
+<a id="more"></a>
+
+<p>It’s commonly known that to use indexes effectively, we need to seek. Furthermore, to ensure we don’t scan, we should avoid using functions, casts, etc. as predicates as that will cause the optimizer to not utilize the indexes properly. However, in this case the situation was presented as query having a simple “where SomeCol = ‘74e03ed0-6d51-413a-bffb-76b5e409afc1’”. As far as I knew, that should just convert automatically into a uniqueidentifier and still use an index seek. A simple test shows that to be the case as well:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">create</span> <span class="keyword">table</span> #Test
+(
+	ID <span class="keyword">int</span> <span class="keyword">identity</span>(<span class="number">1</span>,<span class="number">1</span>) <span class="keyword">constraint</span> pk_Test_ID <span class="keyword">primary</span> <span class="keyword">key</span> clustered,
+	Guid uniqueidentifier <span class="keyword">default</span>(newid()),
+	Padding <span class="keyword">char</span>(<span class="number">100</span>) <span class="keyword">null</span>
+)
+<span class="keyword">create</span> nonclustered index idx_Guid <span class="keyword">on</span> #Test (Guid)
+
+<span class="keyword">declare</span> @cnt <span class="keyword">int</span> = <span class="number">0</span>
+while @cnt &lt; <span class="number">10000</span> <span class="keyword">begin</span>
+	<span class="keyword">insert</span> <span class="keyword">into</span> #Test <span class="keyword">default</span> <span class="keyword">values</span>
+	<span class="keyword">set</span> @cnt += <span class="number">1</span>
+<span class="keyword">end</span>
+
+<span class="keyword">select</span> * <span class="keyword">from</span> #Test <span class="keyword">where</span> Guid = <span class="string">'74e03ed0-6d51-413a-bffb-76b5e409afc1'</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/watch-out-for-implicit-uniqueidentifier-conversions/image_21.png" class="fancy"><img src="/watch-out-for-implicit-uniqueidentifier-conversions/image_21.png" style="max-height: 250px"/></a></div></div>
+
+<p>An index seek with a bookmark lookup, perfect. I had no answer to his question so I asked if he could send me the query they were running, so I could take a look at it. I got the queries sent as well as the execution plan, and sure enough, an index scan was performed with a CONVERT_IMPLICIT predicate:</p>
+<div class="imgwrapper" style=""><div><a href="/watch-out-for-implicit-uniqueidentifier-conversions/image_8.png" class="fancy"><img src="/watch-out-for-implicit-uniqueidentifier-conversions/image_8.png" style="max-height: 250px"/></a></div></div>
+
+<p>As the system is internal, I promised to keep it anonymous, thus most of it is blurred out. I also do not have access to the actual schema, I was however able to deduce the relevant parts from the execution plans and column/table names used. Here’s an abstract version of the query being run:</p>
+<figure class="highlight sql"><pre><span class="comment">-- Schema</span>
+<span class="operator"><span class="keyword">create</span> <span class="keyword">table</span> #GuidTest
+(
+	ID <span class="keyword">int</span> <span class="keyword">identity</span>(<span class="number">1</span>,<span class="number">1</span>) <span class="keyword">constraint</span> pk_GuidTest_ID <span class="keyword">primary</span> <span class="keyword">key</span> clustered,
+	GuidA uniqueidentifier <span class="keyword">default</span>(newid()),
+	GuidB uniqueidentifier <span class="keyword">default</span>(newid()),
+	GuidC uniqueidentifier <span class="keyword">default</span>(newid()),
+	GuidD uniqueidentifier <span class="keyword">default</span>(newid()),
+	GuidE uniqueidentifier <span class="keyword">default</span>(newid()) <span class="keyword">null</span>,
+	GuidF uniqueidentifier <span class="keyword">default</span>(newid()),
+	Cost <span class="keyword">float</span> <span class="keyword">default</span>(rand()) <span class="keyword">null</span>,
+	Padding <span class="keyword">char</span>(<span class="number">20</span>)
+)
+<span class="keyword">create</span> nonclustered index idx_Guid <span class="keyword">on</span> #GuidTest (GuidA, GuidB, GuidC, GuidD, GuidE) include (Cost, GuidF)
+<span class="keyword">with</span> (	pad_index = off,
+	statistics_norecompute = off,
+	sort_in_tempdb = off,
+	ignore_dup_key = off,
+	drop_existing = off,
+	online = off,
+	allow_row_locks = <span class="keyword">on</span>,
+	allow_page_locks = <span class="keyword">on</span>,
+	fillfactor = <span class="number">90</span>)
+
+<span class="keyword">create</span> <span class="keyword">table</span> #GuidJoin
+(
+	JoinGuid uniqueidentifier <span class="keyword">default</span>(newid()),
+	JoinValue <span class="keyword">char</span>(<span class="number">3</span>) <span class="keyword">null</span>
+)
+<span class="keyword">create</span> nonclustered index idx_JoinGuid <span class="keyword">on</span> #GuidJoin (JoinGuid)
+
+-- Query
+<span class="keyword">select</span>
+	<span class="aggregate">sum</span>(isnull(Cost, <span class="number">0</span>)),
+	GuidA,
+	GuidB,
+	GuidC,
+	GuidD
+<span class="keyword">from</span>
+	#GuidTest
+<span class="keyword">left</span> <span class="keyword">join</span>
+	#GuidJoin <span class="keyword">on</span> GuidF = JoinGuid
+<span class="keyword">where</span>
+	(JoinValue = <span class="string">'XYZ'</span> <span class="keyword">or</span> JoinValue <span class="keyword">is</span> <span class="keyword">null</span>) <span class="keyword">AND</span>
+	(
+		(GuidA = <span class="string">'0B0220E8-053E-43CA-A268-AD78DF4F7DC0'</span> <span class="keyword">AND</span> GuidB = <span class="string">'F268830A-5C13-4E6E-AE63-DAA1353A6306'</span> <span class="keyword">AND</span> GuidC = <span class="string">'5565A230-E919-4229-BA65-49AE1D4FFAE3'</span> <span class="keyword">AND</span> GuidD = <span class="string">'C4BAAA53-9447-419F-A7FA-76C43B8F1049'</span>) <span class="keyword">OR</span>
+		(GuidA = <span class="string">'D32EE121-FB05-44E8-BD36-86833E4BE3B6'</span> <span class="keyword">AND</span> GuidB = <span class="string">'9DE3B8FF-95B1-4519-9F92-9DE7758D9DE6'</span> <span class="keyword">AND</span> GuidC = <span class="string">'8ADF6C5E-E3B6-49C7-BEF7-E26074D8874C'</span> <span class="keyword">AND</span> GuidD = <span class="string">'D2BBB20C-991D-44FD-848C-124B33CFC9F6'</span>) <span class="keyword">OR</span>
+		-- Snipped about <span class="number">250</span> lines --
+		(GuidA = <span class="string">'54E75EB0-83FE-40A0-B2E0-6A2A71B393AA'</span> <span class="keyword">AND</span> GuidB = <span class="string">'CC3D2107-6C1B-4ED6-B708-6503BFAD8965'</span> <span class="keyword">AND</span> GuidC = <span class="string">'B62EBEA3-193A-422A-846D-978000E1AB9C'</span> <span class="keyword">AND</span> GuidD = <span class="string">'ECC25117-B903-49EE-8B66-8E31F07170A5'</span>)
+	) <span class="keyword">AND</span>
+	(GuidE = <span class="string">'08F62323-0707-430E-B5F8-5FFF040D2AF6'</span> <span class="keyword">OR</span> GuidE <span class="keyword">is</span> <span class="keyword">null</span>)
+<span class="keyword">group</span> <span class="keyword">by</span>
+	GuidA, GuidB, GuidC, GuidD</span>
+</pre></figure>
+
+<p>Obviously this is not the optimal way of doing this, passing in a large amount of variables in ad-hoc fashion. This was not an in-house system however, so they had to live with the code. Using my code as a test, filled with a large number of dummy test data, I’m not able to reproduce the issue. However, the most interesting part is how they managed to solve the problem. Instead of doing a usual uniqueidentifier predicate like:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">select</span> * <span class="keyword">from</span> #Test <span class="keyword">where</span> Guid = <span class="string">'74e03ed0-6d51-413a-bffb-76b5e409afc1'</span></span>
+</pre></figure>
+
+<p>They were able to modify the predicates to look like this:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">select</span> * <span class="keyword">from</span> #Test <span class="keyword">where</span> Guid = {GUID<span class="string">'74e03ed0-6d51-413a-bffb-76b5e409afc1'</span>}</span>
+</pre></figure>
+
+<p>And if you look closely at the execution plan of the first query, this is what’s happening internally as well:</p>
+<div class="imgwrapper" style=""><div><a href="/watch-out-for-implicit-uniqueidentifier-conversions/image_10.png" class="fancy"><img src="/watch-out-for-implicit-uniqueidentifier-conversions/image_10.png" style="max-height: 250px"/></a></div></div>
+
+<p>Since I was unable to reproduce the issue, and I can find no documentation on the {GUID’xyz’} (neither online nor in BOL) syntax, I am unable to explain exactly what’s going on. EDIT: <a href="http://weblogs.sqlteam.com/mladenp/" target="_blank">Mladen Prajdić</a> found a page describing <a href="http://msdn.microsoft.com/en-us/library/ms712494(VS.85" target="_blank">GUID Escape Sequences</a>.aspx). My guess is that the input query, while simple in structure, became too complex due to the large number of predicates, and thus the optimizer was unable to convert the input string to a GUID at compile time and thus had to resort to an IMPLICIT_CONVERT, causing an index scan. Using parameters, a TVF or another form of temporary table to hold those ~1000 predicate GUIDs in would obviously have been a lot more optimal as well, and would have avoided the implicit convert too. Being as it was a third party system, that was a modification that could not be made. If you have any further information on the {GUID’xyz’} constant syntax, please do get in touch.</p>
+<p>While I have no final explanation, the conclusion must be – watch out for those implicit conversions, even when you absolutely do not expect them to occur.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">17</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/42-weeks-later/" title="42 Weeks Later" rel="bookmark">42 Weeks Later</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/Miscellaneous/">Miscellaneous</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<div class="imgwrapper" style=""><div><a href="/42-weeks-later/film_28_weeks_later_2.png" class="fancy"><img src="/42-weeks-later/film_28_weeks_later_2.png" style="max-height: 250px"/></a></div></div>
+
+<a id="more"></a>
+
+<p>It’s now been roughly 42 weeks since I last wrote a blog entry, phew, time flies! I’ve been busy, one week became two weeks, a month, half a year and before long the tumbleweeds start drifting by.</p>
+<p>I originally setup the blog back in ‘06 to blog about my ventures in the <a href="/mainevent2006">World Series of Poker</a>. In a moment of temporary insanity, I decided to write my own blog engine as a fun project – reviving my previous homemade blog engine written in in VB, the horror. While it was a fun project initially, keeping it up to date, doing proper code formatting, file attachments, administration, etc., quickly became a major hassle. Writing blog posts was a tedious job, basically written as plaintext in Visual Studio and then copy/pasted into a textbox in an admin system. I’ve concluded that if I want to keep up blogging, I’d need a better system.</p>
+<p>As a result, I’ve migrated my blog to <a href="http://subtextproject.com/default.aspx?AspxAutoDetectCookieSupport=1" target="_blank">SubText</a>, including going through the formatting of all previous entries to ensure they keep the same format. I apologize for any RSS feed inconsistencies during the migration, it should be back to normal shortly. Running on SubText I could finally try out <a href="http://explore.live.com/windows-live-writer?os=other" target="_blank">Windows Live Writer</a>; Boy, do I regret not having tried that out earlier – after creating a couple of custom plugins for entering code and attaching files, writing posts is an absolute dream compared to before.</p>
+<p>To the blogmobile!</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+
+<div class="paging">
+	<a href="/page/11/"><div class="past">« Past</div></a>
+	<a href="/page/9/"><div class="future">Future »</div></a>
+	<div class="clear"></div>
+</div>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Where Does SQL Server Store the Source for Stored Procedures? | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Aug</span>
+			<span class="day">27</span>
+		</div>
+		<div class="lower">2012</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/where-does-sql-server-store-the-source-for-stored-procedures/" title="Where Does SQL Server Store the Source for Stored Procedures?" rel="bookmark">Where Does SQL Server Store the Source for Stored Procedures?</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on Where Does SQL Server Store the Source for Stored Procedures?">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>At the moment I’m working on extending <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF Studio</a> to not only list base tables, DMVs and tables, but also stored procedures. That’s easy enough, we just need to query sys.procedures – or that is, the sys.sysschobjs base table, since the sys.procedures DMV isn’t available when SQL Server isn’t running.</p>
+<a id="more"></a>
+
+<p>However, I don’t want to just list the stored procedures, I also want to present the source code in them. That brings up a new task – retrieving said source code. Where is it stored? I wasn’t able to find anything on Google, so let’s take a look for ourselves!</p>
+<p>I’ve created a new empty database with a data file of three megabytes. In this database, I’ve created a single stored procedure like so:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SET</span> ANSI_NULLS <span class="keyword">ON</span>
+<span class="keyword">GO</span>
+<span class="keyword">SET</span> QUOTED_IDENTIFIER <span class="keyword">ON</span>
+<span class="keyword">GO</span>
+-- =============================================
+-- Author:		
+-- <span class="keyword">Create</span> <span class="keyword">date</span>: 
+-- Description:	
+-- =============================================
+<span class="keyword">CREATE</span> <span class="keyword">PROCEDURE</span> XYZ
+	<span class="keyword">AS</span>
+<span class="keyword">BEGIN</span>
+	-- <span class="keyword">SET</span> NOCOUNT <span class="keyword">ON</span> added <span class="keyword">to</span> prevent extra result sets <span class="keyword">from</span>
+	-- interfering <span class="keyword">with</span> <span class="keyword">SELECT</span> statements.
+	<span class="keyword">SET</span> NOCOUNT <span class="keyword">ON</span>;</span>
+
+    <span class="comment">-- Insert statements for procedure here</span>
+	<span class="operator"><span class="keyword">SELECT</span> <span class="string">'AABBCC'</span> <span class="keyword">AS</span> <span class="keyword">Output</span>
+<span class="keyword">END</span></span>
+</pre></figure>
+
+<p>Now when I select from sys.procedures, we can see that the procedure has object ID 2105058535:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">select</span> * <span class="keyword">from</span> sys.procedures</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/where-does-sql-server-store-the-source-for-stored-procedures/image_2.png" class="fancy"><img src="/where-does-sql-server-store-the-source-for-stored-procedures/image_2.png" style="max-height: 250px"/></a></div></div>
+
+<p>So far so good. We can then retrieve the definition itself as an nvarchar(MAX) by querying sys.sql_modules like so:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">select</span> * <span class="keyword">from</span> sys.sql_modules <span class="keyword">where</span> object_id = <span class="number">2105058535</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/where-does-sql-server-store-the-source-for-stored-procedures/image_4.png" class="fancy"><img src="/where-does-sql-server-store-the-source-for-stored-procedures/image_4.png" style="max-height: 250px"/></a></div></div>
+
+<p>And there you have it, the source code for the XYZ procedure! But hold on a moment, while I’ve gotten the object ID for the procedure by querying the sys.sysschobjs base table, I don’t have access to sys.sql_modules yet, as that’s a view and not a base table. Let’s take a look at where sys.sql_modules gets the definition from:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">select</span> object_definition(object_id(<span class="string">'sys.sql_modules'</span>))</span>
+</pre></figure>
+
+
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	object_id = o.id,
+	definition = Object_definition(o.id),
+	uses_ansi_nulls = Sysconv(<span class="keyword">bit</span>, o.status & <span class="number">0x40000</span>), -- OBJMOD_ANSINULLS
+	uses_quoted_identifier = sysconv(<span class="keyword">bit</span>, o.status & <span class="number">0x80000</span>),   -- OBJMOD_QUOTEDIDENT
+	is_schema_bound = sysconv(<span class="keyword">bit</span>, o.status & <span class="number">0x20000</span>),    -- OBJMOD_SCHEMABOUND
+	uses_database_collation = sysconv(<span class="keyword">bit</span>, o.status & <span class="number">0x100000</span>),  -- OBJMOD_USESDBCOLL
+	is_recompiled = sysconv(<span class="keyword">bit</span>, o.status & <span class="number">0x400000</span>),     -- OBJMOD_NOCACHE
+	null_on_null_input = sysconv(<span class="keyword">bit</span>, o.status & <span class="number">0x200000</span>),   -- OBJMOD_NULLONNULL
+	execute_as_principal_id = x.indepid
+<span class="keyword">FROM</span>
+	sys.sysschobjs o
+<span class="keyword">LEFT</span> <span class="keyword">JOIN</span>
+	sys.syssingleobjrefs x <span class="keyword">ON</span> x.depid = o.id <span class="keyword">AND</span> x.class = <span class="number">22</span> <span class="keyword">AND</span> x.depsubid = <span class="number">0</span> -- SRC_OBJEXECASOWNER
+<span class="keyword">WHERE</span>
+	o.pclass &lt;&gt; <span class="number">100</span> <span class="keyword">AND</span>
+	(
+		(o.type = <span class="string">'TR'</span> <span class="keyword">AND</span> has_access(<span class="string">'TR'</span>, o.id, o.pid, o.nsclass) = <span class="number">1</span>) <span class="keyword">OR</span>
+		(type <span class="keyword">IN</span> (<span class="string">'P'</span>,<span class="string">'V'</span>,<span class="string">'FN'</span>,<span class="string">'IF'</span>,<span class="string">'TF'</span>,<span class="string">'RF'</span>,<span class="string">'IS'</span>) <span class="keyword">AND</span> has_access(<span class="string">'CO'</span>, o.id) = <span class="number">1</span>) <span class="keyword">OR</span>
+		(type <span class="keyword">IN</span> (<span class="string">'R'</span>,<span class="string">'D'</span>) <span class="keyword">AND</span> o.pid = <span class="number">0</span>)
+	)</span>
+</pre></figure>
+
+<p>Hmmm, so sys.sql_modules gets the source by using the object_definition system function. Unfortunately, the following doesn’t work:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">select</span> object_definition(object_id(<span class="string">'object_definition'</span>))</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/where-does-sql-server-store-the-source-for-stored-procedures/image_6.png" class="fancy"><img src="/where-does-sql-server-store-the-source-for-stored-procedures/image_6.png" style="max-height: 250px"/></a></div></div>
+
+<p>I happen to remember that sys.sql_modules is a replacement for the, now deprecated, sys.syscomments legacy view. Let’s take a look at where that one gets the source from:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">select</span> object_definition(object_id(<span class="string">'sys.syscomments'</span>))</span>
+</pre></figure>
+
+
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	o.id <span class="keyword">AS</span> id,  
+	convert(<span class="keyword">smallint</span>, <span class="keyword">case</span> <span class="keyword">when</span> o.type <span class="keyword">in</span> (<span class="string">'P'</span>, <span class="string">'RF'</span>) <span class="keyword">then</span> <span class="number">1</span> <span class="keyword">else</span> <span class="number">0</span> <span class="keyword">end</span>) <span class="keyword">AS</span> <span class="keyword">number</span>,  
+	s.colid,
+	s.status,  
+	convert(varbinary(<span class="number">8000</span>), s.text) <span class="keyword">AS</span> ctext,  
+	convert(<span class="keyword">smallint</span>, <span class="number">2</span> + <span class="number">4</span> * (s.status & <span class="number">1</span>)) <span class="keyword">AS</span> texttype,  
+	convert(<span class="keyword">smallint</span>, <span class="number">0</span>) <span class="keyword">AS</span> <span class="keyword">language</span>,  
+	sysconv(<span class="keyword">bit</span>, s.status & <span class="number">1</span>) <span class="keyword">AS</span> encrypted,  
+	sysconv(<span class="keyword">bit</span>, <span class="number">0</span>) <span class="keyword">AS</span> compressed,  
+	s.text  
+<span class="keyword">FROM</span>
+	sys.sysschobjs o
+<span class="keyword">CROSS</span> APPLY
+	OpenRowset(<span class="keyword">TABLE</span> SQLSRC, o.id, <span class="number">0</span>) s  
+<span class="keyword">WHERE</span>
+	o.nsclass = <span class="number">0</span> <span class="keyword">AND</span>
+	o.pclass = <span class="number">1</span> <span class="keyword">AND</span>
+	o.type <span class="keyword">IN</span> (<span class="string">'C'</span>,<span class="string">'D'</span>,<span class="string">'P'</span>,<span class="string">'R'</span>,<span class="string">'V'</span>,<span class="string">'X'</span>,<span class="string">'FN'</span>,<span class="string">'IF'</span>,<span class="string">'TF'</span>,<span class="string">'RF'</span>,<span class="string">'IS'</span>,<span class="string">'TR'</span>) <span class="keyword">AND</span>
+	has_access(<span class="string">'CO'</span>, o.id) = <span class="number">1</span>  
+
+<span class="keyword">UNION</span> <span class="keyword">ALL</span>  
+
+<span class="keyword">SELECT</span>
+	c.object_id <span class="keyword">AS</span> id,  
+	convert(<span class="keyword">smallint</span>, c.column_id) <span class="keyword">AS</span> <span class="keyword">number</span>,  
+	s.colid,
+	s.status,  
+	convert(varbinary(<span class="number">8000</span>), s.text) <span class="keyword">AS</span> ctext,  
+	convert(<span class="keyword">smallint</span>, <span class="number">2</span> + <span class="number">4</span> * (s.status & <span class="number">1</span>)) <span class="keyword">AS</span> texttype,  
+	convert(<span class="keyword">smallint</span>, <span class="number">0</span>) <span class="keyword">AS</span> <span class="keyword">language</span>,  
+	sysconv(<span class="keyword">bit</span>, s.status & <span class="number">1</span>) <span class="keyword">AS</span> encrypted,  
+	sysconv(<span class="keyword">bit</span>, <span class="number">0</span>) <span class="keyword">AS</span> compressed,  
+	s.text  
+<span class="keyword">FROM</span>
+	sys.computed_columns c
+<span class="keyword">CROSS</span> APPLY
+	OpenRowset(<span class="keyword">TABLE</span> SQLSRC, c.object_id, c.column_id) s  
+
+<span class="keyword">UNION</span> <span class="keyword">ALL</span>  
+
+<span class="keyword">SELECT</span>
+	p.object_id <span class="keyword">AS</span> id,  
+	convert(<span class="keyword">smallint</span>, p.procedure_number) <span class="keyword">AS</span> <span class="keyword">number</span>,  
+	s.colid,
+	s.status,  
+	convert(varbinary(<span class="number">8000</span>), s.text) <span class="keyword">AS</span> ctext,  
+	convert(<span class="keyword">smallint</span>, <span class="number">2</span> + <span class="number">4</span> * (s.status & <span class="number">1</span>)) <span class="keyword">AS</span> texttype,  
+	convert(<span class="keyword">smallint</span>, <span class="number">0</span>) <span class="keyword">AS</span> <span class="keyword">language</span>,  
+	sysconv(<span class="keyword">bit</span>, s.status & <span class="number">1</span>) <span class="keyword">AS</span> encrypted,  
+	sysconv(<span class="keyword">bit</span>, <span class="number">0</span>) <span class="keyword">AS</span> compressed,  
+	s.text  
+<span class="keyword">FROM</span>
+	sys.numbered_procedures p
+<span class="keyword">CROSS</span> APPLY
+	OpenRowset(<span class="keyword">TABLE</span> SQLSRC, p.object_id, p.procedure_number) s  
+
+<span class="keyword">UNION</span> <span class="keyword">ALL</span>  
+
+<span class="keyword">SELECT</span>
+	o.id <span class="keyword">AS</span> id,  
+	convert(<span class="keyword">smallint</span>, <span class="keyword">case</span> <span class="keyword">when</span> o.type <span class="keyword">in</span> (<span class="string">'P'</span>, <span class="string">'RF'</span>) <span class="keyword">then</span> <span class="number">1</span> <span class="keyword">else</span> <span class="number">0</span> <span class="keyword">end</span>) <span class="keyword">AS</span> <span class="keyword">number</span>,  
+	s.colid,
+	s.status,  
+	convert(varbinary(<span class="number">8000</span>), s.text) <span class="keyword">AS</span> ctext,  
+	convert(<span class="keyword">smallint</span>, <span class="number">2</span>) <span class="keyword">AS</span> texttype,  
+	convert(<span class="keyword">smallint</span>, <span class="number">0</span>) <span class="keyword">AS</span> <span class="keyword">language</span>,  
+	sysconv(<span class="keyword">bit</span>, <span class="number">0</span>) <span class="keyword">AS</span> encrypted,  
+	sysconv(<span class="keyword">bit</span>, <span class="number">0</span>) <span class="keyword">AS</span> compressed,  
+	s.text  
+<span class="keyword">FROM</span>
+	sys.sysobjrdb o
+<span class="keyword">CROSS</span> APPLY
+	OpenRowset(<span class="keyword">TABLE</span> SQLSRC, o.id, <span class="number">0</span>) s  
+<span class="keyword">WHERE</span>
+	db_id() = <span class="number">1</span> <span class="keyword">AND</span> 
+	o.type <span class="keyword">IN</span> (<span class="string">'P'</span>,<span class="string">'V'</span>,<span class="string">'X'</span>,<span class="string">'FN'</span>,<span class="string">'IF'</span>,<span class="string">'TF'</span>)</span>
+</pre></figure>
+
+<p>Bummer. It doesn’t use object_definition, but instead another internal function in the form of OpenRowset(TABLE SQLSRC, o.id, 0). I’m not one to give up easily though – I’ve previously <a href="/exploring-the-sys-system_internals_partition_columns-ti-field">reverse engineered the OpenRowset(TABLE RSCPROP)</a> function.</p>
+<p>Let’s take a different approach to the problem. Everything in SQL Server is stored on 8KB pages in a fixed format. As the procedures aren’t encrypted, they must be stored in clear text somewhere in the database – we just don’t know where. Let’s detach the database and crack open a hex editor (I highly recommend HxD):</p>
+<div class="imgwrapper" style=""><div><a href="/where-does-sql-server-store-the-source-for-stored-procedures/image_10.png" class="fancy"><img src="/where-does-sql-server-store-the-source-for-stored-procedures/image_10.png" style="max-height: 250px"/></a></div></div>
+
+<p>Now let’s see if we can find the procedure. On purpose I made it return “SELECT ‘AABBCC’ AS Output” as that would be easy to search for:</p>
+<div class="imgwrapper" style=""><div><a href="/where-does-sql-server-store-the-source-for-stored-procedures/image_12.png" class="fancy"><img src="/where-does-sql-server-store-the-source-for-stored-procedures/image_12.png" style="max-height: 250px"/></a></div></div>
+
+<p>And whadda ya know, there it is:</p>
+<div class="imgwrapper" style=""><div><a href="/where-does-sql-server-store-the-source-for-stored-procedures/image_14.png" class="fancy"><img src="/where-does-sql-server-store-the-source-for-stored-procedures/image_14.png" style="max-height: 250px"/></a></div></div>
+
+<p>OK, so now we know that the source is stored in the database, just not where specifically. The data is stored at offset 0x00101AF0 in the data file. In decimal, that’s offset 01055472. As each data page is exactly 8KB, we can calculate the ID of the data page that this is stored on (using integer math):</p>
+<p>01055472 / 8192 = 128</p>
+<p>Aha! At this point we know that the source is stored on page 128 – how about we take a look at that page using DBCC PAGE? After reattaching the database, run:</p>
+<figure class="highlight sql"><pre>dbcc traceon (3604)
+dbcc page(Test2, 1, 128, 0)
+</pre></figure>
+
+<p>Note that I’m using style 0 for the DBCC PAGE command. At this point, I just want to see the header – there just might be something interesting in there:</p>
+<div class="imgwrapper" style=""><div><a href="/where-does-sql-server-store-the-source-for-stored-procedures/image_22.png" class="fancy"><img src="/where-does-sql-server-store-the-source-for-stored-procedures/image_22.png" style="max-height: 250px"/></a></div></div>
+
+<p>As expected, it’s a normal data page, as indicated by the m_type field having a value of 1 (which is the internal page type ID for a data page). More interesting though, we can see that the page belongs to object ID 60! Let’s have a look at what lies behind that object ID:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">select</span> * <span class="keyword">from</span> sys.sysobjects <span class="keyword">where</span> id = <span class="number">60</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/where-does-sql-server-store-the-source-for-stored-procedures/image_24.png" class="fancy"><img src="/where-does-sql-server-store-the-source-for-stored-procedures/image_24.png" style="max-height: 250px"/></a></div></div>
+
+<p>And all of a sudden, the hunt is on! Let’s have a look at the contents of sys.sysobjvalues. Note that before you can select from this table, you’ll have to connect using a <a href="http://msdn.microsoft.com/en-us/library/ms189595.aspx" target="_blank">dedicated administrator connection</a>, seeing as it’s an internal base table:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">select</span> * <span class="keyword">from</span> sys.sysobjvalues</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/where-does-sql-server-store-the-source-for-stored-procedures/image_28.png" class="fancy"><img src="/where-does-sql-server-store-the-source-for-stored-procedures/image_28.png" style="max-height: 250px"/></a></div></div>
+
+<p>There’s obviously a lot of stuff in here we don’t care about, but let’s try and filter that objid column down to the object ID of our procedure – 2105058535:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">select</span> * <span class="keyword">from</span> sys.sysobjvalues <span class="keyword">where</span> objid = <span class="number">2105058535</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/where-does-sql-server-store-the-source-for-stored-procedures/image_30.png" class="fancy"><img src="/where-does-sql-server-store-the-source-for-stored-procedures/image_30.png" style="max-height: 250px"/></a></div></div>
+
+<p>I wonder what that imageval column contains, if I remember correctly 0x2D2D would be “—“ in ASCII, which reminds me quite a lot of the beginning of the XYZ procedure. Let’s try and convert that column into human:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">select</span> convert(<span class="keyword">varchar</span>(<span class="aggregate">max</span>), imageval) <span class="keyword">from</span> sys.sysobjvalues <span class="keyword">where</span> objid = <span class="number">2105058535</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/where-does-sql-server-store-the-source-for-stored-procedures/image_32.png" class="fancy"><img src="/where-does-sql-server-store-the-source-for-stored-procedures/image_32.png" style="max-height: 250px"/></a></div></div>
+
+<p>And there you have it my dear reader; the source code for the XYZ stored procedure, as stored in the sys.sysobjvalues base table. As a final example, here’s how you’d retrieve a list of user stored procedures with their source code, without using neither object_definition nor sys.sql_modules:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">select</span>
+	p.name,
+	<span class="keyword">cast</span>(v.imageval <span class="keyword">as</span> <span class="keyword">varchar</span>(<span class="aggregate">MAX</span>))
+<span class="keyword">from</span>
+	sys.procedures p
+<span class="keyword">inner</span> <span class="keyword">join</span>
+	sys.sysobjvalues v <span class="keyword">on</span> p.object_id = v.objid</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/where-does-sql-server-store-the-source-for-stored-procedures/image_34.png" class="fancy"><img src="/where-does-sql-server-store-the-source-for-stored-procedures/image_34.png" style="max-height: 250px"/></a></div></div>
+
+<p>Want to see more stuff like this? Don’t miss my <a href="/presenting-at-sqlsaturday-162-in-cambridge">full-day precon at SQL Saturday #162 in Cambridge, UK</a> (Friday, September 7th), or my <a href="/presenting-at-bleeding-edge-in-slovenia">Revealing the Magic session at Bleeding Edge 2012</a> in Laško, Slovenia (October 23-24th)!</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=Where%20Does%20SQL%20Server%20Store%20the%20Source%20for%20Stored%20Procedures%3F%20http%3A%2F%2Fimprove.dk%2Fwhere-does-sql-server-store-the-source-for-stored-procedures%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fwhere-does-sql-server-store-the-source-for-stored-procedures%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fwhere-does-sql-server-store-the-source-for-stored-procedures%2F&title=Where%20Does%20SQL%20Server%20Store%20the%20Source%20for%20Stored%20Procedures%3F" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/where-does-sql-server-store-the-source-for-stored-procedures/where-does-sql-server-store-the-source-for-stored-procedures.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'where-does-sql-server-store-the-source-for-stored-procedures';
+	var disqus_url = 'http://improve.dk/where-does-sql-server-store-the-source-for-stored-procedures/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

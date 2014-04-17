@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>SQL Server Datetime Rounding Made Easy | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Dec</span>
+			<span class="day">13</span>
+		</div>
+		<div class="lower">2006</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/sql-server-datetime-rounding-made-easy/" title="SQL Server Datetime Rounding Made Easy" rel="bookmark">SQL Server Datetime Rounding Made Easy</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server/">SQL Server</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on SQL Server Datetime Rounding Made Easy">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p><strong>Update:</strong> As noted in the comments, this method does not actually round, it truncates the datetime value.</p>
+<a id="more"></a>
+
+<p>As feature complete as MS SQL Server may be, it really lacks some simple datetime rounding functions. Here is a simple trick to easily round of datetimes at any precision you wish.</p>
+<p>We will be using two builtin functions, namely the <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/tsqlref/ts_da-db_3vtw.asp" target="_blank">DATEADD</a> and the <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/tsqlref/ts_da-db_5vxi.asp" target="_blank">DATEDIFF</a> function.</p>
+<p>We can round off at nearly any precision that SQL Server itself supports, for instance: Minute, Day, Hour, Day, Month, Year and so forth.</p>
+<p>In this example I’ll select the original “Created” column from the table tblHits, as well as a rounding of the Created column by the day:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span> Created,
+	DATEADD(<span class="keyword">Day</span>, DATEDIFF(<span class="keyword">Day</span>, <span class="number">0</span>, Created), <span class="number">0</span>) <span class="keyword">AS</span> CreatedDay
+<span class="keyword">FROM</span> tblHits</span>
+</pre></figure>
+
+<p>It’ll return the following original / rounded values:</p>
+<figure class="highlight"><pre><span class="number">19</span>-<span class="number">11</span>-<span class="number">2006</span> <span class="number">22</span>:<span class="number">39</span>:<span class="number">27</span> -&gt; <span class="number">19</span>-<span class="number">11</span>-<span class="number">2006</span> <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>
+<span class="number">20</span>-<span class="number">11</span>-<span class="number">2006</span> <span class="number">02</span>:<span class="number">27</span>:<span class="number">31</span> -&gt; <span class="number">20</span>-<span class="number">11</span>-<span class="number">2006</span> <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>
+<span class="keyword">...</span>
+</pre></figure>
+
+<p>And naturally we can do the same, this time rounded by the hour:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span> Created,
+	DATEADD(<span class="keyword">Hour</span>, DATEDIFF(<span class="keyword">Hour</span>, <span class="number">0</span>, Created), <span class="number">0</span>) <span class="keyword">AS</span> CreatedHour
+<span class="keyword">FROM</span> tblHits</span>
+</pre></figure>
+
+<p>It’ll return the following:</p>
+<figure class="highlight"><pre><span class="number">19</span>-<span class="number">11</span>-<span class="number">2006</span> <span class="number">22</span>:<span class="number">39</span>:<span class="number">27</span> -&gt; <span class="number">19</span>-<span class="number">11</span>-<span class="number">2006</span> <span class="number">22</span>:<span class="number">39</span>:<span class="number">00</span>
+<span class="number">20</span>-<span class="number">11</span>-<span class="number">2006</span> <span class="number">02</span>:<span class="number">27</span>:<span class="number">31</span> -&gt; <span class="number">20</span>-<span class="number">11</span>-<span class="number">2006</span> <span class="number">02</span>:<span class="number">27</span>:<span class="number">00</span>
+<span class="keyword">...</span>
+</pre></figure>
+
+<p>You could of course also do the rounding on the webserver after you’ve selected the database results. Sometimes though, we have to do it at the database level. For instance, if I want to know how many visitors I have per day on my blog:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span> <span class="aggregate">COUNT</span>(<span class="number">1</span>) <span class="keyword">AS</span> Visitors,
+	DATEADD(<span class="keyword">Day</span>, DATEDIFF(<span class="keyword">Day</span>, <span class="number">0</span>, Created), <span class="number">0</span>) <span class="keyword">AS</span> <span class="keyword">Date</span>
+<span class="keyword">FROM</span> tblHits
+<span class="keyword">GROUP</span> <span class="keyword">BY</span> DATEADD(<span class="keyword">Day</span>, DATEDIFF(<span class="keyword">Day</span>, <span class="number">0</span>, Created), <span class="number">0</span>)
+<span class="keyword">ORDER</span> <span class="keyword">BY</span> <span class="keyword">Date</span> <span class="keyword">DESC</span></span>
+</pre></figure>
+
+<p>Now, I know that this is not optimal in terms of performance since we’re doing the DATEADD(DATEDIFF()) trick twice to both select it and group by it, but I’ve kept it this way to follow the <a href="http://en.wikipedia.org/wiki/KISS_principle" target="_blank">KISS principle</a>.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=SQL%20Server%20Datetime%20Rounding%20Made%20Easy%20http%3A%2F%2Fimprove.dk%2Fsql-server-datetime-rounding-made-easy%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fsql-server-datetime-rounding-made-easy%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fsql-server-datetime-rounding-made-easy%2F&title=SQL%20Server%20Datetime%20Rounding%20Made%20Easy" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/sql-server-datetime-rounding-made-easy/sql-server-datetime-rounding-made-easy.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'sql-server-datetime-rounding-made-easy';
+	var disqus_url = 'http://improve.dk/sql-server-datetime-rounding-made-easy/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

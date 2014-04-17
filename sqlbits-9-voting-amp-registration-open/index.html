@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>SQLBits 9 Voting &amp; Registration Open | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">12</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/sqlbits-9-voting-amp-registration-open/" title="SQLBits 9 Voting &amp; Registration Open" rel="bookmark">SQLBits 9 Voting &amp; Registration Open</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/Conferences and Presenting/">Conferences and Presenting</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on SQLBits 9 Voting &amp; Registration Open">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>The <a href="http://sqlbits.com/information/Pricing.aspx" target="_blank">registration for SQLBits 9 is now open</a>.Equally important, the voting for sessions is has also opened. Simply login and take a look at the <a href="http://sqlbits.com/information/PublicSessions.aspx" target="_blank">list of sessions</a> to vote for your preferred sessions.</p>
+<a id="more"></a>
+
+<h2 id="My_sessions">My sessions</h2>
+<p><img style="margin: 15px; display: inline; float: right;" alt="Training Day" src="http://sqlbits.com/images/SQLBits/SQLBitsTrainingDay.png" align="right" /></p>
+<p>Besides doing a full day training on the <a href="http://sqlbits.com/information/Event9/SQL_Server_Storage_Engine_and_MDF_File_Internals/TrainingDetails.aspx" target="_blank">SQL Server Storage Engine and MDF File Internals</a>, I’ve also submitted two related sessions that present a subset of the training day material, in a much more dense format. Both sessions are very technical deep dives on the storage internals. If you think they sound interesting, I’d appreciate a vote :)</p>
+<h3 id="Knowing_The_Internals,_Who_Needs_SQL_Server_Anyway?">Knowing The Internals, Who Needs SQL Server Anyway?</h3>
+<p>You’re stuck on a remote island with just a laptop and your main database .MDF file. The boss calls and asks you to retrieve some data, but alas, you forgot to install SQL Server on your laptop. Luckily you have a HEX editor by your side!</p>
+<p>In this level 500 deep dive session we will go into the intimate details of the MDF file format. Think using DBCC Page is pushing it? Think again! As a learning experiment, I’ve created an open source parser for MDF files, called OrcaMDF. Using the OrcaMDF parser I’ll go through the primary storage structures, how to parse page headers, boot pages, internal system tables, data &amp; index records, b-tree structures as well as the supporting IAM, GAM, SGAM &amp; PFS pages.</p>
+<p>Has your database suffered an unrecoverable disk corruption? This session might just be your way out! Using a corrupt &amp; unattachable MDF file, I’ll demo how to recover as much data as possible. This session is not for the faint of heart, there will be bits &amp; bytes.</p>
+<h3 id="Demystifying_Database_Metadata">Demystifying Database Metadata</h3>
+<p>You know how to query sys.tables, sys.columns and perhaps even sys.system_internals_allocation_units to discover the metadata contents of a database. But where are these views getting their data from, and how do the core system tables relate?</p>
+<p>Based on my work with OrcaMDF, an open source C# parser for MDF files, I will demonstrate how to parse the internal system tables. Using just the boot page as origin, we’ll discover how to traverse the chain of references that ultimately end up in references to the actual system table data, from where we can parse the data records.</p>
+<p>Once we’ve got the system table data, I’ll demonstrate how to correlate the different tables to end up with the data we see in common system views.</p>
+<h2 id="My_picks">My picks</h2>
+<p><img style="margin: 15px; display: inline; float: right;" alt="Sessions Title" src="http://sqlbits.com/images/headings/Sessions.png" width="286" height="98" align="right" />Having only 10 votes, it’s tough to pick out the top 10 sessions from a list of almost ~150 sessions. Though it was a struggle, I ended up with the following votes:</p>
+<p><a href="http://sqlbits.com/Sessions/Event9/Performance_tuning_from_the_field" target="_blank">Performance tuning from the field</a> by Simon Sabin<br><a href="http://sqlbits.com/Sessions/Event9/Transaction_Log_Performance_and_Troubleshooting-Deep_Dive" target="_blank">Transaction Log Performance and Troubleshooting – Deep Dive</a> by Chirag Roy<br><a href="http://sqlbits.com/Sessions/Event9/SQL_Server_Denali-Always_On_Deep_Dive" target="_blank">SQL Server Denali – Always On Deep Dive</a> by Bob Duffy<br><a href="http://sqlbits.com/Sessions/Event9/HA_DR-Focus_on_Options_Comparisons_and_Interoperability" target="_blank">HA/DR – Focus on Options, Comparisons and Interoperability</a> by Chirag Roy<br><a href="http://sqlbits.com/Sessions/Event9/READPAST__Furious_Transactions_Locking_and_Isolation" target="_blank">READPAST &amp; Furious: Transactions, Locking and Isolation</a> by Mark Broadbent<br><a href="http://sqlbits.com/Sessions/Event9/Preparation_for_Disaster" target="_blank">Preparation for Disaster</a> by Steve Jones<br><a href="http://sqlbits.com/Sessions/Event9/Busted_A_journey_into_the_most_common_TSQL__Tuning_myths" target="_blank">Busted! A journey into the most common TSQL &amp; Tuning myths</a> by David Morrison<br><a href="http://sqlbits.com/Sessions/Event9/Turbocharge_Database_Recoverability_Performance" target="_blank">Turbocharge Database Recoverability Performance</a> by Chirag Roy<br><a href="http://sqlbits.com/Sessions/Event9/Implementing_Real-Time_Data_Warehouse" target="_blank">Implementing Real-Time Data Warehouse</a> by Sutha Thiru<br><a href="http://sqlbits.com/Sessions/Event9/Replication-Best_Practices_Troubleshooting__Performance" target="_blank">Replication – Best Practices, Troubleshooting &amp; Performance</a> by Neil Hambly  </p>
+<p>Not until now did I notice that three of my sessions are by <a href="http://sqlking.wordpress.com/" target="_blank">Chirag Roy</a>, I’ll use this as an opportunity to congratulate him on becoming the latest <a href="http://www.microsoft.com/learning/en/us/certification/master-sql.aspx" target="_blank">Microsoft Certified Master</a>!</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=SQLBits%209%20Voting%20%26%20Registration%20Open%20http%3A%2F%2Fimprove.dk%2Fsqlbits-9-voting-amp-registration-open%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fsqlbits-9-voting-amp-registration-open%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fsqlbits-9-voting-amp-registration-open%2F&title=SQLBits%209%20Voting%20%26%20Registration%20Open" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/sqlbits-9-voting-amp-registration-open/sqlbits-9-voting-amp-registration-open.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'sqlbits-9-voting-amp-registration-open';
+	var disqus_url = 'http://improve.dk/sqlbits-9-voting-amp-registration-open/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

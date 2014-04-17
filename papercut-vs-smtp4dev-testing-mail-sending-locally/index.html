@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Papercut vs smtp4dev - Testing Mail Sending Locally | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">01</span>
+		</div>
+		<div class="lower">2010</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/papercut-vs-smtp4dev-testing-mail-sending-locally/" title="Papercut vs smtp4dev - Testing Mail Sending Locally" rel="bookmark">Papercut vs smtp4dev - Testing Mail Sending Locally</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				, 
+			
+				<a href="http://improve.dk/category/Tools of the Trade/">Tools of the Trade</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on Papercut vs smtp4dev - Testing Mail Sending Locally">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>Testing mail functionality in code using external mail servers has always been a hassle. If the mail manages to dodge antispam and various other mischievous services, it’ll probably take several minutes to receive. On our Exchange servers it’ll typically take 10-15 minutes before a locally sent mail actually arrives back in my inbox. We can do better!</p>
+<a id="more"></a>
+
+<p><a href="http://papercut.codeplex.com" target="_blank">Papercut</a> and <a href="http://smtp4dev.codeplex.com" target="_blank">smtp4dev</a> are both applications that’ll emulate a remote SMTP server on your local machine. Instead of actually sending the mail onwards like a normal SMTP server, they’ll simply catch the mail and notify you. This means you’ll receive the mail instantly without any risks of being caught in spam filters or dying of old age before receiving the mail. I’ve tried out both Papercut and smtp4dev and here are some thoughts on both.</p>
+<p>For the testing I’m using this rather simple piece of code:</p>
+<h3 id="Program-cs_"><strong>Program.cs </strong></h3>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System.Net.Mail;
+
+<span class="class"><span class="keyword">namespace</span> <span class="title">MailTest</span>
+{</span>
+    <span class="class"><span class="keyword">class</span> <span class="title">Program</span>
+    {</span>
+        <span class="keyword">static</span> <span class="keyword">void</span> Main()
+        {
+            <span class="keyword">var</span> sc = <span class="keyword">new</span> SmtpClient();
+            sc.Host = <span class="string">"127.0.0.1"</span>;
+
+            <span class="keyword">var</span> mail = <span class="keyword">new</span> MailMessage(<span class="string">"mark+from@improve.dk"</span>, <span class="string">"mark+to@improve.dk"</span>)
+                        {
+                            Subject = <span class="string">"My subject"</span>,
+                            Body = <span class="string">"My body"</span>
+                        };
+
+            sc.Send(mail);
+        }
+    }
+}
+</pre></figure>
+
+<h2 id="Papercut">Papercut</h2>
+<div class="imgwrapper" style=""><div><a href="/papercut-vs-smtp4dev-testing-mail-sending-locally/papercut1_2.jpg" class="fancy"><img src="/papercut-vs-smtp4dev-testing-mail-sending-locally/papercut1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/papercut-vs-smtp4dev-testing-mail-sending-locally/papercut2_2.jpg" class="fancy"><img src="/papercut-vs-smtp4dev-testing-mail-sending-locally/papercut2_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<h3 id="+_Xcopy_deployment">+ Xcopy deployment</h3>
+<p>I love the fact that I can just unzip the download and run the .exe right away, no installation, no configuration.</p>
+<h3 id="+_Dead_simple">+ Dead simple</h3>
+<p>It lacks some features, but when all you need is to quickly check the contents of a sent email, the simplicity of Papercut makes it extremely fast to use.</p>
+<h3 id="+_HTML_view_directly_in_interface">+ HTML view directly in interface</h3>
+<p>Unlike smtp4dev, Papercut will display HTML email contents directly in the interface without having to open the mail in Outlook (which I don’t even have on my machine).</p>
+<h3 id="+_Forwarding_option">+ Forwarding option</h3>
+<p>If you need to forward the mail to a colleague you can do it right in the interface. It’ll prompt you for an SMTP server to use - unfortunately it’s not possible to provide authentication credentials.</p>
+<h3 id="-_HTML_view_should_open_links_in_new_window">- HTML view should open links in new window</h3>
+<p>When checking out HTML emails I often want to verify that links are correct. Papercut will open them directly in the Papercut interface, making it hard to verify the address.</p>
+<h3 id="-_Lacks_simple_connection_status_in_interface">- Lacks simple connection status in interface</h3>
+<p>There’s no green bar/indicator for whether Papercut is actively listening of if it’s been obstructed or failed to bind to the port on startup.</p>
+<h3 id="-_Lacks_simple_way_to_open_-eml_files">- Lacks simple way to open .eml files</h3>
+<p>Both Papercut and smtp4dev save the emails as .eml files that can easily be opened by Outlook or antoher compatible mail client. In Papercut you have to find the executable folder and open the files directly though. A simple double-click function would be nice.</p>
+<h3 id="-_No_way_to_quickly_delete_all_mails">- No way to quickly delete all mails</h3>
+<p>You have to delete all incoming mails one by one.</p>
+<h2 id="smtp4dev">smtp4dev</h2>
+<div class="imgwrapper" style=""><div><a href="/papercut-vs-smtp4dev-testing-mail-sending-locally/smtp4dev4_2.jpg" class="fancy"><img src="/papercut-vs-smtp4dev-testing-mail-sending-locally/smtp4dev4_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/papercut-vs-smtp4dev-testing-mail-sending-locally/smtp4dev3_2.jpg" class="fancy"><img src="/papercut-vs-smtp4dev-testing-mail-sending-locally/smtp4dev3_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<h3 id="+_Inspection_shows_formatted_headers">+ Inspection shows formatted headers</h3>
+<p>The inspection view lists headers in a table for easier reading.</p>
+<h3 id="+_Inspection_shows_mime_parts">+ Inspection shows mime parts</h3>
+<p>If your mail contains multiple mime parts, they can easily be seen separately in the inspection interface.</p>
+<h3 id="+_More_UI_options">+ More UI options</h3>
+<p>smtp4dev enables you to delete all mails easily, has context menu options when right clicking the notification icon as well as generally more UI options than Papercut.</p>
+<h3 id="+_Lots_more_options">+ Lots more options</h3>
+<p>smtp4dev has vastly more options than Papercut. smtp4dev supports authentication, SSL and various other options, while Papercut only supports defining the listening port.</p>
+<h3 id="+_List_of_SMTP_sessions">+ List of SMTP sessions</h3>
+<p>Using the sessions tab you can easily see how many SMTP sessions have occurred, as well as how many mails were sent as part of that session.</p>
+<div class="imgwrapper" style=""><div><a href="/papercut-vs-smtp4dev-testing-mail-sending-locally/smtp4dev5_2.jpg" class="fancy"><img src="/papercut-vs-smtp4dev-testing-mail-sending-locally/smtp4dev5_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<h3 id="+_More_activity_on_Codeplex">+ More activity on Codeplex</h3>
+<p>smtp4dev has somewhat more discussion activity as well as recent commit activity, whereas Papercut seems somewhat more abandoned.</p>
+<h3 id="-_Cumbersome_message_viewing">- Cumbersome message viewing</h3>
+<p>Viewing the actual email messages requires either opening the .eml files in a mail viewer application or opening up the inspection interface. Papercut is much faster since you can view the body directly in the list interface. A reading pane option would be nice.</p>
+<h3 id="-_Requires_installation">- Requires installation</h3>
+<p>An application like this is meant to be lightweight and easily fired up when required. smtp4dev requires installation and even offers you to let it start on bootup. It might be a matter of preferences, but I really like Papercuts xcopy deployment.</p>
+<div class="imgwrapper" style=""><div><a href="/papercut-vs-smtp4dev-testing-mail-sending-locally/smtp4dev1_2.jpg" class="fancy"><img src="/papercut-vs-smtp4dev-testing-mail-sending-locally/smtp4dev1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<h3 id="-_Autoupdate">- Autoupdate</h3>
+<p>Expanding on the point above; a tool like this is not a tool that I really need to have checking for updates automatically. I know, I can’t really make this a minus, but still, KISS.</p>
+<h3 id="-_Crashes">- Crashes</h3>
+<p>While I haven’t been able to make a reproduction case, smtp4dev crashed on me a couple of times, seemingly while running in the background without SMTP activity.</p>
+<h2 id="Conclusion">Conclusion</h2>
+<p>So which is best? It depends! I use both… If all I need is to quickly check a single mails contents then I’ll fire up Papercut. If I need to catch multiple emails and perhaps inspect the contents more thoroughly, I’ll use smtp4dev. Generally I prefer to use Papercut if I don’t need any further features.</p>
+<p>Both projects’ source code seems decent, though I’ve just skimmed quickly. smtp4dev generally seems more robust and also includes a limited amount of unit tests.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=Papercut%20vs%20smtp4dev%20-%20Testing%20Mail%20Sending%20Locally%20http%3A%2F%2Fimprove.dk%2Fpapercut-vs-smtp4dev-testing-mail-sending-locally%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fpapercut-vs-smtp4dev-testing-mail-sending-locally%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fpapercut-vs-smtp4dev-testing-mail-sending-locally%2F&title=Papercut%20vs%20smtp4dev%20-%20Testing%20Mail%20Sending%20Locally" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/papercut-vs-smtp4dev-testing-mail-sending-locally/papercut-vs-smtp4dev-testing-mail-sending-locally.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'papercut-vs-smtp4dev-testing-mail-sending-locally';
+	var disqus_url = 'http://improve.dk/papercut-vs-smtp4dev-testing-mail-sending-locally/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

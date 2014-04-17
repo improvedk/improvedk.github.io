@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>SQL Server Corruption Recovery - When All Else Fails | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Nov</span>
+			<span class="day">06</span>
+		</div>
+		<div class="lower">2013</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/sql-server-corruption-recovery-when-all-else-fails/" title="SQL Server Corruption Recovery - When All Else Fails" rel="bookmark">SQL Server Corruption Recovery - When All Else Fails</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server/">SQL Server</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on SQL Server Corruption Recovery - When All Else Fails">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>In this post I want to walk through a number of SQL Server corruption recovery techniques for when you’re out of luck, have no backups, and the usual methods don’t work. I’ll be using the <a href="http://msftdbprodsamples.codeplex.com/releases/view/93587" target="_blank">AdventureWorksLT2008R2 sample database</a> as my victim.</p>
+<a id="more"></a>
+
+<h2 id="A_Clean_Start">A Clean Start</h2>
+<p>To start out, I’ve attached the downloaded database and it’s available on my SQL Server 2008 R2 instance, under the name of <strong>AWLT2008R2</strong>.</p>
+<div class="imgwrapper" style=""><div><a href="/sql-server-corruption-recovery-when-all-else-fails/A9.png" class="fancy"><img src="/sql-server-corruption-recovery-when-all-else-fails/A9.png" style="max-height: 250px"/></a></div></div>
+
+<p>To ensure we’ve got a clean start, I’ll run DBCC CHECKDB with the DATA_PURITY flag set, just to make sure the database is OK.</p>
+<figure class="highlight sql"><pre>DBCC CHECKDB (AWLT2008R2) WITH ALL_ERRORMSGS, DATA_PURITY
+</pre></figure>
+
+
+<figure class="highlight"><pre>DBCC results <span class="keyword">for</span> <span class="string">'AWLT2008R2'</span>.
+Service Broker Msg <span class="number">9675</span>, State <span class="number">1</span>: Message Types analyzed: <span class="number">14.</span>
+Service Broker Msg <span class="number">9676</span>, State <span class="number">1</span>: Service Contracts analyzed: <span class="number">6.</span>
+Service Broker Msg <span class="number">9667</span>, State <span class="number">1</span>: Services analyzed: <span class="number">3.</span>
+Service Broker Msg <span class="number">9668</span>, State <span class="number">1</span>: Service Queues analyzed: <span class="number">3.</span>
+Service Broker Msg <span class="number">9669</span>, State <span class="number">1</span>: Conversation Endpoints analyzed: <span class="number">0.</span>
+Service Broker Msg <span class="number">9674</span>, State <span class="number">1</span>: Conversation Groups analyzed: <span class="number">0.</span>
+Service Broker Msg <span class="number">9670</span>, State <span class="number">1</span>: Remote Service Bindings analyzed: <span class="number">0.</span>
+Service Broker Msg <span class="number">9605</span>, State <span class="number">1</span>: Conversation Priorities analyzed: <span class="number">0.</span>
+DBCC results <span class="keyword">for</span> <span class="string">'sys.sysrscols'</span>.
+There are <span class="number">805</span> rows <span class="keyword">in</span> <span class="number">9</span> pages <span class="keyword">for</span> object <span class="string">"sys.sysrscols"</span>.
+DBCC results <span class="keyword">for</span> <span class="string">'sys.sysrowsets'</span>.
+There are <span class="number">125</span> rows <span class="keyword">in</span> <span class="number">1</span> pages <span class="keyword">for</span> object <span class="string">"sys.sysrowsets"</span>.
+DBCC results <span class="keyword">for</span> <span class="string">'SalesLT.ProductDescription'</span>.
+There are <span class="number">762</span> rows <span class="keyword">in</span> <span class="number">18</span> pages <span class="keyword">for</span> object <span class="string">"SalesLT.ProductDescription"</span>.
+<span class="keyword">...</span>
+CHECKDB found <span class="number">0</span> allocation errors and <span class="number">0</span> consistency errors <span class="keyword">in</span> database <span class="string">'AWLT2008R2'</span>.
+DBCC execution completed. If DBCC printed error messages, contact your system administrator.
+</pre></figure>
+
+<h2 id="Enter_Corruption">Enter Corruption</h2>
+<p>As I don’t want to kill my disk drives just to introduce corruption, I’ll be using <a href="/corrupting-databases-purpose-using-orcamdf-corruptor/">OrcaMDF’s Corruptor class</a> instead. First up we need to shut down SQL Server:</p>
+<figure class="highlight sql"><pre>SHUTDOWN WITH NOWAIT
+</pre></figure>
+
+
+<figure class="highlight"><pre><span class="built_in">Server</span> shut down by NOWAIT <span class="built_in">request</span> from login MSR\Mark S. Rasmussen.
+SQL <span class="built_in">Server</span> <span class="keyword">is</span> terminating this process.
+</pre></figure>
+
+<p>Once the instance has been shut down, I’ve located my MDF file, stored at <strong>D:\MSSQL Databases\AdventureWorksLT2008R2.mdf</strong>. Knowing the path to the MDF file, I’ll now intentially corrupt 5% of the pages in the database (at a database size of 5,312KB this will end up corrupting 33 random pages, out of a total of 664 pages).</p>
+<figure class="highlight csharp"><pre>Corruptor.CorruptFile(@"D:<span class="command">\MSSQL</span> Databases<span class="command">\AdventureWorksLT</span>2008R2.mdf", 0.05);
+</pre></figure>
+
+<p>At this point I have no idea about which pages were actually corrupted, I just know that 33 random pages just got overwritten by all zeros.</p>
+<h2 id="Uh_Oh">Uh Oh</h2>
+<p>After restarting the SQL Server instance and looking at the tree of databases, it’s obvious we’re in trouble…</p>
+<div class="imgwrapper" style=""><div><a href="/sql-server-corruption-recovery-when-all-else-fails/A11.png" class="fancy"><img src="/sql-server-corruption-recovery-when-all-else-fails/A11.png" style="max-height: 250px"/></a></div></div>
+
+<p>Running DBCC CHECKDB doesn’t help much:</p>
+<figure class="highlight sql"><pre>DBCC CHECKDB (AWLT2008R2) WITH ALL_ERRORMSGS, DATA_PURITY
+</pre></figure>
+
+
+<figure class="highlight"><pre>Msg <span class="number">926</span>, Level <span class="number">14</span>, State <span class="number">1</span>, Line <span class="number">1</span>
+Database <span class="string">'AWLT2008R2'</span> cannot be opened. It has been marked SUSPECT <span class="keyword">by</span> recovery.
+See <span class="operator">the</span> SQL Server errorlog <span class="keyword">for</span> more information.
+</pre></figure>
+
+<p>What does the errorlog say?</p>
+<ul>
+<li>Starting up database ‘AWLT2008R2’.</li>
+<li>1 transactions rolled forward in database ‘AWLT2008R2’ (13). This is an informational message only. No user action is required.</li>
+<li>Error: 824, Severity: 24, State: 2.</li>
+<li><strong>SQL Server detected a logical consistency-based I/O error</strong>: incorrect pageid (expected 1:2; actual 0:0). It occurred during a read of page (1:2) in database ID 13 at offset 0x00000000004000 in file ‘D:\MSSQL Databases\AdventureWorksLT2008R2.mdf’.  Additional messages in the SQL Server error log or system event log may provide more detail. <strong>This is a severe error condition that threatens database integrity and must be corrected immediately. Complete a full database consistency check (DBCC CHECKDB).</strong> This error can be caused by many factors; for more information, see SQL Server Books Online.</li>
+<li>Error: 3414, Severity: 21, State: 1.</li>
+<li><strong>An error occurred during recovery, preventing the database ‘AWLT2008R2’ (database ID 13) from restarting. Diagnose the recovery errors and fix them, or restore from a known good backup. If errors are not corrected or expected, contact Technical Support.</strong></li>
+<li>CHECKDB for database ‘AWLT2008R2’ finished without errors on 2013-11-05 20:02:07.810 (local time). This is an informational message only; no user action is required.</li>
+<li>Recovery is complete. This is an informational message only. No user action is required.</li>
+</ul>
+<p>This is officially not good. Our database failed to recover and can’t be put online at the moment, due to I/O consistency errors. We’ve also got our first hint:</p>
+<figure class="highlight"><pre><span class="tag">incorrect</span> <span class="tag">pageid</span> (<span class="tag">expected</span> 1<span class="pseudo">:2</span>; <span class="tag">actual</span> 0<span class="pseudo">:0)</span>
+</pre></figure>
+
+<p>What this tells us is that the header of page 2 has been overwritten by zeros since SQL Server expected to find the value 1:2, but found 0:0 instead. Page 2 is the first GAM page in the database and is an essential part of the metadata.</p>
+<p>SQL Server also wisely told us to either fix the errors or <strong>restore from a known good backup</strong>. And this is why you should always have a recovery strategy. If you ever end up in a situation like this, without a backup, you’ll have to continue reading.</p>
+<h2 id="DBCC_CHECKDB">DBCC CHECKDB</h2>
+<p>SQL Server recommended that we run a <strong>full database consistency check</strong> using DBCC CHECKDB. Unfortunately, given the state of our database, DBCC CHECKDB is unable to run:</p>
+<figure class="highlight sql"><pre>DBCC CHECKDB (AWLT2008R2) WITH ALL_ERRORMSGS, DATA_PURITY
+</pre></figure>
+
+
+<figure class="highlight"><pre>Msg <span class="number">926</span>, Level <span class="number">14</span>, State <span class="number">1</span>, Line <span class="number">1</span>
+Database <span class="string">'AWLT2008R2'</span> cannot be opened. It has been marked SUSPECT <span class="keyword">by</span> recovery.
+See <span class="operator">the</span> SQL Server errorlog <span class="keyword">for</span> more information.
+</pre></figure>
+
+<p>In some cases you may be able to force the database online, by putting it into <strong>EMERGENCY</strong> mode. If we could get the database into EMERGENCY mode, we might just be able to run DBCC CHECKDB.</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">ALTER</span> <span class="keyword">DATABASE</span> AWLT2008R2 <span class="keyword">SET</span> EMERGENCY</span>
+</pre></figure>
+
+
+<figure class="highlight"><pre>Msg <span class="number">824</span>, Level <span class="number">24</span>, State <span class="number">2</span>, Line <span class="number">1</span>
+SQL Server detected <span class="operator">a</span> logical consistency-based I/O error: incorrect pageid
+(expected <span class="number">1</span>:<span class="number">16</span>; actual <span class="number">0</span>:<span class="number">0</span>). It occurred during <span class="operator">a</span> <span class="built_in">read</span> <span class="operator">of</span> page (<span class="number">1</span>:<span class="number">16</span>) <span class="operator">in</span> database
+ID <span class="number">13</span> <span class="keyword">at</span> <span class="built_in">offset</span> <span class="number">0x00000000020000</span> <span class="operator">in</span> <span class="built_in">file</span> <span class="string">'D:\MSSQL Databases\AdventureWorksLT2008R2.mdf'</span>.
+Additional messages <span class="operator">in</span> <span class="operator">the</span> SQL Server error <span class="built_in">log</span> <span class="operator">or</span> <span class="keyword">system</span> event <span class="built_in">log</span> may provide more
+detail. This is <span class="operator">a</span> severe error condition that threatens database integrity <span class="operator">and</span> must
+be corrected immediately. Complete <span class="operator">a</span> full database consistency check (DBCC CHECKDB).
+This error can be caused <span class="keyword">by</span> many factors; <span class="keyword">for</span> more information, see SQL Server
+Books Online.
+</pre></figure>
+
+<p>Even worse, it seems that page 16 has also been hit by corruption. Page 16 is the root page of the sysallocunits base table, holding all of the allocation unit storage metadata. Without page 16 there is no way for SQL Server to access any of its metadata. In short, there’s no way we’re getting this database online!</p>
+<h2 id="Enter_OrcaMDF">Enter OrcaMDF</h2>
+<p>The OrcaMDF Database class won’t be able to open the database, seeing as it does not handle corruption very well. Even so, I want to try anyway, you never know. First off you’ll have to shut down SQL Server to release the locks on the corrupt MDF file.</p>
+<figure class="highlight sql"><pre>SHUTDOWN WITH NOWAIT
+</pre></figure>
+
+<p>If you then try opening the database using the OrcaMDF Database class, you’ll get a result like this:</p>
+<figure class="highlight csharp"><pre><span class="keyword">var</span> db = <span class="keyword">new</span> Database(<span class="string">@"D:\MSSQL Databases\AdventureWorksLT2008R2.mdf"</span>);
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/sql-server-corruption-recovery-when-all-else-fails/Capture.png" class="fancy"><img src="/sql-server-corruption-recovery-when-all-else-fails/Capture.png" style="max-height: 250px"/></a></div></div>
+
+<p>Interestingly the Database class didn’t puke on the boot page (ID 9) itself, so we know that that one’s OK, at least. But as soon as it hit page 16, things started to fall apart - and we already knew page 16 was corrupt.</p>
+<h3 id="RawDatabase">RawDatabase</h3>
+<p>While the OrcaMDF <strong>Database</strong> class can’t read the database file either, <strong>RawDatabase</strong> can. RawDatabase doesn’t care about metadata, it doesn’t read anything but what you tell it to, and as a result of that, it’s much more resilient to corruption.</p>
+<p>Given that we know the corruption has resulted in pages being zeroed out, we could easily gather a list of corrupted pages by just searching for pages whose logical page ID doesn’t match the one in the header:</p>
+<figure class="highlight csharp"><pre>var db = new RawDatabase(@<span class="string">"D:\MSSQL Databases\AdventureWorksLT2008R2.mdf"</span>)
+db<span class="preprocessor">.Pages</span>
+  <span class="preprocessor">.Where</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.PageID</span> != <span class="built_in">x</span><span class="preprocessor">.PageID</span>)
+  <span class="preprocessor">.Select</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.PageID</span>)
+  <span class="preprocessor">.ToList</span>()
+  <span class="preprocessor">.ForEach</span>(Console<span class="preprocessor">.WriteLine</span>)<span class="comment">;</span>
+</pre></figure>
+
+
+<figure class="highlight"><pre><span class="number">2</span>
+<span class="number">4</span>
+<span class="number">5</span>
+<span class="number">16</span>
+<span class="number">55</span>
+<span class="keyword">...</span>
+<span class="number">639</span>
+<span class="number">649</span>
+<span class="number">651</span>
+<span class="number">662</span>
+<span class="number">663</span>
+</pre></figure>
+
+<p>This is only possible since we know the corruption caused pages to be zeroed out, so you’ll rarely be this lucky. However, sometimes you may be able to detect the exact result of the corruption, thus enabling you to pinpoint the corrupted pages, just like we did here. However, this doesn’t really help us much - all we have now is a list of some page ID’s that are useless to us.</p>
+<h3 id="Getting_a_List_of_Objects">Getting a List of Objects</h3>
+<p>For this next part we’ll need a working database, any database, on an instance running the same version that our corrupted database this. This could be the master database - literally any working database. First you’ll want to connect to the database using the <a href="http://technet.microsoft.com/en-us/library/ms178068(v=sql.105" target="_blank">Dedicated Administrator Connection</a>.aspx). Connecting through the DAC allows us to query the base tables of the database.</p>
+<p>The base table beneath sys.tables is called <strong>sys.sysschobjs</strong>, and if we can get to that, we can get a list of all the objects in the database, which might be a good start. Having connected to the working database, we can get the sys.sysschobjs details like so:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> sys.sysschobjs <span class="keyword">WHERE</span> name = <span class="string">'sysschobjs'</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/sql-server-corruption-recovery-when-all-else-fails/Capture1.png" class="fancy"><img src="/sql-server-corruption-recovery-when-all-else-fails/Capture1.png" style="max-height: 250px"/></a></div></div>
+
+<p>The only thing I’m looking for here is the object id, provided by the <strong>id</strong> column. In contrast to all user tables, the system tables have their actual object id stored in the page header, which allows us to easily query for pages by their id. Knowing sys.sysschobjs has ID <strong>34</strong>, let’s see if we can get a list of all the pages belonging to it (note that the .Dump() method is native to <a href="http://www.linqpad.net/" target="_blank">LinqPad</a> - all it does is to output the resulting objects as a table):</p>
+<figure class="highlight csharp"><pre>var db = new RawDatabase(@<span class="string">"D:\MSSQL Databases\AdventureWorksLT2008R2.mdf"</span>)<span class="comment">;</span>
+db<span class="preprocessor">.Pages</span>
+  <span class="preprocessor">.Where</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.ObjectID</span> == <span class="number">34</span>)
+  <span class="preprocessor">.Dump</span>()<span class="comment">;</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/sql-server-corruption-recovery-when-all-else-fails/Capture2.png" class="fancy"><img src="/sql-server-corruption-recovery-when-all-else-fails/Capture2.png" style="max-height: 250px"/></a></div></div>
+
+<p>Now that we have a list of pages belonging to the sys.sysschobjs table, we need to retrieve the actual rows from there. Using <strong>sp_help</strong> on the working database, we can see the underlying schema of sys.sysschobjs:</p>
+<figure class="highlight sql"><pre>sp_help 'sys.sysschobjs'
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/sql-server-corruption-recovery-when-all-else-fails/Capture3.png" class="fancy"><img src="/sql-server-corruption-recovery-when-all-else-fails/Capture3.png" style="max-height: 250px"/></a></div></div>
+
+<p>Once we have the schema of sys.sysschobjs, we can make RawDatabase parse the actual rows for us, after which we can filter it down to just the user tables, seeing as we don’t care about procedures, views, indexes and so forth:</p>
+<figure class="highlight csharp"><pre>var db = new RawDatabase(@<span class="string">"D:\MSSQL Databases\AdventureWorksLT2008R2.mdf"</span>)<span class="comment">;</span>
+var pages = db<span class="preprocessor">.Pages</span><span class="preprocessor">.Where</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.ObjectID</span> == <span class="number">34</span> && <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.Type</span> == PageType<span class="preprocessor">.Data</span>)<span class="comment">;</span>
+var records = pages<span class="preprocessor">.SelectMany</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Records</span>)<span class="preprocessor">.Select</span>(<span class="built_in">x</span> =&gt; (RawPrimaryRecord)<span class="built_in">x</span>)<span class="comment">;</span>
+var rows = RawColumnParser<span class="preprocessor">.Parse</span>(records, new IRawType[] {
+	RawType<span class="preprocessor">.Int</span>(<span class="string">"id"</span>),
+	RawType<span class="preprocessor">.NVarchar</span>(<span class="string">"name"</span>),
+	RawType<span class="preprocessor">.Int</span>(<span class="string">"nsid"</span>),
+	RawType<span class="preprocessor">.TinyInt</span>(<span class="string">"nsclass"</span>),
+	RawType<span class="preprocessor">.Int</span>(<span class="string">"status"</span>),
+	RawType<span class="preprocessor">.Char</span>(<span class="string">"type"</span>, <span class="number">2</span>),
+	RawType<span class="preprocessor">.Int</span>(<span class="string">"pid"</span>),
+	RawType<span class="preprocessor">.TinyInt</span>(<span class="string">"pclass"</span>),
+	RawType<span class="preprocessor">.Int</span>(<span class="string">"intprop"</span>),
+	RawType<span class="preprocessor">.DateTime</span>(<span class="string">"created"</span>),
+	RawType<span class="preprocessor">.DateTime</span>(<span class="string">"modified"</span>)
+})<span class="comment">;</span>
+
+rows<span class="preprocessor">.Where</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span>[<span class="string">"type"</span>]<span class="preprocessor">.ToString</span>()<span class="preprocessor">.Trim</span>() == <span class="string">"U"</span>)
+	<span class="preprocessor">.Select</span>(<span class="built_in">x</span> =&gt; new {
+		ObjectID = (int)<span class="built_in">x</span>[<span class="string">"id"</span>],
+		Name = <span class="built_in">x</span>[<span class="string">"name"</span>]
+	})<span class="preprocessor">.Dump</span>()<span class="comment">;</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/sql-server-corruption-recovery-when-all-else-fails/Capture4.png" class="fancy"><img src="/sql-server-corruption-recovery-when-all-else-fails/Capture4.png" style="max-height: 250px"/></a></div></div>
+
+<p>We just went from a completely useless suspect database, with no knowledge of the schema, to now having a list of each user table name &amp; object id. Sure, if one of the pages belonging to sys.syschobjs was corrupt, we’d be missing some of the tables without knowing it. Even so, this is a good start, and there are ways of detecting the missing pages (we could look for broken page header references, for example).</p>
+<h3 id="Getting_Schemas">Getting Schemas</h3>
+<p>As we saw for sys.sysschobjs, if we are to parse any of the user table data, we need to know the schema of the tables. The schema happens to be stored in the <strong>sys.syscolpars</strong> base table, and if we lookup in sys.sysschobjs for ‘sys.syscolpars’, we’ll get an object ID of <strong>41</strong>. As we did before, we can get a list of all pages belonging to sys.syscolpars:</p>
+<figure class="highlight csharp"><pre>var db = new RawDatabase(@<span class="string">"D:\MSSQL Databases\AdventureWorksLT2008R2.mdf"</span>)<span class="comment">;</span>
+db<span class="preprocessor">.Pages</span>
+  <span class="preprocessor">.Where</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.ObjectID</span> == <span class="number">41</span>)
+  <span class="preprocessor">.Dump</span>()<span class="comment">;</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/sql-server-corruption-recovery-when-all-else-fails/Capture5.png" class="fancy"><img src="/sql-server-corruption-recovery-when-all-else-fails/Capture5.png" style="max-height: 250px"/></a></div></div>
+
+<p>By looking up the schema of sys.syscolpars using sp_help, in the working database, we can parse the actual rows much the same way:</p>
+<figure class="highlight csharp"><pre>// Parse sys<span class="preprocessor">.syscolpars</span>
+var db = new RawDatabase(@<span class="string">"D:\MSSQL Databases\AdventureWorksLT2008R2.mdf"</span>)<span class="comment">;</span>
+var pages = db<span class="preprocessor">.Pages</span><span class="preprocessor">.Where</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.ObjectID</span> == <span class="number">41</span> && <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.Type</span> == PageType<span class="preprocessor">.Data</span>)<span class="comment">;</span>
+var records = pages<span class="preprocessor">.SelectMany</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Records</span>)<span class="preprocessor">.Select</span>(<span class="built_in">x</span> =&gt; (RawPrimaryRecord)<span class="built_in">x</span>)<span class="comment">;</span>
+var rows = RawColumnParser<span class="preprocessor">.Parse</span>(records, new IRawType[] {
+	RawType<span class="preprocessor">.Int</span>(<span class="string">"id"</span>),
+	RawType<span class="preprocessor">.SmallInt</span>(<span class="string">"number"</span>),
+	RawType<span class="preprocessor">.Int</span>(<span class="string">"colid"</span>),
+	RawType<span class="preprocessor">.NVarchar</span>(<span class="string">"name"</span>),
+	RawType<span class="preprocessor">.TinyInt</span>(<span class="string">"xtype"</span>),
+	RawType<span class="preprocessor">.Int</span>(<span class="string">"utype"</span>),
+	RawType<span class="preprocessor">.SmallInt</span>(<span class="string">"length"</span>),
+	RawType<span class="preprocessor">.TinyInt</span>(<span class="string">"prec"</span>),
+	RawType<span class="preprocessor">.TinyInt</span>(<span class="string">"scale"</span>),
+	RawType<span class="preprocessor">.Int</span>(<span class="string">"collationid"</span>),
+	RawType<span class="preprocessor">.Int</span>(<span class="string">"status"</span>),
+	RawType<span class="preprocessor">.SmallInt</span>(<span class="string">"maxinrow"</span>),
+	RawType<span class="preprocessor">.Int</span>(<span class="string">"xmlns"</span>),
+	RawType<span class="preprocessor">.Int</span>(<span class="string">"dflt"</span>),
+	RawType<span class="preprocessor">.Int</span>(<span class="string">"chk"</span>),
+	RawType<span class="preprocessor">.VarBinary</span>(<span class="string">"idtval"</span>)
+})<span class="comment">;</span>
+
+rows<span class="preprocessor">.Select</span>(<span class="built_in">x</span> =&gt; new {
+	ObjectID = (int)<span class="built_in">x</span>[<span class="string">"id"</span>],
+	ColumnID = (int)<span class="built_in">x</span>[<span class="string">"colid"</span>],
+	Number = (short)<span class="built_in">x</span>[<span class="string">"number"</span>],
+	TypeID = (byte)<span class="built_in">x</span>[<span class="string">"xtype"</span>],
+	Length = (short)<span class="built_in">x</span>[<span class="string">"length"</span>],
+	Name = <span class="built_in">x</span>[<span class="string">"name"</span>]
+})<span class="preprocessor">.Dump</span>()<span class="comment">;</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/sql-server-corruption-recovery-when-all-else-fails/Capture6.png" class="fancy"><img src="/sql-server-corruption-recovery-when-all-else-fails/Capture6.png" style="max-height: 250px"/></a></div></div>
+
+<h3 id="Recovering_the_Customer_Table_Schema">Recovering the Customer Table Schema</h3>
+<p>While there are 12 tables, none are probably more important than the <strong>Customer</strong> table. Based on parsing the sys.sysschobjs base table, we know that the customer table has an object ID of <strong>117575457</strong>. Let’s try and filter down to just that object ID, using the code above:</p>
+<figure class="highlight csharp"><pre>rows.Where(x =&gt; (<span class="keyword">int</span>)x[<span class="string">"id"</span>] == <span class="number">117575457</span>).Select(x =&gt; <span class="keyword">new</span> {
+	ObjectID = (<span class="keyword">int</span>)x[<span class="string">"id"</span>],
+	ColumnID = (<span class="keyword">int</span>)x[<span class="string">"colid"</span>],
+	Number = (<span class="keyword">short</span>)x[<span class="string">"number"</span>],
+	TypeID = (<span class="keyword">byte</span>)x[<span class="string">"xtype"</span>],
+	Length = (<span class="keyword">short</span>)x[<span class="string">"length"</span>],
+	Name = x[<span class="string">"name"</span>]
+}).OrderBy(x =&gt; x.Number).Dump();
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/sql-server-corruption-recovery-when-all-else-fails/Capture7.png" class="fancy"><img src="/sql-server-corruption-recovery-when-all-else-fails/Capture7.png" style="max-height: 250px"/></a></div></div>
+
+<p>Running the following query in any working database, we can correlate the TypeID values with the SQL Server type names:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	*
+<span class="keyword">FROM</span>
+	sys.types
+<span class="keyword">WHERE</span>
+	system_type_id <span class="keyword">IN</span> (<span class="number">56</span>, <span class="number">104</span>, <span class="number">231</span>, <span class="number">167</span>, <span class="number">36</span>, <span class="number">61</span>) <span class="keyword">AND</span>
+	system_type_id = user_type_id</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/sql-server-corruption-recovery-when-all-else-fails/Capture8.png" class="fancy"><img src="/sql-server-corruption-recovery-when-all-else-fails/Capture8.png" style="max-height: 250px"/></a></div></div>
+
+<p>Using the output from syscolpars and the type names, we can now deduce the schema of the Customer table (note that the syscolpars lengths are physical, meaning a length of 16 for an nvarchar column means a logical length of 8):</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> Customer (
+	CustomerID <span class="keyword">int</span>,
+	NameStyle <span class="keyword">bit</span>,
+	Title nvarchar(<span class="number">8</span>),
+	FirstName nvarchar(<span class="number">50</span>),
+	MiddleName nvarchar(<span class="number">50</span>),
+	LastName nvarchar(<span class="number">50</span>),
+	Suffix nvarchar(<span class="number">10</span>),
+	CompanyName nvarchar(<span class="number">128</span>),
+	SalesPerson nvarchar(<span class="number">256</span>),
+	EmailAddress nvarchar(<span class="number">50</span>),
+	Phone nvarchar(<span class="number">25</span>),
+	PasswordHash <span class="keyword">varchar</span>(<span class="number">128</span>),
+	PasswordSalt <span class="keyword">varchar</span>(<span class="number">10</span>),
+	rowguid uniqueidentifier,
+	ModifiedDate datetime
+)</span>
+</pre></figure>
+
+<p>All we need now is to find the pages belonging to the Customer table. That’s slightly easier said than done however. While each object has an object ID, as can be verified using sys.sysschobjs, that object ID is not what’s stored in the page headers, except for system objects. Thus we can’t just query for all pages whose Header.ObjectID == 117575457, as the value 117575457 won’t be stored in the header.</p>
+<h3 id="Recovering_the_Customer_Allocation_Unit">Recovering the Customer Allocation Unit</h3>
+<p>To find the pages belonging to the Customer table, we’ll first need to find the allocation unit to which it belongs. Unfortunately we already know that page 16 is corrupt - the first page of the <strong>sys.sysallocunits</strong> table, containing all of the metadata. However, we might just be lucky enough for that first page to contain the allocation units for all of the internal tables, which we do not care about. Let’s see if there are any other pages belonging to sys.sysallocunits:</p>
+<figure class="highlight csharp"><pre>var db = new RawDatabase(@<span class="string">"D:\MSSQL Databases\AdventureWorksLT2008R2.mdf"</span>)<span class="comment">;</span>
+db<span class="preprocessor">.Pages</span>
+  <span class="preprocessor">.Where</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.ObjectID</span> == <span class="number">7</span>)
+  <span class="preprocessor">.Dump</span>()<span class="comment">;</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/sql-server-corruption-recovery-when-all-else-fails/Capture9.png" class="fancy"><img src="/sql-server-corruption-recovery-when-all-else-fails/Capture9.png" style="max-height: 250px"/></a></div></div>
+
+<p>There are 5 other pages available. Let’s try and parse them out so we have as much of the allocation unit data available, as possible. Once again we’ll get the schema from the working database, using sp_help, after which we can parse the remaining rows using RawDatabase. By looking up ‘sysallocunits’ in sysschobjs, we know it has an object ID of 7:</p>
+<figure class="highlight csharp"><pre>var db = new RawDatabase(@<span class="string">"D:\MSSQL Databases\AdventureWorksLT2008R2.mdf"</span>)<span class="comment">;</span>
+var pages = db<span class="preprocessor">.Pages</span><span class="preprocessor">.Where</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.ObjectID</span> == <span class="number">7</span> && <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.Type</span> == PageType<span class="preprocessor">.Data</span>)<span class="comment">;</span>
+var records = pages<span class="preprocessor">.SelectMany</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Records</span>)<span class="preprocessor">.Select</span>(<span class="built_in">x</span> =&gt; (RawPrimaryRecord)<span class="built_in">x</span>)<span class="comment">;</span>
+var rows = RawColumnParser<span class="preprocessor">.Parse</span>(records, new IRawType[] {
+	RawType<span class="preprocessor">.BigInt</span>(<span class="string">"auid"</span>),
+	RawType<span class="preprocessor">.TinyInt</span>(<span class="string">"type"</span>),
+	RawType<span class="preprocessor">.BigInt</span>(<span class="string">"ownerid"</span>),
+	RawType<span class="preprocessor">.Int</span>(<span class="string">"status"</span>),
+	RawType<span class="preprocessor">.SmallInt</span>(<span class="string">"fgid"</span>),
+	RawType<span class="preprocessor">.Binary</span>(<span class="string">"pgfirst"</span>, <span class="number">6</span>),
+	RawType<span class="preprocessor">.Binary</span>(<span class="string">"pgroot"</span>, <span class="number">6</span>),
+	RawType<span class="preprocessor">.Binary</span>(<span class="string">"pgfirstiam"</span>, <span class="number">6</span>),
+	RawType<span class="preprocessor">.BigInt</span>(<span class="string">"pcused"</span>),
+	RawType<span class="preprocessor">.BigInt</span>(<span class="string">"pcdata"</span>),
+	RawType<span class="preprocessor">.BigInt</span>(<span class="string">"pcreserved"</span>),
+	RawType<span class="preprocessor">.Int</span>(<span class="string">"dbfragid"</span>)
+})<span class="comment">;</span>
+
+rows<span class="preprocessor">.Select</span>(<span class="built_in">x</span> =&gt; new {
+	AllocationUnitID = (long)<span class="built_in">x</span>[<span class="string">"auid"</span>],
+	Type = (byte)<span class="built_in">x</span>[<span class="string">"type"</span>],
+	ContainerID = (long)<span class="built_in">x</span>[<span class="string">"ownerid"</span>]
+})<span class="preprocessor">.Dump</span>()<span class="comment">;</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/sql-server-corruption-recovery-when-all-else-fails/Capture10.png" class="fancy"><img src="/sql-server-corruption-recovery-when-all-else-fails/Capture10.png" style="max-height: 250px"/></a></div></div>
+
+<p>By itself, we can’t use this data, but we’ll need it in just a moment. First we need to get a hold of the Customer table partitions as well. We do so by looking up the schema of <strong>sys.sysrowsets</strong> using sp_help, after which we can parse it. Looking up ‘sysrowsets’ in sysschobjs, we know that sys.sysrowsets has an object ID of 5:</p>
+<figure class="highlight csharp"><pre>var db = new RawDatabase(@<span class="string">"D:\MSSQL Databases\AdventureWorksLT2008R2.mdf"</span>)<span class="comment">;</span>
+var pages = db<span class="preprocessor">.Pages</span><span class="preprocessor">.Where</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.ObjectID</span> == <span class="number">5</span> && <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.Type</span> == PageType<span class="preprocessor">.Data</span>)<span class="comment">;</span>
+var records = pages<span class="preprocessor">.SelectMany</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Records</span>)<span class="preprocessor">.Select</span>(<span class="built_in">x</span> =&gt; (RawPrimaryRecord)<span class="built_in">x</span>)<span class="comment">;</span>
+var rows = RawColumnParser<span class="preprocessor">.Parse</span>(records, new IRawType[] {
+	RawType<span class="preprocessor">.BigInt</span>(<span class="string">"rowsetid"</span>),
+	RawType<span class="preprocessor">.TinyInt</span>(<span class="string">"ownertype"</span>),
+	RawType<span class="preprocessor">.Int</span>(<span class="string">"idmajor"</span>),
+	RawType<span class="preprocessor">.Int</span>(<span class="string">"idminor"</span>),
+	RawType<span class="preprocessor">.Int</span>(<span class="string">"numpart"</span>),
+	RawType<span class="preprocessor">.Int</span>(<span class="string">"status"</span>),
+	RawType<span class="preprocessor">.SmallInt</span>(<span class="string">"fgidfs"</span>),
+	RawType<span class="preprocessor">.BigInt</span>(<span class="string">"rcrows"</span>),
+	RawType<span class="preprocessor">.TinyInt</span>(<span class="string">"cmprlevel"</span>),
+	RawType<span class="preprocessor">.TinyInt</span>(<span class="string">"fillfact"</span>),
+	RawType<span class="preprocessor">.SmallInt</span>(<span class="string">"maxnullbit"</span>),
+	RawType<span class="preprocessor">.Int</span>(<span class="string">"maxleaf"</span>),
+	RawType<span class="preprocessor">.SmallInt</span>(<span class="string">"maxint"</span>),
+	RawType<span class="preprocessor">.SmallInt</span>(<span class="string">"minleaf"</span>),
+	RawType<span class="preprocessor">.SmallInt</span>(<span class="string">"minint"</span>),
+	RawType<span class="preprocessor">.VarBinary</span>(<span class="string">"rsguid"</span>),
+	RawType<span class="preprocessor">.VarBinary</span>(<span class="string">"lockres"</span>),
+	RawType<span class="preprocessor">.Int</span>(<span class="string">"dbfragid"</span>)
+})<span class="comment">;</span>
+
+rows<span class="preprocessor">.Where</span>(<span class="built_in">x</span> =&gt; (int)<span class="built_in">x</span>[<span class="string">"idmajor"</span>] == <span class="number">117575457</span>)<span class="preprocessor">.Select</span>(<span class="built_in">x</span> =&gt; new {
+	RowsetID = (long)<span class="built_in">x</span>[<span class="string">"rowsetid"</span>],
+	ObjectID = (int)<span class="built_in">x</span>[<span class="string">"idmajor"</span>],
+	IndexID = (int)<span class="built_in">x</span>[<span class="string">"idminor"</span>]
+})<span class="preprocessor">.Dump</span>()<span class="comment">;</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/sql-server-corruption-recovery-when-all-else-fails/Capture11.png" class="fancy"><img src="/sql-server-corruption-recovery-when-all-else-fails/Capture11.png" style="max-height: 250px"/></a></div></div>
+
+<p>By filtering down to just the Customer table’s object ID, we’ve now got the three partitions that belongs to the table - one for each allocation unit type - ROW_OVERFLOW_DATA (3), LOB_DATA (2) and IN_ROW_DATA (1). We don’t care about LOB and SLOB for now, all we need is the IN_ROW_DATA partition - giving us a RowsetID value of <strong>72057594039697408</strong>.</p>
+<p>Now that we have the RowsetID, let’s lookup the allocation unit using the data we got from sys.sysallocunits earlier on:</p>
+<figure class="highlight csharp"><pre>var db = new RawDatabase(@<span class="string">"D:\MSSQL Databases\AdventureWorksLT2008R2.mdf"</span>)<span class="comment">;</span>
+var pages = db<span class="preprocessor">.Pages</span><span class="preprocessor">.Where</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.ObjectID</span> == <span class="number">7</span> && <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.Type</span> == PageType<span class="preprocessor">.Data</span>)<span class="comment">;</span>
+var records = pages<span class="preprocessor">.SelectMany</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Records</span>)<span class="preprocessor">.Select</span>(<span class="built_in">x</span> =&gt; (RawPrimaryRecord)<span class="built_in">x</span>)<span class="comment">;</span>
+var rows = RawColumnParser<span class="preprocessor">.Parse</span>(records, new IRawType[] {
+	RawType<span class="preprocessor">.BigInt</span>(<span class="string">"auid"</span>),
+	RawType<span class="preprocessor">.TinyInt</span>(<span class="string">"type"</span>),
+	RawType<span class="preprocessor">.BigInt</span>(<span class="string">"ownerid"</span>),
+	RawType<span class="preprocessor">.Int</span>(<span class="string">"status"</span>),
+	RawType<span class="preprocessor">.SmallInt</span>(<span class="string">"fgid"</span>),
+	RawType<span class="preprocessor">.Binary</span>(<span class="string">"pgfirst"</span>, <span class="number">6</span>),
+	RawType<span class="preprocessor">.Binary</span>(<span class="string">"pgroot"</span>, <span class="number">6</span>),
+	RawType<span class="preprocessor">.Binary</span>(<span class="string">"pgfirstiam"</span>, <span class="number">6</span>),
+	RawType<span class="preprocessor">.BigInt</span>(<span class="string">"pcused"</span>),
+	RawType<span class="preprocessor">.BigInt</span>(<span class="string">"pcdata"</span>),
+	RawType<span class="preprocessor">.BigInt</span>(<span class="string">"pcreserved"</span>),
+	RawType<span class="preprocessor">.Int</span>(<span class="string">"dbfragid"</span>)
+})<span class="comment">;</span>
+
+rows<span class="preprocessor">.Where</span>(<span class="built_in">x</span> =&gt; (long)<span class="built_in">x</span>[<span class="string">"ownerid"</span>] == <span class="number">72057594039697408</span>)<span class="preprocessor">.Select</span>(<span class="built_in">x</span> =&gt; new {
+	AllocationUnitID = (long)<span class="built_in">x</span>[<span class="string">"auid"</span>],
+	Type = (byte)<span class="built_in">x</span>[<span class="string">"type"</span>],
+	ContainerID = (long)<span class="built_in">x</span>[<span class="string">"ownerid"</span>]
+})<span class="preprocessor">.Dump</span>()<span class="comment">;</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/sql-server-corruption-recovery-when-all-else-fails/Capture12.png" class="fancy"><img src="/sql-server-corruption-recovery-when-all-else-fails/Capture12.png" style="max-height: 250px"/></a></div></div>
+
+<h3 id="Recovering_the_Customers">Recovering the Customers</h3>
+<p>Now that we have the allocation unit ID, we can convert that into the object ID value, as stored in the page headers (big thanks goes out to <a href="http://www.sqlskills.com/blogs/paul/" target="_blank">Paul Randal</a> who was kind enough to blog about the <a href="http://www.sqlskills.com/blogs/paul/inside-the-storage-engine-how-are-allocation-unit-ids-calculated/" target="_blank">relationship between the allocation unit ID and the page header m_objId and m_indexId fields</a>):</p>
+<figure class="highlight csharp"><pre><span class="keyword">var</span> allocationUnitID = <span class="number">72057594041270272</span>;
+<span class="keyword">var</span> indexID = allocationUnitID &gt;&gt; <span class="number">48</span>;
+<span class="keyword">var</span> objectID = (allocationUnitID - (indexID &lt;&lt; <span class="number">48</span>)) &gt;&gt; <span class="number">16</span>;
+
+Console.WriteLine(<span class="string">"IndexID: "</span> + indexID);
+Console.WriteLine(<span class="string">"ObjectID: "</span> + objectID);
+</pre></figure>
+
+
+<figure class="highlight"><pre><span class="attribute">IndexID</span>: <span class="string">256</span>
+<span class="attribute">ObjectID</span>: <span class="string">51</span>
+</pre></figure>
+
+<p>Now that we have not only the object ID, but also the index ID, we can easily get a list of all the pages belonging to the Customer table:</p>
+<figure class="highlight csharp"><pre>var db = new RawDatabase(@<span class="string">"D:\MSSQL Databases\AdventureWorksLT2008R2.mdf"</span>)<span class="comment">;</span>
+db<span class="preprocessor">.Pages</span>
+  <span class="preprocessor">.Where</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.ObjectID</span> == <span class="number">51</span> && <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.IndexID</span> == <span class="number">256</span>)
+  <span class="preprocessor">.Dump</span>()<span class="comment">;</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/sql-server-corruption-recovery-when-all-else-fails/Capture13.png" class="fancy"><img src="/sql-server-corruption-recovery-when-all-else-fails/Capture13.png" style="max-height: 250px"/></a></div></div>
+
+<p>And since we already know the schema for the Customer table, it’s a simple matter of making RawDatabase parse the actual rows:</p>
+<figure class="highlight csharp"><pre>var db = new RawDatabase(@<span class="string">"D:\MSSQL Databases\AdventureWorksLT2008R2.mdf"</span>)<span class="comment">;</span>
+var pages = db<span class="preprocessor">.Pages</span><span class="preprocessor">.Where</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.ObjectID</span> == <span class="number">51</span> && <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.IndexID</span> == <span class="number">256</span> && <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.Type</span> == PageType<span class="preprocessor">.Data</span>)<span class="comment">;</span>
+var records = pages<span class="preprocessor">.SelectMany</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Records</span>)<span class="preprocessor">.Select</span>(<span class="built_in">x</span> =&gt; (RawPrimaryRecord)<span class="built_in">x</span>)<span class="comment">;</span>
+var rows = RawColumnParser<span class="preprocessor">.Parse</span>(records, new IRawType[] {
+	RawType<span class="preprocessor">.Int</span>(<span class="string">"CustomerID"</span>),
+	RawType<span class="preprocessor">.Bit</span>(<span class="string">"NameStyle"</span>),
+	RawType<span class="preprocessor">.NVarchar</span>(<span class="string">"Title"</span>),
+	RawType<span class="preprocessor">.NVarchar</span>(<span class="string">"FirstName"</span>),
+	RawType<span class="preprocessor">.NVarchar</span>(<span class="string">"MiddleName"</span>),
+	RawType<span class="preprocessor">.NVarchar</span>(<span class="string">"LastName"</span>),
+	RawType<span class="preprocessor">.NVarchar</span>(<span class="string">"Suffix"</span>),
+	RawType<span class="preprocessor">.NVarchar</span>(<span class="string">"CompanyName"</span>),
+	RawType<span class="preprocessor">.NVarchar</span>(<span class="string">"SalesPerson"</span>),
+	RawType<span class="preprocessor">.NVarchar</span>(<span class="string">"EmailAddress"</span>),
+	RawType<span class="preprocessor">.NVarchar</span>(<span class="string">"Phone"</span>),
+	RawType<span class="preprocessor">.Varchar</span>(<span class="string">"PasswordHash"</span>),
+	RawType<span class="preprocessor">.Varchar</span>(<span class="string">"PasswordSalt"</span>),
+	RawType<span class="preprocessor">.UniqueIdentifier</span>(<span class="string">"rowguid"</span>),
+	RawType<span class="preprocessor">.DateTime</span>(<span class="string">"ModifiedDate"</span>)
+})<span class="comment">;</span>
+
+rows<span class="preprocessor">.Select</span>(<span class="built_in">x</span> =&gt; new {
+	CustomerID = (int)<span class="built_in">x</span>[<span class="string">"CustomerID"</span>],
+	FirstName = (string)<span class="built_in">x</span>[<span class="string">"FirstName"</span>],
+	MiddleName = (string)<span class="built_in">x</span>[<span class="string">"MiddleName"</span>],
+	LastName = (string)<span class="built_in">x</span>[<span class="string">"LastName"</span>],
+	CompanyName = (string)<span class="built_in">x</span>[<span class="string">"CompanyName"</span>],
+	EmailAddress = (string)<span class="built_in">x</span>[<span class="string">"EmailAddress"</span>]
+})<span class="preprocessor">.Dump</span>()<span class="comment">;</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/sql-server-corruption-recovery-when-all-else-fails/Capture15.png" class="fancy"><img src="/sql-server-corruption-recovery-when-all-else-fails/Capture15.png" style="max-height: 250px"/></a></div></div>
+
+<p>And there we have it. 795 customers were just recovered from an otherwise unrecoverable state. Now it’s just a matter of repeating this process for the other tables as well.</p>
+<h2 id="Summary">Summary</h2>
+<p>As I’ve just shown, even though all hope seems lost, there are still options. If you know what you’re doing, a tool like OrcaMDF, or another homebrewn solution, might come in as an invaluable out, during a disaster. This is not, and should never be, a replacement for a good recovery strategy. That being said, not a week goes by without someone posting on a forum somewhere about a corrupt database without any backups.</p>
+<p>In this case we went from fatal corruption to recovering 795 customers from the Customer table. Looking at the database, before it was corrupted, there was originally 847 customers in the table. Thus 52 customers were lost due to the corruption. If the pages really are hit by corruption, nothing will get that data back, unless you have a backup. However, if you’re unlucky and end up with metadata corruption, and/or a database that won’t come online, this may be a viable solution.</p>
+<p>Should you come across a situation where OrcaMDF might come in handy, I’d love to hear about it - nothing better to hear than success stories! If you don’t feel like going through this process yourself, feel free to contact me; I may be able to help.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=SQL%20Server%20Corruption%20Recovery%20-%20When%20All%20Else%20Fails%20http%3A%2F%2Fimprove.dk%2Fsql-server-corruption-recovery-when-all-else-fails%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fsql-server-corruption-recovery-when-all-else-fails%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fsql-server-corruption-recovery-when-all-else-fails%2F&title=SQL%20Server%20Corruption%20Recovery%20-%20When%20All%20Else%20Fails" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/sql-server-corruption-recovery-when-all-else-fails/sql-server-corruption-recovery-when-all-else-fails.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'sql-server-corruption-recovery-when-all-else-fails';
+	var disqus_url = 'http://improve.dk/sql-server-corruption-recovery-when-all-else-fails/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

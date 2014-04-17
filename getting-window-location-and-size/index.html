@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Getting Window Location and Size Using PInvoke | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">09</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/getting-window-location-and-size/" title="Getting Window Location and Size Using PInvoke" rel="bookmark">Getting Window Location and Size Using PInvoke</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on Getting Window Location and Size Using PInvoke">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>This time I’ll show how to obtain the size and location of a window. I will be using the <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">WindowFinder class</a> that I introduced in the blog <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">Finding specific windows</a>.</p>
+<a id="more"></a>
+
+<p>Note that the location is not in relation to it’s parent windows location, it is always the absolute screen position.</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System.Runtime.InteropServices;
+<span class="keyword">using</span> System.Drawing;
+<span class="keyword">using</span> System.Text.RegularExpressions;
+<span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Text;
+<span class="keyword">using</span> System.Globalization;
+
+namespace Getting_window_location_and_size
+{
+	class Program
+	{
+		<span class="comment">// Win32 constants.</span>
+		<span class="keyword">const</span> <span class="keyword">int</span> WM_GETTEXT = <span class="number">0x000D</span>;
+		<span class="keyword">const</span> <span class="keyword">int</span> WM_GETTEXTLENGTH = <span class="number">0x000E</span>;
+
+		<span class="comment">// Win32 functions that have all been used in previous blogs.</span>
+		[DllImport(<span class="string">"User32.Dll"</span>)]
+		<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">extern</span> <span class="keyword">void</span> <span class="title">GetClassName</span>(<span class="keyword">int</span> hWnd, StringBuilder s, <span class="keyword">int</span> nMaxCount);
+
+		[DllImport(<span class="string">"User32.dll"</span>)]
+		<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">extern</span> Int32 <span class="title">SendMessage</span>(<span class="keyword">int</span> hWnd, <span class="keyword">int</span> Msg, <span class="keyword">int</span> wParam, StringBuilder lParam);
+
+		[DllImport(<span class="string">"User32.dll"</span>)]
+		<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">extern</span> Int32 <span class="title">SendMessage</span>(<span class="keyword">int</span> hWnd, <span class="keyword">int</span> Msg, <span class="keyword">int</span> wParam, <span class="keyword">int</span> lParam);
+
+		<span class="comment">// The GetWindowRect function takes a handle to the window as the first parameter. The second parameter</span>
+		<span class="comment">// must include a reference to a Rectangle object. This Rectangle object will then have it's values set</span>
+		<span class="comment">// to the window rectangle properties.</span>
+		[DllImport(<span class="string">"user32.dll"</span>)]
+		<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">extern</span> <span class="keyword">long</span> <span class="title">GetWindowRect</span>(<span class="keyword">int</span> hWnd, <span class="keyword">ref</span> Rectangle lpRect);
+
+		<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
+		{
+			<span class="comment">// Introduced in the "Finding specific windows" blog, we use the WindowFinder class to find all Internet Explorer main window instances.</span>
+			Finding_specific_windows.WindowFinder wf = <span class="keyword">new</span> Finding_specific_windows.WindowFinder();
+			wf.FindWindows(<span class="number">0</span>, <span class="keyword">null</span>, <span class="keyword">new</span> Regex(<span class="string">"- (Windows|Microsoft) Internet Explorer"</span>), <span class="keyword">new</span> Regex(<span class="string">"iexplore"</span>), <span class="keyword">new</span> Finding_specific_windows.WindowFinder.FoundWindowCallback(foundWindow));
+
+			Console.Read();
+		}
+
+		<span class="keyword">static</span> <span class="keyword">bool</span> foundWindow(<span class="keyword">int</span> handle)
+		{
+			<span class="comment">// First we intialize an empty Rectangle object.</span>
+			Rectangle rect = <span class="keyword">new</span> Rectangle();
+
+			<span class="comment">// Then we call the GetWindowRect function, passing in a reference to the rect object.</span>
+			GetWindowRect(handle, <span class="keyword">ref</span> rect);
+
+			<span class="comment">// And then we get the resulting rectangle. The tricky part here is that this rectangle includes</span>
+			<span class="comment">// not only the location of the window, but also the size, but not in the form we're used to.</span>
+			Console.WriteLine(rect.ToString());
+
+			<span class="comment">// If the window is 100 x 100 pixels and is located at (10,10), then the rectangle would look like this:</span>
+			<span class="comment">// rect.X = 10;</span>
+			<span class="comment">// rect.Y = 10;</span>
+			<span class="comment">// rect.Width = 110;</span>
+			<span class="comment">// rect.Height = 110;</span>
+			<span class="comment">// We simply have to subtract the rect.X value from the rect.Width value to obtain the "real" width of</span>
+			<span class="comment">// the window, similarly we have to subtract the Y value from the Height value to obtain the real height.</span>
+			<span class="comment">// After this we have the real window properties through the X, Y, Width and Height values.</span>
+			rect.Width = rect.Width - rect.X;
+			rect.Height = rect.Height - rect.Y;
+
+			<span class="comment">// Lets print the rectangle after we've fixed it so we can confirm it's correct.</span>
+			Console.WriteLine(rect.ToString());
+
+			<span class="comment">// As used earlier, we print the basic properties of the window.</span>
+			printWindowInfo(handle);
+
+			<span class="keyword">return</span> <span class="keyword">true</span>;
+		}
+
+		<span class="comment">// Prints basic properties of a window, uses function already used in previous blogs.</span>
+		<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">printWindowInfo</span>(<span class="keyword">int</span> handle)
+		{
+			<span class="comment">// Get the class.</span>
+			StringBuilder sbClass = <span class="keyword">new</span> StringBuilder(<span class="number">256</span>);
+			GetClassName(handle, sbClass, sbClass.Capacity);
+
+			<span class="comment">// Get the text.</span>
+			<span class="keyword">int</span> txtLength = SendMessage(handle, WM_GETTEXTLENGTH, <span class="number">0</span>, <span class="number">0</span>);
+			StringBuilder sbText = <span class="keyword">new</span> StringBuilder(txtLength + <span class="number">1</span>);
+			SendMessage(handle, WM_GETTEXT, sbText.Capacity, sbText);
+
+			<span class="comment">// Now we can write out the information we have on the window.</span>
+			Console.WriteLine(<span class="string">"Handle: "</span> + handle);
+			Console.WriteLine(<span class="string">"Class : "</span> + sbClass);
+			Console.WriteLine(<span class="string">"Text  : "</span> + sbText);
+			Console.WriteLine();
+		}
+	}
+}
+</pre></figure>
+
+<p>And the result:</p>
+<div class="imgwrapper" style=""><div><a href="/getting-window-location-and-size/win32_7_1_2.jpg" class="fancy"><img src="/getting-window-location-and-size/win32_7_1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/getting-window-location-and-size/win32_7_2_2.jpg" class="fancy"><img src="/getting-window-location-and-size/win32_7_2_2.jpg" style="max-height: 250px"/></a></div></div>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=Getting%20Window%20Location%20and%20Size%20Using%20PInvoke%20http%3A%2F%2Fimprove.dk%2Fgetting-window-location-and-size%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fgetting-window-location-and-size%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fgetting-window-location-and-size%2F&title=Getting%20Window%20Location%20and%20Size%20Using%20PInvoke" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/getting-window-location-and-size/getting-window-location-and-size.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'getting-window-location-and-size';
+	var disqus_url = 'http://improve.dk/getting-window-location-and-size/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

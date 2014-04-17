@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Creating Multiplexers Using Logic Gates | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Feb</span>
+			<span class="day">13</span>
+		</div>
+		<div class="lower">2012</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/creating-multiplexers-using-logic-gates/" title="Creating Multiplexers Using Logic Gates" rel="bookmark">Creating Multiplexers Using Logic Gates</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/Computer Science/">Computer Science</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on Creating Multiplexers Using Logic Gates">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>So what’s a multiplexer you ask? A multiplexer is an <a href="http://en.wikipedia.org/wiki/Integrated_circuit" target="_blank">integrated circuit</a> that takes a number of inputs and outputs a smaller number of outputs. In this case we’re aiming at creating a 4-to-1 multiplexer. As the name implies, it takes four inputs and outputs exactly one output, determined by a <em>select input</em>. Depending on the number of input lines, one or more select lines may be required. For 2<sup>n</sup> input lines, n select lines are needed. In hardware terms, this is basically the simplest of switches.</p>
+<a id="more"></a>
+
+<h2 id="Creating_a_2-to-1_multiplexer">Creating a 2-to-1 multiplexer</h2>
+<p>To start out easy, we’ll create a multiplexer taking two inputs and a single selector line. With inputs A and B and select line S, if S is 0, the A input will be the output Z. If S is 1, the B will be the output Z.</p>
+<p>The boolean formula for the 2-to-1 multiplexer looks like this:</p>
+<figure class="highlight sql"><pre>Z = (A ∧ ¬S) ∨ (B ∧ S)
+</pre></figure>
+
+<p>If you’re not used to boolean algebra, it may be easier to see it represented in SQL:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span> @Z = (A & ~S) | (B & S)</span>
+</pre></figure>
+
+<p>By ANDing A and B with NOT S and S respectively, we’re guaranteed that either A or B will be output. Creating the circuit, it looks like this:</p>
+<div class="imgwrapper" style=""><div><a href="/creating-multiplexers-using-logic-gates/image_thumb1_2.png" class="fancy"><img src="/creating-multiplexers-using-logic-gates/image_thumb1_2.png" style="max-height: 250px"/></a></div></div>
+
+<p>If we enable both A and B inputs but keep S disabled, we see that the A input is passed all the way through to the Z output:</p>
+<div class="imgwrapper" style=""><div><a href="/creating-multiplexers-using-logic-gates/image_thumb3_2.png" class="fancy"><img src="/creating-multiplexers-using-logic-gates/image_thumb3_2.png" style="max-height: 250px"/></a></div></div>
+
+<p>And if we enable the S selector line, B is passed through to Z as the output:</p>
+<div class="imgwrapper" style=""><div><a href="/creating-multiplexers-using-logic-gates/image_thumb5_2.png" class="fancy"><img src="/creating-multiplexers-using-logic-gates/image_thumb5_2.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Creating_a_4-to-1_multiplexer">Creating a 4-to-1 multiplexer</h2>
+<p>Now that we’ve created the simplest of multiplexers, let’s get on with the 4-to-1 multiplexer. Given that we have 2<sup>2</sup> inputs, we need two selector lines. The logic is just as before – combining the two selector lines, we have four different combinations. Each combination will ensure that one of the input lines A-D are passed through as the output Z. The formula looks like this:</p>
+<figure class="highlight sql"><pre>Z = (A ∧ ¬S0 ∧ ¬S1) ∨ (B ∧ S0 ∧ ¬S1) ∨ (C ∧ ¬S0 ∧ S1) ∨ (D ∧ S0 ∧ S1)
+</pre></figure>
+
+<p>And in SQL:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span> Z = (A & ~S0 & ~S1) | (B & S0 & ~S1) | (C & ~S0 & S1) | (D & S0 & S1)</span>
+</pre></figure>
+
+<p>The circuit is pretty much the same as in the 2-to-1 multiplexer, except we add all four inputs and implement the 4-input boolean formula, with S<sub>0</sub> on top and S<sub>1</sub> on bottom:</p>
+<div class="imgwrapper" style=""><div><a href="/creating-multiplexers-using-logic-gates/image_thumb7_2.png" class="fancy"><img src="/creating-multiplexers-using-logic-gates/image_thumb7_2.png" style="max-height: 250px"/></a></div></div>
+
+<p>I’ll spare you a demo of all the states and just show all four inputs activated while the signal value of 0b10 results in C being pass through to Z as the result:</p>
+<div class="imgwrapper" style=""><div><a href="/creating-multiplexers-using-logic-gates/image_thumb9_2.png" class="fancy"><img src="/creating-multiplexers-using-logic-gates/image_thumb9_2.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Combining_two_4-to-1_multiplexers_into_an_8-to-1_multiplexer">Combining two 4-to-1 multiplexers into an 8-to-1 multiplexer</h2>
+<p>I’ll spare you the algebraic logic this time as it follows the same pattern as previously, except it’s starting to become quite verbose. In the following circuit I’ve taken the the exact 4-to-1 multiplexer circuit that we created just before, and turned it into an integrated circuit (just as I converted the 2-to-1 multiplexer into an integrated circuit). I’ve then added 8 inputs, A through H as well as three selector inputs, S0 through S2.</p>
+<p>S0 and S1 are passed directly into each of the 4-1 multiplexers, no matter the value of S2. This means both 4-1 multiplexers are completely unaware of S2s existence. However, as the output from each of the 4-1 multiplexers are passed into a 2-1 multiplexer connected to the S2 selector line, S2 determines which of the 4-1 multiplexers get to deliver the output.</p>
+<div class="imgwrapper" style=""><div><a href="/creating-multiplexers-using-logic-gates/image_thumb2_2.png" class="fancy"><img src="/creating-multiplexers-using-logic-gates/image_thumb2_2.png" style="max-height: 250px"/></a></div></div>
+
+<p>Here’s an example where S2 defines the output should come from the second (leftmost) 4-1 multiplexer, while the S0 and S1 selector lines defines the input should come from the second input in that multiplexer, meaning input F gets passed through as the result Z.</p>
+<div class="imgwrapper" style=""><div><a href="/creating-multiplexers-using-logic-gates/image_thumb4_2.png" class="fancy"><img src="/creating-multiplexers-using-logic-gates/image_thumb4_2.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Combining_two_8-to-1_multiplexers_into_a_16-to-1_multiplexer">Combining two 8-to-1 multiplexers into a 16-to-1 multiplexer</h2>
+<p>Ok, let’s just stop here.Using the smaller multiplexers we can continue combining them until we reach the desired size.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=Creating%20Multiplexers%20Using%20Logic%20Gates%20http%3A%2F%2Fimprove.dk%2Fcreating-multiplexers-using-logic-gates%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fcreating-multiplexers-using-logic-gates%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fcreating-multiplexers-using-logic-gates%2F&title=Creating%20Multiplexers%20Using%20Logic%20Gates" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/creating-multiplexers-using-logic-gates/creating-multiplexers-using-logic-gates.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'creating-multiplexers-using-logic-gates';
+	var disqus_url = 'http://improve.dk/creating-multiplexers-using-logic-gates/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

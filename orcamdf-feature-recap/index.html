@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>OrcaMDF Feature Recap | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Sep</span>
+			<span class="day">10</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/orcamdf-feature-recap/" title="OrcaMDF Feature Recap" rel="bookmark">OrcaMDF Feature Recap</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on OrcaMDF Feature Recap">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>Time flies – it’s been about four months since I originally <a href="/introducing-orcamdf">introduced my pet project, OrcaMDF</a>. Since then, quite a lot has happened and OrcaMDF is somewhat more capable than when it started out. As a result I thought I’d provide a recap of what OrcaMDF is currently capable of, as well as what my plans are for the future.</p>
+<a id="more"></a>
+
+<h2 id="Page_types">Page types</h2>
+<p>OrcaMDF currently supports full parsing of Data, Index, TextMix, TextTree, GAM, SGAM, IAM, and PFS pages. It also supports minimal parsing of the Boot page, used for finding the starting point of the base table metadata.</p>
+<p>Remaining are Sort, FileHeader, DiffMap and MLMap pages. As MLMap and DiffMap use the same bitmap format as IAM, GAM and SGAM pages, parsing those should be straightforward. FileHeader is a bit more tricky and will require some DBCC PAGE love. Sort pages are less relevant as those are only used temporarily while SQL Server is running and should thus not be stored in your MDF file.</p>
+<h2 id="Data_types">Data types</h2>
+<p>I’ve been adding more and more data types to OrcaMDF, lately I’ve added support for parsing all of the LOB types except for XML. Currently supported data are:</p>
+<ul>
+<li>bigint</li>
+<li>binary</li>
+<li>bit</li>
+<li>char</li>
+<li>datetime</li>
+<li>decimal</li>
+<li>image</li>
+<li>int</li>
+<li>nchar</li>
+<li>ntext</li>
+<li>nvarchar(x)</li>
+<li>nvarchar(MAX)</li>
+<li>smallint</li>
+<li>sysname</li>
+<li>text</li>
+<li>tinyint</li>
+<li>varbinary(x)</li>
+<li>varbinary(MAX)</li>
+<li>varchar(x)</li>
+<li>varchar(MAX)</li>
+</ul>
+<p>Adding support for further data types is relatively easy, it’s just a matter of analyzing the storage format and <a href="/implementing-data-types-in-orcamdf">implementing the ISqlType interface</a>.</p>
+<h2 id="Table_&amp;_index_structures">Table &amp; index structures</h2>
+<p>Using the DataScanner class, OrcaMDF is able to scan both clustered tables as well as heaps. Using the IndexScanner class enables you to scan nonclustered indexes, whether they’re applied to a clustered table or a heap.</p>
+<h2 id="Metadata">Metadata</h2>
+<p>The only publicly exposed metadata that OrcaMDF currently exposes is a list of table names. Internally, OrcaMDF is able to parse both indexes, tables, partitions, allocation units and columns. This enables you to scan a clustered table/heap/index, providing just its name. OrcaMDF will automatically parse the schema of the object and discover where the IAM chain starts (for heaps) or find the root page for indexes.</p>
+<h2 id="Notable_leftovers">Notable leftovers</h2>
+<p>OrcaMDF currently only supports single-file databases, that is, no secondary data files. Adding support would be trivial, but my efforts are concentrated on supporting the core data structures in data files, so secondary files wouldn’t change much. As for corrupted files &amp; corruption detection, OrcaMDF assumes the MDF files to be in perfect condition. There are many places where corruption could be detected, but I’ll postpone that until the day I feel OrcaMDF is able to parse most functioning databases correctly. The projected start out (and still is) as a way of getting a deeper understanding of SQL Server internals, and as such, corruption detection is less important at this stage – though it’s definitely something I’d like to add eventually.</p>
+<h2 id="What’s_coming_next">What’s coming next</h2>
+<p>I want to extend the current metadata parsing capabilities, especially with focus on exposing the metadata publicly. Through OrcaMDF, it should be possible to reproduce the database/object/column tree as seen in SQL Server Management Studio. I want to provide table names, indexes, schemas, keys, etc. I also want to take a look at compression, starting out with row compression. As the format is rather well documented (compared to LOB structures, for example), it shouldn’t pose too many problems.</p>
+<p>If you have any suggestions or features you’d love to see supported, do let me know!</p>
+<p>I’ve also had a number of requests for examples of how to use OrcaMDF. I’ll probably end up creating a series of blog posts showcasing examples of how to use various features of OrcaMDF through code. I’m also planning to create a post on how to fetch the source code and compile it and finally how to run it from there – just to make it a tad easier to take it for a spin :)</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=OrcaMDF%20Feature%20Recap%20http%3A%2F%2Fimprove.dk%2Forcamdf-feature-recap%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Forcamdf-feature-recap%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Forcamdf-feature-recap%2F&title=OrcaMDF%20Feature%20Recap" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/orcamdf-feature-recap/orcamdf-feature-recap.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'orcamdf-feature-recap';
+	var disqus_url = 'http://improve.dk/orcamdf-feature-recap/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

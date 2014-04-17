@@ -1,0 +1,2075 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">16</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/depending-on-how-itrsquos-added-spare-bits-in-the-null/" title="The Garbage Null Bitmap and Why You Can&#39;t Rely on It Solely" rel="bookmark">The Garbage Null Bitmap and Why You Can&#39;t Rely on It Solely</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>While adding some extra sparse column tests to the <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a> test suite, I discovered an bug in my parsing of records. While the problem was simple enough, it took me a while to debug. Running the test, it worked about 40% of the time while failing the remaining 60% of the time. As I hadn’t picked up on this pattern I happily fixed (or so I thought) the bug, ran my test and verified that it was working. Shortly after the test failed – without me having changed any code. After having the first few strains of hair turn grey, I noticed the pattern and subsequently fixed the bug.</p>
+<a id="more"></a>
+
+<h2 id="The_normal_bitmap">The normal bitmap</h2>
+<p>Creating a table like the following results in a record with both a null bitmap and a variable length column for the <a href="/sparse-column-storage-ndash-the-sparse-vector">sparse vector</a>:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> Y (A <span class="keyword">int</span> SPARSE, B <span class="keyword">int</span> <span class="keyword">NULL</span>)
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> Y <span class="keyword">VALUES</span> (<span class="number">5</span>, <span class="number">2</span>)</span>
+</pre></figure>
+
+<p>Outputting the lone record in the lone data pages yields the following:</p>
+<div class="imgwrapper" style=""><div><a href="/depending-on-how-itrsquos-added-spare-bits-in-the-null/image_2.png" class="fancy"><img src="/depending-on-how-itrsquos-added-spare-bits-in-the-null/image_2.png" style="max-height: 250px"/></a></div></div>
+
+<p>The only thing of interest is the null bitmap. It has a value of 0, indicating that all columns are non null. The only column that actually uses the null bitmap is the <em>B</em> column. While the B column has a column index of 1, it’s represented by index 0 in the null bitmap, given that it’s the first column utilizing the null bitmap. Since the null bitmap has a value of 0x00, we know that the remaining (and unused) 7 bits all have a value of 0 – as would be expected.</p>
+<h2 id="The_garbage_bitmap">The garbage bitmap</h2>
+<p>Now consider another schema, akin to the previous one:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> DifferingRecordFormats (A <span class="keyword">int</span> SPARSE)
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> DifferingRecordFormats <span class="keyword">VALUES</span> (<span class="number">5</span>)
+<span class="keyword">ALTER</span> <span class="keyword">TABLE</span> DifferingRecordFormats <span class="keyword">ADD</span> B <span class="keyword">int</span> <span class="keyword">NULL</span>
+<span class="keyword">UPDATE</span> DifferingRecordFormats <span class="keyword">SET</span> B = <span class="number">2</span></span>
+</pre></figure>
+
+<p>While ending up with the exact same table schema, values and record layout, the null bitmap differs. The following are three sample records, resulting from running the above script three times, dropping the table in between to start on a fresh:</p>
+<div class="imgwrapper" style=""><div><a href="/depending-on-how-itrsquos-added-spare-bits-in-the-null/image_41.png" class="fancy"><img src="/depending-on-how-itrsquos-added-spare-bits-in-the-null/image_41.png" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/depending-on-how-itrsquos-added-spare-bits-in-the-null/image_61.png" class="fancy"><img src="/depending-on-how-itrsquos-added-spare-bits-in-the-null/image_61.png" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/depending-on-how-itrsquos-added-spare-bits-in-the-null/image_81.png" class="fancy"><img src="/depending-on-how-itrsquos-added-spare-bits-in-the-null/image_81.png" style="max-height: 250px"/></a></div></div>
+
+<p>Notice how all three records are <em>exactly</em> the same, except for the null bitmap. It’s even identical to the “The normal bitmap” record that I fixed showed, <em>except</em> for the null bitmap value. Let’s try and convert those three null bitmaps to binary:</p>
+<figure class="highlight"><pre>
+0x5C = 0b0101110<span class="strong">**0**</span>
+0xDA = 0b1101101<span class="strong">**0**</span>
+0x16 = 0b0001011<span class="strong">**0**</span>
+</pre></figure>
+
+<p>All three bitmaps hold valid values for the bit we’re interested in – the very first (rightmost) bit. The remaining bits seem to be random garbage. While this doesn’t affect parsing as we’re not touching those spare bits, I find it interesting that the bitmap behaves differently depending on how it’s added. I’m guessing there’s an internal byte in memory that’s spilling through, having only the necessary bits flipped, instead of creating a new zeroed out byte and flipping bits as necessary on the clean byte.</p>
+<h2 id="Thou_shalt_not_trust_the_null_bitmap_blindly!">Thou shalt not trust the null bitmap blindly!</h2>
+<p>Having garbage in the null bitmap raises some interesting questions. Usually when we add a nullable column to a schema, we don’t have to touch the data pages since we can determine the new columns data is not present in the record, hence it must be null. This is not done using the null bitmap however. Imagine this scenario:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> Garbage (A <span class="keyword">int</span> sparse)
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> Garbage <span class="keyword">VALUES</span> (<span class="number">5</span>)
+<span class="keyword">ALTER</span> <span class="keyword">TABLE</span> Garbage <span class="keyword">ADD</span> B <span class="keyword">int</span> <span class="keyword">NULL</span>
+<span class="keyword">UPDATE</span> Garbage <span class="keyword">SET</span> B = <span class="number">2</span>
+<span class="keyword">ALTER</span> <span class="keyword">TABLE</span> Garbage <span class="keyword">ADD</span> E <span class="keyword">varchar</span>(<span class="number">10</span>)</span>
+</pre></figure>
+
+<p>We start out as before, causing a garbage null bitmap that might have a value of 0b01011000, meaning the third three columns are non-null – that is, B and E (since A is sparse and therefor doesn’t utilize the null bitmap). But E <em>is</em> null, even though the null bitmap says otherwise. This is the record as it may (given that the null bitmap value can vary) look after the above queries have been run:</p>
+<div class="imgwrapper" style=""><div><a href="/depending-on-how-itrsquos-added-spare-bits-in-the-null/image_101.png" class="fancy"><img src="/depending-on-how-itrsquos-added-spare-bits-in-the-null/image_101.png" style="max-height: 250px"/></a></div></div>
+
+<p>So according to the null bitmap, both B and E are null – doing a select confirms that that is not the case however:</p>
+<div class="imgwrapper" style=""><div><a href="/depending-on-how-itrsquos-added-spare-bits-in-the-null/image_121.png" class="fancy"><img src="/depending-on-how-itrsquos-added-spare-bits-in-the-null/image_121.png" style="max-height: 250px"/></a></div></div>
+
+<p>So how do we determine that E is in fact null? By ignoring the null bitmap and realizing there’s no data for E. The column count for the record has a value of 1. It’s important to note that the column count counts the total number of non-sparse columns present in the record, including variable length. Since this has a value of 1 and there’s a fixed-length column present, that’s the one it’s counting. While there’s also a variable length column, that’s the sparse vector – identified by the fact that the column count didn’t include it, and that the variable length offset array entry identifies it as a <a href="/identifying-complex-columns-in-records">complex column</a>.</p>
+<h2 id="Conclusion">Conclusion</h2>
+<p>I’m having <a href="/the-null-bitmap-is-not-always-present-in-data-records">some</a> <a href="/the-8-byte-record-that-was-9-bytes-while-making-no-sense">fun</a> causing all kinds of edge cases due to sparse columns, even more fun trying to reason why what’s happening is happening. I haven’t seen garbage bitmaps before working with sparse columns and causing the specific scenario where the bitmap is added to a data record that doesn’t already have one. The most important thing to realize is that it doesn’t matter, at all. When doing reads of a record, the first thing we should check is <em>not</em> the null bitmap, but whether to expect the column in the record and afterwards whether there is a null bitmap at all (it may not be present in these sparse scenarios, as well as for index records).</p>
+<p>Below is a pseudo code presentation of how I’m currently parsing records, passing all current tests. Note that it’s leaving out a lot of details, but the overall logic follows the actual implementation. Also note that I’m continually updating this as I discover new edge cases that I haven’t taken into account.</p>
+<figure class="highlight sql"><pre>foreach column in schema {
+	if(sparse) {
+		if(record has sparse vector) {
+			Value = [Read value from sparse vector, possibly NULL]
+		} else {
+			Value = NULL
+		}
+	} else {
+		if(non-sparse column index &lt; record.NumberOfColumns) {
+			if(record does not have a null bitmap OR null bitmap indicates non NULL) {
+				if(column is variable length) {
+					Value = [Read value from variable length data section]
+				} else {
+					Value = [Read value from fixed length data section]
+				}
+			} else {
+				Value = NULL
+			}
+		} else {
+			Value = NULL
+		}
+	}
+}
+</pre></figure>
+
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">15</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/identifying-complex-columns-in-records/" title="Identifying Complex Columns in Records" rel="bookmark">Identifying Complex Columns in Records</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p><em>For an introduction to the anatomy of records, I suggest you read </em><a href="http://www.sqlskills.com/blogs/paul/post/Inside-the-Storage-Engine-Anatomy-of-a-record.aspx" target="_blank"><em>this post</em></a><em> by </em><a href="http://www.sqlskills.com/BLOGS/PAUL/" target="_blank"><em>Paul Randal</em></a><em>.</em></p>
+<a id="more"></a>
+
+<p>Not all variable length columns are the same. Some are more… Complex than others. An example of a complex column could be the 24 byte row-overflow pointer that are used when SLOB types overflow. <a href="http://sqlblog.com/blogs/kalen_delaney/default.aspx" target="_blank">Kalen Delaney</a> has an excellent post detailing how to <a href="http://sqlblog.com/blogs/kalen_delaney/archive/2007/10/09/geek-city-detecting-overflowing-columns.aspx" target="_blank">detect overflowing columns</a>. There are more than one complex column type though, and the technique outlined in Kalen’s post can be generalized a bit further.</p>
+<h2 id="Complex_columns_containing_row-overflow_pointers">Complex columns containing row-overflow pointers</h2>
+<p>Technically I don’t this is a complex column as it doesn’t follow the normal format. It is however identified the same way, so I’ll treat it as a complex column in this post. Let’s create a simple table, cause one of the columns to overflow and then check the record contents:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> OverflowTest (A <span class="keyword">varchar</span>(<span class="number">8000</span>), B <span class="keyword">varchar</span>(<span class="number">8000</span>))
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> OverflowTest <span class="keyword">VALUES</span> (REPLICATE(<span class="string">'a'</span>, <span class="number">5000</span>), REPLICATE(<span class="string">'b'</span>, <span class="number">5000</span>))
+DBCC IND (X, OverflowTest, -<span class="number">1</span>)</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/identifying-complex-columns-in-records/image_29.png" class="fancy"><img src="/identifying-complex-columns-in-records/image_29.png" style="max-height: 250px"/></a></div></div>
+
+<p>Outputting the contents of page (1:4345) shows the following (cropped to only show the first 36 bytes of the lone record body:</p>
+<div class="imgwrapper" style=""><div><a href="/identifying-complex-columns-in-records/image_124.png" class="fancy"><img src="/identifying-complex-columns-in-records/image_124.png" style="max-height: 250px"/></a></div></div>
+
+<p>The four colored bytes make up the variable length offset array – two bytes for each offset. The first offset has a value of 0x1395 == 5013, which fits perfectly with there being 5000 characters in the first column, plus 13 for the record overhead. The second offset has a value of 0x93AD == 37.805. Converted to binary that’s a value of 0b1001001110101101. Note how the high order bit is set to 1 – indicating a complex column. Getting the actual offset requires us to mask out the high order bit like so: 0n37805 &amp; 0b011111111111111 == 5.037. Now we can easily calculate the complex column length as being 5.037 – 5.013 == 24 bytes.</p>
+<p>At this point we know that the column contains a complex column and we know that it’s 24 bytes long. Row-overflow pointers only use a single byte to identify the type of complex column – this is what distinguishes it from “normal” complex columns, hence why I’m reluctant to call it a complex column.</p>
+<div class="imgwrapper" style=""><div><a href="/identifying-complex-columns-in-records/image_142.png" class="fancy"><img src="/identifying-complex-columns-in-records/image_142.png" style="max-height: 250px"/></a></div></div>
+
+<p>The very first byte determines the type of complex column that this is. For row-overflow/LOB pointers this can either be 1, indicating a LOB pointer, or 2, indicating a row-overflow pointer. In this case the value is 2, which confirms that we’re looking at a row-overflow pointer.</p>
+<h2 id="Complex_columns_containing_forwarded_record_back_pointers">Complex columns containing forwarded record back pointers</h2>
+<p>I’ve previously blogged about the <a href="/anatomy-of-a-forwarded-record-ndash-the-back-pointer">anatomy of a forwarded record back pointer</a>. The important thing to note are the first two bytes in the pointer, marked with red:</p>
+<div class="imgwrapper" style=""><div><a href="/identifying-complex-columns-in-records/image_163.png" class="fancy"><img src="/identifying-complex-columns-in-records/image_163.png" style="max-height: 250px"/></a></div></div>
+
+<p>All complex columns use the first two bytes to identify the kind of complex columns. In this case a complex column ID of 1.024 indicates a back pointer.</p>
+<h2 id="Complex_columns_containing_sparse_vectors">Complex columns containing sparse vectors</h2>
+<p>Let’s create a simple table containing some sparse columns:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> Sparse
+(
+	ID <span class="keyword">int</span>,
+	A <span class="keyword">int</span> SPARSE,
+	B <span class="keyword">int</span> SPARSE,
+	C <span class="keyword">int</span> SPARSE,
+	D <span class="keyword">int</span> SPARSE,
+	E <span class="keyword">int</span> SPARSE
+)</span>
+</pre></figure>
+
+<p>Taking a look at a dump of a record looks like this:</p>
+<div class="imgwrapper" style=""><div><a href="/identifying-complex-columns-in-records/image_183.png" class="fancy"><img src="/identifying-complex-columns-in-records/image_183.png" style="max-height: 250px"/></a></div></div>
+
+<p>Note that there are no variable length columns in the table definition. However, the sparse vector is stored as a variable length field, thus we have a variable length offset array. The red bytes make up the offset array value of 0x8023 = 32.803. Flipping the high order bit yields a value of 35, indicating that all remaining bytes in the record belong to the sparse vector.</p>
+<p>Since the high order bit was flipped, we know that this is a complex column. Checking out the first two bytes (marked with blue) yields a value of 0x0005. A value of 5 is exactly what indicates that we’re dealing with a sparse vector.</p>
+<h2 id="Conclusion">Conclusion</h2>
+<p>In general, variable length columns that contain some kind of special data will be indicated by having their high order bit flipped in the variable length offset array. While row-overflow pointers are not technically complex columns, that act similarly, except only using a single byte to indicate the column type.</p>
+<p>Forwarded record back pointers are stored in complex columns having a complex column ID of 1.024.</p>
+<p>Sparse vectors use a complex column ID of 5.</p>
+<p>I do not know of any more complex columns as of yet, but the documentation is rather non existent except for what’s mentioned in the <a href="http://www.amazon.com/Microsoft%C2%AE-SQL-Server%C2%AE-2008-Internals/dp/0735626243" target="_blank">SQL Server 2008 Internals book</a>.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">15</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/sparse-column-storage-ndash-the-sparse-vector/" title="Sparse Column Storage &amp; the Sparse Vector" rel="bookmark">Sparse Column Storage &amp; the Sparse Vector</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>In this post I’ll be looking at the internal storage mechanism that supports sparse columns. For an introduction to what sparse columns are and when they ought to be used, <a href="http://msdn.microsoft.com/en-us/library/cc280604.aspx" target="_blank">take a look here</a>.</p>
+<a id="more"></a>
+
+<p>Sparse columns, whether fixed or variable length, or not stored together with the normal columns in a <a href="http://www.sqlskills.com/blogs/paul/post/Inside-the-Storage-Engine-Anatomy-of-a-record.aspx" target="_blank">record</a>. Instead, they’re all stored in a hidden variable length column at the very end of the record (barring the potential 14 byte structure that may be stored when using versioning).</p>
+<h2 id="Creating_and_finding_a_sparse_vector">Creating and finding a sparse vector</h2>
+<p>Let’s create a sample table and insert a couple of test rows:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> Sparse
+(
+    ID <span class="keyword">int</span>,
+    A <span class="keyword">int</span> SPARSE,
+    B <span class="keyword">int</span> SPARSE,
+    C <span class="keyword">int</span> SPARSE,
+    D <span class="keyword">int</span> SPARSE,
+    E <span class="keyword">int</span> SPARSE
+)
+
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> Sparse (ID, B, E) <span class="keyword">VALUES</span> (<span class="number">1</span>, <span class="number">3</span>, <span class="number">1234</span>)
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> Sparse (ID, A, B) <span class="keyword">VALUES</span> (<span class="number">45</span>, <span class="number">243</span>, <span class="number">328</span>)</span>
+</pre></figure>
+
+<p>As you’d expect, a SELECT * yields the following result:</p>
+<div class="imgwrapper" style=""><div><a href="/sparse-column-storage-ndash-the-sparse-vector/image_210.png" class="fancy"><img src="/sparse-column-storage-ndash-the-sparse-vector/image_210.png" style="max-height: 250px"/></a></div></div>
+
+<p>Now let’s use DBCC IND to find the lone data pages ID, and then check out the stored record using DBCC PAGE:</p>
+<figure class="highlight sql"><pre>DBCC IND (X, 'Sparse', -1)
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/sparse-column-storage-ndash-the-sparse-vector/image_44.png" class="fancy"><img src="/sparse-column-storage-ndash-the-sparse-vector/image_44.png" style="max-height: 250px"/></a></div></div>
+
+
+<figure class="highlight sql"><pre>DBCC PAGE (X, 1, 4328, 3)
+</pre></figure>
+
+<p>This gives us two records, the first one looking like this:</p>
+<div class="imgwrapper" style=""><div><a href="/sparse-column-storage-ndash-the-sparse-vector/image_85.png" class="fancy"><img src="/sparse-column-storage-ndash-the-sparse-vector/image_85.png" style="max-height: 250px"/></a></div></div>
+
+<p>In a previous post I detailed how we <a href="/identifying-complex-columns-in-records/">identify complex columns like sparse vectors</a>, so I won’t go into too much detail there. The two red bytes is the single entry in the variable length offset array, with a value of 0x8023 = 32.803. Once we flip the high order bit (identifying this column as a complex column) we get an offset value of 35. Thus we know that the remaining 20 bytes in the record is our sparse vector.</p>
+<h2 id="The_sparse_vector_structure">The sparse vector structure</h2>
+<p>So what do those 20 bytes contain? The sparse vector structure looks like this:</p>
+<table><br>    <tbody><br>        <tr><br>            <td valign="top" width="173"><strong>Name</strong></td><br>            <td valign="top" width="281"><strong>Bytes</strong></td><br>            <td valign="top" width="344"><strong>Description</strong></td><br>        </tr><br>        <tr><br>            <td valign="top" width="175">Complex column header</td><br>            <td valign="top" width="281">2</td><br>            <td valign="top" width="344">The header identifies the type of complex column that we’re dealing with. A value of 5 denotes a sparse vector.</td><br>        </tr><br>        <tr><br>            <td valign="top" width="175">Sparse column count</td><br>            <td valign="top" width="281">2</td><br>            <td valign="top" width="344">Number of sparse column values that are stored in the vector – only columns that have values are included in the vector.</td><br>        </tr><br>        <tr><br>            <td valign="top" width="176">Column ID set</td><br>            <td valign="top" width="281">2 <em> Number of sparse columns with values</td><br>            <td valign="top" width="344">Each sparse column storing a value will use two bytes to store the ID of the column (as seen in sys.columns).</td><br>        </tr><br>        <tr><br>            <td valign="top" width="176">Column offset table</td><br>            <td valign="top" width="281">2 </em> Number of sparse columns with values</td><br>            <td valign="top" width="344">Just like the record variable offset array, this stores two bytes per sparse column with a value. The value denotes the end of the actual value in the sparse vector.</td><br>        </tr><br>        <tr><br>            <td valign="top" width="176">Sparse data</td><br>            <td valign="top" width="281">Total length of all sparse column data values.</td><br>            <td valign="top" width="344"></td><br>        </tr><br>    </tbody><br></table>
+
+<p>It’s interesting to note that unlike the normal record structure, fixed length and variable length sparse columns are stored in exactly the same way – both have an entry in the offset table, even though the fixed length values don’t differ in length.</p>
+<h3 id="Looking_at_a_record">Looking at a record</h3>
+<p>Going back to our record structure, I’ve colored it according to separate the different parts of the vector:</p>
+<p><strong><span style="color: #ff0000;"><span style="color: #000000;">0x</span>0500</span><span style="color: #0000ff;">0200</span><span style="color: #9b00d3;">03000600</span><span style="color: #008000;">10001400</span>03000000d2040000</strong></p>
+<p><em>Note that I’ve byte swapped the following byte references.</em></p>
+<p>The first two bytes <strong><span style="color: #ff0000;">0x0005</span></strong> == 5 contains the complex column ID.</p>
+<p>The next two bytes <strong><span style="color: #0000ff;">0x0002</span></strong> == 2 contains the number of sparse columns that are non-null, that is, they have a value stored in the sparse vector.</p>
+<p>The purple part stores two bytes per column, namely the column IDs of the stored columns. <strong><span style="color: #9b00d3;">0x0003</span></strong> == 3, <span style="color: #9b00d3;"><strong>0x0006</strong></span> == 6.</p>
+<p>Next up we have the green part – again storing two bytes per column, this time the offsets in the sparse vector. <strong><span style="color: #008000;">0x0010</span></strong> == 16, <strong><span style="color: #008000;">0x0014</span></strong> == 20.</p>
+<p>Finally we have the values themselves. We know that the first column has an ID of 3 and it’s data ends et offset 16. Since the first 12 bytes are made up of the header, the actual values are stored in bytes 13-16: <strong>0x00000003</strong> == 3. The second value ends at offset 20, meaning it’s stored in bytes 17-20: <strong>0x000004d2</strong> == 1.234.</p>
+<h3 id="Correlating_sparse_vector_values_with_sys-columns">Correlating sparse vector values with sys.columns</h3>
+<p>Now that we have the values, we just need to correlate them with the columns whose value they store. Let’s select the columns in our Sparse table:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	*
+<span class="keyword">FROM</span>
+	sys.columns
+<span class="keyword">WHERE</span>
+	object_id = OBJECT_ID(<span class="string">'Sparse'</span>)</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/sparse-column-storage-ndash-the-sparse-vector/image_104.png" class="fancy"><img src="/sparse-column-storage-ndash-the-sparse-vector/image_104.png" style="max-height: 250px"/></a></div></div>
+
+<p>And there we have it – the value 3 was stored in column_id = 3 =&gt; B. The value 1.234 was stored in column_id = 6 =&gt; E. Coincidentally, that matches up with our originally select query:</p>
+<div class="imgwrapper" style=""><div><a href="/sparse-column-storage-ndash-the-sparse-vector/image_13.png" class="fancy"><img src="/sparse-column-storage-ndash-the-sparse-vector/image_13.png" style="max-height: 250px"/></a></div></div>
+
+<p>The same procedure can be repeated for the second record, but I’m going to leave that as an exercise for the reader :)</p>
+<h2 id="Writing_a_sparse_vector_parser_in_C">Writing a sparse vector parser in C</h2>
+<p>Once we know the structure of the sparse vector, writing a parser in C# is surprisingly simple:</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Collections.Generic;
+<span class="keyword">using</span> System.Linq;
+
+namespace OrcaMDF.Core.Engine
+{
+	<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+	<span class="comment"><span class="xmlDocTag">///</span> Parses sparse vectors as stored in records for tables containing sparse columns.</span>
+	<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+	<span class="keyword">public</span> <span class="keyword">class</span> SparseVectorParser
+	{
+		<span class="keyword">public</span> <span class="keyword">short</span> ColumnCount { <span class="keyword">get</span>; <span class="keyword">private</span> <span class="keyword">set</span>; }
+		<span class="keyword">public</span> IDictionary&lt;<span class="keyword">short</span>, <span class="keyword">byte</span>[]&gt; ColumnValues { <span class="keyword">get</span>; <span class="keyword">private</span> <span class="keyword">set</span>; }
+
+		<span class="keyword">public</span> <span class="title">SparseVectorParser</span>(<span class="keyword">byte</span>[] bytes)
+		{
+			<span class="comment">// First two bytes must have the value 5, indicating this is a sparse vector</span>
+			<span class="keyword">short</span> complexColumnID = BitConverter.ToInt16(bytes, <span class="number">0</span>);
+			<span class="keyword">if</span> (complexColumnID != <span class="number">5</span>)
+				<span class="keyword">throw</span> <span class="keyword">new</span> ArgumentException(<span class="string">"Input bytes does not contain a sparse vector."</span>);
+
+			<span class="comment">// Number of columns contained in this sparse vector</span>
+			ColumnCount = BitConverter.ToInt16(bytes, <span class="number">2</span>);
+
+			<span class="comment">// For each column, read the data into the columnValues dictionary</span>
+			ColumnValues = <span class="keyword">new</span> Dictionary&lt;<span class="keyword">short</span>, <span class="keyword">byte</span>[]&gt;();
+			<span class="keyword">short</span> columnIDSetOffset = <span class="number">4</span>;
+			<span class="keyword">short</span> columnOffsetTableOffset = (<span class="keyword">short</span>)(columnIDSetOffset + <span class="number">2</span> * ColumnCount);
+			<span class="keyword">short</span> columnDataOffset = (<span class="keyword">short</span>)(columnOffsetTableOffset + <span class="number">2</span> * ColumnCount);
+			<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>; i&lt;ColumnCount; i++)
+			{
+				<span class="comment">// Read ID, data offset and data from vector</span>
+				<span class="keyword">short</span> columnID = BitConverter.ToInt16(bytes, columnIDSetOffset);
+				<span class="keyword">short</span> columnOffset = BitConverter.ToInt16(bytes, columnOffsetTableOffset);
+				<span class="keyword">byte</span>[] data = bytes.Take(columnOffset).Skip(columnDataOffset).ToArray();
+
+				<span class="comment">// Add ID + data to dictionary</span>
+				ColumnValues.Add(columnID, data);
+
+				<span class="comment">// Increment both ID and offset offsets by two bytes</span>
+				columnIDSetOffset += <span class="number">2</span>;
+				columnOffsetTableOffset += <span class="number">2</span>;
+				columnDataOffset = columnOffset;
+			}
+		}
+	}
+}
+</pre></figure>
+
+<p>I won’t go into the code as it’s documented and follows the procedure we just went through. A quick test verifies that it achieves the same results as we just did by hand:</p>
+<figure class="highlight csharp"><pre>[TestFixture]
+<span class="keyword">public</span> <span class="keyword">class</span> SparseVectorParserTests
+{
+	[Test]
+	<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Parse</span>()
+	{
+		<span class="keyword">byte</span>[] bytes = <span class="keyword">new</span> <span class="keyword">byte</span> [] { <span class="number">0x05</span>, <span class="number">0x00</span>, <span class="number">0x02</span>, <span class="number">0x00</span>, <span class="number">0x03</span>, <span class="number">0x00</span>, <span class="number">0x06</span>, <span class="number">0x00</span>, <span class="number">0x10</span>, <span class="number">0x00</span>, <span class="number">0x14</span>, <span class="number">0x00</span>, <span class="number">0x03</span>, <span class="number">0x00</span>, <span class="number">0x00</span>, <span class="number">0x00</span>, <span class="number">0xd2</span>, <span class="number">0x04</span>, <span class="number">0x00</span>, <span class="number">0x00</span> };
+		<span class="keyword">var</span> parser = <span class="keyword">new</span> SparseVectorParser(bytes);
+
+		Assert.AreEqual(<span class="number">2</span>, parser.ColumnCount);
+		Assert.AreEqual(<span class="number">3</span>, BitConverter.ToInt32(parser.ColumnValues[<span class="number">3</span>], <span class="number">0</span>));
+		Assert.AreEqual(<span class="number">1234</span>, BitConverter.ToInt32(parser.ColumnValues[<span class="number">6</span>], <span class="number">0</span>));
+	}
+}
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/sparse-column-storage-ndash-the-sparse-vector/image_15.png" class="fancy"><img src="/sparse-column-storage-ndash-the-sparse-vector/image_15.png" style="max-height: 250px"/></a></div></div>
+
+<p>You can check out the full code at the <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF Github repository</a>.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">15</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/the-null-bitmap-is-not-always-present-in-data-records/" title="The Null Bitmap is Not Always Present in Data Records" rel="bookmark">The Null Bitmap is Not Always Present in Data Records</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>While <a href="/sparse-column-storage-ndash-the-sparse-vector/">implementing sparse column support</a> for <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a>, I ran into a special condition that caught me by surprise – a data record with no null bitmap. Even <a href="http://www.sqlskills.com/BLOGS/PAUL/" target="_blank">Paul Randal</a> mentioned that the null bitmap would <em>always</em> be present in data records in his <a href="http://www.sqlskills.com/BLOGS/PAUL/post/A-SQL-Server-DBA-myth-a-day-(630" target="_blank">A SQL Server DBA myth a day: (6/30) three null bitmap myths</a>-three-null-bitmap-myths.aspx) post.</p>
+<a id="more"></a>
+
+<h2 id="Optimized_storage_of_sparse-only_tables">Optimized storage of sparse-only tables</h2>
+<p>During my testing I discovered that tables containing only sparse columns neither stored a null bitmap, nor the usual number of columns. Let’s create a test table and find a reference to the data page:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> OnlyFixedSparse (A <span class="keyword">int</span> SPARSE)
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> OnlyFixedSparse <span class="keyword">VALUES</span> (<span class="number">5</span>)
+DBCC IND (X, <span class="string">'OnlyFixedSparse'</span>, -<span class="number">1</span>)</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/the-null-bitmap-is-not-always-present-in-data-records/image_211.png" class="fancy"><img src="/the-null-bitmap-is-not-always-present-in-data-records/image_211.png" style="max-height: 250px"/></a></div></div>
+
+<p>And then let’s check the record contents for page (1:4359):</p>
+<figure class="highlight sql"><pre>DBCC PAGE (X, 1, 4359, 3)
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/the-null-bitmap-is-not-always-present-in-data-records/image_65.png" class="fancy"><img src="/the-null-bitmap-is-not-always-present-in-data-records/image_65.png" style="max-height: 250px"/></a></div></div>
+
+<p>The first two bytes contain the record status bits. Next two bytes contain the offset for the end of the fixed-length portion of the record – which is 4 as expected, since we have no non-sparse fixed-length columns. As shown in the <em>Record Attributes</em> output, the status bytes indicates that there’s no null bitmap, and sure enough, the next two bytes indicates the number of variable length columns. The remaining bytes contains the variable length offset array as well as the <a href="/sparse-column-storage-ndash-the-sparse-vector/">sparse vector</a>.</p>
+<h3 id="Under_what_conditions_does_the_data_record_not_contain_a_null_bitmap?">Under what conditions does the data record not contain a null bitmap?</h3>
+<p>I did a quick empirical test to verify my theory that this only happens on tables containing only sparse columns:</p>
+<table width="500"><br>    <tbody><br>        <tr><br>            <td valign="top" width="299"><strong>Schema</strong></td><br>            <td valign="top" width="193"><strong>Contains null bitmap</strong></td><br>        </tr><br>        <tr><br>            <td valign="top" width="299">Only variable length columns</td><br>            <td valign="top" width="193">Yes</td><br>        </tr><br>        <tr><br>            <td valign="top" width="299">Only fixed length columns</td><br>            <td valign="top" width="193">Yes</td><br>        </tr><br>        <tr><br>            <td valign="top" width="299">Only sparse fixed length columns</td><br>            <td valign="top" width="193">No</td><br>        </tr><br>        <tr><br>            <td valign="top" width="299">Only sparse variable length columns</td><br>            <td valign="top" width="193">No</td><br>        </tr><br>        <tr><br>            <td valign="top" width="299">Fixed length + sparse fixed length columns</td><br>            <td valign="top" width="193">Yes</td><br>        </tr><br>        <tr><br>            <td valign="top" width="299">Variable length + sparse fixed length columns</td><br>            <td valign="top" width="193">Yes</td><br>        </tr><br>    </tbody><br></table>
+
+<p>Thus it would seem that this is an optimization made possible for tables containing nothing but sparse columns.</p>
+<h3 id="There’s_always_an_exception_to_the_exception">There’s always an exception to the exception</h3>
+<p>It <em>is</em> actually possible to have a data record without a null bitmap for a table with non-sparse columns too. Continuing on from the OnlyFixedSparse table from before, let’s add two extra nullable columns:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> OnlyFixedSparse <span class="keyword">ADD</span> B <span class="keyword">int</span> <span class="keyword">NULL</span>
+<span class="keyword">Alter</span> <span class="keyword">Table</span> OnlyFixedSparse <span class="keyword">ADD</span> C <span class="keyword">varchar</span>(<span class="number">10</span>) <span class="keyword">NULL</span></span>
+</pre></figure>
+
+<p>Checking the stored record reveals the exact same output as before:</p>
+<div class="imgwrapper" style=""><div><a href="/the-null-bitmap-is-not-always-present-in-data-records/image_86.png" class="fancy"><img src="/the-null-bitmap-is-not-always-present-in-data-records/image_86.png" style="max-height: 250px"/></a></div></div>
+
+<p>Thus it would seem that even without a null bitmap the usual alter semantics are followed – the addition of new nullable columns does not need to alter existing records. If we’d added a non-nullable column to the table, we would have to modify the record, causing the addition of a null bitmap and column count. The same goes if we insert a value into any of those new columns:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">UPDATE</span> OnlyFixedSparse <span class="keyword">SET</span> B = <span class="number">2</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/the-null-bitmap-is-not-always-present-in-data-records/image_105.png" class="fancy"><img src="/the-null-bitmap-is-not-always-present-in-data-records/image_105.png" style="max-height: 250px"/></a></div></div>
+
+<p>By setting the value of the B column we just added 7 extra bytes to our data record. 4 for the integer, 2 for the column count and 1 for the null bitmap. Had we not performed the update for all records in the table, only the affected records would be updated. This means we may have data records for a table where some have a null bitmap while others don’t. Just take a look at this:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> OnlyFixedSparse (A <span class="keyword">int</span> SPARSE)
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> OnlyFixedSparse <span class="keyword">VALUES</span> (<span class="number">5</span>), (<span class="number">6</span>)
+<span class="keyword">ALTER</span> <span class="keyword">TABLE</span> OnlyFixedSparse <span class="keyword">ADD</span> B <span class="keyword">int</span> <span class="keyword">NULL</span>
+<span class="keyword">UPDATE</span> OnlyFixedSparse <span class="keyword">SET</span> B = <span class="number">2</span> <span class="keyword">WHERE</span> A = <span class="number">5</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/the-null-bitmap-is-not-always-present-in-data-records/image_125.png" class="fancy"><img src="/the-null-bitmap-is-not-always-present-in-data-records/image_125.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Conclusion">Conclusion</h2>
+<p>As I unfortunately do not work on the SQL Server team and I haven’t seen this condition documented, I can only theorize on this. For all normal data records, the null bitmap is always present, even if the table does not contain any null columns. While we can achieve <a href="http://www.sqlskills.com/blogs/paul/post/Inside-the-Storage-Engine-Anatomy-of-a-record.aspx" target="_blank">read optimizations</a> when columns may be null, for completely non-null tables, we still get the benefit that we can add a new nullable column to an existing schema, without having to modify the already existing records.</p>
+<p>While I think it’s bit of a special use case, my theory is that this is a specific optimization made for the case where you have a table with lots of sparse columns and no non-sparse columns present. For those cases, we save at least three bytes – two for the number of columns and at least one for the null bitmap. If there are only sparse columns, we have no need for the null bitmap as the null value is defined by the value not being stored in the sparse vector.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">13</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/creating-a-type-aware-parser-for-the-sys-system_internals_partition_columns-ti-field/" title="Creating a Type Aware Parser for the sys.system_internals_partition_columns.ti Field" rel="bookmark">Creating a Type Aware Parser for the sys.system_internals_partition_columns.ti Field</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Based on my findings <a href="/exploring-the-sys-system_internals_partition_columns-ti-field">exploring the sys.system_internals_partition_columns.ti field</a>, I needed parser that could extract the scale, precision, max_length as well as the max_inrow_length fields from it. The tricky part is that those values are stored differently for each individual type, added onto the fact that some types have hardcoded defaults that are not stored in the ti field, even though there’s space for it.</p>
+<a id="more"></a>
+
+<p>As a result of some reverse engineering and empirical testing, I’ve made a SysrscolTIParser class that takes in the ti value (I have no idea what the acronym stands for – type information perhaps?), determines the type and parses it corresponding to the type. I won’t go into details as that’s all described in my <a href="/exploring-the-sys-system_internals_partition_columns-ti-field">previous post</a>.</p>
+<figure class="highlight csharp"><pre>using System;
+using OrcaMDF.Core.MetaData.Enumerations;
+
+namespace OrcaMDF.Core.MetaData
+{
+	public class SysrscolTIParser
+	{
+		public byte Scale;
+		public byte Precision;
+		public short MaxLength;
+		public short MaxInrowLength;
+		public int TypeID;
+
+		public SysrscolTIParser(int ti)
+		{
+			TypeID = ti & 0xFF;
+
+			if (!Enum.IsDefined(typeof(SystemType), TypeID))
+				throw new ArgumentException(<span class="string">"Unknown TypeID '"</span> + TypeID + <span class="string">"'"</span>);
+
+			switch((SystemType)TypeID)
+			{
+				case SystemType.Bigint:
+					MaxLength = MaxInrowLength = 8;
+					Precision = 19;
+					break;
+
+				// All CLR types internally stored as varbinaries
+				//case SystemType.Geography:
+				//case SystemType.Geometry:
+				//case SystemType.Hierarchyid:
+				case SystemType.Varbinary:
+				// Also covers SystemType.Sysname
+				case SystemType.Nvarchar:
+				case SystemType.Binary:
+				case SystemType.Char:
+				case SystemType.Nchar:
+				case SystemType.Image:
+				case SystemType.Ntext:
+				case SystemType.Text:
+				case SystemType.Varchar:
+				case SystemType.Xml:
+					MaxLength = (short)((ti & 0xFFFF00) &gt;&gt; 8);
+					if (MaxLength == 0)
+					{
+						MaxLength = -1;
+						MaxInrowLength = 8000;
+					}
+					else
+						MaxInrowLength = MaxLength;
+					break;
+
+				case SystemType.Bit:
+					MaxLength = MaxInrowLength = Precision = 1;
+					break;
+
+				case SystemType.Date:
+					Precision = 10;
+					MaxLength = MaxInrowLength = 3;
+					break;
+
+				case SystemType.Datetime:
+					Scale = 3;
+					Precision = 23;
+					MaxLength = MaxInrowLength = 8;
+					break;
+
+				case SystemType.Datetime2:
+					Scale = (byte)((ti & 0xFF00) &gt;&gt; 8);
+					Precision = (byte)(20 + Scale);
+					if (Scale &lt; 3)
+						MaxLength = MaxInrowLength = 6;
+					else if (Scale &lt; 5)
+						MaxLength = MaxInrowLength = 7;
+					else
+						MaxLength = MaxInrowLength = 8;
+					break;
+
+				case SystemType.DatetimeOffset:
+					Scale = (byte)((ti & 0xFF00) &gt;&gt; 8);
+					Precision = (byte)(26 + (Scale &gt; 0 ? Scale + 1 : Scale));
+					if (Scale &lt; 3)
+						MaxLength = MaxInrowLength = 8;
+					else if (Scale &lt; 5)
+						MaxLength = MaxInrowLength = 9;
+					else
+						MaxLength = MaxInrowLength = 10;
+					break;
+
+				case SystemType.Decimal:
+				case SystemType.Numeric:
+					Precision = (byte)((ti & 0xFF00) &gt;&gt; 8);
+					Scale = (byte)((ti & 0xFF0000) &gt;&gt; 16);
+					if (Precision &lt; 10)
+						MaxLength = MaxInrowLength = 5;
+					else if (Precision &lt; 20)
+						MaxLength = MaxInrowLength = 9;
+					else if (Precision &lt; 29)
+						MaxLength = MaxInrowLength = 13;
+					else
+						MaxLength = MaxInrowLength = 17;
+					break;
+
+				case SystemType.Float:
+					Precision = 53;
+					MaxLength = MaxInrowLength = 8;
+					break;
+					
+				case SystemType.Int:
+					Precision = 10;
+					MaxLength = MaxInrowLength = 4;
+					break;
+
+				case SystemType.Money:
+					Scale = 4;
+					Precision = 19;
+					MaxLength = MaxInrowLength = 8;
+					break;
+
+				case SystemType.Real:
+					Precision = 24;
+					MaxLength = MaxInrowLength = 4;
+					break;
+
+				case SystemType.Smalldatetime:
+					Precision = 16;
+					MaxLength = MaxInrowLength = 4;
+					break;
+
+				case SystemType.Smallint:
+					Precision = 5;
+					MaxLength = MaxInrowLength = 2;
+					break;
+
+				case SystemType.Smallmoney:
+					Scale = 4;
+					Precision = 10;
+					MaxLength = MaxInrowLength = 4;
+					break;
+
+				case SystemType.Sql_Variant:
+					MaxLength = MaxInrowLength = 8016;
+					break;
+
+				case SystemType.Time:
+					Scale = (byte)((ti & 0xFF00) &gt;&gt; 8);
+					Precision = (byte)(8 + (Scale &gt; 0 ? Scale + 1 : Scale));
+					if (Scale &lt; 3)
+						MaxLength = MaxInrowLength = 3;
+					else if (Scale &lt; 5)
+						MaxLength = MaxInrowLength = 4;
+					else
+						MaxLength = MaxInrowLength = 5;
+					break;
+
+				case SystemType.Timestamp:
+					MaxLength = MaxInrowLength = 8;
+					break;
+
+				case SystemType.Tinyint:
+					Precision = 3;
+					MaxLength = MaxInrowLength = 1;
+					break;
+
+				case SystemType.Uniqueidentifier:
+					MaxLength = MaxInrowLength = 16;
+					break;
+
+				default:
+					throw new ArgumentException(<span class="string">"TypeID '"</span> + TypeID + <span class="string">"' not supported."</span>);
+			}
+		}
+	}
+}
+</pre></figure>
+
+<p>It uses a SystemType enumeration for switching between the types (sorry, formatting isn’t being nice to me here):</p>
+<figure class="highlight csharp"><pre>namespace OrcaMDF.Core.MetaData.Enumerations
+{
+	public enum SystemType
+	{
+		Image				= 34,
+		Text				= 35,
+		Uniqueidentifier		= 36,
+		Date				= 40,
+		Time				= 41,
+		Datetime2			= 42,
+		DatetimeOffset			= 43,
+		Tinyint				= 48,
+		Smallint			= 52,
+		Int				= 56,
+		Smalldatetime			= 58,
+		Real				= 59,
+		Money				= 60,
+		Datetime			= 61,
+		Float				= 62,
+		Sql_Variant			= 98,
+		Ntext				= 99,
+		Bit				= 104,
+		Decimal				= 106,
+		Numeric				= 108,
+		Smallmoney			= 122,
+		Bigint				= 127,
+		Hierarchyid			= 240,
+		Geometry			= 240,
+		Geography			= 240,
+		Varbinary			= 165,
+		Varchar				= 167,
+		Binary				= 173,
+		Char				= 175,
+		Timestamp			= 189,
+		Nvarchar			= 231,
+		Nchar				= 239,
+		Xml				= 241,
+		Sysname				= 231
+	}
+}
+</pre></figure>
+
+<p>And last, but not least, a bunch of tests to verify the functionality:</p>
+<figure class="highlight csharp"><pre>using NUnit<span class="preprocessor">.Framework</span><span class="comment">;</span>
+using OrcaMDF<span class="preprocessor">.Core</span><span class="preprocessor">.MetaData</span><span class="comment">;</span>
+
+namespace OrcaMDF<span class="preprocessor">.Core</span><span class="preprocessor">.Tests</span><span class="preprocessor">.MetaData</span>
+{
+	[TestFixture]
+	public class SysrscolTIParserTests
+	{
+		[Test]
+		public void Bigint()
+		{
+			var parser = new SysrscolTIParser(<span class="number">127</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">19</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">8</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">127</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">8</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+		}
+
+		[Test]
+		public void Binary()
+		{
+			var parser = new SysrscolTIParser(<span class="number">12973</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">50</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">173</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">50</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+		}
+
+		[Test]
+		public void Bit()
+		{
+			var parser = new SysrscolTIParser(<span class="number">104</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">1</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">1</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">104</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">1</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+		}
+
+		[Test]
+		public void Char()
+		{
+			var parser = new SysrscolTIParser(<span class="number">2735</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">10</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">175</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">10</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+		}
+
+		[Test]
+		public void Date()
+		{
+			var parser = new SysrscolTIParser(<span class="number">40</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">10</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">3</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">40</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">3</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+		}
+
+		[Test]
+		public void Datetime()
+		{
+			var parser = new SysrscolTIParser(<span class="number">61</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">3</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">23</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">8</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">61</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">8</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+		}
+
+		[Test]
+		public void Datetime2()
+		{
+			var parser = new SysrscolTIParser(<span class="number">1834</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">7</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">27</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">8</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">42</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">8</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+
+			parser = new SysrscolTIParser(<span class="number">810</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">3</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">23</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">7</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">42</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">7</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+		}
+
+		[Test]
+		public void Datetimeoffset()
+		{
+			var parser = new SysrscolTIParser(<span class="number">1835</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">7</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">34</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">10</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">43</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">10</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+
+			parser = new SysrscolTIParser(<span class="number">1067</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">4</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">31</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">9</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">43</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">9</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+		}
+
+		[Test]
+		public void Decimal()
+		{
+			var parser = new SysrscolTIParser(<span class="number">330858</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">5</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">12</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">9</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">106</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">9</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+
+			parser = new SysrscolTIParser(<span class="number">396138</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">6</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">11</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">9</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">106</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">9</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+		}
+
+		[Test]
+		public void Float()
+		{
+			var parser = new SysrscolTIParser(<span class="number">62</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">53</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">8</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">62</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">8</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+		}
+
+		[Test]
+		public void Varbinary()
+		{
+			var parser = new SysrscolTIParser(<span class="number">165</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(-<span class="number">1</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">165</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">8000</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+
+			parser = new SysrscolTIParser(<span class="number">228517</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">892</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">165</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">892</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+		}
+
+		[Test]
+		public void Image()
+		{
+			var parser = new SysrscolTIParser(<span class="number">4130</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">16</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">34</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">16</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+		}
+
+		[Test]
+		public void Int()
+		{
+			var parser = new SysrscolTIParser(<span class="number">56</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">10</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">4</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">56</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">4</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+		}
+
+		[Test]
+		public void Money()
+		{
+			var parser = new SysrscolTIParser(<span class="number">60</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">4</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">19</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">8</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">60</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">8</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+		}
+
+		[Test]
+		public void Nchar()
+		{
+			var parser = new SysrscolTIParser(<span class="number">5359</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">20</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">239</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">20</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+		}
+
+		[Test]
+		public void Ntext()
+		{
+			var parser = new SysrscolTIParser(<span class="number">4195</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">16</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">99</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">16</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+		}
+
+		[Test]
+		public void Numeric()
+		{
+			var parser = new SysrscolTIParser(<span class="number">265580</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">4</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">13</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">9</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">108</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">9</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+
+			parser = new SysrscolTIParser(<span class="number">135020</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">2</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">15</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">9</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">108</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">9</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+		}
+
+		[Test]
+		public void Nvarchar()
+		{
+			var parser = new SysrscolTIParser(<span class="number">25831</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">100</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">231</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">100</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+
+			parser = new SysrscolTIParser(<span class="number">231</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(-<span class="number">1</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">231</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">8000</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+		}
+
+		[Test]
+		public void Real()
+		{
+			var parser = new SysrscolTIParser(<span class="number">59</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">24</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">4</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">59</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">4</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+		}
+
+		[Test]
+		public void Smalldatetime()
+		{
+			var parser = new SysrscolTIParser(<span class="number">58</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">16</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">4</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">58</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">4</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+		}
+
+		[Test]
+		public void Smallint()
+		{
+			var parser = new SysrscolTIParser(<span class="number">52</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">5</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">2</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">52</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">2</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+		}
+
+		[Test]
+		public void Smallmoney()
+		{
+			var parser = new SysrscolTIParser(<span class="number">122</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">4</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">10</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">4</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">122</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">4</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+		}
+
+		[Test]
+		public void Sql_Variant()
+		{
+			var parser = new SysrscolTIParser(<span class="number">98</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">8016</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">98</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">8016</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+		}
+
+		[Test]
+		public void Text()
+		{
+			var parser = new SysrscolTIParser(<span class="number">4131</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">16</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">35</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">16</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+		}
+
+		[Test]
+		public void Time()
+		{
+			var parser = new SysrscolTIParser(<span class="number">1833</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">7</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">16</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">5</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">41</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">5</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+
+			parser = new SysrscolTIParser(<span class="number">1065</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">4</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">13</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">4</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">41</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">4</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+		}
+
+		[Test]
+		public void Timestamp()
+		{
+			var parser = new SysrscolTIParser(<span class="number">189</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">8</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">189</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">8</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+		}
+
+		[Test]
+		public void Tinyint()
+		{
+			var parser = new SysrscolTIParser(<span class="number">48</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">3</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">1</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">48</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">1</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+		}
+
+		[Test]
+		public void Uniqueidentifier()
+		{
+			var parser = new SysrscolTIParser(<span class="number">36</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">16</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">36</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">16</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+		}
+
+		[Test]
+		public void Varchar()
+		{
+			var parser = new SysrscolTIParser(<span class="number">12967</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">50</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">167</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">50</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+
+			parser = new SysrscolTIParser(<span class="number">167</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(-<span class="number">1</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">167</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">8000</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+		}
+
+		[Test]
+		public void Xml()
+		{
+			var parser = new SysrscolTIParser(<span class="number">241</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(-<span class="number">1</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">241</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
+			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">8000</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+		}
+	}
+}
+</pre></figure>
+
+<p>All of this is just one big giant bit of infrastructure I needed to implement to get my scanning of nonclustered indexes working. As soon as I’ve got that up and running, all of this, plus a lot more, will be committed &amp; pushed to the <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF repo</a>.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">13</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/exploring-the-sys-system_internals_partition_columns-ti-field/" title="Exploring the sys.system_internals_partition_columns.ti Field" rel="bookmark">Exploring the sys.system_internals_partition_columns.ti Field</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Running sp_helptext on the sys.system_internals_partition_columns system view reveals the following internal query:</p>
+<a id="more"></a>
+
+
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	c.rsid <span class="keyword">AS</span> partition_id,  
+	c.rscolid <span class="keyword">AS</span> partition_column_id,  
+	c.rcmodified <span class="keyword">AS</span> modified_count,  
+	<span class="keyword">CASE</span> c.maxinrowlen
+		<span class="keyword">WHEN</span> <span class="number">0</span> <span class="keyword">THEN</span> p.length  
+		<span class="keyword">ELSE</span> c.maxinrowlen
+	<span class="keyword">END</span> <span class="keyword">AS</span> max_inrow_length,
+	CONVERT(<span class="keyword">BIT</span>, c.status & <span class="number">1</span>) <span class="keyword">AS</span> is_replicated,    --RSC_REPLICATED  
+	CONVERT(<span class="keyword">BIT</span>, c.status & <span class="number">4</span>) <span class="keyword">AS</span> is_logged_for_replication, --RSC_LOG_FOR_REPL  
+	CONVERT(<span class="keyword">BIT</span>, c.status & <span class="number">2</span>) <span class="keyword">AS</span> is_dropped,    --RSC_DROPPED  
+	p.xtype <span class="keyword">AS</span> system_type_id,  
+	p.length <span class="keyword">AS</span> max_length,  
+	p.prec <span class="keyword">AS</span> <span class="keyword">PRECISION</span>,  
+	p.scale <span class="keyword">AS</span> scale,  
+	CONVERT(sysname, CollationPropertyFromId(c.cid, <span class="string">'name'</span>)) <span class="keyword">AS</span> collation_name,  
+	CONVERT(<span class="keyword">BIT</span>, c.status & <span class="number">32</span>) <span class="keyword">AS</span> is_filestream,   --RSC_FILESTREAM  
+	c.ordkey <span class="keyword">AS</span> key_ordinal,  
+	CONVERT(<span class="keyword">BIT</span>, <span class="number">1</span> - (c.status & <span class="number">128</span>)/<span class="number">128</span>) <span class="keyword">AS</span> is_nullable,  -- RSC_NOTNULL    
+	CONVERT(<span class="keyword">BIT</span>, c.status & <span class="number">8</span>) <span class="keyword">AS</span> is_descending_key,  --RSC_DESC_KEY  
+	CONVERT(<span class="keyword">BIT</span>, c.status & <span class="number">16</span>) <span class="keyword">AS</span> is_uniqueifier,   --RSC_UNIQUIFIER  
+	CONVERT(<span class="keyword">SMALLINT</span>, CONVERT(BINARY(<span class="number">2</span>), c.offset & <span class="number">0xffff</span>)) <span class="keyword">AS</span> leaf_offset,  
+	CONVERT(<span class="keyword">SMALLINT</span>, SUBSTRING(CONVERT(BINARY(<span class="number">4</span>), c.offset), <span class="number">1</span>, <span class="number">2</span>)) <span class="keyword">AS</span> internal_offset,  
+	CONVERT(TINYINT, c.bitpos & <span class="number">0xff</span>) <span class="keyword">AS</span> leaf_bit_position,  
+	CONVERT(TINYINT, c.bitpos/<span class="number">0x100</span>) <span class="keyword">AS</span> internal_bit_position,  
+	CONVERT(<span class="keyword">SMALLINT</span>, CONVERT(BINARY(<span class="number">2</span>), c.nullbit & <span class="number">0xffff</span>)) <span class="keyword">AS</span> leaf_null_bit,  
+	CONVERT(<span class="keyword">SMALLINT</span>, SUBSTRING(CONVERT(BINARY(<span class="number">4</span>), c.nullbit), <span class="number">1</span>, <span class="number">2</span>)) <span class="keyword">AS</span> internal_null_bit,  
+	CONVERT(<span class="keyword">BIT</span>, c.status & <span class="number">64</span>) <span class="keyword">AS</span> is_anti_matter,   --RSC_ANTIMATTER  
+	CONVERT(UNIQUEIDENTIFIER, c.colguid) <span class="keyword">AS</span> partition_column_guid,  
+	sysconv(<span class="keyword">BIT</span>, c.status & <span class="number">0x00000100</span>) <span class="keyword">AS</span> is_sparse --RSC_SPARSE  
+<span class="keyword">FROM</span>
+	sys.sysrscols c
+<span class="keyword">OUTER</span> APPLY
+	OPENROWSET(<span class="keyword">TABLE</span> RSCPROP, c.ti) p</span>
+</pre></figure>
+
+<p>Nothing too out of the ordinary if you’ve looked at other internal queries. There’s a lot of bitmasking / shifting going on to extract multiple values from the same internal base table fields. One thing that is somewhat convoluted is the OPENROWSET(TABLE RSCPROP, c.ti) p OUTER APPLY being made.</p>
+<p>A Google query for “sql server +rscprop” yields absolutely zilch results:</p>
+<div class="imgwrapper" style=""><div><a href="/exploring-the-sys-system_internals_partition_columns-ti-field/image_27.png" class="fancy"><img src="/exploring-the-sys-system_internals_partition_columns-ti-field/image_27.png" style="max-height: 250px"/></a></div></div>
+
+<p>Simplifying the query to only show the fields using the fields referring the OPENROWSET (p) results, shows that the scale, precision, max_length, system_type_id and max_inrow_length are either extracted from the ti field value directly or indirectly:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	<span class="keyword">CASE</span> c.maxinrowlen
+		<span class="keyword">WHEN</span> <span class="number">0</span> <span class="keyword">THEN</span> p.length  
+		<span class="keyword">ELSE</span> c.maxinrowlen
+	<span class="keyword">END</span> <span class="keyword">AS</span> max_inrow_length,
+	p.xtype <span class="keyword">AS</span> system_type_id,  
+	p.length <span class="keyword">AS</span> max_length,  
+	p.prec <span class="keyword">AS</span> <span class="keyword">PRECISION</span>,  
+	p.scale <span class="keyword">AS</span> scale,
+<span class="keyword">FROM</span>
+	sys.sysrscols c
+<span class="keyword">OUTER</span> APPLY
+	OPENROWSET(<span class="keyword">TABLE</span> RSCPROP, c.ti) p</span>
+</pre></figure>
+
+<p>To help me identifying the ti field structure, I’ve made a test table using a number of different column types:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> TITest
+(
+	A binary(<span class="number">50</span>),
+	B <span class="keyword">char</span>(<span class="number">10</span>),
+	C datetime2(<span class="number">5</span>),
+	D <span class="keyword">decimal</span>(<span class="number">12</span>, <span class="number">5</span>),
+	E <span class="keyword">float</span>,
+	F <span class="keyword">int</span>,
+	G <span class="keyword">numeric</span>(<span class="number">11</span>, <span class="number">4</span>),
+	H nvarchar(<span class="number">50</span>),
+	I nvarchar(<span class="aggregate">max</span>),
+	J <span class="keyword">time</span>(<span class="number">3</span>),
+	K tinyint,
+	L varbinary(<span class="aggregate">max</span>),
+	M <span class="keyword">varchar</span>(<span class="number">75</span>),
+	N text
+)</span>
+</pre></figure>
+
+<p>I’m not going to insert any data as that’s irrelevant for this purpose. For this next part, make sure you’re connected to the SQL Server using the <a href="http://msdn.microsoft.com/en-us/library/ms178068.aspx" target="_blank">Dedicated Administrator Connection</a>. Now let’s query the sysrscols base table to see what values are stored in the ti field for the sample fields we’ve just created:</p>
+<figure class="highlight sql"><pre><span class="comment">-- Get object id of TITest table</span>
+<span class="operator"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> sys.sysschobjs <span class="keyword">WHERE</span> name = <span class="string">'TITest'</span>
+
+-- <span class="keyword">Get</span> rowset id <span class="keyword">for</span> TITest
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> sys.sysrowsets <span class="keyword">WHERE</span> idmajor = <span class="number">213575799</span>
+
+-- <span class="keyword">Get</span> <span class="keyword">all</span> columns <span class="keyword">for</span> rowset
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> sys.sysrscols <span class="keyword">WHERE</span> rsid = <span class="number">72057594040614912</span></span>
+</pre></figure>
+
+<p>Besides the fact I’ve cut away some irrelevant columns, this is the result:</p>
+<div class="imgwrapper" style=""><div><a href="/exploring-the-sys-system_internals_partition_columns-ti-field/image_64.png" class="fancy"><img src="/exploring-the-sys-system_internals_partition_columns-ti-field/image_64.png" style="max-height: 250px"/></a></div></div>
+
+<p>Note how we first get the object ID by querying sysschobjs, then the partition ID by querying sysrowsets and finally the partition columns by querying sysrscols. The marked ti column are the values from which we shall extract the scale, precision, max_length, system_type_id and max_inrow_length values.</p>
+<p>The following query will give a better row-by-row comparison between the ti value and the expected end result field values:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	t.name,
+	r.ti,
+	p.scale,
+	p.<span class="keyword">precision</span>,
+	p.max_length,
+	p.system_type_id,
+	p.max_inrow_length
+<span class="keyword">FROM</span>
+	sys.system_internals_partition_columns p
+<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
+	sys.sysrscols r <span class="keyword">ON</span>
+		r.rscolid = p.partition_column_id <span class="keyword">AND</span>
+		r.rsid = p.partition_id
+<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
+	sys.types t <span class="keyword">ON</span>
+		t.system_type_id = p.system_type_id <span class="keyword">AND</span>
+		t.user_type_id = p.system_type_id
+<span class="keyword">WHERE</span>
+	partition_id = <span class="number">72057594040614912</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/exploring-the-sys-system_internals_partition_columns-ti-field/image_103.png" class="fancy"><img src="/exploring-the-sys-system_internals_partition_columns-ti-field/image_103.png" style="max-height: 250px"/></a></div></div>
+
+<h3 id="binary">binary</h3>
+<p>Converting the first system_type_id into hex yields 0n173 = 0xAD. Converting the ti value yields 0n12973 = 0x32AD. An empirical test for all columns shows this to be true for them all. Thus we can conclude that the first byte (printed as the rightmost due to <a href="http://en.wikipedia.org/wiki/Endianness" target="_blank">little endianness</a>) stores the type. Extracting the value requires a simple bitmask operation:</p>
+<figure class="highlight csharp"><pre><span class="attribute">12973 & 0x000000FF =</span>=<span class="string"> 173</span>
+</pre></figure>
+
+<p>As for the length, the second byte stores the value 0x32 = 0n50. As the length is a smallint (we know it can be up to 8000, thus requiring at least a smallint), we can assume the next two bytes cover that. To extract that value, we’ll need a bitmask, as well as a shift operation to shift the two middlemost bytes one step to the right:</p>
+<figure class="highlight csharp"><pre><span class="attribute">(12973 & 0x00FFFF00) &gt;&gt; 8 =</span>=<span class="string"> 50</span>
+</pre></figure>
+
+<h3 id="datetime2">datetime2</h3>
+<p>This is the same for the char field. The datetime2 field is different as it stores the scale and precision values. 0n1322 in hex yields a value of 0x52A. 0x2A being the type (42). All that remains is the 0x5/0n5 which can only be the scale. A quick with a datetime(7) field yields the same result, though the precision is then 27. Thus I’ll conclude that for the datetime2 type, precision = 20 + scale. Extracting the scale from the second byte requires almost the same operation as before, just with a different bitmask:</p>
+<figure class="highlight csharp"><pre><span class="attribute">(1322 & 0x0000FF00) &gt;&gt; 8 =</span>=<span class="string"> 5</span>
+</pre></figure>
+
+<h3 id="decimal">decimal</h3>
+<p>Moving onto decimal, we now have both a scale and a precision to take care of. Converting 0n330858 to hex yields a value of 0x50C6A. 0x6A being the type (106). 0x0C being the precision and finally 0x5 being the scale. Note that this is different from datetime2 – now the scale is stored as the third byte and not the second!</p>
+<p>Extracting the third byte as the scale requires a similar bitmask &amp; shift operation as previously:</p>
+<figure class="highlight csharp"><pre><span class="attribute">(330858 & 0x00FF0000) &gt;&gt; 16 =</span>=<span class="string"> 5</span>
+</pre></figure>
+
+<h3 id="float">float</h3>
+<p>0n62 = 0x3E =&gt; the system_type_id value of 62. Thus the only value stored for the float is the type ID, the rest are a given. The same goes for the int, tinyint and similar fixed length field types.</p>
+<h3 id="numeric">numeric</h3>
+<p>0n265068 = 0x40B6C. 0x6C = the type ID of 108. 0xB = the precision value of 11. 0x4 = the scale value of 4.</p>
+<h3 id="nvarchar_&amp;_nvarchar(max)">nvarchar &amp; nvarchar(max)</h3>
+<p>These are a bit special too. Looking at the first nvarchar(100) field we can convert 0n25832 to 0x64E7. 0xE7 being the type ID of 231. 0x64 being the length of 100, stored as a two byte smallint. This shows that the parsing of non-max (n)varchar fields is pretty much in line with the rest so far.</p>
+<p>The nvarchar(max) differs in that it only stores the type ID, there’s no length. Given the lack of a length (technically the invalid length of 0 is stored), we read it as being –1, telling us that it’s a LOB/MAX field being stored with a max_length of –1 and a maximum in_row length of 8000, provided it’s not stored off-row.</p>
+<p>Varbinary seems to follow the exact same format.</p>
+<h3 id="time">time</h3>
+<p>0n809 = 0x329. 0x29 = the type ID of 41. 0x3 being the scale of 3. As with the datetime2 field, the precision scales with the scale (pun only slightly intended) – precision = 9 + scale.</p>
+<h3 id="text">text</h3>
+<p>0n4131 = 0x1023. 0x23 = the type ID of 35. 0x10 being the max_length of 16. The reason the text type has a max_length of 16 is that text is a LOB type that will always be stored off row, leaving just a 16 byte pointer in the record where it’s logically stored.</p>
+<h2 id="Conclusion">Conclusion</h2>
+<p>The OPENROWSET(TABLE RSCPROP, x) obviously performs some dark magic. The ti field is an integer that’s used to store multiple values &amp; formats, depending on the row type. Thus, to parse this properly, a switch would have to be made. Certain types also take values for a given – the precision fields based on the scale value, float having a fixed precision of 53 etc. It shouldn’t be long before I have a commit ready for <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a> that’ll contain this parsing logic :)</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">12</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/sqlbits-9-voting-amp-registration-open/" title="SQLBits 9 Voting &amp; Registration Open" rel="bookmark">SQLBits 9 Voting &amp; Registration Open</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/Conferences and Presenting/">Conferences and Presenting</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>The <a href="http://sqlbits.com/information/Pricing.aspx" target="_blank">registration for SQLBits 9 is now open</a>.Equally important, the voting for sessions is has also opened. Simply login and take a look at the <a href="http://sqlbits.com/information/PublicSessions.aspx" target="_blank">list of sessions</a> to vote for your preferred sessions.</p>
+<a id="more"></a>
+
+<h2 id="My_sessions">My sessions</h2>
+<p><img style="margin: 15px; display: inline; float: right;" alt="Training Day" src="http://sqlbits.com/images/SQLBits/SQLBitsTrainingDay.png" align="right" /></p>
+<p>Besides doing a full day training on the <a href="http://sqlbits.com/information/Event9/SQL_Server_Storage_Engine_and_MDF_File_Internals/TrainingDetails.aspx" target="_blank">SQL Server Storage Engine and MDF File Internals</a>, I’ve also submitted two related sessions that present a subset of the training day material, in a much more dense format. Both sessions are very technical deep dives on the storage internals. If you think they sound interesting, I’d appreciate a vote :)</p>
+<h3 id="Knowing_The_Internals,_Who_Needs_SQL_Server_Anyway?">Knowing The Internals, Who Needs SQL Server Anyway?</h3>
+<p>You’re stuck on a remote island with just a laptop and your main database .MDF file. The boss calls and asks you to retrieve some data, but alas, you forgot to install SQL Server on your laptop. Luckily you have a HEX editor by your side!</p>
+<p>In this level 500 deep dive session we will go into the intimate details of the MDF file format. Think using DBCC Page is pushing it? Think again! As a learning experiment, I’ve created an open source parser for MDF files, called OrcaMDF. Using the OrcaMDF parser I’ll go through the primary storage structures, how to parse page headers, boot pages, internal system tables, data &amp; index records, b-tree structures as well as the supporting IAM, GAM, SGAM &amp; PFS pages.</p>
+<p>Has your database suffered an unrecoverable disk corruption? This session might just be your way out! Using a corrupt &amp; unattachable MDF file, I’ll demo how to recover as much data as possible. This session is not for the faint of heart, there will be bits &amp; bytes.</p>
+<h3 id="Demystifying_Database_Metadata">Demystifying Database Metadata</h3>
+<p>You know how to query sys.tables, sys.columns and perhaps even sys.system_internals_allocation_units to discover the metadata contents of a database. But where are these views getting their data from, and how do the core system tables relate?</p>
+<p>Based on my work with OrcaMDF, an open source C# parser for MDF files, I will demonstrate how to parse the internal system tables. Using just the boot page as origin, we’ll discover how to traverse the chain of references that ultimately end up in references to the actual system table data, from where we can parse the data records.</p>
+<p>Once we’ve got the system table data, I’ll demonstrate how to correlate the different tables to end up with the data we see in common system views.</p>
+<h2 id="My_picks">My picks</h2>
+<p><img style="margin: 15px; display: inline; float: right;" alt="Sessions Title" src="http://sqlbits.com/images/headings/Sessions.png" width="286" height="98" align="right" />Having only 10 votes, it’s tough to pick out the top 10 sessions from a list of almost ~150 sessions. Though it was a struggle, I ended up with the following votes:</p>
+<p><a href="http://sqlbits.com/Sessions/Event9/Performance_tuning_from_the_field" target="_blank">Performance tuning from the field</a> by Simon Sabin<br><a href="http://sqlbits.com/Sessions/Event9/Transaction_Log_Performance_and_Troubleshooting-Deep_Dive" target="_blank">Transaction Log Performance and Troubleshooting – Deep Dive</a> by Chirag Roy<br><a href="http://sqlbits.com/Sessions/Event9/SQL_Server_Denali-Always_On_Deep_Dive" target="_blank">SQL Server Denali – Always On Deep Dive</a> by Bob Duffy<br><a href="http://sqlbits.com/Sessions/Event9/HA_DR-Focus_on_Options_Comparisons_and_Interoperability" target="_blank">HA/DR – Focus on Options, Comparisons and Interoperability</a> by Chirag Roy<br><a href="http://sqlbits.com/Sessions/Event9/READPAST__Furious_Transactions_Locking_and_Isolation" target="_blank">READPAST &amp; Furious: Transactions, Locking and Isolation</a> by Mark Broadbent<br><a href="http://sqlbits.com/Sessions/Event9/Preparation_for_Disaster" target="_blank">Preparation for Disaster</a> by Steve Jones<br><a href="http://sqlbits.com/Sessions/Event9/Busted_A_journey_into_the_most_common_TSQL__Tuning_myths" target="_blank">Busted! A journey into the most common TSQL &amp; Tuning myths</a> by David Morrison<br><a href="http://sqlbits.com/Sessions/Event9/Turbocharge_Database_Recoverability_Performance" target="_blank">Turbocharge Database Recoverability Performance</a> by Chirag Roy<br><a href="http://sqlbits.com/Sessions/Event9/Implementing_Real-Time_Data_Warehouse" target="_blank">Implementing Real-Time Data Warehouse</a> by Sutha Thiru<br><a href="http://sqlbits.com/Sessions/Event9/Replication-Best_Practices_Troubleshooting__Performance" target="_blank">Replication – Best Practices, Troubleshooting &amp; Performance</a> by Neil Hambly  </p>
+<p>Not until now did I notice that three of my sessions are by <a href="http://sqlking.wordpress.com/" target="_blank">Chirag Roy</a>, I’ll use this as an opportunity to congratulate him on becoming the latest <a href="http://www.microsoft.com/learning/en/us/certification/master-sql.aspx" target="_blank">Microsoft Certified Master</a>!</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">11</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/converting-between-base-2-10-and-16-in-t-sql/" title="Converting Between Base 2, 10 and 16 in T-SQL" rel="bookmark">Converting Between Base 2, 10 and 16 in T-SQL</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Tricks/">SQL Server - Tricks</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>There are many <a href="http://en.wikipedia.org/wiki/List_of_numeral_systems" target="_blank">numeral systems</a>, the most common ones in computer science being <a href="http://en.wikipedia.org/wiki/Binary_numeral_system" target="_blank">binary</a> (base 2), <a href="http://en.wikipedia.org/wiki/Decimal" target="_blank">decimal</a> (base 10) and <a href="http://en.wikipedia.org/wiki/Hexadecimal" target="_blank">hexadecimal</a> (base 16). All numbers can be expressed in either system and you may now and then need to convert between them.</p>
+<a id="more"></a>
+
+<p>Take the number 493.202.384 as an example, it can be be expressed as either 0n493202384 in decimal, 0x1D65ABD0 in hexadecimal or 0b11101011001011010101111010000 in binary. Note how the 0n prefix declares a decimal value, 0x a hexadecimal and 0b a binary value.</p>
+<h2 id="Converting_using_Google">Converting using Google</h2>
+<p>If you’ve got an internet connection, the quickest and simplest way is often to just use Google. We can convert the above number using “in X” queries:</p>
+<p><a href="http://www.google.dk/search?sourceid=chrome&amp;ie=UTF-8&amp;q=493202384+in+hex" target="_blank">493202384 in hex</a><br><a href="http://www.google.dk/search?sourceid=chrome&amp;ie=UTF-8&amp;q=493202384+in+binary" target="_blank">493202384 in binary</a></p>
+<h2 id="Converting_using_Windows_Calculator">Converting using Windows Calculator</h2>
+<p>You can also open Windows Calculator, switch to the programmer mode and type in the decimal value (or the hex/binary value):</p>
+<div class="imgwrapper" style=""><div><a href="/converting-between-base-2-10-and-16-in-t-sql/image_25.png" class="fancy"><img src="/converting-between-base-2-10-and-16-in-t-sql/image_25.png" style="max-height: 250px"/></a></div></div>
+
+<p>And from then on we can just switch the numerical system selector to the left:</p>
+<div class="imgwrapper" style=""><div><a href="/converting-between-base-2-10-and-16-in-t-sql/image_43.png" class="fancy"><img src="/converting-between-base-2-10-and-16-in-t-sql/image_43.png" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/converting-between-base-2-10-and-16-in-t-sql/image_63.png" class="fancy"><img src="/converting-between-base-2-10-and-16-in-t-sql/image_63.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Converting_between_decimal_&amp;_hex_in_T-SQL">Converting between decimal &amp; hex in T-SQL</h2>
+<p>Sometimes however, it’s just a tad easier if we could do it directly from a T-SQL query. Converting between decimal and hexadecimal is straightforward and can be done using just built in functions:</p>
+<figure class="highlight sql"><pre><span class="comment">-- Decimal to hex</span>
+<span class="operator"><span class="keyword">SELECT</span> <span class="keyword">CAST</span>(<span class="number">493202384</span> <span class="keyword">AS</span> varbinary)
+
+-- Hex <span class="keyword">to</span> <span class="keyword">decimal</span>
+<span class="keyword">SELECT</span> <span class="keyword">CAST</span>(<span class="number">0x1D65ABD0</span> <span class="keyword">AS</span> <span class="keyword">int</span>)
+
+-- <span class="keyword">Decimal</span> <span class="keyword">to</span> hex <span class="keyword">to</span> <span class="keyword">decimal</span>
+<span class="keyword">SELECT</span> <span class="keyword">CAST</span>(<span class="keyword">CAST</span>(<span class="number">493202384</span> <span class="keyword">AS</span> varbinary) <span class="keyword">AS</span> <span class="keyword">int</span>)</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/converting-between-base-2-10-and-16-in-t-sql/image_84.png" class="fancy"><img src="/converting-between-base-2-10-and-16-in-t-sql/image_84.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Converting_binary_to_decimal_using_T-SQL">Converting binary to decimal using T-SQL</h2>
+<p>Converting to/from binary is a bit more tricky though, as there are no built in functions for formatting a decimal number as a binary string, nor converting the latter to the first.</p>
+<p>The following function takes in a binary string and returns a bigint with the decimal value:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> FUNCTION [dbo].[BinaryToDecimal]
+(
+	@<span class="keyword">Input</span> <span class="keyword">varchar</span>(<span class="number">255</span>)
+)
+RETURNS bigint
+<span class="keyword">AS</span>
+<span class="keyword">BEGIN</span>
+
+	<span class="keyword">DECLARE</span> @Cnt tinyint = <span class="number">1</span>
+	<span class="keyword">DECLARE</span> @Len tinyint = LEN(@<span class="keyword">Input</span>)
+	<span class="keyword">DECLARE</span> @<span class="keyword">Output</span> bigint = <span class="keyword">CAST</span>(SUBSTRING(@<span class="keyword">Input</span>, @Len, <span class="number">1</span>) <span class="keyword">AS</span> bigint)
+
+	WHILE(@Cnt &lt; @Len) <span class="keyword">BEGIN</span>
+		<span class="keyword">SET</span> @<span class="keyword">Output</span> = @<span class="keyword">Output</span> + POWER(<span class="keyword">CAST</span>(SUBSTRING(@<span class="keyword">Input</span>, @Len - @Cnt, <span class="number">1</span>) * <span class="number">2</span> <span class="keyword">AS</span> bigint), @Cnt)
+
+		<span class="keyword">SET</span> @Cnt = @Cnt + <span class="number">1</span>
+	<span class="keyword">END</span>
+
+	RETURN @<span class="keyword">Output</span>	
+
+<span class="keyword">END</span></span>
+</pre></figure>
+
+<p>The function looks at each char in the input string (starting from behind), adding POWER(2, @Cnt) to the result if the bit is set – with special handling of the first (that is, from behind) character since POWER(2, 0) is 1 while we need it to be 0.</p>
+<p>Usage is straight forward:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span> dbo.BinaryToDecimal(<span class="string">'11101011001011010101111010000'</span>)</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/converting-between-base-2-10-and-16-in-t-sql/image_182.png" class="fancy"><img src="/converting-between-base-2-10-and-16-in-t-sql/image_182.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Converting_decimal_to_binary_using_T-SQL">Converting decimal to binary using T-SQL</h2>
+<p>The following function takes a bigint as input and returns a varchar with the binary representation, using the <a href="http://www.wikihow.com/Convert-from-Decimal-to-Binary" target="_blank">short division by two with remainder</a> algorithm:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> FUNCTION [dbo].[DecimalToBinary]
+(
+	@<span class="keyword">Input</span> bigint
+)
+RETURNS <span class="keyword">varchar</span>(<span class="number">255</span>)
+<span class="keyword">AS</span>
+<span class="keyword">BEGIN</span>
+
+	<span class="keyword">DECLARE</span> @<span class="keyword">Output</span> <span class="keyword">varchar</span>(<span class="number">255</span>) = <span class="string">''</span>
+
+	WHILE @<span class="keyword">Input</span> &gt; <span class="number">0</span> <span class="keyword">BEGIN</span>
+
+		<span class="keyword">SET</span> @<span class="keyword">Output</span> = @<span class="keyword">Output</span> + <span class="keyword">CAST</span>((@<span class="keyword">Input</span> % <span class="number">2</span>) <span class="keyword">AS</span> <span class="keyword">varchar</span>)
+		<span class="keyword">SET</span> @<span class="keyword">Input</span> = @<span class="keyword">Input</span> / <span class="number">2</span>
+
+	<span class="keyword">END</span>
+
+	RETURN REVERSE(@<span class="keyword">Output</span>)
+
+<span class="keyword">END</span></span>
+</pre></figure>
+
+<p>Again usage is straight forward:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span> dbo.DecimalToBinary(<span class="number">493202384</span>)</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/converting-between-base-2-10-and-16-in-t-sql/image_123.png" class="fancy"><img src="/converting-between-base-2-10-and-16-in-t-sql/image_123.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Ensuring_correctness">Ensuring correctness</h2>
+<p>A simple test to ensure correct conversions would be to convert from A to B and back to A again, using both of the above functions. Thus whatever we give as input should be the output as well:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span> dbo.DecimalToBinary(dbo.BinaryToDecimal(<span class="string">'11101011001011010101111010000'</span>))
+<span class="keyword">SELECT</span> dbo.BinaryToDecimal(dbo.DecimalToBinary(<span class="number">493202384</span>))</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/converting-between-base-2-10-and-16-in-t-sql/image_202.png" class="fancy"><img src="/converting-between-base-2-10-and-16-in-t-sql/image_202.png" style="max-height: 250px"/></a></div></div>
+
+<p>Et voilá! Once we have the functions, they can easily be used in a normal query:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	object_id,
+	<span class="keyword">CAST</span>(object_id <span class="keyword">AS</span> varbinary) <span class="keyword">AS</span> object_id_hex,
+	dbo.DecimalToBinary(object_id) <span class="keyword">AS</span> object_id_binary
+<span class="keyword">FROM</span>
+	sys.objects</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/converting-between-base-2-10-and-16-in-t-sql/image_162.png" class="fancy"><img src="/converting-between-base-2-10-and-16-in-t-sql/image_162.png" style="max-height: 250px"/></a></div></div>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">06</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/" title="Determining the Uniquifier Column Ordinal for Clustered and Nonclustered Indexes" rel="bookmark">Determining the Uniquifier Column Ordinal for Clustered and Nonclustered Indexes</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Lately I’ve been working on nonclustered index parsing. One of my test cases proved to be somewhat more tricky than I’d anticipated, namely the parsing of nonclustered indexes for non-unique clustered tables. Working with non-unique clustered indexes, we’ll have to take care of <a href="http://www.mssqltips.com/tip.asp?tip=2082" target="_blank">uniquifiers</a> when necessary.</p>
+<a id="more"></a>
+
+<h2 id="The_setup">The setup</h2>
+<p>Using an empty database I create the following schema and insert two rows. Note that the clustered index is created on the (ID, Name) columns and will thus have uniquifiers inserted since my rows aren’t unique. Also note that I’m intentionally creating a schema that will cause all three allocation unit types to be created – IN_ROW_DATA by default, LOB_DATA for the text column and finally ROW_OVERFLOW_DATA due to the overflowing varchar filler columns. This won’t serve any practical purpose besides being eye candy when looking at the data :)</p>
+<figure class="highlight sql"><pre><span class="comment">-- Create schema</span>
+<span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> Test
+(
+	ID <span class="keyword">int</span>,
+	Name <span class="keyword">varchar</span>(<span class="number">10</span>),
+	FillerA <span class="keyword">varchar</span>(<span class="number">8000</span>) <span class="keyword">DEFAULT</span>(REPLICATE(<span class="string">'x'</span>, <span class="number">5000</span>)),
+	FillerB <span class="keyword">varchar</span>(<span class="number">8000</span>) <span class="keyword">DEFAULT</span>(REPLICATE(<span class="string">'y'</span>, <span class="number">5000</span>)),
+	Data text <span class="keyword">DEFAULT</span> (<span class="string">''</span>)
+)
+<span class="keyword">CREATE</span> CLUSTERED INDEX CX_ID_Name <span class="keyword">ON</span> Test (ID, Name)
+<span class="keyword">CREATE</span> NONCLUSTERED INDEX IX_ID <span class="keyword">ON</span> Test (ID)
+
+-- <span class="keyword">Insert</span> dummy data
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span>
+	Test (ID, Name)
+<span class="keyword">VALUES</span>
+	(<span class="number">1</span>, <span class="string">'Mark'</span>),
+	(<span class="number">1</span>, <span class="string">'Mark'</span>)</span>
+</pre></figure>
+
+<h2 id="Verifying_the_presence_of_uniquifiers_in_the_clustered_index">Verifying the presence of uniquifiers in the clustered index</h2>
+<p>Running a quick DBCC IND on the Test table’s clustered index in the database (I’ve named mine ‘Y’ – I’m lazy), demonstrates the allocation of three allocation unit types as well as their tracking IAM pages.</p>
+<figure class="highlight sql"><pre>DBCC IND (Y, 'Test', 1)
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_23.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_23.png" style="max-height: 250px"/></a></div></div>
+
+<p>What we’re interested in are the two data pages of the clustered index – pages (1:89) and (1:114) in my case. Dumping the contents using dump style 3 shows that both have uniquifiers – one with a NULL value (interpreted as zero) and the other with a value of 1.</p>
+<figure class="highlight sql"><pre>DBCC TRACEON (3604)
+DBCC PAGE (Y, 1, 89, 3)
+DBCC PAGE (Y, 1, 114, 3)
+</pre></figure>
+
+
+<figure class="highlight sql"><pre>-- Page (1:89)
+
+Slot 0 Column 0 Offset 0x0 Length 4 Length (physical) 0
+UNIQUIFIER = 0                       
+
+Slot 0 Column 1 Offset 0x4 Length 4 Length (physical) 4
+ID = 1                               
+
+Slot 0 Column 2 Offset 0x17 Length 4 Length (physical) 4
+Name = Mark
+
+&lt;snip&gt;     
+
+-- Page (1:114)
+
+Slot 0 Column 0 Offset 0x17 Length 4 Length (physical) 4
+UNIQUIFIER = 1                       
+
+Slot 0 Column 1 Offset 0x4 Length 4 Length (physical) 4
+ID = 1                               
+
+Slot 0 Column 2 Offset 0x1b Length 4 Length (physical) 4
+Name = Mark                          
+
+&lt;snip&gt;
+</pre></figure>
+
+<p>Notice how both are represented as slot 0 – this is because they stem from different pages, I’ve just cut out everything but the uniquifier column interpretation of the DBCC PAGE results. Also note how the first record doesn’t have any physical uniquifier value, while the second one uses 4 bytes. Finally make note that the uniquifier columns both reside at column ordinal 0.</p>
+<h2 id="Comparing_the_uniquifiers_in_the_nonclustered_index">Comparing the uniquifiers in the nonclustered index</h2>
+<p>Now we’ll run DBCC IND to find the single index page for the nonclustered index – page (1:93) in my case (the uniquifier will only be present in the leaf level index pages – which is all we’ve got in this case).</p>
+<figure class="highlight sql"><pre>DBCC IND (Y, 'Test', 2)
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_82.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_82.png" style="max-height: 250px"/></a></div></div>
+
+<p>Dumping the contents of an index page using style 3 works differently for index pages – it returns a table resultset. It does confirm the presence of the uniquifier as well as our clustered index key columns (ID, Name) though:</p>
+<figure class="highlight sql"><pre>DBCC PAGE (Y, 1, 93, 1)
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_62.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_62.png" style="max-height: 250px"/></a></div></div>
+
+<p>Dumping in style 1 reveals the byte contents of the two rows, which is exactly what we need to locate the uniquifier:</p>
+<figure class="highlight sql"><pre>DBCC PAGE (Y, 1, 93, 1)
+</pre></figure>
+
+
+<figure class="highlight sql"><pre>Slot 0, Offset 0x60, Length 16, DumpStyle BYTE
+
+Record Type = INDEX_RECORD           Record Attributes =  NULL_BITMAP VARIABLE_COLUMNS
+Record Size = 16                     
+Memory Dump @0x0000000009DEC060
+
+0000000000000000:   36010000 00030000 01001000 4d61726b †6...........Mark 
+
+Slot 1, Offset 0x70, Length 22, DumpStyle BYTE
+
+Record Type = INDEX_RECORD           Record Attributes =  NULL_BITMAP VARIABLE_COLUMNS
+Record Size = 22                     
+Memory Dump @0x0000000009DEC070
+
+0000000000000000:   36010000 00030000 02001200 16004d61 †6.............Ma 
+0000000000000010:   726b0100 0000††††††††††††††††††††††††rk....
+</pre></figure>
+
+<p>Notice how the second record is 6 bytes larger than the first. This is caused by the presence of the uniquifier on the second record. Since the uniquifier is stored as a 4 byte integer in the variable length section, we also need 2 extra bytes for storing the length of the uniquifier in the variable length column offset array – thus causing a total overhead of 6. The primary difference however, lies in the fact that the uniquifier is stored as the last variable length column in the nonclustered index (the 0100 0000 part of the second record), while in the clustered index data page it was stored as the first variable length column. This discrepancy is what caused me headaches when trying to parse both page types – I needed a way of determining what column ordinal the uniquifiers had for both the clustered and the nonclustered index.</p>
+<h2 id="Locating_the_uniquifier_in_a_clustered_index">Locating the uniquifier in a clustered index</h2>
+<p>Thankfully there’s a plethora of DMVs to look in, it’s just a matter of finding the right ones. Let’s start out by querying sys.objects to get the object id of our table:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	*
+<span class="keyword">FROM</span>
+	sys.objects
+<span class="keyword">WHERE</span>
+	Name = <span class="string">'Test'</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_102.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_102.png" style="max-height: 250px"/></a></div></div>
+
+<p>Armed with the object id, we can find the default partitions for our clustered and nonclustered indexes:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	*
+<span class="keyword">FROM</span>
+	sys.partitions
+<span class="keyword">WHERE</span>
+	object_id = <span class="number">293576084</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_122.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_122.png" style="max-height: 250px"/></a></div></div>
+
+<p>Armed with the partition id, we can find the partition columns for our clustered index (index_id = 1):</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	*
+<span class="keyword">FROM</span>
+	sys.system_internals_partition_columns
+<span class="keyword">WHERE</span>
+	partition_id = <span class="number">72057594040483840</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_161.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_161.png" style="max-height: 250px"/></a></div></div>
+
+<p>Now would you take a look at that marvelous is_uniquifier column (we’ll ignore the alternative spelling for now). Using this output we can see that the first row is the uniquifier – being the third part of our clustered key (key_ordinal = 3). The leaf_offset column specifies the physical order in the record, fixed length columns being positive and variable length columns being negative. This confirms what we saw earlier, that the uniquifier is the first variable length column stored, with the remaining columns coming in at leaf offset –2, –3, –4 and –5.</p>
+<h2 id="Locating_the_uniquifier_in_a_nonclustered_index">Locating the uniquifier in a nonclustered index</h2>
+<p>Well that was easy, let’s just repeat that using the partition id of our nonclustered index (index_id = 2):</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	*
+<span class="keyword">FROM</span>
+	sys.system_internals_partition_columns
+<span class="keyword">WHERE</span>
+	partition_id = <span class="number">72057594040549376</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_181.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_181.png" style="max-height: 250px"/></a></div></div>
+
+<p>But what’s this, curses! For nonclustered indexes, the is_uniquifier column is not set, even though we can see there are three columns in our nonclustered index (the explicitly included ID, the implicitly included Name column that’s part of the clustered index key as well as the uniquifier which is also part of the clustered index key). So now we know that the uniquifier is shown in the result set, we just can’t trust the is_uniquifier column. However – to the best of my knowledge no other integer columns are stored as a variable length column, besides the uniquifier. Thus, we can add a predicate to the query returning just integers (system_type_id = 56) with negative leaf_offsets:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	*
+<span class="keyword">FROM</span>
+	sys.system_internals_partition_columns
+<span class="keyword">WHERE</span>
+	partition_id = <span class="number">72057594040549376</span> <span class="keyword">AND</span>
+	system_type_id = <span class="number">56</span> <span class="keyword">AND</span>
+	leaf_offset &lt; <span class="number">0</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_141.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_141.png" style="max-height: 250px"/></a></div></div>
+
+<p>And that’s it, we now have the uniquifier column offset in the variable length part of our nonclustered index record!</p>
+<h2 id="The_pessimistic_approach">The pessimistic approach</h2>
+<p>As I can’t find any info guaranteeing that the uniquifier is the only integer stored in the variable length part of a record, I came up with a secondary way of finding the uniquifier column offset. This method is way more cumbersome though and I won’t go into complete details. We’ll start out by retrieving all columns in the nonclustered index that are not explicitly part of the nonclustered index itself (by removing all rows present in sys.index_columns for the index):</p>
+<figure class="highlight sql"><pre>DECLARE @TableName sysname = 'Test'
+DECLARE @NonclusteredIndexName sysname = 'IX_ID'
+
+<span class="operator"><span class="keyword">SELECT</span>
+	i.index_id,
+	pc.*
+<span class="keyword">FROM</span>
+	sys.objects o
+<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
+	sys.indexes i <span class="keyword">ON</span> i.object_id = o.object_id
+<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
+	sys.partitions p <span class="keyword">ON</span> p.object_id = o.object_id <span class="keyword">AND</span> p.index_id = i.index_id
+<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
+	sys.system_internals_partition_columns pc <span class="keyword">on</span> pc.partition_id = p.partition_id
+<span class="keyword">WHERE</span>
+	o.name = @TableName <span class="keyword">AND</span>
+	i.name = @NonclusteredIndexName <span class="keyword">AND</span>
+	<span class="keyword">NOT</span> <span class="keyword">EXISTS</span> (<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> sys.index_columns <span class="keyword">WHERE</span> object_id = o.object_id <span class="keyword">AND</span> index_id = i.index_id <span class="keyword">AND</span> key_ordinal = pc.key_ordinal)</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_201.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_201.png" style="max-height: 250px"/></a></div></div>
+
+<p>These are the remaining columns that are stored as the physical part of the index record. Given that they’re not part of the index definition itself, these are the columns that make up the remainder of the clustered key – the <em>Name</em> and <em>Unuiquifier</em> columns in this example.</p>
+<p>Now we can perform the same query for the clustered index, though this time only filtering away those that are not part of the key itself (that is, key_ordinal &gt; 0):</p>
+<figure class="highlight sql"><pre>DECLARE @TableName sysname = 'Test'
+DECLARE @NonclusteredIndexName sysname = 'CX_ID_Name'
+
+<span class="operator"><span class="keyword">SELECT</span>
+	i.index_id,
+	pc.*
+<span class="keyword">FROM</span>
+	sys.objects o
+<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
+	sys.indexes i <span class="keyword">ON</span> i.object_id = o.object_id
+<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
+	sys.partitions p <span class="keyword">ON</span> p.object_id = o.object_id <span class="keyword">AND</span> p.index_id = i.index_id
+<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
+	sys.system_internals_partition_columns pc <span class="keyword">on</span> pc.partition_id = p.partition_id
+<span class="keyword">WHERE</span>
+	o.name = @TableName <span class="keyword">AND</span>
+	i.name = @NonclusteredIndexName <span class="keyword">AND</span>
+	key_ordinal &gt; <span class="number">0</span>
+<span class="keyword">ORDER</span> <span class="keyword">BY</span>
+	key_ordinal</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_221.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_221.png" style="max-height: 250px"/></a></div></div>
+
+<p>At this point we can compare these two result sets from the highest key_ordinal and downwards. Basically we just need to find the first match between the uniquifier column in the clustered index output and the assumed uniquifier column in the nonclustered index output. Until my assumption of the uniquifier being the only variable length integer, I wouldn’t recommend using this method though.</p>
+<h2 id="The_hardcore_approach_–_using_base_tables">The hardcore approach – using base tables</h2>
+<p>All those DMV’s certainly are nifty, but I just can’t help but feel I’m cheating. Let’s try and redo the optimistic (uniquifier being the only variable length integer) approach without using DMVs. Start out by connecting to your database using the <a href="http://msdn.microsoft.com/en-us/library/ms178068.aspx" target="_blank">dedicated administrator connection</a>, this will allow you to query the base tables:</p>
+<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_241.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_241.png" style="max-height: 250px"/></a></div></div>
+
+<p>We’ll start out by querying sys.sysschobjs, which is basically the underlying table for sys.objects:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	*
+<span class="keyword">FROM</span>
+	sys.sysschobjs
+<span class="keyword">WHERE</span>
+	name = <span class="string">'Test'</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_26.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_26.png" style="max-height: 250px"/></a></div></div>
+
+<p>Now we’ll query sys.sysrowsets, which is basically the underlying table for sys.partitions. In the base tables, idmajor is the column name we commonly know as object_id and idminor is what we’d usually know as index_id:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	*
+<span class="keyword">FROM</span>
+	sys.sysrowsets
+<span class="keyword">WHERE</span>
+	idmajor = <span class="number">293576084</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_281.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_281.png" style="max-height: 250px"/></a></div></div>
+
+<p>Checking out the row with idminor = 2, we’ve now got the rowsetid (partition id) of our nonclustered index. Now we just need to find the columns for the index – and that’s just what sys.sysrscols is for, the base table behind sys.system_internals_partition_columns:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	*,
+	<span class="keyword">CAST</span>(<span class="keyword">CAST</span>(offset & <span class="number">0xFFFF</span> <span class="keyword">AS</span> binary(<span class="number">2</span>)) <span class="keyword">AS</span> <span class="keyword">smallint</span>) <span class="keyword">AS</span> leaf_offset
+<span class="keyword">FROM</span>
+	sys.sysrscols
+<span class="keyword">WHERE</span>
+	rsid = <span class="number">72057594040549376</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_30.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_30.png" style="max-height: 250px"/></a></div></div>
+
+<p>Note that the leaf_offset column isn’t persisted as an easily read value – it’s actually stored as an integer in the offset column. The offset column stores not only the value for the leaf_offset column but also for the internal_offset column – we just have to do some masking and conversion to get it out.</p>
+<p>The following query helps to show exactly what we’re doing to extract the leaf_offset value from the offset column value:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	offset,
+	<span class="keyword">CAST</span>(<span class="keyword">CAST</span>(offset & <span class="number">0xFFFF</span> <span class="keyword">AS</span> binary(<span class="number">2</span>)) <span class="keyword">AS</span> <span class="keyword">smallint</span>) <span class="keyword">AS</span> leaf_offset,
+	<span class="keyword">CAST</span>(offset <span class="keyword">AS</span> binary(<span class="number">4</span>)) <span class="keyword">AS</span> HexValue,
+	<span class="keyword">CAST</span>(offset & <span class="number">0xFFFF</span> <span class="keyword">AS</span> binary(<span class="number">4</span>)) <span class="keyword">AS</span> MaskedHexValue,
+	<span class="keyword">CAST</span>(offset & <span class="number">0xFFFF</span> <span class="keyword">AS</span> binary(<span class="number">2</span>)) <span class="keyword">AS</span> ShortenedMaskedHexValue
+<span class="keyword">FROM</span>
+	sys.sysrscols
+<span class="keyword">WHERE</span>
+	rsid = <span class="number">72057594040549376</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_36.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_36.png" style="max-height: 250px"/></a></div></div>
+
+<p>The HexValue shows the offset column value represented in hex – no magic yet. After applying the 0xFFFF bitmask (0b1111111111111111 in binary), only the first 16 bits / 2 (starting from the right since we’re little endian) bytes will keep their value. Converting to binary(2) simply discards the last two bytes (the 0x0000 part).</p>
+<p>0x0001 is easily converted to the decimal value 1. 0xFFFF and 0xFFFE correspond to the decimal values 65.535 and 65.534 respectively. The way storing smallints work, 0 is stored as 0x0, 32.767 is stored as 0x7FFF and from there on the decimal value rolls over into –32.768 with a hex value of 0x8000 – continuing all the way up the –1 = 0xFFFF. And that’s why we can convert the binary(2) representations of the offset columns into the –1 and –2 decimal values.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jun</span>
+			<span class="day">30</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/presenting-a-precon-at-sqlbits/" title="Presenting a Precon at SQLBits" rel="bookmark">Presenting a Precon at SQLBits</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/Conferences and Presenting/">Conferences and Presenting</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I’m honored to announce that I’ll be presenting my <em><a href="http://sqlbits.com/information/Event9/SQL_Server_Storage_Engine_and_MDF_File_Internals/TrainingDetails.aspx" target="_blank">SQL Server Storage Engine and MDF File Internals</a></em> precon at <a href="http://sqlbits.com/" target="_blank">SQLBits</a> on September 29th. It’s an amazing bunch of <a href="http://sqlbits.com/information/TrainingDay.aspx" target="_blank">precon sessions and presenters</a>, I didn’t think I’d be speaking at SQLBits, much less presenting a precon – given the lineup of speakers.</p>
+<a id="more"></a>
+
+<div class="imgwrapper" style=""><div><a href="/presenting-a-precon-at-sqlbits/ImGoingToSqlBits200.png" class="fancy"><img src="/presenting-a-precon-at-sqlbits/ImGoingToSqlBits200.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="So_what_will_I_be_presenting?">So what will I be presenting?</h2>
+<p>Let me start out with the official abstract:</p>
+<blockquote>
+<p>Join me for a journey into the depths of the SQL Server storage engine. Through a series of lectures and demonstrations we’ll look at the internals of pages, data types, indexes, heaps, extent &amp; page allocation, allocation units, system views, base tables and nightmarish ways of data recovery. We’ll look at several storage structures that are either completely undocumented or very scarcely so.  By the end of the day, not only will you know about the most important data structures in SQL Server, you’ll also be able to parse every bit of a SQL Server data file yourself, using just a hex editor! There will be lots of hands on demos, a few of them performed in C# to demonstrate the parsing of data files outside of SQL Server.</p>
+</blockquote>
+<p>It all stems from some experimental coding I did back in March, trying to parse SQL Server data pages using C#. What started out as a learning experiment resulted in me presenting on the <em><a href="http://mow2011.dk/speakers/mark-s-rasmussen.aspx" target="_blank">Anatomy of an MDF File</a></em> at the <a href="http://mow2011.dk/mow2011.aspx" target="_blank">Miracle Open World 2011</a> conference in April. Since then I’ve continued my experiment and officially christened it <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a> while opening up the source.</p>
+<p>During my research for OrcaMDF I’ve reverse engineered data structures, matched up various undocumented base tables and generally achieved a really great understanding of the storage engine and MDF file format. It’s my goal that attendees of my session will have a complete (well, almost) understanding of the on disk structures we’ll see in typical databases. Not just by looking at them through DBCC PAGE, but by taking it a couple of steps further by attempting to parse the contents by hand. You’ll get an understanding of the importance of the sys.sysallocunits base table and how that fuels all metadata in SQL Server.</p>
+<p>For the full agenda, please check the official <a href="http://sqlbits.com/information/Event9/SQL_Server_Storage_Engine_and_MDF_File_Internals/TrainingDetails.aspx" target="_blank">precon description</a>. If you have any questions about the content that you’d like to clear up before signing up for either mine or one of the other precons available, I encourage you to leave a comment here or grab a hold of <a href="http://twitter.com/#!/improvedk" target="_blank">me on Twitter</a>.</p>
+<h2 id="Prerequisites">Prerequisites</h2>
+<p>While I will give brief introductions to the main concepts, I will assume a solid knowledge of what SQL Server does. I won’t spend a long time explaining why you should use clustered tables over heaps, instead I’ll give you the toolset to hopefully make that decision yourself. I’m not exaggerating when I classified the precon as level 500 – there will be 300 content too but we’ll be peaking at 500 several times during the day. We will be looking at hex codes, converting between decimal, hex and binary as needed – so make sure you don’t throw up when you see binary numbers :)</p>
+<h2 id="Registration">Registration</h2>
+<p>Registration hasn’t opened yet, but <a href="http://www.sqlbits.com/information/Pricing.aspx" target="_blank">sign up and you’ll be notified</a> as soon as it opens. A three day conference, including a precon day for just £375 really is a steal so make sure to get the early bind discount! I still can’t fathom that Saturday is free, as in £0, no charge – that’s too good an offer to pass up!</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+
+<div class="paging">
+	<a href="/page/9/"><div class="past">« Past</div></a>
+	<a href="/page/7/"><div class="future">Future »</div></a>
+	<div class="clear"></div>
+</div>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

@@ -1,0 +1,1567 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">01</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/missing-asp-net-performance-counter-values/" title="Missing ASP.NET Performance Counters" rel="bookmark">Missing ASP.NET Performance Counters</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/Windows/">Windows</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Before attempting to optimize code or fix any kind of load issue, you should first gather data and become aware of what bottlenecks you’re experiencing. A great way to do this is through the Performance Monitor application. Recently I tried monitoring my ASP.NET applications, but all my counters had a value of 0. As I thought initially, it’s a simple problem, but the solution was not easily found.</p>
+<a id="more"></a>
+
+<p>In <a href="http://www.velocityreviews.com/forums/t101885-aspnet-performance-counters-not-updating.html" target="_blank">some</a> <a href="http://www.velocityreviews.com/forums/t70137-re-aspnet-performance-counters-are-all-zero-.html" target="_blank">cases</a> it might be due to lack of permissions on the performance counter registry keys.</p>
+<p>In my case it’s because I was running Server 2003 x64, but my IIS was running in 32 bit mode (due to a couple of reasons, mainly lack of x64 support in some 3rd party components). When you run the IIS worker processes in 32 bit mode, the performance counters that are used are part of the SysWow64 scheme. The problem with this is that the usual Performance Monitor application will not read these 32 bit performance counters, and as a result you will see them all with a value of 0.</p>
+<p>The fix is simple… Simply open up C:\Windows\SysWOW64\perfmon.exe instead of the usual Performance Monitor link in the Administrative Tools directory. This version of perfmon is the good old 32 bit version that will read the 32 bit ASP.NET performance counters. This trick applies for all x64 versions of Windows.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Mar</span>
+			<span class="day">29</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/response-transmitfile-close-will-kill-your-application/" title="Response.TransmitFile + Close Will Kill Your Application" rel="bookmark">Response.TransmitFile + Close Will Kill Your Application</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Just before last weekend I noticed that a website I’m responsible for started spitting out “Server is busy” messages, not something you want to see on a website with millions of visitors per day. The quickfix was to recycle the application pool, and thus I solved the symptoms by setting a 15 mins recycle cycle on all the application pools. Not exactly optimal, but sometimes pissing your pants is the way to go.</p>
+<a id="more"></a>
+
+<p>The first step I made to analyze what was causing this is the Performance Monitor tool. We weren’t experiencing above average traffic, so that couldn’t explain it. What first struck me was the the “ASP.NETRequests Queued” queue was 0, not 5000+ as I’d expected! That meant the requests were not being queued, so the server didn’t have trouble handling the requests themselves. The reason was to be found in the “ASP.NETRequests Current” counter. This was constantly rising even though the CPU, memory and disk counters looked fine. It obviously didn’t look like a performance problem, more like a configuration issue. So I increased the appQueueRequestLimit to 20k and set the recycle cycle to 30 minutes, at most the “ASP.NETRequests Current” went to about 10k before being recycled and thus reset to 0.</p>
+<p>Now, that didn’t fix the problem, just the symptom. We hadn’t experienced this issue previously, so I thought back at what changes had been made in the latest release version. The primary functionality of the system is to serve images, thus we have an Image.ashx file with a responsibility of serving the images as well as logging various parameters of the request. The previous system version had a funtionality like so:</p>
+<ul>
+<li>Find image path</li>
+<li>Response.TransmitFile()</li>
+<li>Logging</li>
+</ul>
+<p>The disadvantage of doing it that way is that the client will not have the image served before the statistics have been logged, even though that’s purely a serverside functionality. I wanted the client to receive the image as quickly as possible, and then letting the server continue its job afterwards. The obvious solution is to spawn a new thread doing the logging, but with the amount of requests we’ve got, I really don’t want to spawn any more threads than absolutely neccessary, excessive context switching will have a negative impact when the thread count gets high enough. So the new version functioned like this:</p>
+<ul>
+<li>Find image path</li>
+<li>Response.TransmitFile()</li>
+<li>Response.Flush()</li>
+<li>Response.Close()</li>
+<li>Logging</li>
+</ul>
+<p>This had the great advantage that the client receives the image immediatly while the server continues logging afterwards. We use only a single thread, the actual request thread. A friend of mine pointed out I might want to move the logging out of the ASP.NET worker process so as to not block incoming requests. The thing is, this will require new thread spawning, and I really don’t mind blocking a worker process as we can easily tune the amount of concurrent worker processes, and the “Server too busy” functionality is actually there for a reason - I don’t wanna end up in a situation where the server is running a million logging threads but still accepting new connections willingly - in <em>that</em> case, I’d really like the server to block new requests.</p>
+<p>Anyways, although this looked good, this was the sole reason for the “Server too busy” errors we were experiencing! After some testing I discovered that if you call Response.TransmitFile() and then afterwards call Response.Close(), the request process is stuck! It will simply keep on living, and thus the “ASP.NETRequests Current” counter will keep increasing. It will not be removed until a pool recycle event is fired! This does not happen if you use Response.WriteFile, Response.BinaryWrite or if you manually stream the file, only if you use TransmitFile!</p>
+<h3 id="This_will_kill_your_application:">This will kill your application:</h3>
+<figure class="highlight csharp"><pre><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">Page_Load</span>(<span class="keyword">object</span> sender, EventArgs e)
+{
+	Response.Buffer = <span class="keyword">false</span>;
+	Response.TransmitFile(<span class="string">"Tree.jpg"</span>);
+	Response.Close();
+}
+</pre></figure>
+
+<h3 id="But_this_won’t:">But this won’t:</h3>
+<figure class="highlight csharp"><pre><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">Page_Load</span>(<span class="keyword">object</span> sender, EventArgs e)
+{
+	Response.WriteFile(<span class="string">"Tree.jpg"</span>);
+	Response.Flush();
+	Response.Close();
+}
+
+<span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">Page_Load</span>(<span class="keyword">object</span> sender, EventArgs e)
+{
+	Response.BinaryWrite(File.ReadAllBytes(Server.MapPath(<span class="string">"Tree.jpg"</span>)));
+	Response.Flush();
+	Response.Close();
+}
+
+<span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">Page_Load</span>(<span class="keyword">object</span> sender, EventArgs e)
+{
+	<span class="keyword">int</span> chunkSize = <span class="number">64</span>;
+	<span class="keyword">byte</span>[] buffer = <span class="keyword">new</span> <span class="keyword">byte</span>[chunkSize];
+	<span class="keyword">int</span> offset = <span class="number">0</span>;
+	<span class="keyword">int</span> read = <span class="number">0</span>;
+	<span class="keyword">using</span> (FileStream fs = File.Open(Server.MapPath(<span class="string">"Tree.jpg"</span>), FileMode.Open, FileAccess.Read, FileShare.Read))
+	{
+		<span class="keyword">while</span> ((read = fs.Read(buffer, offset, chunkSize)) &gt; <span class="number">0</span>)
+		{
+			Response.OutputStream.Write(buffer, <span class="number">0</span>, read);
+			Response.Flush();
+		}
+	}
+
+	Response.Close();
+}
+</pre></figure>
+
+<p>I can replicate the exact same errors on Server 2003 with IIS running i *32 mode, Vista x64 and Server 2003 in x64 mode. It does not matter if you’re running ASPX pages or ASHX HttpHandlers, same problem.</p>
+<p>I used this code snippet to get a list of the current active requests in IIS (to verify that the “ASP.NETRequests Current” and “W3SVC_W3WPActive Requests” are not lying:</p>
+<figure class="highlight csharp"><pre>ServerManager iisManager = new ServerManager()<span class="comment">;</span>
+
+foreach (WorkerProcess w3wp <span class="keyword">in</span> iisManager<span class="preprocessor">.WorkerProcesses</span>)
+{
+	Console<span class="preprocessor">.WriteLine</span>(<span class="string">"W3WP ({0})"</span>, w3wp<span class="preprocessor">.ProcessId</span>)<span class="comment">;</span>
+
+	foreach (Request request <span class="keyword">in</span> w3wp<span class="preprocessor">.GetRequests</span>(<span class="number">0</span>)<span class="preprocessor">.Where</span>(req =&gt; req<span class="preprocessor">.Url</span> == <span class="string">"/default.aspx"</span>))
+	{
+		Console<span class="preprocessor">.WriteLine</span>(<span class="string">"URL: "</span> + request<span class="preprocessor">.Url</span>)<span class="comment">;</span>
+		Console<span class="preprocessor">.WriteLine</span>(<span class="string">"TimeElapsed: "</span> + request<span class="preprocessor">.TimeElapsed</span>)<span class="comment">;</span>
+		Console<span class="preprocessor">.WriteLine</span>(<span class="string">"TimeInState: "</span> + request<span class="preprocessor">.TimeInState</span>)<span class="comment">;</span>
+		Console<span class="preprocessor">.WriteLine</span>(<span class="string">"TimeInModule: "</span> + request<span class="preprocessor">.TimeInModule</span>)<span class="comment">;</span>
+		Console<span class="preprocessor">.WriteLine</span>(<span class="string">"CurrentModule: "</span> + request<span class="preprocessor">.CurrentModule</span>)<span class="comment">;</span>
+		Console<span class="preprocessor">.WriteLine</span>(<span class="string">"PipelineState: "</span> + request<span class="preprocessor">.PipelineState</span>)<span class="comment">;</span>
+		Console<span class="preprocessor">.WriteLine</span>()<span class="comment">;</span>
+	}
+}
+</pre></figure>
+
+
+<figure class="highlight"><pre>W3WP (<span class="number">7580</span>)
+<span class="label">URL:</span> /default<span class="preprocessor">.aspx</span>
+<span class="label">TimeElapsed:</span> <span class="number">4223509</span>
+<span class="label">TimeInState:</span> <span class="number">4223509</span>
+<span class="label">TimeInModule:</span> <span class="number">4223509</span>
+<span class="label">CurrentModule:</span> IsapiModule
+<span class="label">PipelineState:</span> ExecuteRequestHandler
+
+<span class="label">URL:</span> /default<span class="preprocessor">.aspx</span>
+<span class="label">TimeElapsed:</span> <span class="number">2529463</span>
+<span class="label">TimeInState:</span> <span class="number">2529463</span>
+<span class="label">TimeInModule:</span> <span class="number">2529463</span>
+<span class="label">CurrentModule:</span> IsapiModule
+<span class="label">PipelineState:</span> ExecuteRequestHandler
+
+<span class="label">URL:</span> /default<span class="preprocessor">.aspx</span>
+<span class="label">TimeElapsed:</span> <span class="number">2527809</span>
+<span class="label">TimeInState:</span> <span class="number">2527809</span>
+<span class="label">TimeInModule:</span> <span class="number">2527809</span>
+<span class="label">CurrentModule:</span> IsapiModule
+<span class="label">PipelineState:</span> ExecuteRequestHandler
+
+<span class="label">URL:</span> /default<span class="preprocessor">.aspx</span>
+<span class="label">TimeElapsed:</span> <span class="number">2521117</span>
+<span class="label">TimeInState:</span> <span class="number">2521117</span>
+<span class="label">TimeInModule:</span> <span class="number">2521117</span>
+<span class="label">CurrentModule:</span> IsapiModule
+<span class="label">PipelineState:</span> ExecuteRequestHandler
+
+<span class="label">URL:</span> /default<span class="preprocessor">.aspx</span>
+<span class="label">TimeElapsed:</span> <span class="number">2516562</span>
+<span class="label">TimeInState:</span> <span class="number">2516562</span>
+<span class="label">TimeInModule:</span> <span class="number">2516562</span>
+<span class="label">CurrentModule:</span> IsapiModule
+<span class="label">PipelineState:</span> ExecuteRequestHandler
+
+<span class="label">URL:</span> /default<span class="preprocessor">.aspx</span>
+<span class="label">TimeElapsed:</span> <span class="number">2515470</span>
+<span class="label">TimeInState:</span> <span class="number">2515470</span>
+<span class="label">TimeInModule:</span> <span class="number">2515470</span>
+<span class="label">CurrentModule:</span> IsapiModule
+<span class="label">PipelineState:</span> ExecuteRequestHandler
+
+<span class="label">URL:</span> /default<span class="preprocessor">.aspx</span>
+<span class="label">TimeElapsed:</span> <span class="number">2514378</span>
+<span class="label">TimeInState:</span> <span class="number">2514378</span>
+<span class="label">TimeInModule:</span> <span class="number">2514378</span>
+<span class="label">CurrentModule:</span> IsapiModule
+<span class="label">PipelineState:</span> ExecuteRequestHandler
+
+<span class="label">URL:</span> /default<span class="preprocessor">.aspx</span>
+<span class="label">TimeElapsed:</span> <span class="number">2291749</span>
+<span class="label">TimeInState:</span> <span class="number">2291749</span>
+<span class="label">TimeInModule:</span> <span class="number">2291749</span>
+<span class="label">CurrentModule:</span> IsapiModule
+<span class="label">PipelineState:</span> ExecuteRequestHandler
+</pre></figure>
+
+<p>So obviously the requests are there, they’re just stale.</p>
+<p>If we take a look at an <a href="http://iismonitor.motobit.com/" target="_blank">IISTrace</a> trace, we can see all of the requests in the “Send data” state. They have all sent all the data and no further data is being sent, but they’re still stuck in the “Send data” state:</p>
+<div class="imgwrapper" style=""><div><a href="/response-transmitfile-close-will-kill-your-application/iistrace_2.jpg" class="fancy"><img src="/response-transmitfile-close-will-kill-your-application/iistrace_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>For all the other ways to send the file, the request exits the Send data state as soon as all processing is done (that is, not directly after Response.Close). Calling Response.End has no influence.</p>
+<h2 id="Symptoms">Symptoms</h2>
+<p>You may be experiencing this problem without knowing it. Unless you have a some load on your site, chances are you will never actually see this problem. While the requests will go stale and continue to live, a recycle event will kill them off as the process is closed. But you will see this in your System log:</p>
+<p>A process serving application pool ‘Classic .NET AppPool’ exceeded time limits during shut down. The process id was ‘13304’.</p>
+<p>Since the requests continue living, recycling the pool will time out and thus force the process to shut down, and thereby generating the above event. This may lead to increased memory usage depending on your recycle settings. So unless you have more requests than the Request queue limit setting on your application pool, within the recycle period, you will not notice this problem.</p>
+<h2 id="Fix">Fix</h2>
+<p>The easiest way to get around this problem (bug?) is to just spawn a new thread doing the logging so the main thread will complete right after TransmitFile. In most cases the logging operation will be rather fast so the threads will be shortlived and thus not create too many concurrent threading operations.</p>
+<figure class="highlight csharp"><pre>Response<span class="built_in">.</span>Buffer <span class="subst">=</span> <span class="literal">false</span>;
+Response<span class="built_in">.</span>TransmitFile(<span class="string">"Tree.jpg"</span>);
+
+<span class="keyword">Thread</span> t <span class="subst">=</span> <span class="literal">new</span> <span class="keyword">Thread</span>(delegate()
+{
+	<span class="comment">// Logging</span>
+});
+t<span class="built_in">.</span>Start();
+</pre></figure>
+
+<h2 id="Bonus_code">Bonus code</h2>
+<p>Jonathan Gilbert posted a couple of great comments regarding spawning your own threads in the process and the possibility of extracing the actual logging process into a separate service. Since my blogs comments suck in regards to posting code, here are his code parts:</p>
+<figure class="highlight csharp"><pre>static object log_sync = new object();
+static Queue&lt;LogData&gt; log_queue = new Queue&lt;LogData&gt;();
+static bool log_thread_running = false;
+
+static void post_log_entry(LogData log_entry)
+{
+	lock (log_sync)
+	{
+		log_queue.Enqueue(log_entry);
+
+		if (log_thread_running)
+			Monitor.PulseAll(log_sync);
+		else
+			new Thread(log_thread_proc).Start();
+	}
+}
+
+static void log_thread_proc()
+{
+	lock (log_sync)
+	{
+		if (log_thread_running)
+			return;
+
+		log_thread_running = true;
+
+		try
+		{
+			while (true)
+			{
+				while (log_queue.Count == 0)
+					Monitor.Wait(log_sync);
+
+				LogData one_item = null;
+				List&lt;LogData&gt; multiple_items = null;
+
+				if (log_queue.Count == 1)
+					one_item = log_queue.Dequeue();
+				else
+				{
+					multiple_items = new List&lt;LogData&gt;(log_queue);
+					log_queue.Clear();
+				}
+
+				// The following block: Exit; try/finally{Enter}
+				// ..is the logical inverse of a lock() block. :-)
+				Monitor.Exit(log_sync);
+
+				try
+				{
+					if (one_item != null)
+						process_log_entry(one_item);
+
+					if (multiple_items != null)
+						foreach (LogData item in multiple_items)
+							process_log_entry(item);
+				}
+				finally
+				{
+					Monitor.Enter(log_sync);
+				}
+			}
+		}
+		catch (Exception e)
+		{
+			// TODO: log this unexpected error
+		}
+		finally
+		{
+			log_thread_running = false;
+		}
+	}
+}
+</pre></figure>
+
+
+<figure class="highlight csharp"><pre><span class="keyword">static</span> <span class="keyword">object</span> log_sync = <span class="keyword">new</span> <span class="keyword">object</span>();
+<span class="keyword">static</span> BinaryFormatter log_formatter = <span class="keyword">new</span> BinaryFormatter(); <span class="comment">// in System.Runtime.Serialization.Formatters.Binary</span>
+<span class="keyword">static</span> Stream log_stream;
+
+<span class="keyword">static</span> <span class="keyword">void</span> post_log_entry(LogData log_entry)
+{
+	<span class="keyword">lock</span> (log_sync)
+	{
+		<span class="keyword">if</span> (log_writer == <span class="keyword">null</span>)
+		{
+			Socket socket = <span class="keyword">new</span> Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
+			<span class="comment">// In practice, I would let the OS pick the port number when binding in the Windows Service</span>
+			<span class="comment">// and write it to a central location that the ASP.NET process can read from.</span>
+			socket.Connect(<span class="keyword">new</span> IPEndPoint(IPAddress.Loopback, SecretPortNumber));
+
+			log_stream = <span class="keyword">new</span> NetworkStream(socket, <span class="keyword">true</span>);
+		}
+
+		log_formatter.Serialize(log_stream, log_entry);
+	}
+}
+</pre></figure>
+
+
+<figure class="highlight csharp"><pre>class LogService : System.ServiceProcess.ServiceBase
+{
+	static void Main(string[] args)
+	{
+		if ((args.Length &gt; 0) && string.Equals(args[0], <span class="string">"/console"</span>, StringComparison.InvariantCultureIgnoreCase))
+		{
+			LogService service = new LogService();
+
+			service.StartDirect();
+			Console.WriteLine(<span class="string">"Press enter to stop debugging"</span>);
+			Console.ReadLine();
+			service.StopDirect();
+		}
+		else
+			ServiceBase.Run(new LogService());
+	}
+
+	LogService()
+	{
+		ServiceName = <span class="string">"LogService"</span>;
+		CanStop = true;
+	}
+
+	public void StartDirect()
+	{
+		OnStart(null);
+	}
+
+	public void StopDirect()
+	{
+		OnStop();
+	}
+
+	protected override void OnStart(string[] args)
+	{
+		socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
+		// Again, in implementation, change this to bind to port 0 and then after the Bind call
+		// has succeeded, read the port number back from the LocalEndPoint property and write it
+		// to a place where the ASP.NET side can read it.
+		socket.Bind(new IPEndPoint(IPAddress.Loopback, SecretPortNumber));
+
+		socket.Listen(5);
+
+		shutdown = false;
+
+		Thread main_thread = new Thread(main_thread_proc);
+
+		main_thread.IsBackground = true;
+		main_thread.Start();
+	}
+
+	protected override void OnStop()
+	{
+		shutdown = true;
+	}
+
+	Socket socket;
+	bool shutdown;
+
+	void main_thread_proc()
+	{
+		BinaryFormatter log_formatter = new BinaryFormatter();
+
+		using (NetworkStream log_stream = new NetworkStream(socket, true))
+		{
+			while (!shutdown)
+			{
+				LogData log_entry = (LogData)log_formatter.Deserialize(stream);
+
+				process_log_entry(log_entry);
+			}
+		}
+	}
+}
+</pre></figure>
+
+<h2 id="Downloads">Downloads</h2>
+<p><a href="ResponseCloseTest.zip">ResponseCloseTest.zip - Sample code</a></p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Mar</span>
+			<span class="day">29</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/xmloutput-vs-xmlserializer-performance/" title="XmlOutput vs XmlSerializer Performance" rel="bookmark">XmlOutput vs XmlSerializer Performance</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I got quite a lot of comments for my <a href="/xmldocument-fluent-interface/">XmlDocument fluent interface</a>, and I’m very glad I did. I’m always open towards new ways to solve problems, and I got a couple of suggestions to my post that I afterwards experimented with. One of those is using the XmlSerializer to serialize strongly typed classes (or structs - performance is the same) into XML. <a href="http://www.vonsharp.net/" target="_blank">Jon von Gillern</a> originally suggested it, but <a href="http://www.u2u.info/Blogs/Kris" target="_blank">Kris Vandermotten</a> made me want to test it out.</p>
+<a id="more"></a>
+
+<p>There are two aspects of these solutions, one is readability &amp; maintanability, the other is pure performance. I said that my XmlDocument wrapper would be a lot faster than the serialization way using Reflection, but Kris wasn’t so sure. Admittedly, I hadn’t tested it out, so I though I might actually be wrong in that assumption. Let the testing commence.</p>
+<p>I’ll be using my User XML snippet as an example. This is how the XML is generated using my API:</p>
+<figure class="highlight csharp"><pre>XmlOutput xo = new XmlOutput()
+	<span class="preprocessor">.XmlDeclaration</span>()
+	<span class="preprocessor">.Node</span>(<span class="string">"root"</span>)<span class="preprocessor">.Within</span>()
+		<span class="preprocessor">.Node</span>(<span class="string">"user"</span>)<span class="preprocessor">.Within</span>()
+			<span class="preprocessor">.Node</span>(<span class="string">"username"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"orca"</span>)
+			<span class="preprocessor">.Node</span>(<span class="string">"realname"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Mark S. Rasmussen"</span>)
+			<span class="preprocessor">.Node</span>(<span class="string">"description"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"I'll handle any escaping (like &lt; & &gt; for example) needs automagically."</span>)
+			<span class="preprocessor">.Node</span>(<span class="string">"articles"</span>)<span class="preprocessor">.Within</span>()
+				<span class="preprocessor">.Node</span>(<span class="string">"article"</span>)<span class="preprocessor">.Attribute</span>(<span class="string">"id"</span>, <span class="string">"25"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Handling DBNulls"</span>)
+				<span class="preprocessor">.Node</span>(<span class="string">"article"</span>)<span class="preprocessor">.Attribute</span>(<span class="string">"id"</span>, <span class="string">"26"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Accessing my privates"</span>)
+				<span class="preprocessor">.EndWithin</span>()
+			<span class="preprocessor">.Node</span>(<span class="string">"hobbies"</span>)<span class="preprocessor">.Within</span>()
+				<span class="preprocessor">.Node</span>(<span class="string">"hobby"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Fishing"</span>)
+				<span class="preprocessor">.Node</span>(<span class="string">"hobby"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Photography"</span>)
+				<span class="preprocessor">.Node</span>(<span class="string">"hobby"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Work"</span>)<span class="comment">;</span>
+
+string output = xo<span class="preprocessor">.GetOuterXml</span>()<span class="comment">;</span>
+</pre></figure>
+
+<p>Note that I just retrieve the complete XML in a string, I don’t print or save this, it’s just to get a valid comparison point. This is how we’ll generate the same code using the XmlSerializer:</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> User
+{
+	<span class="keyword">public</span> <span class="keyword">string</span> Username;
+	<span class="keyword">public</span> <span class="keyword">string</span> Realname;
+	<span class="keyword">public</span> <span class="keyword">string</span> Description;
+	<span class="keyword">public</span> List&lt;Article&gt; Articles;
+	<span class="keyword">public</span> List&lt;Hobby&gt; Hobbies;
+}
+
+<span class="keyword">public</span> <span class="keyword">class</span> Article
+{
+	[XmlAttribute]
+	<span class="keyword">public</span> <span class="keyword">int</span> ID;
+
+	[XmlText]
+	<span class="keyword">public</span> <span class="keyword">string</span> Content;
+}
+
+<span class="keyword">public</span> <span class="keyword">class</span> Hobby
+{
+	[XmlText]
+	<span class="keyword">public</span> <span class="keyword">string</span> Content;
+}
+</pre></figure>
+
+
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">string</span> <span class="title">ConvertToXml</span>(<span class="keyword">object</span> item)
+{
+	XmlSerializer xmlser = <span class="keyword">new</span> XmlSerializer(item.GetType());
+
+	<span class="keyword">using</span> (MemoryStream ms = <span class="keyword">new</span> MemoryStream())
+	{
+		xmlser.Serialize(ms, item);
+		UTF8Encoding textconverter = <span class="keyword">new</span> UTF8Encoding();
+		<span class="keyword">return</span> textconverter.GetString(ms.ToArray());
+	}
+}
+</pre></figure>
+
+
+<figure class="highlight csharp"><pre>User user = new User()<span class="comment">;</span>
+user<span class="preprocessor">.Username</span> = <span class="string">"orca"</span><span class="comment">;</span>
+user<span class="preprocessor">.Realname</span> = <span class="string">"Mark S. Rasmussen"</span><span class="comment">;</span>
+user<span class="preprocessor">.Description</span> = <span class="string">"I'll handle any escaping (like &lt; & &gt; for example) needs automagically."</span><span class="comment">;</span>
+
+user<span class="preprocessor">.Articles</span> = new List&lt;Article&gt;()<span class="comment">;</span>
+user<span class="preprocessor">.Articles</span><span class="preprocessor">.Add</span>(new Article() { ID = <span class="number">25</span>, Content = <span class="string">"Handling DBNulls"</span> })<span class="comment">;</span>
+user<span class="preprocessor">.Articles</span><span class="preprocessor">.Add</span>(new Article() { ID = <span class="number">26</span>, Content = <span class="string">"Accessing my privates"</span>})<span class="comment">;</span>
+
+user<span class="preprocessor">.Hobbies</span> = new List&lt;Hobby&gt;()<span class="comment">;</span>
+user<span class="preprocessor">.Hobbies</span><span class="preprocessor">.Add</span>(new Hobby() { Content = <span class="string">"Fishing"</span> })<span class="comment">;</span>
+user<span class="preprocessor">.Hobbies</span><span class="preprocessor">.Add</span>(new Hobby() { Content = <span class="string">"Photography"</span> })<span class="comment">;</span>
+user<span class="preprocessor">.Hobbies</span><span class="preprocessor">.Add</span>(new Hobby() { Content = <span class="string">"Work"</span> })<span class="comment">;</span>
+
+string output = ConvertToXml(user)<span class="comment">;</span>
+</pre></figure>
+
+<p>Note that only the last codesnippet is the one being looped, the other two are simply one-time helpers to actually create the XML. I have run the tests in a number of iterations to get a total code time, furthermore, I’ve run each of the iteration tests 10 times to calculate the average execution time. This is the basic code to run the tests:</p>
+<figure class="highlight csharp"><pre>sw.Reset();
+<span class="constant">iterationTime</span> = 0;
+for (int testIteration = 0; testIteration &lt; testIterations; testIteration++)
+{
+	sw.Start();
+	for (int i = 0; i &lt; iterations; i++)
+	{
+		// Perform XML creation
+	}
+	sw.Stop();
+	iterationTime += sw.ElapsedMilliseconds;
+	Console.WriteLine(sw.ElapsedMilliseconds);
+
+	sw.Reset();
+}
+Console.WriteLine("Total XmlSerializer: " + iterationTime / testIterations);
+</pre></figure>
+
+<p>And finally, the results (times in ms on a base 10 logarithmic scale):</p>
+<div class="imgwrapper" style=""><div><a href="/xmloutput-vs-xmlserializer-performance/xmloutputspeed_2.jpg" class="fancy"><img src="/xmloutput-vs-xmlserializer-performance/xmloutputspeed_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>As expected, the XmlSerializer is somewhat slower on the low iteration numbers, this is due to the initial code emits XmlSerializer will do, as Kris also mentioned. This is also the reason XmlSerializer is actually speeding up as the iterations go up, the initial compilation is meaning less and less. XmlOutput has a rather linear use of time. Never the less, the initial compilation time is neglible as it’s only the first request that has this performance hit (and we could sgen followed by ngen this to avoid it). Thus, if we simply reset the timer after the first iteration, this is the new graph we get (note that we can’t plot the 1st iteration as a value of 0 cannot be plotted on the logarithmic scale):</p>
+<div class="imgwrapper" style=""><div><a href="/xmloutput-vs-xmlserializer-performance/xmloutputspeed2_2.jpg" class="fancy"><img src="/xmloutput-vs-xmlserializer-performance/xmloutputspeed2_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>This time XmlSerializer behaves a lot more linearly like XmlOutput, but it’s still several factors slower than XmlOutput. In conclusion, speed does not seem to be the advantage of XmlSerializer. Depending on your scenario, using strongly typed classes might be more appropriate, but I really believe this is scenario dependent and thus I’ll leave that out of the discussion.</p>
+<h2 id="Downloads">Downloads</h2>
+<p><a href="SerializationBenchmark.zip">SerializationBenchmark.zip - Sample code</a></p>
+<h2 id="Update">Update</h2>
+<p>I misread Kris’ comment about sgen, I read it as ngen. I’ve removed my comment regarding this. To be fair, I’ve redone the performance tests, using sgen on the assembly during compilation. And I must say, it certainly does improve the performance somewhat of the serializer, though still not enough to compete with XmlOutput/XmlDocument.</p>
+<div class="imgwrapper" style=""><div><a href="/xmloutput-vs-xmlserializer-performance/xmloutputspeed3_2.jpg" class="fancy"><img src="/xmloutput-vs-xmlserializer-performance/xmloutputspeed3_2.jpg" style="max-height: 250px"/></a></div></div>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Mar</span>
+			<span class="day">23</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/sql-server-mirroring-a-practical-approach/" title="SQL Server Mirroring - A Practical Approach" rel="bookmark">SQL Server Mirroring - A Practical Approach</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server/">SQL Server</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>In this post I’ll take a practical approach at talking about what SQL Server Mirroring is, the advantages and considerations that follows.</p>
+<a id="more"></a>
+
+<h2 id="Availability,_not_scalability">Availability, not scalability</h2>
+<p>SQL Server Mirroring aims to increase database availability, not scalability. Boiled down, a mirrored database consists of a principal database on SQL Server instance X and an exact mirror of that database on instance Y. Everytime a transaction has occured on X, it is executed on Y as well. While this is happening, the Y instance database is in recovery mode, meaning you cannot query it directly, and thus you cannot use this as a secondary readonly database to achieve scalability.</p>
+<p>While you can run mirroring on different SQL Server instances on the same machine, this defeats the purpose as most errors will be hardware/system based, and usually these will affect all instances on the same phyiscal server. Trying out mirroring across instances is a good way to test it out however. In my demos I will be using virtual PCs, each loaded with SQL Server 2005 Enterprise sp1.</p>
+<h2 id="Operating_modes">Operating modes</h2>
+<p>SQL Server supports <a href="http://msdn2.microsoft.com/en-us/library/ms191456.aspx" target="_blank">three different operating modes</a>.</p>
+<h3 id="High_performance_(asynchronous)">High performance (asynchronous)</h3>
+<p>As the name implies, maintaining high performance is the key issue in this mode. Whenever a transaction is completed on the principal, the log is sent to the mirror, but the principal does not wait for this to complete. Thus if the mirror were to die out, throw an error during execution, the databases would become out of synch. The mirror could also trail behind due to a difference in computing power or other external factors. If the principal fails, you will have to do a manual failover to the mirror.</p>
+<h3 id="High_safety_(synchronous)_-_also_known_as_“high_protection”">High safety (synchronous) - also known as “high protection”</h3>
+<p>As with the high performance mode, each time a transaction occurs on the principal, it is sent to the mirror. The principal will not commit the transaction until the mirror has committed the transaction also. Thus you will never risk your databases being out of synch. The downside is that your mirrored setup will be no faster than the slowest machine that is part of the mirror, plus the implicit overhead in server chatting. As with the high performance mode, you will have to make a manual failover in case of principal failure.</p>
+<h3 id="High_safety_with_automatic_failover_(synchronous)">High safety with automatic failover (synchronous)</h3>
+<p>This mode involves a third instance besides the principal and mirror, known as the witness. The witness instance constantly monitors the principal for availability, and if a problem is detected, it will automatically perform a failover. At this point, the database as a whole will still be available, but you should manually get the failed mirror up and running again and reinitiate mirroring.</p>
+<h2 id="Prerequisites">Prerequisites</h2>
+<p>There are a <a href="http://msdn2.microsoft.com/en-us/library/ms366349.aspx" target="_blank">couple of things that should be in place</a> before attempting to setup database mirroring.</p>
+<h3 id="Service_pack_1">Service pack 1</h3>
+<p>Make sure all instances have been upgraded to <a href="http://www.microsoft.com/downloads/details.aspx?FamilyID=cb6c71ea-d649-47ff-9176-e7cac58fd4bc&amp;displaylang=en" target="_blank">service pack 1</a>. If you do not have service pack 1, you will receive the following warning when trying to start the mirror:</p>
+<div class="imgwrapper" style=""><div><a href="/sql-server-mirroring-a-practical-approach/enablemirroring_2.jpg" class="fancy"><img src="/sql-server-mirroring-a-practical-approach/enablemirroring_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<h3 id="Unified_SQL_Server_service_account">Unified SQL Server service account</h3>
+<p>If you’re using Active Directory, make sure the SQL Server service accounts are running as the same user. Local System will not work as it does not have any network credentials. If you’re not using Active Directory, just make sure the services are running on an account with the same name &amp; password on each machine. Make sure you change the service account through the SQL Server Configuration application and not the services console. Alternatively you can specify user accounts that should be used for mirror replication, but having the servers run on the same domain account is the easiest way.</p>
+<h3 id="Full_recovery_model">Full recovery model</h3>
+<p>Make sure the database you want to mirror is setup to use the full recovery backup model, otherwise there’ll be no log to ship to the mirror instance and mirroring will not be possible.</p>
+<h2 id="Licensing">Licensing</h2>
+<p>Mirroring is supported in the SQL Server Standard and Enterprise editions. Neither Express nor Workgroup edition will work. Enterprise supports the high performance operating mode, Standard only supports the two high safety modes. You can use the free Express version for the mirror server. Note that you <a href="http://www.microsoft.com/sql/howtobuy/sqlserverlicensing.mspx" target="_blank">do NOT need an extra SQL Server license for the mirroring server</a>, provided that it does nothing else but maintain the mirrored database - take note of the 30 days clause.</p>
+<h2 id="Test_setup">Test setup</h2>
+<p>My demos will be using three servers, all running Windows Server 2003 Standard (fully updated) through Virtual PC. All three have SQL Server 2005 Enterprise installed. I will be using the Microsoft sample database Adventureworks. You can <a href="http://codeplex.com/SqlServerSamples#databases" target="_blank">download the AdventureWorks database</a> at CodePlex.</p>
+<p>The three servers are RIO, MANDALAY and MGM (yes, I like Vegas). MGM will only be used for setting up a witness, RIO and MANDALAY will both host the actual databases, MANDALAY being the initial principal and RIO being the initial mirror. All servers are completely fresh installations using SQL Server authentication.</p>
+<p>I will be connecting to the instances from SQL Server Management Studio running on my desktop computer.</p>
+<h2 id="Initial_setup_of_the_databases">Initial setup of the databases</h2>
+<p>The first step is to restore the AdventureWorks .bak backup file to both servers. On the principal (MANDALAY) we should make a normal restore (RESTORE WITH RECOVERY) so the database is online. On the mirror (RIO), we should restore into the recovering state so no changes can be made (RESTORE WITH NORECOVERY). You can watch how it’s done here, or skip on to the next section.</p>
+<div class="video-container"><iframe src="//www.youtube.com/embed/eHeVZ1NzIO0" frameborder="0" allowfullscreen></iframe></div>
+
+
+
+<h2 id="Mirroring_configuration">Mirroring configuration</h2>
+<p>Now that we’ve got both databases setup, we’re ready to setup the actual mirror. A couple of notes on what I’m doing during the setup. In the first demo, I’ll setup a synchronous high safety mirror with a witness. As all the virtual PCs are running on the same machine, I’ll have to use different ports for the endpoints. Whether you want to use encryption for the endpoint communication is scenario specific. Encryption will <a href="http://www.microsoft.com/technet/prodtechnol/sql/2005/technologies/dbm_best_pract.mspx" target="_blank">have an overhead</a> - albeit a minor one - so it’s up to you to determine if it’s neccessary. As our SQL Services are running on the same account across the machines, we do not have to specify any custom service account names during the setup.</p>
+<p>For some reason, SQL Server needs a fully qualified domain name for the instance addresses. If you’re setting this up on a computer that is part of the domain, you should simply use the domain name, [Computer].[domain]:port. In this example my desktop is not part of the Active Directory domain and thus it’ll use addresses like TCP://COMPUTER:PORT which is not accepted. I’ll fix it by simply writing the machine IP addresses manually instead. The IP for MANDALAY is 192.168.0.31 and for RIO it’s 192.168.0.33. Note that you should ALWAYS use FQDNs, using IPs are not recommended as it may result in configuration as well as runtime issues. See <a href="http://sqlblog.com/blogs/adam_machanic/archive/2007/06/13/database-mirroring-fqdns-are-your-friends.aspx" target="_blank">Adam Machanics blogpost</a> on the same issue as I ran into a couple of times.</p>
+<div class="video-container"><iframe src="//www.youtube.com/embed/rlAMl3D47bo" frameborder="0" allowfullscreen></iframe></div>
+
+
+
+<h2 id="Testing_the_mirror">Testing the mirror</h2>
+<p>Besides my DBA excesses, I’m a developer. And what’s more natural than to whip together a small application that tests the mirrors availability?</p>
+<div class="imgwrapper" style=""><div><a href="/sql-server-mirroring-a-practical-approach/mirrortester_2.jpg" class="fancy"><img src="/sql-server-mirroring-a-practical-approach/mirrortester_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>It continuously attempts to connect to the databases using three different connection strings:</p>
+<figure class="highlight csharp"><pre><span class="keyword">string</span> principalConnection = <span class="string">"Data Source=Mandalay;Connect Timeout=1;Initial Catalog=AdventureWorks;User Id=sa;Password=sadpassword;Pooling=false"</span>;
+<span class="keyword">string</span> mirrorConnection = <span class="string">"Data Source=Rio;Connect Timeout=1;Initial Catalog=AdventureWorks;User Id=sa;Password=sadpassword;Pooling=false"</span>;
+<span class="keyword">string</span> totalConnection = <span class="string">"Data Source=Mandalay;Failover Partner=Rio;Connect Timeout=1;Initial Catalog=AdventureWorks;User Id=sa;Password=sadpassword;Pooling=false"</span>;
+</pre></figure>
+
+<p>The first connects directly to MANDALAY, the principal database. The second one goes to RIO, the mirror. And the last one is the mirror enabled connection string that combines the two. The principal should respond and act like any other normal database. The mirror will throw an exception as we cannot interact with a datbase in recovery mode. The combined connection will automatically connect to the current principal database, whether it be MANDALAY or RIO.</p>
+<p>To detect a broken connection quickly, I connect to the databases every 250ms and display a green bar if the connection succeeded (and an UPDATE &amp; SELECT went well), and red if any kind of exception arose. To detect a connection timeout in a timely fashion, I’m using my <a href="/controlling-sqlconnection-timeouts/">QuickOpen</a> functionality. The SUM(SafetyStockLevel) is the result of a simple SELECT query being done on the database (the UPDATE modifies the same table, hence the changing values), just to make sure we’re actually talking to a live database.</p>
+<p>In the following test, it gets a bit more complicated to follow. I’ve got two SQL Server Profiler windows open, the left one is monitoring the MANDALAY server, the right one is monitoring the RIO server. The windows are so small you cannot see what actually gets logged, but that is the point. The only relevant data in this case is the bottom rightmost value, Rows:X that displays an increasing rowcount when the server is active.</p>
+<p>I will start out by starting up the mirror testing application. We should see a red bar for the mirror database (RIO) as we cannot connect to it directly, while the principal (MANDALAY) and the mirrored connection should both show green bars. The MANDALAY profiler should also show activity, whilst the RIO profiler should not show any activity.</p>
+<p>When it’s running, I’ll initiate a manual mirror failover. A failover means we’re switching roles, thus RIO will become the new principal and MANDALAY will become the mirror. Effectively this should mean the combined connection still shows a green bar, MANDALAY shows red and RIO switches to green.</p>
+<div class="video-container"><iframe src="//www.youtube.com/embed/W7iw58KN4Sg" frameborder="0" allowfullscreen></iframe></div>
+
+
+<h2 id="The_TCP/IP_connection_retry_algorithm">The TCP/IP connection retry algorithm</h2>
+<p>The failover went perfect. There’s a short amount of downtime as the actual failover takes place, but shortly thereafter, we get green bars again - but one too many. When we started out, we got a red bar when trying to connect to the mirror, RIO. Shouldn’t we be getting a red bar when trying to connect to MANDALAY after we’ve switched the roles so MANDALAY has now become the new mirror? As you can see in the profilers, only RIO is being queried, so although MANDALAY is not responding, the connection string pointing to MANDALAY is succeeding. And what’s more confusing is that the new instance of the testing application showed the expected result, a green bar for RIO and red for MANDALAY - at the same time as the existing one showed all greens.</p>
+<p>The explanation is due to the <a href="http://msdn2.microsoft.com/en-us/library/ms365783.aspx" target="_blank">connection retry algorithm for TCP/IP connections</a>. When we have a mirrored connection, the partner names are cached when used. Although we couldn’t query RIO before, the partner name was cached. Thus when we make the failover and MANDALAY looses connection, it’ll automatically make a retry attempt by connecting to the mirror partner, RIO. When the database comes up again, RIO is responding to both connections successfully. So although the connection string specifies MANDALAY as the endpoint, we’re actually talking to RIO directly.</p>
+<p>Now, when the cache times out, or if we start a new application (the cache is tied to the SqlClient within a specific AppDomain), the partner name has not been cached and a retry will not be attempted, and that’s why the new instance shows the expected result alongside the old instance.</p>
+<h2 id="When_a_database_dies">When a database dies</h2>
+<p>This is the scenario we’ve been preparing for. But what happens when one of the databases die? In high safety mode, a transaction has to be committed on both the principal and on the mirror before it’s declared successful, but in case the mirror dies (whether due to the service stopping, the physical hardware crashing or something else) the principal will enter a disconnected state, still offering full availability. When you get the mirror database up and running again, it will automatically synchronize with the principal and the mirror will continue as if nothing had happened. High performance mode will also continue unaffected with a dead mirror, and it will also automatically resynch when the mirror comes back online.</p>
+<p>Here’s a quick video demonstrating the availability of the principal when the mirror goes down (the short red bars are caused by Virtual PC pausing all VPCs when the menu bar is open).</p>
+<div class="video-container"><iframe src="//www.youtube.com/embed/UQFrD3RmNrg" frameborder="0" allowfullscreen></iframe></div>
+
+
+
+<p>If the principal dies, we need to promote the mirror to the principal role. As soon as the mirror has undertaken the principal role, we have access to our database again. This can be done safely in the synchronous high safety operating mode as we do not risk any dataloss due to all transactions being made simultaneously in both databases. In the high performance mode thugh, we cannot do this as there could potentially be transactions that has not yet been transferred to the mirror, which would result in data loss. In this case we have to get the principal back online - or accept possible data loss, depending on what’s acceptable.</p>
+<p>In the following video I’ll simulate a dead principal. I’ll show the availability tester application running, using MANDALAY as the principal, RIO being the mirror. I’ll the pause the MANDALAY server, effectively simulating it dropping completely off the network. You’ll then notice all red bars in the tester application, as expected. To get the database up again, we have to do a manual failover to the mirror server, making it the new principal. We do that by executing the query:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">ALTER</span> <span class="keyword">DATABASE</span> AdventureWorks <span class="keyword">SET</span> PARTNER FORCE_SERVICE_ALLOW_DATA_LOSS</span>
+</pre></figure>
+
+<p>There is no GUI that’ll execute this query. Soon after I’ve executed the query, we get green bars again. Notice that all bars are green, this is due to the connection retry algorithm as explained earlier - the MANDALAY server is still offline. As I refresh the database list on RIO, you’ll notice that the database is now listed as “Principal, Disconnected”, confirming that the RIO database has undertaken the principal role, while disconnected from the mirror. I’ll then resume MANDALAY, and as I refresh the MANDALAY database list, you’ll notice that the database automatically changed state into “Mirror, Suspended / Restoring” - it picked up on the role change and is now awaiting further commands. It will not automatically resynch as mirroring is suspended when we force the principiality change through the ALLOW_SERVICE_DATA_LOSS parameter. We first have to resume the mirroring functionality. After having resumed mirroring, I’ll wait for the databases to synch up completely, after which I’ll do a manual failover so MANDALAY becomes the principal again. There’s a short downtime as the failover takes place, but after that, we’ve got green bars and MANDALAY returns as the principal, RIO changing to mirror.</p>
+<div class="video-container"><iframe src="//www.youtube.com/embed/R73OPBzS0ag" frameborder="0" allowfullscreen></iframe></div>
+
+
+
+<p>And there we go, we just experienced a principal going down with minimal service unavailability.</p>
+<h2 id="High_security_with_a_witness">High security with a witness</h2>
+<p>The restoration process we just experienced can be automated if we choose to utilize a third server known as the witness. The witness server continually monitors the principal and will initiate a failover in case the principal dies, as well as restoring the mirrors functionality when it returns (that is, converting the previous principal to the new mirror). It requires a third server, MGM (IP 192.168.0.35) for the witness part. Setup is more or less as usual, we just need to include the FQDN for the witness server.</p>
+<p>In the last video I’ll show how to setup the mirroring including a witness server. I will then start the availability testing application and pause the principal server afterwards. This will immediatly result in red boxes all over, but after a short while, the RIO server (the new principal) becomes green, and a moment after, the mirrored connection itself also becomes green. The MANDALAY box is also green, but again, this is due to the retry mechanism as explained earlier. You’ll then see that the previous mirror database has now changed status to “Principal, Disconnected”, proving that it has overtaken the principal responsibility and that it has lost connection to the mirror. I’ll then show how the MANDALAY database has changed status to mirror, and how we can do a manual failover so everything goes back to normal. This is the point when FQDNs became neccessary. Using IPs resulted in the mirror not being able to make the failover. As stated earlier, using IPs is a bad practice, you should always use FQDNs. I’ve added the AD hostnames to my hosts file so I can enter them from my non-AD member desktop machine.</p>
+<div class="video-container"><iframe src="//www.youtube.com/embed/oa6ZYxIPNFg" frameborder="0" allowfullscreen></iframe></div>
+
+
+
+<h2 id="Conclusion">Conclusion</h2>
+<p>SQL Mirroring is a great way to increase your availability rate in case of database failures. You need to understand precisely where mirroring will help and where it won’t make a difference. It won’t help when you fire out a TRUNCATE [WRONG_TABLE] statement since it’ll just be replicated on the mirror, for that you’ll still have to make a rollback via the logs. It’ll help you in the case of a server crashing due to either hardware, software or network failures (depending on your network setup) and so forth. It’ll also enable you to <a href="http://msdn2.microsoft.com/en-us/library/bb497962.aspx" target="_blank">do rolling upgrades</a>.</p>
+<p>While configuration is rather straight forward, mirroring will add complexity to your setup and errors may be harder to track down. You also have to consider the licensing requirements depending on the level of mirroring you’re planning to use.</p>
+<h2 id="Downloads">Downloads</h2>
+<p><a href="SQL_Mirroring_Tester.zip">SQL_Mirroring_Tester.zip - Test solution</a></p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Mar</span>
+			<span class="day">13</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/csharp-string-enumerations/" title="C# String Enumerations" rel="bookmark">C# String Enumerations</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Switches are rarely nice in an architectural aspect, but they are often required none the less. One of the ways we can reduce the risk of errors as well as increase readability is to use enumeration values instead of constants. Unfortunately this only works for numeric types, we cannot create a string enumeration. Here’s a workaround.  This is a typical console application, taking in an input value (stored in the input variable) and switching on the content:</p>
+<a id="more"></a>
+
+
+<figure class="highlight csharp"><pre>using System;
+
+namespace StringEnumeration
+{
+	class Program
+	{
+		static void Main(string[] args)
+		{
+			string input = <span class="string">"Hello"</span>;
+
+			switch (input)
+			{
+				case <span class="string">"Hello"</span>:
+					Console.WriteLine(<span class="string">"Hello world!"</span>);
+					break;
+				case <span class="string">"Goodbye"</span>:
+					Console.WriteLine(<span class="string">"Goodbye world!"</span>);
+					break;
+				default:
+					Console.WriteLine(<span class="string">"Does not compute!"</span>);
+					break;
+			}
+		}
+	}
+}
+</pre></figure>
+
+<p>The first step is to define the enumeration of values we need to have in our switch statement:</p>
+<figure class="highlight csharp"><pre><span class="keyword">enum</span> <span class="title">Input</span>
+{
+	Hello,
+	Goodbye
+}
+</pre></figure>
+
+<p>We cannot convert from strings to the Input enumeration type directly, so we’ll have to use a magic function like this:</p>
+<figure class="highlight csharp"><pre>class EnumHelper
+{
+	<span class="keyword">public</span> <span class="keyword">static</span> T Parse&lt;T&gt;(<span class="keyword">string</span> input)
+	{
+		<span class="keyword">return</span> (T)Enum.Parse(<span class="keyword">typeof</span>(T), input, <span class="keyword">true</span>);
+	}
+}
+</pre></figure>
+
+<p>Using the above function, we can refactor our initial code like so:</p>
+<figure class="highlight csharp"><pre>string input = <span class="string">"Hello"</span><span class="comment">;</span>
+
+switch (EnumHelper<span class="preprocessor">.Parse</span>&lt;Input&gt;(input))
+{
+	case Input<span class="preprocessor">.Hello</span>:
+		Console<span class="preprocessor">.WriteLine</span>(<span class="string">"Hello world!"</span>)<span class="comment">;</span>
+		<span class="keyword">break</span><span class="comment">;</span>
+	case Input<span class="preprocessor">.Goodbye</span>:
+		Console<span class="preprocessor">.WriteLine</span>(<span class="string">"Goodbye world!"</span>)<span class="comment">;</span>
+		<span class="keyword">break</span><span class="comment">;</span>
+	default:
+		Console<span class="preprocessor">.WriteLine</span>(<span class="string">"Does not compute!"</span>)<span class="comment">;</span>
+		<span class="keyword">break</span><span class="comment">;</span>
+}
+</pre></figure>
+
+<p>Take notice that I’m passing in true as the third parameter of the Enum.Parse method, this means the type conversion will not be case sensitive, you can change this parameter as needed, or maybe refactor it into a parameter of the function. If the conversion fails - if a matching enumeration does not exist - an ArgumentException is thrown.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Mar</span>
+			<span class="day">10</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/controlling-sqlconnection-timeouts/" title="Controlling SqlConnection Timeouts" rel="bookmark">Controlling SqlConnection Timeouts</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>When performing queries against a SQL Server database, there are a couple of methods readily available. However, an option is missing.</p>
+<a id="more"></a>
+
+<p>The primary timeout value is that of SqlConnection.ConnectionTimeout. This specifies how long time the SQL Server service has to respond to a connection attempt. You cannot set this value directly, you’ll have to set it as part of the connection string:</p>
+<figure class="highlight"><pre><span class="xml"><span class="tag"><span class="attribute">Data</span> <span class="attribute">Source</span>=<span class="value">server;Initial</span> <span class="attribute">Catalog</span>=<span class="value">databaseUser</span> <span class="attribute">Id</span>=<span class="value">username;Password=password;Connect</span> <span class="attribute">Timeout</span>=<span class="value">30</span></span></span>
+</pre></figure>
+
+<p>Note that the value is expressed in seconds, not milliseconds. The default value is 30 seconds. Secondly, we can use the <a href="http://msdn2.microsoft.com/en-us/library/system.data.sqlclient.sqlcommand.commandtimeout.aspx" target="_blank">SqlCommand.CommandTimeout</a> value. This sets the timeout value of a specific query running on SQL Server. The problem with these two is that we’re missing a point in the pipeline, which goes:</p>
+<p>TCP Connection to SQL Server -&gt; SqlConnection.Open -&gt; SqlCommand.Execute</p>
+<p>The last two are covered, but if for some reason the SQL Server is dead, taken off the network, totally overloaded, we may get a timeout on the TCP level - and this could take a while. We currently have no way of controlling this timeout besides a server wide network level setting. Often, it’s not desirable to have your application potentially spending several minutes before receiving a TCP timeout - or sometimes simply wait indefinitely. We need some way to control this.</p>
+<p>What I present below is an example of a SqlConnection extension method called QuickOpen (in lack of a better name, it isn’t quicker, it simply fails quicker). It’ll take a timeout parameter in milliseconds, after which it’ll throw a simple Exception. You can modify this to a more proper exception, this is just to show the point. Overall, using this method will introduce a slight delay (a couple of ms), so use it only when necessary, or when a couple of ms per SqlConnection.Open doesn’t matter.</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> SqlExtensions
+{
+	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">QuickOpen</span>(<span class="keyword">this</span> SqlConnection conn, <span class="keyword">int</span> timeout)
+	{
+		<span class="comment">// We'll use a Stopwatch here for simplicity. A comparison to a stored DateTime.Now value could also be used</span>
+		Stopwatch sw = <span class="keyword">new</span> Stopwatch();
+		<span class="keyword">bool</span> connectSuccess = <span class="keyword">false</span>;
+
+		<span class="comment">// Try to open the connection, if anything goes wrong, make sure we set connectSuccess = false</span>
+		Thread t = <span class="keyword">new</span> Thread(<span class="keyword">delegate</span>()
+		{
+			<span class="keyword">try</span>
+			{
+				sw.Start();
+				conn.Open();
+				connectSuccess = <span class="keyword">true</span>;
+			}
+			<span class="keyword">catch</span> { }
+		});
+
+		<span class="comment">// Make sure it's marked as a background thread so it'll get cleaned up automatically</span>
+		t.IsBackground = <span class="keyword">true</span>;
+		t.Start();
+
+		<span class="comment">// Keep trying to join the thread until we either succeed or the timeout value has been exceeded</span>
+		<span class="keyword">while</span> (timeout &gt; sw.ElapsedMilliseconds)
+			<span class="keyword">if</span> (t.Join(<span class="number">1</span>))
+				<span class="keyword">break</span>;
+
+		<span class="comment">// If we didn't connect successfully, throw an exception</span>
+		<span class="keyword">if</span> (!connectSuccess)
+			<span class="keyword">throw</span> <span class="keyword">new</span> Exception(<span class="string">"Timed out while trying to connect."</span>);
+	}
+}
+</pre></figure>
+
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Mar</span>
+			<span class="day">08</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/using-network-load-balancing-for-availability-and-scalability/" title="Using Network Load Balancing for Availability &amp; Scalability" rel="bookmark">Using Network Load Balancing for Availability &amp; Scalability</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>There are two primary reasons for venturing into the realms of clustering/load balancing - availability &amp; scalability. In this post I’ll give a quick demo of how to setup Windows Network Load Balancing (NLB) on Server 2003 and how it affects the availability of a web application.</p>
+<a id="more"></a>
+
+<p>When we have several nodes doing the same thing, if one of them fails, the cluster as a whole continues - provided that the nodes are not so overburdened that a single node failing will kill the others due to the extra load. Most applications will have an upper limit on how much it can scale on a single box. You can get very far by vertically scaling your solution (buying faster &amp; usally exponentially more expensive hardware), but true scalability always comes in the form of horizontal scaling. Add another box and receive more or less linear return of investment in regards of added computing power.</p>
+<p>NLB enables us to easily add new nodes to a cluster and thus letting them share the workload. There are several issues to consider before setting up a cluster for a real application. Does the application share user file data? - in such a case you’ll have to make sure all nodes in the cluster have access to those files, and remember - the cluster is no stronger than the weakest link. Usually you’d probably go for a <a href="http://en.wikipedia.org/wiki/Storage_area_network" target="_blank">SAN</a> to store all common files. State is also an important factor as most web applications rely on storing user specific data in statebags like the Session object. When the load is balanced out on several servers, the user could potentially visit several servers during his visit to the website, and unless the state storage is centralized, the user will have different session data on each server. Again, remember that you’ll have to provide a redundant storage location for the session data, or else you’ll compromise the availability of the cluster.</p>
+<p>In this demonstration I’ll be using two virtual PCs running on my own host computer. All three computers are running on the subnet 192.168.0.X. Here are the virtual machines involved:</p>
+<figure class="highlight"><pre>192.168.0.34 - VENETIAN
+192.168.0.32 – MIRAGE
+</pre></figure>
+
+<p>When you setup an NLB cluster, you create a new virtual IP address that gets mapped to each individual server, besides their own static IP address. In this demo I’ll setup the cluster on the virtual IP address 192.168.0.50. Before we get too far, I should mention that if you are going to setup an NLB cluster in a production environment, you should use machines with dual NICs so one NIC can connect to the public lan while the other NIC connects to a private switched lan where only the cluster nodes are connected. This ensures that the internal cluster communication is not polluting the general network traffic, aswell as making it a lot more efficient since we’ll then be able to utilize <a href="http://en.wikipedia.org/wiki/Unicast" target="_blank">unicast communciation</a> between the nodes instead of relying on <a href="http://en.wikipedia.org/wiki/Multicast" target="_blank">multicast communication</a>.</p>
+<p>For demonstrating the effects of a node crash, I’ve created a very simple load testing tool, the main functionality is an infinite loop trying to make a request at a time while registering success/failures. It’ll also show the text result that is returned in a one-line textbox:</p>
+<figure class="highlight csharp"><pre>while (running)
+{
+	HttpWebRequest req = (HttpWebRequest)WebRequest.Create(txtUrl.Text);
+	req.Timeout = 1000;
+	req.KeepAlive = false;
+
+	try
+	{
+		WebResponse res = req.GetResponse();
+		using (StreamReader sr = new StreamReader(res.GetResponseStream()))
+			lastResult = sr.ReadToEnd();
+
+		successfulRequests++;
+	}
+	catch (WebException)
+	{
+		failedRequests++;
+	}
+}
+</pre></figure>
+
+<p>As I’m running this test on two VPCs on my local machine, I won’t be getting any extra performance out of my cluster since the VPCs will just use 50% CPU each. This demo will concentrate on the availability of the cluster - but feel assured that performance will be better if you distribute the cluster over several separate computers.</p>
+<p>Here’s the demo of how to setup &amp; use NLB:</p>
+<div class="video-container"><iframe src="//www.youtube.com/embed/32uWPp8PpUA" frameborder="0" allowfullscreen></iframe></div>
+
+
+
+<h2 id="Other_good_resources">Other good resources</h2>
+<p>Rick Strahl on <a href="http://www.west-wind.com/presentations/loadbalancing/NetworkLoadBalancingWindows2003.asp" target="_blank">Web Farming with the Network Load Balancing Service in Windows Server 2003</a></p>
+<p>Peter A. Bromberg on <a href="http://www.eggheadcafe.com/articles/20020302.asp" target="_blank">Network Load Balancing, Session State and IP Affinity</a></p>
+<h2 id="Downloads">Downloads</h2>
+<p><a href="SimpleLoadTester.zip">SimpleLoadTester.zip - Sample code</a></p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Mar</span>
+			<span class="day">07</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/mth-going-open/" title="MTH Going Open" rel="bookmark">MTH Going Open</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/Poker/">Poker</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Some of you may know that I used to play a lot of poker. Unfortunately that’s not the case any more. I really enjoy live poker when I’m in Vegas, I enjoy the major tournaments and I’ve definitely not participated in my last WSOP. But as for online poker and the daily grind, I’ve quit it. I just don’t find it exciting any more. While the mathematical aspect acquired my interest early on, I never enjoyed grinding as such, it was purely for monetary reasons.</p>
+<a id="more"></a>
+
+<p>Anyways, one of the ways I kept enjoying was by utilizing one of my skills, multi tasking. I remember back in the days when you could play all the Party skins at the same time, about 20 tables simultaneously. While multitabling I started developing a small helper application for my own use, Multi Table Helper (MTH). Before long, it got released publicly and it got quite popular.</p>
+<p>Anyways, fast forward a couple of years, MTH was up to version 2.28, I had it running on Stars &amp; Party and actually on Crypto and FTP as well, locally. Now, this was also about the time my company went haywire in regards to client jobs. I’d lost my interest in online poker. I worked round the clock, so MTH didn’t get the attention it needed.</p>
+<p>Fast forward about a year more. I realized MTH needed an update, and I actually wanted to continue the development. I started the Core project. The Core project was meant to be semi-open source. I worked on creating a stable and extensible core that could be extended in any way possible. I never got to finish it off though.</p>
+<p>I’ve now realized that I won’t have the time to finish the Core project off anytime soon, and without playing poker myself, it’s tough to find a real interest in it. So here we go, I’m releasing both the original latest release of MTH as well as the MTH Core source code under the GPL license.</p>
+<p>Now, a couple of notices.</p>
+<p>I’ve removed pretty much everything registration related, there may still be some leftovers though. You cannot compile neither project as it is now since it depends on <a href="http://desaware.com/products/universalcom/spyworks/index.aspx" target="_blank">Desaware SpyWorks</a>. SpyWorks is not free and thus I cannot bundle it. If you wish to compile MTH in its current state, you will have to buy SpyWorks yourself.</p>
+<p>MTH uses AutoIt3 as well, I have not bundled it, you will have to download and install it yourself.</p>
+<p>MTH’s Speech recognition depends on the Windows Speech API, you will have to download and install that from Microsoft first.</p>
+<p>MTH is released under the <a href="https://github.com/improvedk/Multi-Table-Helper/blob/master/License.txt" target="_blank">GNU General Public License</a>. You are allowed to continue work on MTH, make releases and use parts in your own projects. You may not use parts of MTH for commercial products, any parts of MTH used in your own projects must be released as by the demands of the GPL license. Please see the license.txt file included in the downloads.</p>
+<p>The classic MTH (2.28) is not particularly beautiful architecturally, but it is by far the most complete application of the two. The Core project is much further from actually working, but I hope someone will continue the work and complete the Core project as I originally imagined it. Both applications will need some work, but it should be a very good starting point.</p>
+<h2 id="Those_of_you_that_have_bough_MTH">Those of you that have bough MTH</h2>
+<p>Thank you. I will not be accepting any further registrations. I will keep the current registration service running, I do not have any plans of shutting it down, so you should be able to use MTH just like you do today.</p>
+<h2 id="Help">Help</h2>
+<p>If you have any questions regarding the source code, or any other related matter, please let me know. I will not guarantee any help in regards of making the code run, but I might be able to give some pointers.</p>
+<h2 id="Downloads">Downloads</h2>
+<p><a href="https://github.com/improvedk/Multi-Table-Helper" target="_blank">https://github.com/improvedk/Multi-Table-Helper</a></p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Mar</span>
+			<span class="day">02</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/setting-up-and-testing-active-directory-failover/" title="Setting Up and Testing Active Directory Failover" rel="bookmark">Setting Up and Testing Active Directory Failover</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				, 
+			
+				<a href="http://improve.dk/category/Windows/">Windows</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I spend a lot of time architecting for scalability, availability and security during my daily work. Currently I’ve got a distributed system consisting of several windows services communicating across machines using WCF and authenticating through Active Directory.</p>
+<a id="more"></a>
+
+<p>In such a situation, if the Active Directory Domain Controller (let’s just call it DC from now on) dies, everything more or less dies as no clients/servers are able to authenticate incoming requests anymore. Security is paramount, so the services are not allowed to simply cache the domain logon, thus the logon has the occur at each service call - requiring a fully working DC.</p>
+<p>In this post I’ll attempt to implement a secondary failover DC and investigate how it affects a downtime situation. I’ll be using a couple of simple WCF based applications to test the DC. I will be using three virtual machines. Luxor is the primary DC. MGM is part of the domain, and this is the machine hosting the WCF server. Later on I’ll add the third virtual machine, Excalibur, being the failover DC. The WCF client will be running from my own machine. Note that I will not show how to install the primary DC, <a href="http://www.petri.co.il/how_to_install_active_directory_on_windows_2003.htm" target="_blank">there are plenty other great guides on how to setup the primary DC</a>. I also won’t be going into <a href="http://support.microsoft.com/kb/814591" target="_blank">how to install the primary DNS server</a>.</p>
+<p>This is the WCF server interface:</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Security.Principal;
+<span class="keyword">using</span> System.ServiceModel;
+<span class="keyword">using</span> System.ServiceModel.Channels;
+<span class="keyword">using</span> System.ServiceModel.Description;
+
+namespace Contracts
+{
+	<span class="keyword">public</span> <span class="keyword">class</span> WCFHelper
+	{
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> Creates an instance of the specified interface type by channeling to the service host.</span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;typeparam name="T"&gt;</span>The interface type to create.<span class="xmlDocTag">&lt;/typeparam&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="binding"&gt;</span>The binding protocol to use.<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="endpointAddress"&gt;</span>The complete address for the endpoint.<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>An instance of type T.<span class="xmlDocTag">&lt;/returns&gt;</span></span>
+		<span class="keyword">public</span> <span class="keyword">static</span> T CreateChannel&lt;T&gt;(Binding binding, <span class="keyword">string</span> endpointAddress)
+		{
+			<span class="comment">// Create an endpoint for the specified binding & address</span>
+			ServiceEndpoint endpoint = <span class="keyword">new</span> ServiceEndpoint(ContractDescription.GetContract(<span class="keyword">typeof</span>(T)), binding, <span class="keyword">new</span> EndpointAddress(endpointAddress));
+			binding.SendTimeout = <span class="keyword">new</span> TimeSpan(<span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>);
+			binding.ReceiveTimeout = <span class="keyword">new</span> TimeSpan(<span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>);
+			binding.OpenTimeout = <span class="keyword">new</span> TimeSpan(<span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>);
+			binding.CloseTimeout = <span class="keyword">new</span> TimeSpan(<span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>);
+
+			<span class="comment">// Create a channel factory of type T</span>
+			ChannelFactory&lt;T&gt; factory = <span class="keyword">new</span> ChannelFactory&lt;T&gt;(endpoint);
+			factory.Credentials.Windows.ClientCredential.UserName = <span class="string">"RedundancyCheck"</span>;
+			factory.Credentials.Windows.ClientCredential.Password = <span class="string">"RedundancyCheck"</span>;
+			factory.Credentials.Windows.ClientCredential.Domain = <span class="string">"IPAPER"</span>;
+			factory.Credentials.Windows.AllowedImpersonationLevel = TokenImpersonationLevel.Impersonation;
+
+			<span class="comment">// Return the created channel</span>
+			<span class="keyword">return</span> factory.CreateChannel();
+		}
+
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> Creates a ServiceHost hosting the specific implementation TImplementationType of interface TInterfaceType at the specified endpointAddress.</span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;typeparam name="TInterfaceType"&gt;</span>The interface type to host.<span class="xmlDocTag">&lt;/typeparam&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;typeparam name="TImplentationType"&gt;</span>The implementation type to host.<span class="xmlDocTag">&lt;/typeparam&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="binding"&gt;</span>The binding protocol to use.<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="endpointAddress"&gt;</span>The endpoint where the service should be hosted at.<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="mexEndpointAddress"&gt;</span>The endpoint where the service metadata should be hosted at.<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>An instance of ServiceHost.<span class="xmlDocTag">&lt;/returns&gt;</span></span>
+		<span class="keyword">public</span> <span class="keyword">static</span> ServiceHost CreateServiceHost&lt;TInterfaceType, TImplentationType&gt;(Binding binding, <span class="keyword">string</span> endpointAddress, <span class="keyword">string</span> mexEndpointAddress)
+		{
+			<span class="comment">// Create new service host</span>
+			ServiceHost host = <span class="keyword">new</span> ServiceHost(<span class="keyword">typeof</span>(TImplentationType));
+
+			<span class="comment">// Create endpoints</span>
+			host.AddServiceEndpoint(<span class="keyword">typeof</span>(TInterfaceType), binding, endpointAddress);
+
+			<span class="comment">// Create metadata endpoint if it doesn't exist</span>
+			ServiceMetadataBehavior smb = host.Description.Behaviors.Find&lt;ServiceMetadataBehavior&gt;();
+			<span class="keyword">if</span> (smb == <span class="keyword">null</span>)
+			{
+				smb = <span class="keyword">new</span> ServiceMetadataBehavior();
+				smb.MetadataExporter.PolicyVersion = PolicyVersion.Policy15;
+				host.Description.Behaviors.Add(smb);
+			}
+			<span class="keyword">if</span> (binding <span class="keyword">is</span> NetTcpBinding)
+				host.AddServiceEndpoint(ServiceMetadataBehavior.MexContractName, MetadataExchangeBindings.CreateMexTcpBinding(), mexEndpointAddress);
+			<span class="keyword">else</span> <span class="keyword">if</span> (binding <span class="keyword">is</span> BasicHttpBinding)
+				host.AddServiceEndpoint(ServiceMetadataBehavior.MexContractName, MetadataExchangeBindings.CreateMexHttpBinding(), mexEndpointAddress);
+			<span class="keyword">else</span>
+				<span class="keyword">throw</span> <span class="keyword">new</span> ArgumentOutOfRangeException(<span class="string">"Invalid binding: "</span> + binding);
+
+			<span class="keyword">return</span> host;
+		}
+	}
+}
+</pre></figure>
+
+<p>Notice that I’ve hardcoded the user “IPAPERRedundancyCheck” with a password of “RedundancyCheck” - this is for test purposes only, don’t even bother commenting on password security :) Also notice that I’ve set a timeout of 1 second - when the DC fails, I don’t want to spend 30 seconds before knowing if it’s down, I want to know about it right away. And since all machines are running locally, 1 second is plenty.</p>
+<p>This is the server that’ll be running on the MGM machine on port 8000:</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Security;
+<span class="keyword">using</span> System.Security.Permissions;
+<span class="keyword">using</span> System.ServiceModel;
+<span class="keyword">using</span> Contracts;
+
+namespace WcfServer
+{
+	class Program
+	{
+		<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
+		{
+			<span class="comment">// Create service host</span>
+			ServiceHost host = WCFHelper.CreateServiceHost&lt;IServer, Server&gt;(<span class="keyword">new</span> NetTcpBinding(SecurityMode.Transport), <span class="string">"net.tcp://localhost:8000"</span>, <span class="string">"net.tcp://localhost:8000/mex"</span>);
+
+			<span class="comment">// Open host</span>
+			host.Open();
+
+			Console.Read();
+		}
+	}
+
+	[ServiceBehavior(IncludeExceptionDetailInFaults = <span class="keyword">true</span>)]
+	<span class="keyword">public</span> <span class="keyword">class</span> Server : IServer
+	{
+		<span class="keyword">public</span> <span class="keyword">string</span> <span class="title">Ping</span>()
+		{
+			<span class="comment">// Security check</span>
+			<span class="keyword">try</span>
+			{
+				<span class="keyword">new</span> PrincipalPermission(<span class="keyword">null</span>, <span class="string">"ADTest"</span>).Demand();
+			}
+			<span class="keyword">catch</span>
+			{
+				<span class="keyword">throw</span> <span class="keyword">new</span> SecurityException();
+			}
+
+			<span class="comment">// Let caller know that we're alive</span>
+			<span class="keyword">return</span> <span class="string">"Pong!"</span>;
+		}
+	}
+}
+</pre></figure>
+
+<p>We’ve got an implementation of the IServer interface with the single method “Ping”. We test that the user is part of the “ADTest” role by demanding it on the current principal. If something fails we throw a SecurityException which will let the client now authentication failed. If the client is authenticated, we return a pong.</p>
+<p>And finally we have the client that’ll be running on my own machine:</p>
+<figure class="highlight csharp"><pre>using System;
+using System.ServiceModel;
+using System.Threading;
+using Contracts;
+
+namespace WcfClient
+{
+	class Program
+	{
+		static void Main(string[] args)
+		{
+			while (true)
+			{
+				try
+				{
+					IServer server = WCFHelper.CreateChannel(new NetTcpBinding(SecurityMode.Transport), <span class="string">"net.tcp://192.168.0.35:8000"</span>);
+
+					using (server as IDisposable)
+					{
+						try
+						{
+							Console.WriteLine(server.Ping());
+						}
+						catch (Exception ex)
+						{
+							Console.WriteLine(ex.Message);
+						}
+					}
+				}
+				catch (CommunicationObjectFaultedException)
+				{ }
+
+				Thread.Sleep(250);
+			}
+		}
+	}
+}
+</pre></figure>
+
+<p>We create a channel to the MGM machine (static IP of 192.168.0.35). We’ll continue to call the IServer service every 250ms, writing either the result of the Ping function, or a message explaining any problems that have occurred. Note that in real life situations we’d not create a new channel each time, but in this case we have to, so we really do authenticate on each call (so we’re affected immediatly when the DC dies).</p>
+<p>The following clip will show what happens when we run the server &amp; client while the DC goes down (by pausing the virtual machine). Note that we’re receiving a timeout exception, not a SecurityException. This is because I’m using SecurityMode.Transport which requires us to authenticate before even reaching the service, thus the method is never invoked, and the PrincipPermission.Demand() call is NOT the one failing us, it’s the WCF security layer trying to open a TCP transport. As soon as the DC (running on LUXOR) fails, we lose connectivity with our service (running on MGM).</p>
+<div class="video-container"><iframe src="//www.youtube.com/embed/P7ufIfZlfjU" frameborder="0" allowfullscreen></iframe></div>
+
+
+
+<p>The goal obviously is to prevent this from happening, we cannot have all our services brought to a standstill if the DC fails. The first step in installing a failover AD DC is to get a DNS secondary server up and running (on the soon to be secondary DC machine) so we have redundant DNS functionality.</p>
+<p>A quick recap of the servers:</p>
+<figure class="highlight"><pre><span class="setting">LUXOR = <span class="value">Primary DC, primary DNS</span></span>
+<span class="setting">EXCALIBUR = <span class="value">To be secondary DC, secondary DNS</span></span>
+<span class="setting">MGM = <span class="value">Client server</span></span>
+</pre></figure>
+
+<div class="video-container"><iframe src="//www.youtube.com/embed/BE5mB417BNs" frameborder="0" allowfullscreen></iframe></div>
+
+
+
+<p>Now that we’ve got the secondary DNS set up, we’re ready to install Active Directory on the secondary AD server (EXCALIBUR). The following video shows how easy it is to install a failover DC:</p>
+<div class="video-container"><iframe src="//www.youtube.com/embed/x5qTxr-pglg" frameborder="0" allowfullscreen></iframe></div>
+
+
+
+<p>That’s it! After the server reboots, it now functions as a failover DC in case the primary one kicks the bucket. I’ll end this post post by running my WcfServer application on the MGM server whilst both LUXOR and EXCALIBUR are running. You’ll se a fluent stream of “Pong”s returning. After shutting down LUXOR, the WCF client will immediately start reporting connection problems, but after a short while it automatically starts returning Pongs again - it got a hold of the second DC! Now, if I shut down the second DC aswell, we’ll get errors in our client again. If I then restart the primary DC, after a short while, the client starts Ponging again - we got a hold of the primary DC. So we haven’t eliminated downtime completely, but we’ve reduced it to a 5-30 sec period before everything automatically switches over to the failover DC.</p>
+<div class="video-container"><iframe src="//www.youtube.com/embed/KWkEjiulJu8" frameborder="0" allowfullscreen></iframe></div>
+
+
+
+<p>This is my first blog post utilizing videos - does it work? Do you prefer seeing live video like this, or a long series of screenshots? I know what I prefer :)</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Nov</span>
+			<span class="day">25</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/weighted-random-selections-in-sql-server/" title="Weighted Random Selections in SQL Server" rel="bookmark">Weighted Random Selections in SQL Server</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server/">SQL Server</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<h2 id="UPDATE">UPDATE</h2>
+<p>After testing my code through based on JP’s comments, I’ve realized my implementation was way too naïve and cannot be used for most datasets. For a correct weighted random implementation, see <a href="http://stackoverflow.com/questions/58457/random-weighted-choice-in-t-sql/454454#454454" target="_blank">Dems’ answer on StackOverflow</a>.</p>
+<a id="more"></a>
+
+<h2 id="Original_(flawed)_implementation">Original (flawed) implementation</h2>
+<p>There are no built-in functions for selecting weighted averages in SQL Server. Fortunately it’s a simple task to do so oneself.</p>
+<p>We’ll use this table as an example:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> #tmp
+(
+	Name <span class="keyword">varchar</span>(<span class="number">64</span>),
+	Points <span class="keyword">int</span>
+)
+
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> #tmp <span class="keyword">VALUES</span> (<span class="string">'Mark'</span>, <span class="number">25</span>);</span>
+<span class="operator"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> #tmp <span class="keyword">VALUES</span> (<span class="string">'Jakob'</span>, <span class="number">12</span>);</span>
+<span class="operator"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> #tmp <span class="keyword">VALUES</span> (<span class="string">'Peter'</span>, <span class="number">17</span>);</span>
+<span class="operator"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> #tmp <span class="keyword">VALUES</span> (<span class="string">'Anders'</span>, <span class="number">0</span>);</span>
+<span class="operator"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> #tmp <span class="keyword">VALUES</span> (<span class="string">'Kirsten'</span>, <span class="number">33</span>);</span>
+<span class="operator"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> #tmp <span class="keyword">VALUES</span> (<span class="string">'Mads'</span>, <span class="number">4</span>);</span>
+</pre></figure>
+
+<p>This table represents a list of players in an arbitrary game. The more points you have, the bigger the chance of winning. It has to be weighted, meaning that the person with just 4 points may win, but is unlikely to do so.</p>
+<p>The RAND() function in SQL Server returns a floating point number between 0 and 1. Multiplying that with our points gives a random weight based on the amount of points. Unfortunately the RAND() function is seeded once for each query, not for each row - meaning that for each row RAND() will yield the same result, effectively multiplying the points with a constant all the way through. We need to provide a new seed for the RAND() function for each row. NEWID() returns a new unique identifier that may be used as a seed if cast to VARBINARY:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span> Name, Points, RAND(<span class="keyword">CAST</span>(NEWID() <span class="keyword">AS</span> VARBINARY)) * Points <span class="keyword">AS</span> Weight <span class="keyword">FROM</span> #tmp <span class="keyword">ORDER</span> <span class="keyword">BY</span> Weight <span class="keyword">DESC</span>
+
+Name     Points  Weight
+Peter    <span class="number">17</span>      <span class="number">15</span>,<span class="number">9795741766356</span>
+Mark     <span class="number">25</span>      <span class="number">14</span>,<span class="number">9122204505153</span>
+Kirsten  <span class="number">33</span>      <span class="number">9</span>,<span class="number">67888480542761</span>
+Jakob    <span class="number">12</span>      <span class="number">9</span>,<span class="number">38697608441358</span>
+Mads     <span class="number">4</span>       <span class="number">0</span>,<span class="number">833340539027792</span>
+Anders   <span class="number">0</span>       <span class="number">0</span></span>
+</pre></figure>
+
+<p>And here we have the result ordered by weight. As you can see, although Kirsten has the most points, Peter ended up winning the competition.</p>
+<h2 id="FIG1:_Showing_the_statistical_distribution_of_using_RAND(NEWID())">FIG1: Showing the statistical distribution of using RAND(NEWID())</h2>
+<figure class="highlight sql"><pre>DECLARE @SampleSize int = 100000;
+
+WITH RND AS
+(
+	<span class="operator"><span class="keyword">select</span> top (@SampleSize) ROUND(RAND(<span class="keyword">CAST</span>(NEWID() <span class="keyword">AS</span> VARBINARY)), <span class="number">1</span>, <span class="number">1</span>) <span class="keyword">AS</span> RandValue <span class="keyword">from</span> sys.objects <span class="keyword">cross</span> <span class="keyword">join</span> sys.columns
+)
+<span class="keyword">SELECT</span>
+	<span class="aggregate">COUNT</span>(*),
+	RandValue,
+	<span class="aggregate">COUNT</span>(*) / <span class="keyword">CAST</span>(@SampleSize <span class="keyword">AS</span> <span class="keyword">float</span>) * <span class="number">100</span> <span class="keyword">AS</span> [%]
+<span class="keyword">FROM</span>
+	RND
+<span class="keyword">GROUP</span> <span class="keyword">BY</span>
+	RandValue
+<span class="keyword">ORDER</span> <span class="keyword">BY</span>
+	<span class="aggregate">COUNT</span>(*) <span class="keyword">DESC</span></span>
+</pre></figure>
+
+<p>Results:</p>
+<figure class="highlight sql"><pre>COUNT	VAL	%
+10117	0,8	10,117
+10091	0,4	10,091
+10073	0	10,073
+10034	0,9	10,034
+9996	0,5	9,996
+9993	0,2	9,993
+9956	0,7	9,956
+9927	0,6	9,927
+9923	0,3	9,923
+9890	0,1	9,89
+</pre></figure>
+
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+
+<div class="paging">
+	<a href="/page/18/"><div class="past">« Past</div></a>
+	<a href="/page/16/"><div class="future">Future »</div></a>
+	<div class="clear"></div>
+</div>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Corrupting Databases on Purpose Using the OrcaMDF Corruptor | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Nov</span>
+			<span class="day">05</span>
+		</div>
+		<div class="lower">2013</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/corrupting-databases-purpose-using-orcamdf-corruptor/" title="Corrupting Databases on Purpose Using the OrcaMDF Corruptor" rel="bookmark">Corrupting Databases on Purpose Using the OrcaMDF Corruptor</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server/">SQL Server</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on Corrupting Databases on Purpose Using the OrcaMDF Corruptor">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>Sometimes you must first do evil, to do good. Such is the case when you want to hone your skills in corruption recovery of SQL Server databases.</p>
+<a id="more"></a>
+
+<p>To give me more material to test the new <a href="/orcamdf-rawdatabase-a-swiss-army-knife-for-mdf-files/">RawDatabase</a> functionality, I’ve now added a <a href="https://github.com/improvedk/OrcaMDF/blob/master/src/OrcaMDF.Framework/Corruptor.cs" target="_blank">Corruptor class</a> to OrcaMDF. Corruptor does more or less what the name says - it corrupts database files on purpose.</p>
+<p>The corruption itself is quite simple. Corruptor will choose a number of random pages and simply overwrite the page completely with all zeros. Depending on what pages are hit, this can be quite fatal.</p>
+<p>I shouldn’t have to say this, but just in case… Please do not use this on anything valuable. <strong>It will fatally corrupt your data.</strong></p>
+<h2 id="Examples">Examples</h2>
+<p>There are two overloads for the Corruptor.CorruptFile method, both of them return an IEnumerable of integers - a list of the page IDs that have been overwritten by zeros.</p>
+<p>The following code will corrupt 5% of the pages in the AdventureWorks2008R2LT.mdf file, after which it will output each page ID that has been corrupted. You can specify the percentage of pages to corrupt by changing the second parameter.</p>
+<figure class="highlight csharp"><pre>var corruptedPageIDs = Corruptor<span class="preprocessor">.CorruptFile</span>(@<span class="string">"C:\AdventureWorks2008R2LT.mdf"</span>, <span class="number">0.05</span>)<span class="comment">;</span>
+Console<span class="preprocessor">.WriteLine</span>(string<span class="preprocessor">.Join</span>(<span class="string">", "</span>, corruptedPageIDs))<span class="comment">;</span>
+</pre></figure>
+
+
+<figure class="highlight"><pre>606, 516, 603, 521, 613, 621, 118, 47, 173, 579,
+323, 217, 358, 515, 615, 271, 176, 596, 417, 379,
+269, 409, 558, 103, 8, 636, 200, 361, 60, 486,
+366, 99, 87
+</pre></figure>
+
+<p>To make the corruption hit even harder, you can also use the second overload of the CorruptFile method, allowing you to specify the exact number of pages to corrupt, within a certain range of page IDs. The following code will corrupt exactly 10 pages within the first 50 pages (zero-based), thus hitting mostly metadata.</p>
+<figure class="highlight csharp"><pre>var corruptedPageIDs = Corruptor<span class="preprocessor">.CorruptFile</span>(@<span class="string">"C:\AdventureWorks2008R2LT.mdf"</span>, <span class="number">10</span>, <span class="number">0</span>, <span class="number">49</span>)<span class="comment">;</span>
+Console<span class="preprocessor">.WriteLine</span>(string<span class="preprocessor">.Join</span>(<span class="string">", "</span>, corruptedPageIDs))<span class="comment">;</span>
+</pre></figure>
+
+
+<figure class="highlight"><pre>16, 4, 0, 32, 15, 14, 30, 2, 49, 9
+</pre></figure>
+
+<p>In the above case I was extraordinarily unlucky seeing as page 0 is the file header page, page 2 is the first GAM page, page 9 is the boot page and finally page 16 is the page that contains the allocation unit metadata. With corruption like this, you can be certain that DBCC CHECKDB will be giving up, leaving you with no other alternative than to restore from a backup.</p>
+<p>Or… You could try to recover as much data as possible using <a href="/orcamdf-rawdatabase-a-swiss-army-knife-for-mdf-files/">OrcaMDF RawDatabase</a>, but I’ll get back to that later :)</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=Corrupting%20Databases%20on%20Purpose%20Using%20the%20OrcaMDF%20Corruptor%20http%3A%2F%2Fimprove.dk%2Fcorrupting-databases-purpose-using-orcamdf-corruptor%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fcorrupting-databases-purpose-using-orcamdf-corruptor%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fcorrupting-databases-purpose-using-orcamdf-corruptor%2F&title=Corrupting%20Databases%20on%20Purpose%20Using%20the%20OrcaMDF%20Corruptor" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/corrupting-databases-purpose-using-orcamdf-corruptor/corrupting-databases-purpose-using-orcamdf-corruptor.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'corrupting-databases-purpose-using-orcamdf-corruptor';
+	var disqus_url = 'http://improve.dk/corrupting-databases-purpose-using-orcamdf-corruptor/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Tricky SQL Server Decimal Math | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">06</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/tricky-sql-server-decimal-math/" title="Tricky SQL Server Decimal Math" rel="bookmark">Tricky SQL Server Decimal Math</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Data Types/">SQL Server - Data Types</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - Optimization/">SQL Server - Optimization</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on Tricky SQL Server Decimal Math">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>SQL Server datatypes are not always what they seem to be. <a href="http://www.performanceduo.com/" target="_blank">Martin Schmidt</a> recently had an <a href="http://www.performanceduo.com/post/Gc3a6t-en-Datatype-.aspx" target="_blank">interesting blog post (in danish)</a> regarding implicit decimal conversion that sparked my interest.</p>
+<a id="more"></a>
+
+<p>Let me sketch up the scenario. We have a simple table with a decimal column like so:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> tblDecimalTest
+(
+	DecimalColumn <span class="keyword">dec</span>(<span class="number">5</span>,<span class="number">2</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>
+)</span>
+</pre></figure>
+
+<p>Note that the DecimalColumn has a precision of five and a scale of two. That basically boils down to 999.99 being the largest number we can store and -999.99 being the smallest. The precision of five defines the maximum number of digits in the number, scale defines the number of digits to the right of the decimal point. If we insert an integer value of 999 it’ll have .00 stored implicity, thus we can’t insert neither 1000 nor 10000 without any decimal digits. Knowing the configured precision and scale is important, as we’ll see in just a moment.</p>
+<p>Let us insert a single row into the tblDecimalTest table.</p>
+<figure class="highlight sql"><pre>DECLARE @Decimal1 dec(5,2) = 20.5
+DECLARE @Decimal2 dec(5,2) = 27.52
+<span class="operator"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> tblDecimalTest (DecimalColumn) <span class="keyword">VALUES</span> (@Decimal1 / @Decimal2)</span>
+</pre></figure>
+
+<p>This is the result if we perform a select on the table:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> tblDecimalTest
+
+DecimalColumn
+<span class="number">0.74</span></span>
+</pre></figure>
+
+<p>Both decimal variables were declared as dec(5,2) so it matches the column in the table. Calculating 20.5 / 27.52 on a standard calculator gives a result of 0.7449127, but as we’re storing this with a scale of two, the value is rounded off to 0.74.</p>
+<p>We just inserted a value of 20.5 / 27.52 into a dec(5,2) column. Let’s make a select using those same variables:</p>
+<figure class="highlight sql"><pre>DECLARE @Decimal1 dec(5,2) = 20.5
+DECLARE @Decimal2 dec(5,2) = 27.52
+<span class="operator"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> tblDecimalTest <span class="keyword">WHERE</span> DecimalColumn = @Decimal1 / @Decimal2
+
+Results:
+(<span class="number">0</span> <span class="keyword">row</span>(s) affected)</span>
+</pre></figure>
+
+<p>What is that? No results! Why does this happen? After all, we just inserted @Decimal1 / @Decimal2, so surely we should be able to select that row again? The key lies in how SQL Server <a href="http://msdn.microsoft.com/en-us/library/ms190476.aspx" target="_blank">converts decimal datatypes during math operations</a>. What we’re looking for is the divison operator which defines the following precision and scale calculations:</p>
+<figure class="highlight"><pre>e1 / e2:
+Result <span class="keyword">precision</span> = p1 - s1 + s2 + <span class="built_in">max</span>(<span class="number">6</span>, s1 + p2 + <span class="number">1</span>)
+Result scale = <span class="built_in">max</span>(<span class="number">6</span>, s1 + p2 + <span class="number">1</span>)
+</pre></figure>
+
+<p>Let’s input our values into that formula.</p>
+<figure class="highlight"><pre>dec(<span class="number">5</span>,<span class="number">2</span>) <span class="subst">/</span> dec(<span class="number">5</span>,<span class="number">2</span>):
+Precision	<span class="subst">=</span> p1<span class="attribute">-s1</span><span class="subst">+</span>s2 <span class="subst">+</span> <span class="keyword">max</span>(<span class="number">6</span>, s1<span class="subst">+</span>p2<span class="subst">+</span><span class="number">1</span>)	<span class="subst">=</span> <span class="number">5</span><span class="subst">-</span><span class="number">2</span><span class="subst">+</span><span class="number">2</span> <span class="subst">+</span> <span class="keyword">max</span>(<span class="number">6</span>, <span class="number">2</span><span class="subst">+</span><span class="number">5</span><span class="subst">+</span><span class="number">1</span>)		<span class="subst">=</span> <span class="number">5</span> <span class="subst">+</span> <span class="keyword">max</span>(<span class="number">6</span>,<span class="number">8</span>)	<span class="subst">=</span> <span class="number">5</span><span class="subst">+</span><span class="number">8</span> <span class="subst">=</span> <span class="number">13</span>
+Scale		<span class="subst">=</span> <span class="keyword">max</span>(<span class="number">6</span>, s1<span class="subst">+</span>p2<span class="subst">+</span><span class="number">1</span>)		<span class="subst">=</span> <span class="keyword">max</span>(<span class="number">6</span>, <span class="number">2</span><span class="subst">+</span><span class="number">5</span><span class="subst">+</span><span class="number">1</span>)			<span class="subst">=</span> <span class="keyword">max</span>(<span class="number">6</span>,<span class="number">8</span>)	<span class="subst">=</span> <span class="number">8</span>
+<span class="keyword">Type</span>		<span class="subst">=</span> dec(<span class="number">13</span>,<span class="number">8</span>)
+</pre></figure>
+
+<p>Thus, our division of two dec(5,2) variables is implicitly converted into a dec(13,8) value! Similar conversions are made for addition, subtraction and multiplication.</p>
+<figure class="highlight"><pre>dec(<span class="number">5</span>,<span class="number">2</span>) <span class="subst">+</span> dec(<span class="number">5</span>,<span class="number">2</span>), dec(<span class="number">5</span>,<span class="number">2</span>) <span class="subst">-</span> dec(<span class="number">5</span>,<span class="number">2</span>):
+Precision	<span class="subst">=</span> <span class="keyword">max</span>(s1, s2) <span class="subst">+</span> <span class="keyword">max</span>(p1<span class="attribute">-s1</span>, p2<span class="attribute">-s2</span>) <span class="subst">+</span> <span class="number">1</span>	<span class="subst">=</span> <span class="keyword">max</span>(<span class="number">5</span>, <span class="number">5</span>) <span class="subst">+</span> <span class="keyword">max</span>(<span class="number">3</span>, <span class="number">3</span>) <span class="subst">+</span> <span class="number">1</span>	<span class="subst">=</span> <span class="number">5</span><span class="subst">+</span><span class="number">3</span><span class="subst">+</span><span class="number">1</span>	<span class="subst">=</span> <span class="number">9</span>
+Scale		<span class="subst">=</span> <span class="keyword">max</span>(<span class="number">2</span>, <span class="number">2</span>)				<span class="subst">=</span> <span class="number">2</span>
+<span class="keyword">Type</span>		<span class="subst">=</span> dec(<span class="number">9</span>,<span class="number">2</span>)
+
+dec(<span class="number">5</span>,<span class="number">2</span>) <span class="subst">*</span> dec(<span class="number">5</span>,<span class="number">2</span>):
+Precision	<span class="subst">=</span> p1<span class="subst">+</span>p2<span class="subst">+</span><span class="number">1</span>	<span class="subst">=</span> <span class="number">5</span><span class="subst">+</span><span class="number">5</span><span class="subst">+</span><span class="number">1</span>	<span class="subst">=</span> <span class="number">11</span>
+Scale		<span class="subst">=</span> s1<span class="subst">+</span><span class="number">2</span>		<span class="subst">=</span> <span class="number">2</span><span class="subst">+</span><span class="number">2</span>	<span class="subst">=</span> <span class="number">4</span>
+<span class="keyword">Type</span>		<span class="subst">=</span> dec(<span class="number">11</span>,<span class="number">4</span>)
+</pre></figure>
+
+<p>Let’s try and check the division result directly:</p>
+<figure class="highlight sql"><pre>DECLARE @Decimal1 dec(5,2) = 20.5
+DECLARE @Decimal2 dec(5,2) = 27.52
+<span class="operator"><span class="keyword">SELECT</span> @Decimal1 / @Decimal2
+
+(<span class="keyword">No</span> <span class="keyword">column</span> name)
+<span class="number">0.74491279</span></span>
+</pre></figure>
+
+<p>When performing the WHERE clause, we’re in fact comparing a dec(5,2) column with a dec(13,8) value. Behind the scenes, SQL Server will implicitly convert the values to a common datatype that fits both - which is dec(13,8). With a precision of 13 and a scale of 8, 0.74 and 0.74491279 are not equal, and thus we don’t get any results back. If we were to cast the divison as a dec(5,2) explicitly, we would find the row:</p>
+<figure class="highlight sql"><pre>DECLARE @Decimal1 dec(5,2) = 20.5
+DECLARE @Decimal2 dec(5,2) = 27.52
+<span class="operator"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> tblDecimalTest <span class="keyword">WHERE</span> DecimalColumn = <span class="keyword">CAST</span>(@Decimal1 / @Decimal2 <span class="keyword">AS</span> <span class="keyword">dec</span>(<span class="number">5</span>,<span class="number">2</span>))
+
+DecimalColumn
+<span class="number">0.74</span></span>
+</pre></figure>
+
+<p>While testing in SQL Server Management Studio, this might be an obvious problem. When encountering the same problem from code, it’s much more difficult to notice - especially if you don’t know the precise schema you’re working against. Observe the following code working on an empty tblDecimalTest table.</p>
+<figure class="highlight csharp"><pre>using(SqlConnection conn = new SqlConnection(@"Data Source=.SQL2008;Initial Catalog=Test;Integrated Security=SSPI"))
+{
+	using(SqlCommand cmd = conn.CreateCommand())
+	{
+		decimal dec1 = 20.5M;
+		decimal dec2 = 27.52M;
+
+		cmd.CommandText = "<span class="operator"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> tblDecimalTest (DecimalColumn) <span class="keyword">VALUES</span> (@DecimalValue)<span class="string">";
+		cmd.Parameters.Add("</span>@DecimalValue<span class="string">", SqlDbType.Decimal).Value = dec1 / dec2;
+
+		conn.Open();
+		cmd.ExecuteNonQuery();
+
+		cmd.CommandText = "</span><span class="keyword">SELECT</span> <span class="aggregate">COUNT</span>(*) <span class="keyword">FROM</span> tblDecimalTest <span class="keyword">WHERE</span> DecimalColumn = @DecimalValue<span class="string">";
+		Console.WriteLine("</span>Implicit <span class="keyword">cast</span>: <span class="string">" + cmd.ExecuteScalar());
+
+		cmd.CommandText = "</span><span class="keyword">SELECT</span> <span class="aggregate">COUNT</span>(*) <span class="keyword">FROM</span> tblDecimalTest <span class="keyword">WHERE</span> DecimalColumn = <span class="keyword">CAST</span>(@DecimalValue <span class="keyword">as</span> <span class="keyword">dec</span>(<span class="number">5</span>,<span class="number">2</span>))<span class="string">";
+		Console.WriteLine("</span>Explicit <span class="keyword">cast</span>: <span class="string">" + cmd.ExecuteScalar());
+	}
+}</span></span>
+</pre></figure>
+
+<p>The result:</p>
+<figure class="highlight"><pre>Implicit <span class="keyword">cast</span>: <span class="number">0</span>
+Explicit <span class="keyword">cast</span>: <span class="number">1</span>
+</pre></figure>
+
+<p>Without knowledge of the schema, and how SQL Server treats decimal math operations, this could’ve been a tough bug to track down.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=Tricky%20SQL%20Server%20Decimal%20Math%20http%3A%2F%2Fimprove.dk%2Ftricky-sql-server-decimal-math%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Ftricky-sql-server-decimal-math%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Ftricky-sql-server-decimal-math%2F&title=Tricky%20SQL%20Server%20Decimal%20Math" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/tricky-sql-server-decimal-math/tricky-sql-server-decimal-math.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'tricky-sql-server-decimal-math';
+	var disqus_url = 'http://improve.dk/tricky-sql-server-decimal-math/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

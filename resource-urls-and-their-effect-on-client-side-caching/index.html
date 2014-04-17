@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Resource URLs and Their Effect on Client Side Caching | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Mar</span>
+			<span class="day">08</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/resource-urls-and-their-effect-on-client-side-caching/" title="Resource URLs and Their Effect on Client Side Caching" rel="bookmark">Resource URLs and Their Effect on Client Side Caching</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/Performance/">Performance</a>
+				, 
+			
+				<a href="http://improve.dk/category/Web/">Web</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on Resource URLs and Their Effect on Client Side Caching">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>One of the best way to improve performance of any website is to reduce the load from clients by allowing them to cache resources. There are various ways to ensure we utilize client side caching to the fullest extent, an often overlooked parameter however, is the actual URL for the resource we want to cache.</p>
+<a id="more"></a>
+
+<h2 id="The_traditional_methods">The traditional methods</h2>
+<p>Basically client side caching comes down to three different parameters, the cache policy, the expiration dates as well as the last-modified / etag of the resource.</p>
+<p>Through the no-cache policy we can completely disallow all caching of the resource, in which case the resource URL does not matter at all. For this blog entry, I’ll assume we allow caching, just as I’ll assume we have control over the HTML rendered that references the resource.</p>
+<p>When caching is allowed, the expiration date defines whether the client can use a locally stored version or whether it has to make a request for the server. Before the browser makes a request to the server, it’ll check if the resource is cached locally. If it is, it will check the expires header of the file - and as long as the expiration date has not been passed, the file will be loaded locally, and no request will be made to the server. Obviously, this is the optimal solution since we completely avoid the overhead of a request to the server - which will help both the client &amp; server performance.</p>
+<p>If the expiry date has been passed - or if an expiry date wasn’t sent along with the resource when it was cached - the browser will have to make a request to the server. The server can then check whether the resource has been modified since the last-modified header or etag header (provided the server sent these with the resource originally, and thereby enabling the client to send them back) and send either a 304 or a 200 status back.</p>
+<h2 id="URL_impact">URL impact</h2>
+<p>So what does the actual resource URL have to do with caching? Let’s take Google as an example. On the frontpage of Google there’s an ever changing doodle logo, let’s for discussions sake say the url is google.com/doodle.jpg. Now, since the image isn’t static, we definitely need either to send an expiry header, or if that’s not possible, an etag/last-modified header so the client can at least cache the resource data, and only have to make a if-modified-since request to the server.</p>
+<p>Why might it not be possible to send an expiry header? Remember that if we specify an expiry date, the client will not even check in with the server for updates to that resource until the resource has expired locally. Thus, if the resource needs to change in the meantime, clients will suddenly show outdated conent. Because of this, if we do not know the schedule for when resources might change, it can be dangerous / inappropriate to send an expiry header.</p>
+<p>There’s a simple way of avoiding the unknown schedule problem while still allowing the client to fully cache the resource without making if-modified-since requests. Simply change the resource URL. If the doodle url is google.com/doodle.jpg, make the next one google.com/doodle1.jpg, doodle2.jpg etc. The URL will still have to be sent along with the HTML code, so there’s no harm in sending a different URL for the new doodle. In this way, the client can be allowed to cache the resource indefinitely - as long as a change in the resource will be saved as a new URL.</p>
+<h2 id="Surrogate_vs_natural_keys_in_URLs">Surrogate vs natural keys in URLs</h2>
+<p>Imagine a scenario where we published books on the internet, with any number of related pages. The catch is, the pages may change over time. Maybe the publisher corrected some errors, added an appendix etc. This rules out setting an expiry header on the individual page resources since we have to be sure we always fetch the most recent version.</p>
+<p>There are two ways we might store the data in the database. Here’s one:</p>
+<figure class="highlight"><pre><span class="attr_selector">[tblBooks]</span>  
+<span class="tag">BookID</span>, <span class="tag">Name</span>
+</pre></figure>
+
+
+<figure class="highlight"><pre>[tblPages]  
+BookID, <span class="built_in">Number</span>, Data
+</pre></figure>
+
+<p>In this example, we use the page’s natural key, a composite of the BookID and Number columns. The pages of a book will always be numbered 1..n and there can be no two pages with the same number, so we have a unique index. Using this table layout, our resource URLs would probably look like this: /Books/[BookID]/[Number]. This means page 2 of the book with ID 5 will always have the same URL: /Books/5/2. Since the URL is the same, the resource might change (if the page is replaced), and we can’t predict when the change will occur (a publisher can do it at any point), we have to rely on last-modified/etags and have the client perform if-modified since requests.</p>
+<p>A second way to store the data in the database would be this:</p>
+<figure class="highlight"><pre><span class="attr_selector">[tblBooks]</span>  
+<span class="tag">BookID</span>, <span class="tag">Name</span>
+</pre></figure>
+
+
+<figure class="highlight"><pre>[tblPages]  
+PageID, BookID, <span class="built_in">Number</span>, Data
+</pre></figure>
+
+<p>The difference being that we’ve introduced a surrogate key in the tblPages table: PageID. This allows us to use URLs like this: /Books/[BookID]/[PageID]. While not as user friendly, it allows us to set an indefinite expiry header and thereby allowing the client to avoid server requests completely.</p>
+<h2 id="Adding_versions_to_URLs">Adding versions to URLs</h2>
+<p>Keeping with the book/pages example, let’s add a [LastModified] column to the [tblPages] table:</p>
+<figure class="highlight"><pre>[tblPages]
+BookID, <span class="built_in">Number</span>, Data, LastModified
+</pre></figure>
+
+<p>We still have a natural key, but now we also store the last modification date of the row - this could either be an application updated value or a database timestamp. The idea is to preserve the natural key in the URLs, but add the LastModified value to the URL for no other reason than to generate a new resource URL when it changes. The first URL might be /Books/5/2/?v=2009-03-08_11:25:00, while the updated version of the page will result in a URL like this: /Books/5/2/?v=2009-03-10_07:32:00. The v parameter is not used for anything serverside, but to the client, it’s a completely unrelated URL and will thus ignore the previously cached resource. This way we can keep the natural base URL the same while still forcing clients to request the new resource whenever it’s changed.</p>
+<h2 id="Recap">Recap</h2>
+<p>While properly utilizing caching headers itself is an often overlooked issue, it can be further improved by choosing resource URLs wisely. By combining correct caching headers with changing resource URLs, we can effectively allow the client to cache resources entirely clientside for just the right amount of time, resulting in increased performance for both servers and clients. It’s no silver bullet as caching strategies will always be very domain specific - make sure you understand your domain and create a caching strategy accordingly.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=Resource%20URLs%20and%20Their%20Effect%20on%20Client%20Side%20Caching%20http%3A%2F%2Fimprove.dk%2Fresource-urls-and-their-effect-on-client-side-caching%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fresource-urls-and-their-effect-on-client-side-caching%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fresource-urls-and-their-effect-on-client-side-caching%2F&title=Resource%20URLs%20and%20Their%20Effect%20on%20Client%20Side%20Caching" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/resource-urls-and-their-effect-on-client-side-caching/resource-urls-and-their-effect-on-client-side-caching.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'resource-urls-and-their-effect-on-client-side-caching';
+	var disqus_url = 'http://improve.dk/resource-urls-and-their-effect-on-client-side-caching/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

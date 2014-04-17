@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>The Internals of Spam Mails - Part 1 | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Dec</span>
+			<span class="day">27</span>
+		</div>
+		<div class="lower">2006</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/the-internals-of-spam-mails-part-one/" title="The Internals of Spam Mails - Part 1" rel="bookmark">The Internals of Spam Mails - Part 1</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/Miscellaneous/">Miscellaneous</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on The Internals of Spam Mails - Part 1">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>Is your name William? Do you normally write mails with the subject “Re: hi”? Are your mails usually 11,304 characters in length? Guess what, you’re a spammer! I present to you, an article containing a textual analysis of about 15,000 spam mails.</p>
+<a id="more"></a>
+
+<p>Before you ask, what can these numbers be used for? Good question, I’m open to suggestions!</p>
+<p>The following numbers are based on 15,073 spam mails in total. Naturally demographics will play a part, such as my interests, part of the world and so forth. Let me give you the 5 word tour of myself: Denmark, male, 21, development, poker.</p>
+<h2 id="Importance">Importance</h2>
+<p>All mails can be marked with an importance flag ranging from low to high through normal. I’d think spammers would consider their mails rather important, guess not.</p>
+<div class="imgwrapper" style=""><div><a href="/the-internals-of-spam-mails-part-one/spam1_2.jpg" class="fancy"><img src="/the-internals-of-spam-mails-part-one/spam1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Body_format">Body format</h2>
+<p>Most anti spam applications today are extra sensitive towards HTML mails so it’s no big surprise that they’re not that common.</p>
+<div class="imgwrapper" style=""><div><a href="/the-internals-of-spam-mails-part-one/spam2_2.jpg" class="fancy"><img src="/the-internals-of-spam-mails-part-one/spam2_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Number_of_recipients">Number of recipients</h2>
+<p>A lot of mail servers as well as anti spam clients will filter out mass mailed emails, that is, emails that have a lot of recipients. Some mails will figure as having zero recipients, these may be caused by bad header formats / values in the mail.</p>
+<div class="imgwrapper" style=""><div><a href="/the-internals-of-spam-mails-part-one/spam3_2.jpg" class="fancy"><img src="/the-internals-of-spam-mails-part-one/spam3_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Reply-to_field_usage">Reply-to field usage</h2>
+<p>The reply-to field enables you to specify an email address used for replies other than the one that was used to send the email with. How many mails utilize this field? (0 = not used, 1 = used)</p>
+<div class="imgwrapper" style=""><div><a href="/the-internals-of-spam-mails-part-one/spam4_2.jpg" class="fancy"><img src="/the-internals-of-spam-mails-part-one/spam4_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Mail_size">Mail size</h2>
+<p>Don’t you just hate it when you startup Outlook and you have to wait for ages due to several terabytes of spam mails waiting to be downloaded? But how many bytes does an average mail actually take up?</p>
+<div class="imgwrapper" style=""><div><a href="/the-internals-of-spam-mails-part-one/spam5_2.jpg" class="fancy"><img src="/the-internals-of-spam-mails-part-one/spam5_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Mail_lengths">Mail lengths</h2>
+<p>How long is the average spam mail? The more text, the less chance one will actually read it, right? As for the subject (in number of characters):</p>
+<div class="imgwrapper" style=""><div><a href="/the-internals-of-spam-mails-part-one/spam6_211.jpg" class="fancy"><img src="/the-internals-of-spam-mails-part-one/spam6_211.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Note that the 255 upper limit is usually caused by either the mail servers or the mail clients capping the subject at 255 characters. As for the body:</p>
+<div class="imgwrapper" style=""><div><a href="/the-internals-of-spam-mails-part-one/spam7_2.jpg" class="fancy"><img src="/the-internals-of-spam-mails-part-one/spam7_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Spammer_names">Spammer names</h2>
+<p>What’s William and Richard got to do with each other? They both send a major junkload of spam.</p>
+<div class="imgwrapper" style=""><div><a href="/the-internals-of-spam-mails-part-one/spam8_2.jpg" class="fancy"><img src="/the-internals-of-spam-mails-part-one/spam8_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Subjects">Subjects</h2>
+<p>I’m quite surprised that Viagra is not even in the top 10 subjects, almost disappointed.</p>
+<div class="imgwrapper" style=""><div><a href="/the-internals-of-spam-mails-part-one/spam9_2.jpg" class="fancy"><img src="/the-internals-of-spam-mails-part-one/spam9_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Common_body_words">Common body words</h2>
+<p>What’s the number one used word in the body of spam mails? Pretty boring: “the”.</p>
+<div class="imgwrapper" style=""><div><a href="/the-internals-of-spam-mails-part-one/spam10_2.jpg" class="fancy"><img src="/the-internals-of-spam-mails-part-one/spam10_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Unusual_body_words">Unusual body words</h2>
+<p>I’ve defined an unusual word as one that’s not among the top 300 most common english words - according to: <a href="http://www.esldesk.com/esl-quizzes/most-used-english-words/words.htm" target="_blank">http://www.esldesk.com/esl-quizzes/most-used-english-words/words.htm</a>.</p>
+<div class="imgwrapper" style=""><div><a href="/the-internals-of-spam-mails-part-one/spam11_2.jpg" class="fancy"><img src="/the-internals-of-spam-mails-part-one/spam11_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Common_subject_words">Common subject words</h2>
+<p>How about the subject?</p>
+<div class="imgwrapper" style=""><div><a href="/the-internals-of-spam-mails-part-one/spam12_2.jpg" class="fancy"><img src="/the-internals-of-spam-mails-part-one/spam12_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Unusual_subject_words">Unusual subject words</h2>
+<p>Same definition as for the unusual body words, this time in regards of the subject.</p>
+<div class="imgwrapper" style=""><div><a href="/the-internals-of-spam-mails-part-one/spam13_2.jpg" class="fancy"><img src="/the-internals-of-spam-mails-part-one/spam13_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Common_sentences">Common sentences</h2>
+<p>Trying to make any sense out of a common spam mail is not an easy task. Hence the following top 20 common sentences may not make a whole lot of sense either.</p>
+<p>Count: <strong>494</strong><br>The attention to detail is paramount and they are comparable to the originals in every way.</p>
+<p>Count: <strong>481</strong><br>Having had this same model for several years i was hesitant to spend the money again.</p>
+<p>Count: <strong>481</strong><br>You will be very impressed with the quality.</p>
+<p>Count: <strong>475</strong><br>Lange sohne glashute original audemars piguet jaeger-lecoultre officine panerai alain silbersteini got my watch yesterday and love it.</p>
+<p>Count: <strong>464</strong><br>Replicated to the smallest detail 98 a accuracy includes all proper markings wide selection and fast worldwide shipping authentic weight true-to-original self winding and quartz mechanismsour faithful duplications include these prestige brands rolex mens rolex ladys rolex boys watch box sets patek philippe iwc cartier bvlgari frank muller breitling omega tag heuer chopard vacheron constantin a.</p>
+<p>Count: <strong>344</strong><br>Comprestige replicasregards-mens and ladies prestige watches for all occasionsthese replicas have all the presence and poise of the originals after whome they were designed at a fraction of the cost.</p>
+<p>Count: <strong>168</strong><br>General fewer your on can try answers for expert help with search.</p>
+<p>Count: <strong>135</strong><br>The only way to solve it is to take viagra or cialis super viagra medications before you have sex.</p>
+<p>Count: <strong>135</strong><br>You can spend thousands and buy them at your local drug store.</p>
+<p>Count: <strong>134</strong><br>03 this problem is called erectile dysfunctioned.</p>
+<p>Count: <strong>132</strong><br>Globally the potential market is a staggering 45 billion.</p>
+<p>Count: <strong>132</strong><br>Video streams to wherever you choose to watch it.</p>
+<p>Count: <strong>105</strong><br>20as the population ages the economic value in the us market for adult daycare is projected to grow nearly 600.</p>
+<p>Count: <strong>95</strong><br>Major discoveries are happening all the time and wbrs is in the thick of it.</p>
+<p>Count: <strong>95</strong><br>With the array of drilling projects wild brush has going on at the moment tension is building.</p>
+<p>Count: <strong>95</strong><br>As the drilling gets closer to completion insiders are accumulating ahead of that major discovery announcement.</p>
+<p>Count: <strong>94</strong><br>Get the latest messages emailed to alerts.</p>
+<p>Count: <strong>94</strong><br>All we can say is that this one is going to see amazing appreciation in a very short period of time this is your opportunity.</p>
+<p>Count: <strong>90</strong><br>You have seen it on 60 minutes and read the bbc news report — now find out just what everyone is talking about.</p>
+<p>Count: <strong>90</strong><br>Suppress your appetite and feel full and satisfied all day long increase your energy levels lose excess weight increase your metabolism burn body fat burn calories attack obesity and more.</p>
+<h2 id="To_be_continued…">To be continued…</h2>
+<p>That’s all for part 1. Hopefully I’ll have come up with some more interesting analysis for the next part :) Feel free to post a suggestion if there’s something specific you’d like to see some numbers of. Also, if you have access to large quantities of spam mail (no, not in the form of signing me up for billions of sites) in Outlook PST format, please de send me a message, I’d really like to have a larger sample to base my analysis upon.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=The%20Internals%20of%20Spam%20Mails%20-%20Part%201%20http%3A%2F%2Fimprove.dk%2Fthe-internals-of-spam-mails-part-one%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fthe-internals-of-spam-mails-part-one%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fthe-internals-of-spam-mails-part-one%2F&title=The%20Internals%20of%20Spam%20Mails%20-%20Part%201" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/the-internals-of-spam-mails-part-one/the-internals-of-spam-mails-part-one.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'the-internals-of-spam-mails-part-one';
+	var disqus_url = 'http://improve.dk/the-internals-of-spam-mails-part-one/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

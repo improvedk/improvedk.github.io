@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Debugging in Production Part 2 - Latent Race Condition Bugs | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">15</span>
+		</div>
+		<div class="lower">2013</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/debugging-in-production-part-2-latent-race-condition-bugs/" title="Debugging in Production Part 2 - Latent Race Condition Bugs" rel="bookmark">Debugging in Production Part 2 - Latent Race Condition Bugs</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				, 
+			
+				<a href="http://improve.dk/category/IIS/">IIS</a>
+				, 
+			
+				<a href="http://improve.dk/category/Tools of the Trade/">Tools of the Trade</a>
+				, 
+			
+				<a href="http://improve.dk/category/Windbg/">Windbg</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on Debugging in Production Part 2 - Latent Race Condition Bugs">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>Having <a href="/debugging-in-production-part-1-analyzing-100-cpu-usage-using-windbg">analyzed the process dump in part 1</a>, let’s take a look at the code we suspect of causing the issue, in particular how race condition bugs can be avoided.</p>
+<a id="more"></a>
+
+
+<h2 id="Looking_at_the_User_Code">Looking at the User Code</h2>
+<p>There were three methods in action, all of them in the SettingDescriptionCache class: GetAllDescriptions, init and GetAllDescriptionsAsDictionary. GetAllDescriptions and GetAllDescriptionsAsDictionary are for all intents and purposes identical and both implement a pattern like this:</p>
+<figure class="highlight csharp"><pre>public static IEnumerable&lt;SettingDescriptionContainer&gt; GetAllDescriptions(IPartnerConfig partnerConfig)
+{
+	// Optimistic return. If it fails we'll populate the cache and return it.
+	try
+	{
+		return cache[partnerConfig.PartnerID].Values;
+	}
+	catch (KeyNotFoundException)
+	{
+		init(partnerConfig);
+	}
+
+	return cache[partnerConfig.PartnerID].Values;
+}
+</pre></figure>
+
+<p>Both methods access a static variable defined in the class like so:</p>
+<figure class="highlight csharp"><pre><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">readonly</span> Dictionary&lt;<span class="keyword">short</span>, Dictionary&lt;SettingDescription, SettingDescriptionContainer&gt;&gt; cache =
+	<span class="keyword">new</span> Dictionary&lt;<span class="keyword">short</span>, Dictionary&lt;SettingDescription, SettingDescriptionContainer&gt;&gt;();
+</pre></figure>
+
+<p>As this code is being called quite a lot, it’s written using an optimistic pattern that assumes the cache is populated. This is faster than checking if the cache is populated beforehand, or performing a TryGet(). I’ve previously blogged about <a href="/defending-against-the-improbable/">why you shouldn’t defend against the improbable</a>.</p>
+<h2 id="Dictionaries_are_Not_Thread_Safe">Dictionaries are Not Thread Safe</h2>
+<p>Looking up the <a href="http://msdn.microsoft.com/en-us/library/dd997305.aspx" target="_blank">MSDN article on thread-safe collections</a>, you’ll notice the following paragraph describes how the standard Dictionary collections are not thread-safe:</p>
+<blockquote>
+<p>The collection classes introduced in the .NET Framework 2.0 are found in the System.Collections.Generic namespace. These include List&lt;T&gt;, Dictionary&lt;TKey, TValue&gt;, and so on. These classes provide improved type safety and performance compared to the .NET Framework 1.0 classes. However, the .NET Framework 2.0 collection classes do not provide any thread synchronization; user code must provide all synchronization when items are added or removed on multiple threads concurrently.</p>
+</blockquote>
+<p>But is this the issue we’re running into? As there are two dictionaries in action, either one of them could potentially be the culprit. If the partnerConfig.PartnerID value was the same there would be a somewhat higher chance of this really being the issue - but how can find out what PartnerID values were being passed in to the methods?</p>
+<h2 id="Analyzing_Method_Parameters_Using_Windbg">Analyzing Method Parameters Using Windbg</h2>
+<p>Back in Windbg, for each of the threads we can run the !CLRStack command once again, but with the -p parameter. This doesn’t just list the stack trace, but also all of the parameters for each frame.</p>
+<figure class="highlight"><pre>~232s
+<span class="change">!CLRStack -p</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/debugging-in-production-part-2-latent-race-condition-bugs/Windbg5.png" class="fancy"><img src="/debugging-in-production-part-2-latent-race-condition-bugs/Windbg5.png" style="max-height: 250px"/></a></div></div>
+
+<p>In the fifth frame, there’s a value for the IPartnerConfig parameter:</p>
+<figure class="highlight"><pre>iPaper<span class="preprocessor">.BL</span><span class="preprocessor">.Backend</span><span class="preprocessor">.Modules</span><span class="preprocessor">.Paper</span><span class="preprocessor">.Settings</span><span class="preprocessor">.SettingDescriptionCache</span><span class="preprocessor">.GetAllDescriptions</span>(iPaper<span class="preprocessor">.BL</span><span class="preprocessor">.Backend</span><span class="preprocessor">.Infrastructure</span><span class="preprocessor">.PartnerConfiguration</span><span class="preprocessor">.IPartnerConfig</span>)
+	PARAMETERS:
+		partnerConfig (<span class="number">0x00000000543ac650</span>) = <span class="number">0x0000000260a7bd98</span>
+</pre></figure>
+
+<p>The left side value is the local memory address of the pointer itself whilst the right side is the memory location where the actual PartnerConfig instance is stored. By issuing the do (dump object) command, we can inspect the value itself:</p>
+<figure class="highlight"><pre>!<span class="keyword">do</span> <span class="number">0</span>x0000000260a7bd98
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/debugging-in-production-part-2-latent-race-condition-bugs/Windbg6.png" class="fancy"><img src="/debugging-in-production-part-2-latent-race-condition-bugs/Windbg6.png" style="max-height: 250px"/></a></div></div>
+
+<p>If you look under the Name column then you’ll be able to pinpoint the individual fields in the PartnerConfiguration instance. In the Value column you can see that the PartnerID field has a value of 230. Doing this for the other four threads yields the same result - all of them are trying to access the cache value belonging to the PartnerID value of 230!</p>
+<p>At this point I can quite confidently say that I’m sure this is a threading issue related to the non thread-safe Dictionary usage. I would’ve expected hard failures like like KeyNotFoundException, NullReferenceException and so on. But apparently, under the exact right race conditions, the dictionaries may get stuck at 100% CPU usage.</p>
+<p>Stay tuned for part 3 where I’ll show how to use the Dictionaries in a safe way that avoids issues like these!</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=Debugging%20in%20Production%20Part%202%20-%20Latent%20Race%20Condition%20Bugs%20http%3A%2F%2Fimprove.dk%2Fdebugging-in-production-part-2-latent-race-condition-bugs%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fdebugging-in-production-part-2-latent-race-condition-bugs%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fdebugging-in-production-part-2-latent-race-condition-bugs%2F&title=Debugging%20in%20Production%20Part%202%20-%20Latent%20Race%20Condition%20Bugs" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/debugging-in-production-part-2-latent-race-condition-bugs/debugging-in-production-part-2-latent-race-condition-bugs.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'debugging-in-production-part-2-latent-race-condition-bugs';
+	var disqus_url = 'http://improve.dk/debugging-in-production-part-2-latent-race-condition-bugs/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

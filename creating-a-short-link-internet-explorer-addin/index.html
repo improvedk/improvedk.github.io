@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Creating a &quot;Shorten Link&quot; Internet Explorer Addin | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Dec</span>
+			<span class="day">16</span>
+		</div>
+		<div class="lower">2006</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/creating-a-short-link-internet-explorer-addin/" title="Creating a &quot;Shorten Link&quot; Internet Explorer Addin" rel="bookmark">Creating a &quot;Shorten Link&quot; Internet Explorer Addin</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on Creating a &quot;Shorten Link&quot; Internet Explorer Addin">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>You probably already know of the short link services that are around, <a href="http://makeashorterlink.com/index.php" target="_blank">www.makeashorterlink.com</a> for instance. While the idea behind these sites are indeed good, I personally find it quite cumbersome to actually create the short links when I’m typing a forum post somewhere. In this post I’ll give an example of a short link system that enables one to easily create short links while typing in Internet Explorer, using an Internet Explorer addon that conveniently places itself in the context menu whenever we right click on some text and a .NET webservice that handles the short link functionality.</p>
+<a id="more"></a>
+
+<div class="imgwrapper" style=""><div><a href="/creating-a-short-link-internet-explorer-addin/shortlink1_2.jpg" class="fancy"><img src="/creating-a-short-link-internet-explorer-addin/shortlink1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<h2 id="What’s_a_short_link?">What’s a short link?</h2>
+<p>I’ll keep this part short (pun intended). Often when writing in forums, emails, newsgroups and so forth, we need to post links. The problem arises when we have to post a link like this: <a href="http://www.experts-exchange.com/Programming/Programming_Languages/C_Sharp/Q_20801558.html" target="_blank">http://www.experts-exchange.com/Programming/Programming_Languages/C_Sharp/Q_20801558.html</a>, it’s quite large! This may easily ruin the desing of the website and annoy people as it takes up a lot of space. A short link equivalence is: <a href="http://link.improve.dk/8" target="_blank">http://link.improve.dk/8</a>.</p>
+<h2 id="The_idea">The idea</h2>
+<p>So how can we make it more convenient, so we won’t have to open up a new browser, go to the short link website, create the short link and copy it back into the other browser window? My proposal is that we create an Internet Explorer addin for the context menu like shown in the picture above. That means we can simply type the long url as normally, select it and the right click and select “Replace with short link” whereafter it’ll automatically get replaced by a corresponding short link.</p>
+<h2 id="The_components">The components</h2>
+<p>I won’t be hooking into any of the existing short link services as I really wan’t to show how such a service could be created from the bottom up, it’s actually quite simple. The complete service covers four separate projects. We have the actual Internet Explorer addin which is written in JavaScript. Then we have a .NET DLL that’ll be installed on the client machine, this is the one that’ll take care of the communication with the short link server. Furthermore we have the “Create a short link” webservice that’ll handle the actual creation of short links. And finally we have the short link redirection website which ensures that <a href="http://link.improve.dk/*" target="_blank">http://link.improve.dk/*</a> redirects to the URL that’s behind it.</p>
+<h2 id="The_database">The database</h2>
+<p>For storing the short links I’m using a MS SQL server database, of course you can use any kind of storage you want, whether that be Access, XML or some other format. The table I’ll be using can be seen here:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> [dbo].[tblShortLinks](
+	[LinkID] [<span class="keyword">int</span>] <span class="keyword">IDENTITY</span>(<span class="number">1</span>,<span class="number">1</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>,
+	[URL] [<span class="keyword">varchar</span>](<span class="number">512</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>,
+	[Created] [datetime] <span class="keyword">NOT</span> <span class="keyword">NULL</span> <span class="keyword">CONSTRAINT</span> [DF_tblShortLinks_Created] <span class="keyword">DEFAULT</span> (getdate()),
+	[IP] [<span class="keyword">varchar</span>](<span class="number">50</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>,
+	[Visits] [<span class="keyword">int</span>] <span class="keyword">NOT</span> <span class="keyword">NULL</span> <span class="keyword">CONSTRAINT</span> [DF_tblShortLinks_Visits] <span class="keyword">DEFAULT</span> (<span class="number">0</span>))</span>
+</pre></figure>
+
+<p>We have an identity column, the URL, a column reprensenting the creation time of the link, the IP of the creator (for abuse checking) and finally a simple counter that counts how many times the link has been visited.</p>
+<h2 id="The_“Create_a_short_link_webservice”_–_ShortLinkService">The “Create a short link webservice” – ShortLinkService</h2>
+<p>I’ll dive right into it and present the complete code for the webservice, ShortLinkService.cs:</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System.Web.Services;
+<span class="keyword">using</span> System.Data.SqlClient;
+<span class="keyword">using</span> System.Data;
+<span class="keyword">using</span> System.Web;
+<span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Text.RegularExpressions;
+
+[WebService(Namespace = <span class="string">"http://link.improve.dk"</span>)]
+[WebServiceBinding(ConformsTo = WsiProfiles.BasicProfile1_1)]
+<span class="keyword">public</span> <span class="keyword">class</span> ShortLinkService : WebService
+{
+	[WebMethod]
+	<span class="keyword">public</span> <span class="keyword">string</span> <span class="title">CreateShortLinkFromURL</span>(<span class="keyword">string</span> url)
+	{
+		<span class="comment">// We won't handle invalid URL's</span>
+		<span class="keyword">if</span> (!Regex.IsMatch(url, <span class="string">@"[-w.]+://([-w.]+)+(:d+)?(:w+)?(@d+)?(@w+)?([-w.]+)(/([w/_.]*(?S+)?)?)?"</span>))
+			<span class="keyword">return</span> <span class="string">"BAD URL"</span>;
+
+		<span class="comment">// Create a SqlCommand that'll lookup the URL to see if it already exists</span>
+		SqlCommand cmd = <span class="keyword">new</span> SqlCommand(<span class="string">"SELECT LinkID FROM tblShortLinks WHERE URL = @URL"</span>);
+		cmd.Parameters.Add(<span class="string">"@URL"</span>, SqlDbType.VarChar, <span class="number">512</span>).Value = url;
+
+		<span class="keyword">object</span> result = DB.GetScalar(cmd);
+
+		<span class="comment">// If it exists, just return the existing short link</span>
+		<span class="keyword">if</span> (result != <span class="keyword">null</span>)
+			<span class="keyword">return</span> <span class="string">"http://link.improve.dk/"</span> + result;
+		<span class="keyword">else</span>
+		{
+			<span class="comment">// Since it doesn't exist, create it and return the new link</span>
+			cmd = <span class="keyword">new</span> SqlCommand(<span class="string">"INSERT INTO tblShortLinks (URL, IP) VALUES (@URL, @IP); SELECT @@IDENTITY"</span>);
+			cmd.Parameters.Add(<span class="string">"@URL"</span>, SqlDbType.VarChar, <span class="number">512</span>).Value = url;
+			cmd.Parameters.Add(<span class="string">"@IP"</span>, SqlDbType.VarChar, <span class="number">50</span>).Value = HttpContext.Current.Request.UserHostAddress;
+
+			<span class="keyword">return</span> <span class="string">"http://link.improve.dk/"</span> + Convert.ToInt32(DB.GetScalar(cmd));
+		}
+	}
+}
+</pre></figure>
+
+<p>First of all we have to make a crude check to see if it’s a valid URL, if not, we won’t handle it. Next we’ll try and see if the requested URL already exists as a short link. If it does we might as well just return that instead of creating a new one.</p>
+<p>Please don’t get confused by my call to another class that I use (which I won’t be presenting): DB.GetScalar(). What DB.GetScalar() does is to simply connect to my database and run the SqlCommand on it, returning the scalar value of the query. I’ve kept this code separate as it would only clutter the real purpose of this code.</p>
+<p>After getting the value of the SQL query we check if the link exists. If it does we return the short link URL, if not, we create the short link while selecting the newly created identity value at the same time. And then finally we return the URL, just as if it already existed.</p>
+<p>That was the complete short link webservice code. All it does is to simply take a URL and return a corresponding short url.</p>
+<h2 id="The_redirector_website">The redirector website</h2>
+<p>This is the website running at <a href="http://link.improve.dk" target="_blank">http://link.improve.dk</a>. I’ve setup <a href="http://scottwater.com/blog/articles/Wildcard.aspx" target="_blank">wildcard mapping</a> so all requests passes through to the ASPNET engine. This enables me to write the redirection functionality in the Global.asax file like so:</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System.Web;
+<span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Text.RegularExpressions;
+<span class="keyword">using</span> System.Data.SqlClient;
+<span class="keyword">using</span> System.Data;
+
+<span class="keyword">public</span> <span class="keyword">class</span> Global : HttpApplication
+{
+	<span class="keyword">private</span> <span class="keyword">void</span> <span class="title">Application_BeginRequest</span>(<span class="keyword">object</span> sender, EventArgs e)
+	{
+		<span class="keyword">string</span> input = Request.Path.Replace(<span class="string">"/"</span>, <span class="string">""</span>);
+
+		<span class="comment">// Let's do a simple validation, the input has to be a number</span>
+		<span class="keyword">if</span> (!Regex.IsMatch(input, <span class="string">@"^d+$"</span>))
+			DB.Debug(<span class="string">"Not a valid short link."</span>);
+
+		<span class="keyword">int</span> linkID = Convert.ToInt32(input);
+
+		<span class="comment">// Lookup URL in database</span>
+		SqlCommand cmd = <span class="keyword">new</span> SqlCommand(<span class="string">"UPDATE tblShortLinks SET Visits = Visits + 1 WHERE LinkID = @LinkID; SELECT URL FROM tblShortLinks WHERE LinkID = @LinkID"</span>);
+		cmd.Parameters.Add(<span class="string">"@LinkID"</span>, SqlDbType.Int).Value = linkID;
+
+		<span class="keyword">object</span> url = DB.GetScalar(cmd);
+
+		<span class="keyword">if</span> (url != <span class="keyword">null</span>)
+			Response.Redirect(url.ToString());
+		<span class="keyword">else</span>
+			DB.Debug(<span class="string">"Link does not exist."</span>);
+	}
+}
+</pre></figure>
+
+<p>First of all we retrieve the input value which consists of the requested path - exluding the leading forward slash. Then we perform a very quick input validation, checking that the requested path is a number. Most short link services use a combination of numbers and alphanumeric characters to keep the actual URL as short as possible. While this is a much better solution, I’ve stuck to the simple version by simple using numbers.</p>
+<p>After retrieving the link ID from the requested path, we look it up in the database - and incrementing the visits count at the same time. If it exists then we perform a Response.Redirect to the requested URL, if it doesn’t exist then we write an error output.</p>
+<p>The DB.Debug() function is very simple. All it does is to perform a Response.Write() of the passed object and then a Response.End() afterwards, very retro debugging stylish. This concludes the complete short link redirection website.</p>
+<h2 id="The_managed_clientside_library_–_ShortLinkClient">The managed clientside library – ShortLinkClient</h2>
+<p>This is where things start to get interesting. This library is the .NET class that’ll take care of communicating with the ShortLinkService webservice from the client computer. The ShortLinkClient library will be invoked from the Internet Explorer addin through COM (as we <em>have</em> to use JavaScript for the actual addin, unfortunately).</p>
+<p>Start by creating a new class library project. Now either delete the Class1.cs or rename it to your liking. Then add a web reference to the following web service:<a href="http://linkservice.improve.dk/ShortLinkService.asmx" target="_blank">http://linkservice.improve.dk/ShortLinkService.asmx</a>. As this library has to be exported to COM we have to sign it using a strong name key file. Fortunately this is quite simple in Visual Studio 2005:</p>
+<div class="imgwrapper" style=""><div><a href="/creating-a-short-link-internet-explorer-addin/shortlink2_2.jpg" class="fancy"><img src="/creating-a-short-link-internet-explorer-addin/shortlink2_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Simply right click the ShortLinkClient project and select properties. Then go to the Signing tab, check “Sign the assembly” and choose “New…” from the dropdown list. This’ll create a new strong name key file for the library. You do not have to password protect it.</p>
+<p>Make sure the ShortLinkClient.cs code matches the following:</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System.Runtime.InteropServices;
+<span class="keyword">using</span> System.Text.RegularExpressions;
+
+namespace Improve
+{
+	[ComVisible(<span class="keyword">true</span>)]
+	<span class="keyword">public</span> <span class="keyword">class</span> ShortLinkClient
+	{
+		<span class="keyword">public</span> <span class="title">ShortLinkClient</span>()
+		{
+		}
+
+		<span class="keyword">public</span> <span class="keyword">string</span> <span class="title">CreateShortLink</span>(<span class="keyword">string</span> url)
+		{
+			LinkService.ShortLinkService shortLinkService = <span class="keyword">new</span> LinkService.ShortLinkService();
+
+			<span class="keyword">return</span> shortLinkService.CreateShortLinkFromURL(url);
+		}
+
+		<span class="keyword">public</span> <span class="keyword">bool</span> <span class="title">IsLink</span>(<span class="keyword">string</span> text)
+		{
+			<span class="keyword">return</span> Regex.IsMatch(text, <span class="string">@"[-w.]+://([-w.]+)+(:d+)?(:w+)?(@d+)?(@w+)?([-w.]+)(/([w/_.]*(?S+)?)?)?"</span>);
+		}
+	}
+}
+</pre></figure>
+
+<p>By default our .NET classes are not visible to COM when it’s exported, that why we have to set the [ComVisible(true)] attribute on the ShortLinkClient class. Also, for our class to be usable by COM, we have to create a constructor that takes no parameters, otherwise COM won’t be able to use our class.</p>
+<p>The IsLink function is used to determine whether the right clicked text is actually a valid URL or if it’s just plain text.</p>
+<p>CreateShortLink takes the URL as a parameter. It then creates an instance of our ShortLinkService proxy class whereafter it invokes the CreateShortLinkFromURL function of the webservice which should return the short link equivalence of the passed URL. This is the only managed code that will run on the client as part of the Internet Explorer addin.</p>
+<p>After building the ShortLinkClient project, register it for COM interop using the following command from a command prompt:</p>
+<figure class="highlight shell"><pre>regasm /codebase ShortLinkClient<span class="preprocessor">.dll</span>
+</pre></figure>
+
+<p>To unregister, simply switch the /codebase switch with /unregister. You may have to close any open Internet Explorer windows in case the library has been invoked through the addin as these windows otherwise may lock the dll file.</p>
+<h2 id="Creating_the_actual_addin">Creating the actual addin</h2>
+<p>Unfortunately Internet Explorer lacks a bit when it comes to creating add ins for the context menu. I’d really like to be able to write in managed code all the way, but as things are currently, this part has to be written in JavaScript.</p>
+<p>To register the addin, create a new registry key in the following location: HKEY_CURRENT_USER/Software/Microsoft/Internet Explorer/MenuExt. The key should have the name that you want to be present in the context menu. In my case that’d result in the following key being created: “HKEY_CURRENT_USER/Software/Microsoft/Internet Explorer/MenuExt/Replace with short link”.</p>
+<div class="imgwrapper" style=""><div><a href="/creating-a-short-link-internet-explorer-addin/shortlink3_2.jpg" class="fancy"><img src="/creating-a-short-link-internet-explorer-addin/shortlink3_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>The default value should point to the location where you want your javascript file to be located. For development purposes you can place this anywhere you want (I’m using the desktop). For deployment you might want to consider using the Program Files folder.</p>
+<figure class="highlight javascript"><pre>&lt;script type=<span class="string">"text/javascript"</span>&gt;
+	<span class="comment">// &lt;![CDATA[</span>
+	<span class="function"><span class="keyword">function</span> <span class="title">main</span><span class="params">()</span>
+	{</span>
+		<span class="comment">// Get document reference</span>
+		<span class="keyword">var</span> doc = external.menuArguments.document;
+		<span class="keyword">var</span> range = doc.selection.createRange();
+
+		<span class="comment">// Check if any text has been selected</span>
+		<span class="keyword">if</span>(!range.text)
+		{
+			alert(<span class="string">'No text selected.'</span>);
+			<span class="keyword">return</span>;
+		}
+
+		<span class="comment">// Create the ShortLinkClient object</span>
+		<span class="keyword">var</span> shortLinkClient = <span class="keyword">new</span> ActiveXObject(<span class="string">'Improve.ShortLinkClient'</span>);
+
+		<span class="comment">// If link starts with www, let's add http:// for convenience</span>
+		<span class="keyword">var</span> link = range.text.indexOf(<span class="string">'www'</span>) == <span class="number">0</span> ? <span class="string">'http://'</span> + range.text : range.text;
+
+		<span class="comment">// Check if selected text is actually a URL</span>
+		<span class="keyword">if</span>(!shortLinkClient.IsLink(link))
+		{
+			alert(<span class="string">'Selected text is not a valid URL.'</span>);
+			<span class="keyword">return</span>;
+		}
+
+		<span class="comment">// Get a short link</span>
+		<span class="keyword">var</span> shortLink = shortLinkClient.CreateShortLink(link);
+
+		<span class="comment">// Replace the selected text with the short link</span>
+		range.text = shortLink;
+	}
+
+	main();
+	<span class="comment">// ]]&gt;</span>
+&lt;<span class="regexp">/script&gt;</span>
+</pre></figure>
+
+<p>The JavaScript file contains absolutely standard JavaScript code inside a normal script element. In the main function we can access the relevant html Document by accessing the external.menuArguments.document property. We can retrieve the selected text by creating a range using the Document.selection.createRange() function.</p>
+<p>First we have to check whether any text was selected at all. Then we create an instance of the ShortLinkClient library (remember, it’ll have to be registered for COM interop for this to work - using regasm).</p>
+<p>For convenience I’ll add http:// in case the link starts with www. For it to be a valid link it has to be in the form protocol://*, so by adding the http:// I’ll allow users to shortlink links like “www.improve.dk” instead of them having to type the complete <a href="http://www.improve.dk" target="_blank">http://www.improve.dk</a>.</p>
+<p>Next we check whether the selected text is a link by using the ShortLinkClient.IsLink() function, passing in the selected text. If everything passes thus far, we invoke the ShortLinkClient.CreateShortLink() function which’ll invoke the webservice and create the short link - and return the short link URL which we will the use the replace the selected text with in the last line of the main function.</p>
+<p>If all goes well, this should be the result of our four components working together:</p>
+<div class="imgwrapper" style=""><div><a href="/creating-a-short-link-internet-explorer-addin/shortlink4_2.jpg" class="fancy"><img src="/creating-a-short-link-internet-explorer-addin/shortlink4_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Downloads">Downloads</h2>
+<p><a href="short_link_code.zip">short_link_code.zip - Sample solution</a></p>
+<h2 id="Improvements">Improvements</h2>
+<p>Many features of this example can be improved if this was meant to be deployed for real. For instance the regular expressions may not match all valid URL’s. Also we should probably make some kind of “loading” text while the webservice creates the short link, instead of letting the user sit there for a second or two before the short link emerges (the first time it’s called it’ll take some time, afterwards it should be nearly instant).</p>
+<p>Please let me know if you have any suggestions, questions or any other relevant comments, thanks!</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=Creating%20a%20%22Shorten%20Link%22%20Internet%20Explorer%20Addin%20http%3A%2F%2Fimprove.dk%2Fcreating-a-short-link-internet-explorer-addin%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fcreating-a-short-link-internet-explorer-addin%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fcreating-a-short-link-internet-explorer-addin%2F&title=Creating%20a%20%22Shorten%20Link%22%20Internet%20Explorer%20Addin" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/creating-a-short-link-internet-explorer-addin/creating-a-short-link-internet-explorer-addin.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'creating-a-short-link-internet-explorer-addin';
+	var disqus_url = 'http://improve.dk/creating-a-short-link-internet-explorer-addin/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

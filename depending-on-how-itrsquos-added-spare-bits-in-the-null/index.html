@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>The Garbage Null Bitmap and Why You Can&#39;t Rely on It Solely | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">16</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/depending-on-how-itrsquos-added-spare-bits-in-the-null/" title="The Garbage Null Bitmap and Why You Can&#39;t Rely on It Solely" rel="bookmark">The Garbage Null Bitmap and Why You Can&#39;t Rely on It Solely</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on The Garbage Null Bitmap and Why You Can&#39;t Rely on It Solely">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>While adding some extra sparse column tests to the <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a> test suite, I discovered an bug in my parsing of records. While the problem was simple enough, it took me a while to debug. Running the test, it worked about 40% of the time while failing the remaining 60% of the time. As I hadn’t picked up on this pattern I happily fixed (or so I thought) the bug, ran my test and verified that it was working. Shortly after the test failed – without me having changed any code. After having the first few strains of hair turn grey, I noticed the pattern and subsequently fixed the bug.</p>
+<a id="more"></a>
+
+<h2 id="The_normal_bitmap">The normal bitmap</h2>
+<p>Creating a table like the following results in a record with both a null bitmap and a variable length column for the <a href="/sparse-column-storage-ndash-the-sparse-vector">sparse vector</a>:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> Y (A <span class="keyword">int</span> SPARSE, B <span class="keyword">int</span> <span class="keyword">NULL</span>)
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> Y <span class="keyword">VALUES</span> (<span class="number">5</span>, <span class="number">2</span>)</span>
+</pre></figure>
+
+<p>Outputting the lone record in the lone data pages yields the following:</p>
+<div class="imgwrapper" style=""><div><a href="/depending-on-how-itrsquos-added-spare-bits-in-the-null/image_2.png" class="fancy"><img src="/depending-on-how-itrsquos-added-spare-bits-in-the-null/image_2.png" style="max-height: 250px"/></a></div></div>
+
+<p>The only thing of interest is the null bitmap. It has a value of 0, indicating that all columns are non null. The only column that actually uses the null bitmap is the <em>B</em> column. While the B column has a column index of 1, it’s represented by index 0 in the null bitmap, given that it’s the first column utilizing the null bitmap. Since the null bitmap has a value of 0x00, we know that the remaining (and unused) 7 bits all have a value of 0 – as would be expected.</p>
+<h2 id="The_garbage_bitmap">The garbage bitmap</h2>
+<p>Now consider another schema, akin to the previous one:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> DifferingRecordFormats (A <span class="keyword">int</span> SPARSE)
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> DifferingRecordFormats <span class="keyword">VALUES</span> (<span class="number">5</span>)
+<span class="keyword">ALTER</span> <span class="keyword">TABLE</span> DifferingRecordFormats <span class="keyword">ADD</span> B <span class="keyword">int</span> <span class="keyword">NULL</span>
+<span class="keyword">UPDATE</span> DifferingRecordFormats <span class="keyword">SET</span> B = <span class="number">2</span></span>
+</pre></figure>
+
+<p>While ending up with the exact same table schema, values and record layout, the null bitmap differs. The following are three sample records, resulting from running the above script three times, dropping the table in between to start on a fresh:</p>
+<div class="imgwrapper" style=""><div><a href="/depending-on-how-itrsquos-added-spare-bits-in-the-null/image_41.png" class="fancy"><img src="/depending-on-how-itrsquos-added-spare-bits-in-the-null/image_41.png" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/depending-on-how-itrsquos-added-spare-bits-in-the-null/image_61.png" class="fancy"><img src="/depending-on-how-itrsquos-added-spare-bits-in-the-null/image_61.png" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/depending-on-how-itrsquos-added-spare-bits-in-the-null/image_81.png" class="fancy"><img src="/depending-on-how-itrsquos-added-spare-bits-in-the-null/image_81.png" style="max-height: 250px"/></a></div></div>
+
+<p>Notice how all three records are <em>exactly</em> the same, except for the null bitmap. It’s even identical to the “The normal bitmap” record that I fixed showed, <em>except</em> for the null bitmap value. Let’s try and convert those three null bitmaps to binary:</p>
+<figure class="highlight"><pre>
+0x5C = 0b0101110<span class="strong">**0**</span>
+0xDA = 0b1101101<span class="strong">**0**</span>
+0x16 = 0b0001011<span class="strong">**0**</span>
+</pre></figure>
+
+<p>All three bitmaps hold valid values for the bit we’re interested in – the very first (rightmost) bit. The remaining bits seem to be random garbage. While this doesn’t affect parsing as we’re not touching those spare bits, I find it interesting that the bitmap behaves differently depending on how it’s added. I’m guessing there’s an internal byte in memory that’s spilling through, having only the necessary bits flipped, instead of creating a new zeroed out byte and flipping bits as necessary on the clean byte.</p>
+<h2 id="Thou_shalt_not_trust_the_null_bitmap_blindly!">Thou shalt not trust the null bitmap blindly!</h2>
+<p>Having garbage in the null bitmap raises some interesting questions. Usually when we add a nullable column to a schema, we don’t have to touch the data pages since we can determine the new columns data is not present in the record, hence it must be null. This is not done using the null bitmap however. Imagine this scenario:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> Garbage (A <span class="keyword">int</span> sparse)
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> Garbage <span class="keyword">VALUES</span> (<span class="number">5</span>)
+<span class="keyword">ALTER</span> <span class="keyword">TABLE</span> Garbage <span class="keyword">ADD</span> B <span class="keyword">int</span> <span class="keyword">NULL</span>
+<span class="keyword">UPDATE</span> Garbage <span class="keyword">SET</span> B = <span class="number">2</span>
+<span class="keyword">ALTER</span> <span class="keyword">TABLE</span> Garbage <span class="keyword">ADD</span> E <span class="keyword">varchar</span>(<span class="number">10</span>)</span>
+</pre></figure>
+
+<p>We start out as before, causing a garbage null bitmap that might have a value of 0b01011000, meaning the third three columns are non-null – that is, B and E (since A is sparse and therefor doesn’t utilize the null bitmap). But E <em>is</em> null, even though the null bitmap says otherwise. This is the record as it may (given that the null bitmap value can vary) look after the above queries have been run:</p>
+<div class="imgwrapper" style=""><div><a href="/depending-on-how-itrsquos-added-spare-bits-in-the-null/image_101.png" class="fancy"><img src="/depending-on-how-itrsquos-added-spare-bits-in-the-null/image_101.png" style="max-height: 250px"/></a></div></div>
+
+<p>So according to the null bitmap, both B and E are null – doing a select confirms that that is not the case however:</p>
+<div class="imgwrapper" style=""><div><a href="/depending-on-how-itrsquos-added-spare-bits-in-the-null/image_121.png" class="fancy"><img src="/depending-on-how-itrsquos-added-spare-bits-in-the-null/image_121.png" style="max-height: 250px"/></a></div></div>
+
+<p>So how do we determine that E is in fact null? By ignoring the null bitmap and realizing there’s no data for E. The column count for the record has a value of 1. It’s important to note that the column count counts the total number of non-sparse columns present in the record, including variable length. Since this has a value of 1 and there’s a fixed-length column present, that’s the one it’s counting. While there’s also a variable length column, that’s the sparse vector – identified by the fact that the column count didn’t include it, and that the variable length offset array entry identifies it as a <a href="/identifying-complex-columns-in-records">complex column</a>.</p>
+<h2 id="Conclusion">Conclusion</h2>
+<p>I’m having <a href="/the-null-bitmap-is-not-always-present-in-data-records">some</a> <a href="/the-8-byte-record-that-was-9-bytes-while-making-no-sense">fun</a> causing all kinds of edge cases due to sparse columns, even more fun trying to reason why what’s happening is happening. I haven’t seen garbage bitmaps before working with sparse columns and causing the specific scenario where the bitmap is added to a data record that doesn’t already have one. The most important thing to realize is that it doesn’t matter, at all. When doing reads of a record, the first thing we should check is <em>not</em> the null bitmap, but whether to expect the column in the record and afterwards whether there is a null bitmap at all (it may not be present in these sparse scenarios, as well as for index records).</p>
+<p>Below is a pseudo code presentation of how I’m currently parsing records, passing all current tests. Note that it’s leaving out a lot of details, but the overall logic follows the actual implementation. Also note that I’m continually updating this as I discover new edge cases that I haven’t taken into account.</p>
+<figure class="highlight sql"><pre>foreach column in schema {
+	if(sparse) {
+		if(record has sparse vector) {
+			Value = [Read value from sparse vector, possibly NULL]
+		} else {
+			Value = NULL
+		}
+	} else {
+		if(non-sparse column index &lt; record.NumberOfColumns) {
+			if(record does not have a null bitmap OR null bitmap indicates non NULL) {
+				if(column is variable length) {
+					Value = [Read value from variable length data section]
+				} else {
+					Value = [Read value from fixed length data section]
+				}
+			} else {
+				Value = NULL
+			}
+		} else {
+			Value = NULL
+		}
+	}
+}
+</pre></figure>
+
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=The%20Garbage%20Null%20Bitmap%20and%20Why%20You%20Can't%20Rely%20on%20It%20Solely%20http%3A%2F%2Fimprove.dk%2Fdepending-on-how-itrsquos-added-spare-bits-in-the-null%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fdepending-on-how-itrsquos-added-spare-bits-in-the-null%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fdepending-on-how-itrsquos-added-spare-bits-in-the-null%2F&title=The%20Garbage%20Null%20Bitmap%20and%20Why%20You%20Can't%20Rely%20on%20It%20Solely" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/depending-on-how-itrsquos-added-spare-bits-in-the-null/depending-on-how-itrsquos-added-spare-bits-in-the-null.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'depending-on-how-itrsquos-added-spare-bits-in-the-null';
+	var disqus_url = 'http://improve.dk/depending-on-how-itrsquos-added-spare-bits-in-the-null/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

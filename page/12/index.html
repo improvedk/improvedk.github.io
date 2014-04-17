@@ -1,0 +1,1711 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Dec</span>
+			<span class="day">16</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/techtalk-on-scalability-and-availability-using-nlb-and-iis-arr/" title="TechTalk on Scalability &amp; Availability Using NLB and IIS ARR" rel="bookmark">TechTalk on Scalability &amp; Availability Using NLB and IIS ARR</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/Conferences and Presenting/">Conferences and Presenting</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>As promised during my TechTalk today at Microsoft Denmark, here are the links to all slides and demo code. Unfortunately you’ll not be able to download the VPC’s as those total around 30GB.</p>
+<a id="more"></a>
+
+<p>Download <a href="Speech_NLB_MSDK_TechTalk.rar">Speech_NLB_MSDK_TechTalk.zip</a> - Slides &amp; code</p>
+<p>I sincerely hope you enjoyed the presentation as much as I did. Either way, I’d appreciate your comments on <a href="http://speakerrate.com/talks/1900-using-network-load-balancing-for-availability-scalability-microsoft-dk-techtalk" target="_blank">SpeakerRate</a> - Thanks :)</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Dec</span>
+			<span class="day">09</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/fixing-flash-bugs-by-intercepting-iis-application-request-routing-cookies/" title="Fixing Flash Bugs and Intercepting IIS Application Request Routing Cookies" rel="bookmark">Fixing Flash Bugs and Intercepting IIS Application Request Routing Cookies</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				, 
+			
+				<a href="http://improve.dk/category/AS/Flex/Flash/">AS/Flex/Flash</a>
+				, 
+			
+				<a href="http://improve.dk/category/IIS/">IIS</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>What does Flash, upload, cookies, IIS load balancing and cookies have to do with each others? More than I’d like :(</p>
+<a id="more"></a>
+
+<p>When users need to upload files I often use the Flash based <a href="http://swfupload.org/" target="_blank">SWFUpload</a> component. It allows for multiple file selection and progress display during upload. Handling the uploaded files on the .NET side is rather easy:</p>
+<figure class="highlight csharp"><pre><span class="keyword">for</span> (int i = <span class="number">0</span>; i &lt; Request.Files.Count; i++)
+{
+    HttpPostedFile hpf = Request.Files[i];
+
+    // <span class="keyword">...</span> Save / process the HttpPostedFile
+}
+</pre></figure>
+
+<p>One of the arguments for using Flash for web designs is that it’ll look the same in all browsers. While that is literally true, there are a number of functionality differences when it comes to Flash and cross browser support.</p>
+<p>There’s a bug in all current Flash players that causes the Flash player to send persistent cookies from Internet Explorer, no matter what browser you’re currently using. That is, if you’ve visited a given website in IE previously and you’re nor visiting it in Chrome/Firefox - yup, your IE cookies will be sent to the website instead of the Firefox/Chrome cookies! There’s a good <a href="http://swfupload.org/forum/generaldiscussion/383" target="_blank">description and discussion</a> at the SWFUpload site.</p>
+<p>This bug poses a number of problems if you’re using SWFUpload on a password protected site that relies on <a href="http://support.microsoft.com/kb/910443" target="_blank">cookie based forms authentication</a>. Whenever the file is uploaded, the users will appear to not be logged in. This is because the forms authentication ticket is stored in a cookie (which is correctly stored by Firefox/Chrome), but whenever the request is made IE’s cookies are sent and those do not contain a valid forms authentication ticket cookie.</p>
+<p>Luckily there’s a workaround for this. Basically we’ll need to tell our upload SWF the current SessionID as well as the contents of the forms authentication ticket cookie:</p>
+<figure class="highlight csharp"><pre>var flashVars = {
+    ASPSESSID: "<span class="vbscript">&lt;%= Session.SessionID %&gt;</span>",
+    AUTHID: "<span class="vbscript">&lt;%= <span class="built_in">Request</span>.Cookies[FormsAuthentication.FormsCookieName] == <span class="literal">null</span> ? <span class="string">""</span> : <span class="built_in">Request</span>.Cookies[FormsAuthentication.FormsCookieName].Value %&gt;</span>"
+}
+</pre></figure>
+
+<p>Now we need to modify our SWFUpload code so it sends the SessionID and ticket values in the query string to the upload file, so instead of calling:</p>
+<figure class="highlight csharp"><pre>UploadFile_Upload<span class="preprocessor">.aspx</span>
+</pre></figure>
+
+<p>We’ll call:</p>
+<figure class="highlight csharp"><pre><span class="attribute">UploadFile_Upload.aspx?ASPSESSID</span>=<span class="string">e2u35jfs0pvevfugkfnmm045&AUTHID=E7BA5BDD2D6E9FBBC7CF613352EF10E01E0E8B0AD9920F62A465BC0CA20FB9CC2BA67F95D5A82F5D30B3162D6DFB3EA7FD505456E5EA5407094D03C1D48E6EE0B80F85F1B6AFD5F52FDC14C2ED6D77A8</span>
+</pre></figure>
+
+<p>Now that we have the SessionID and ticket value we can manually restore those cookies in Global.asax (or an HttpModule, doesn’t matter). We’ll be doing the fix in Application_BeginRequest as this allows us to fix the cookies before ASP.NET will perform its validation and thereby notice the missing session and forms authentication cookies.</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> Global : HttpApplication
+{
+    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">Application_BeginRequest</span>(<span class="keyword">object</span> sender, EventArgs e)
+    {
+        fixCookie(<span class="string">"ASP.NET_SessionId"</span>, <span class="string">"ASPSESSID"</span>);
+        fixCookie(FormsAuthentication.FormsCookieName, <span class="string">"AUTHID"</span>);
+    }
+
+    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title">fixCookie</span>(<span class="keyword">string</span> cookieName, <span class="keyword">string</span> queryStringKey)
+    {
+        <span class="comment">// Did we get a querystring value to override the cookie value?</span>
+        <span class="keyword">if</span> (HttpContext.Current.Request.QueryString[queryStringKey] != <span class="keyword">null</span>)
+        {
+            <span class="comment">// Try to get the current cookie value</span>
+            HttpCookie cookie = HttpContext.Current.Request.Cookies.Get(cookieName);
+
+            <span class="keyword">if</span> (cookie == <span class="keyword">null</span>)
+            {
+                <span class="comment">/* If there's no cookie, add a new one and add it to the Response.Cookies collection.
+                   Note that it HAS to be put in the Response.Cookies collection even though Request.Cookies
+                   makes more sense.
+                */</span> 
+                cookie = <span class="keyword">new</span> HttpCookie(cookieName, HttpContext.Current.Request.QueryString[queryStringKey]);
+                Response.Cookies.Add(cookie);
+            }
+            <span class="keyword">else</span>
+            {
+                <span class="comment">/* If there's already a cookie (one from IE perhaps), overwrite its value with the querystring
+                   provided value.
+                */</span>
+                cookie.Value = HttpContext.Current.Request.QueryString[queryStringKey];
+                HttpContext.Current.Request.Cookies.Set(cookie);
+            }
+        }
+    }
+}
+</pre></figure>
+
+<p>Note that there is a security implication in doing this as it allows for session hijacking if you’re able to fake another users SessionID and forms authentication ticket! Thus, make sure you handle this or at least know the risks in not doing so.</p>
+<p>OK, so that fixes the SWFUpload issue. This ran perfectly for some time. However, once i placed an <a href="http://forums.iis.net/1154.aspx" target="_blank">IIS7 Application Request Routing based load balancer</a> in front of the machine serving the upload applications, the issue from before reappeared, even though my original cookie handling code was still in place.</p>
+<p>The reason for the resurrection of the cookie bug was to be found in the way ARR maintains client affinity:</p>
+<div class="imgwrapper" style=""><div><a href="/fixing-flash-bugs-by-intercepting-iis-application-request-routing-cookies/arrswfupload_1_2.jpg" class="fancy"><img src="/fixing-flash-bugs-by-intercepting-iis-application-request-routing-cookies/arrswfupload_1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>IIS ARR will set a cookie on the client that basically contains a hash of the content server to which the client is bound. This is a very simple and neat client affinity solution as there’s no shared state on the IIS ARR machine itself. Thus, it’s easy to combine a number of IIS ARR servers using NLB and let IIS ARR handle client affinity and thus simplify the NLB setup.</p>
+<p>However, since the client affinity is handled by a cookie - that cookie was now suffering from the same bug as before. Basicaly the IIS ARR load balancer thought it received a completely new client request and thus assigned the request to a random content server, giving a 1/[num_machines] chance of succeeding in case it randomly hit the correct content server.</p>
+<p>The solution is similar, though there is one major difference. The previous problem occurred on the actual content machines because those were missing a cookie value, in this case it’s the load balancer itself. Thus, deploying a fix on the content servers won’t do any good.</p>
+<p>We’ll create a new HttpModule that performs the fix in Application_BeginRequest - which occurs before IIS ARR assigns the request to a content server. To ensure this fix does not in any way affect normal requests in case something goes wrong, exceptions are being silently ignored. This is generally a bad practice, but in this case I really do not want to affect the load balancer as that’ll put down the website for all users if an error occurs. Note that while the handling is very similar to the previous bit of code, this time we’re modifying the actual Cookie header directly. If we don’t do this, IIS ARR won’t pick up the overwritten cookie values and thus still send the user to a random content server.</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Text.RegularExpressions;
+<span class="keyword">using</span> System.Web;
+
+namespace iPaper.Web.ArrCookieRestorer
+{
+    <span class="keyword">public</span> <span class="keyword">class</span> ArrCookieRestorer : IHttpModule
+    {
+        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Dispose</span>()
+        { }
+
+        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Init</span>(HttpApplication context)
+        {
+            context.BeginRequest += context_BeginRequest;
+        }
+
+        <span class="keyword">private</span> <span class="keyword">void</span> <span class="title">context_BeginRequest</span>(<span class="keyword">object</span> sender, EventArgs e)
+        {
+            <span class="keyword">try</span>
+            {
+                HttpContext context = HttpContext.Current;
+                <span class="keyword">string</span> serverHash = context.Request.QueryString[<span class="string">"ARRIPARRAffinity"</span>];
+
+                <span class="keyword">if</span> (serverHash != <span class="keyword">null</span>)
+                {
+                    <span class="keyword">string</span> cookieHeader = context.Request.Headers[<span class="string">"Cookie"</span>];
+
+                    <span class="keyword">if</span> (cookieHeader != <span class="keyword">null</span>)
+                    {
+                        <span class="keyword">if</span> (cookieHeader.Contains(<span class="string">"IPARRAffinity="</span>))
+                            cookieHeader = Regex.Replace(cookieHeader, <span class="string">"IPARRAffinity=[0-9a-f]+;?"</span>, <span class="string">"IPARRAffinity="</span> + serverHash + <span class="string">";"</span>);
+                        <span class="keyword">else</span>
+                            cookieHeader += <span class="string">"; IPARRAffinity="</span> + serverHash;
+
+                        context.Request.Headers[<span class="string">"Cookie"</span>] = cookieHeader;
+                    }
+                    <span class="keyword">else</span>
+                        context.Request.Headers.Add(<span class="string">"Cookie"</span>, <span class="string">"IPARRAffinity="</span> + serverHash);
+                }
+            }
+            <span class="keyword">catch</span>
+            {}
+        }
+    }
+}
+</pre></figure>
+
+<p>Once you’ve compiled the HttpModule we need to install it on the IIS ARR machine. On a default installation of IIS ARR you’ll have your rewrite rules as global rules at the IIS-level. However, if you install the HttpModule at the IIS level you’ll get the following exception on all requests:</p>
+<blockquote>
+<p>The virtual path ‘null’ maps to another application, which is not allowed root</p>
+</blockquote>
+<p>Apparently <a href="http://forums.iis.net/t/1162754.aspx" target="_blank">it’s a bug</a> in IIS 7.0 on Windows Server 2008 which has been fixed in IIS 7.5 on Windows Server 2008 R2. As I’m still running a vanilla 2008 and IIS 7.0, I had to get around it by moving the rewrite rules into the default website - which code runs for all requests.</p>
+<p>Make sure there’s a bin folder in the default website root and place your HttpModule in there. Then setup your web.config like so:</p>
+<figure class="highlight xml"><pre><span class="pi">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+</pre></figure>
+
+<p>This adds our HttpModule so it’ll run for all requests - fixing any missing ARR client affinity cookies. Note that your rewrite rules will likely differ from mine.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Nov</span>
+			<span class="day">11</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/reading-width-height-of-flash-file/" title="Reading Width &amp; Height of Flash File" rel="bookmark">Reading Width &amp; Height of Flash File</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				, 
+			
+				<a href="http://improve.dk/category/AS/Flex/Flash/">AS/Flex/Flash</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Obtaining the movie height &amp; weidth of a Flash file is an easy task using the <a href="http://www.swftools.org/swfdump.html" target="_blank">swfdump</a> tool that comes as part of the <a href="http://www.swftools.org/" target="_blank">swftools</a> package. Here’s an example of how to invoke swfdump from C# and read out the height &amp; width of a given Flash file.</p>
+<a id="more"></a>
+
+<p>Start out by downloading on of the <a href="http://www.swftools.org/download.html" target="_blank">swftools releases</a>. I’m using the latest development snapshot. I’ll be using one of the Flash files I made in <a href="http://www.improve.dk/blog/2008/06/11/as3-numbers-get-real" target="_blank">a previous blog post</a> as a test file, but you can use any .swf file you want. The test Flash file is called <em>test.swf</em>.</p>
+<p>Once you’ve extracted the swftools package and copied both the test file and the swfdump.exe file into your solution directory, we can now test it out manually:</p>
+<figure class="highlight"><pre>D:<span class="subst">\</span>Webmentor Projekter<span class="subst">\</span>Blog<span class="subst">\</span>RetrievingSwfProperties<span class="subst">&gt;</span>swfdump <span class="attribute">-X</span> <span class="attribute">-Y</span> test<span class="built_in">.</span>swf
+<span class="attribute">-X</span> <span class="number">500</span> <span class="attribute">-Y</span> <span class="number">375</span>
+</pre></figure>
+
+<p>By providing the -X and -Y switches swfdump only prints out the movie height &amp; width. You can see all the switches on the <a href="http://www.swftools.org/swfdump.html" target="_blank">swfdump man page</a>. At this point it’s a simple matter of spinning up a swfdump process and parsing the output:</p>
+<figure class="highlight csharp"><pre><span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
+{
+    <span class="comment">// Set process properties</span>
+    Process p = <span class="keyword">new</span> Process();
+    p.StartInfo = <span class="keyword">new</span> ProcessStartInfo(<span class="string">"swfdump.exe"</span>, <span class="string">"-X -Y test.swf"</span>);
+    p.StartInfo.CreateNoWindow = <span class="keyword">true</span>;
+    p.StartInfo.RedirectStandardOutput = <span class="keyword">true</span>;
+    p.StartInfo.UseShellExecute = <span class="keyword">false</span>;
+    p.Start();
+
+    <span class="comment">// Read all output, waiting for process to end</span>
+    <span class="keyword">string</span> output = p.StandardOutput.ReadToEnd();
+
+    <span class="comment">// Regex that'll match both the width and height output - has to take care of potential decimals</span>
+    Match m = Regex.Match(output, <span class="string">@"-X (?d+(.d+)?) -Y (?d+(.d+)?)"</span>);
+
+    <span class="comment">// Convert width & height to doubles forcing en-US culture</span>
+    <span class="keyword">double</span> width = Convert.ToDouble(m.Groups[<span class="string">"width"</span>].Value, <span class="keyword">new</span> CultureInfo(<span class="string">"en-US"</span>));
+    <span class="keyword">double</span> height = Convert.ToDouble(m.Groups[<span class="string">"height"</span>].Value, <span class="keyword">new</span> CultureInfo(<span class="string">"en-US"</span>));
+
+    Console.WriteLine(<span class="string">"Width: "</span> + width);
+    Console.WriteLine(<span class="string">"Height: "</span> + height);
+    Console.Read();
+}
+</pre></figure>
+
+<p>Result:</p>
+<blockquote>
+<p>Width: 500<br>Height: 375</p>
+</blockquote>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Nov</span>
+			<span class="day">05</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/defending-against-the-improbable/" title="Defending Against the Improbable" rel="bookmark">Defending Against the Improbable</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>As little children we’ve all been taught that it’s better to program defensively than relying on exceptions being thrown. However, sometimes it’s preferably to just hope for the best and catch exceptions if they happen.</p>
+<a id="more"></a>
+
+<h2 id="Defending_against_the_improbable">Defending against the improbable</h2>
+<p>Say we have a web application that receives and ID through the query string and serves a file accordingly, usually we’d write that like:</p>
+<figure class="highlight csharp"><pre><span class="function">if(File.<span class="function">Exists(path)</span>)</span>
+    <span class="function">serveFile(path)</span>;
+else
+    <span class="function">serve404()</span>;
+</pre></figure>
+
+<p>This is what I’ve been doing in a large image serving website I run. However, it recently struck me that on average about 99.9% of all requests map to existing files, only those few .01% of all requests actually resulted in 404 errors being thrown.</p>
+<p>Given the above ratio, if we dropped the File.Exists() check, out of 10,000 requests only 10 of those would result in a FileNotFoundException being thrown while the rest would just be served as usual. That means in 99.9% of all requests we waste resources on performing a trivial File.Exists() request that we know will most likely come back true anyways. What’s worse is that this will hit the harddrive and actually cost us an IO operation!</p>
+<h2 id="A_local_test">A local test</h2>
+<p>Observe the following two methods. serveFileUnsafely will serve a file under the assumption that it probably exists and will rely on a FileNotFoundException being throw if it doesn’t exist. serveFileSafely will ensure the file exists before actually serving it (trusting nothing happens between File.Exists() and File.ReadAllText()).</p>
+<figure class="highlight csharp"><pre><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">serveFileUnsafely</span>(<span class="keyword">string</span> path)
+{
+    <span class="keyword">try</span>
+    {
+        File.ReadAllText(path);
+    }
+    <span class="keyword">catch</span> (FileNotFoundException)
+    {
+        Console.WriteLine(<span class="string">"File does not exist!"</span>);
+    }
+}
+
+<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">serveFileSafely</span>(<span class="keyword">string</span> path)
+{
+    <span class="keyword">if</span> (File.Exists(path))
+        File.ReadAllText(path);
+    <span class="keyword">else</span>
+
+        Console.WriteLine(<span class="string">"File does not exist!"</span>);
+}
+</pre></figure>
+
+<p>The following two methods will be used to measure the time taken to serve 100 requests. I have created 100 identical files named [1-100].txt, each containing just the text “Hello world!”. I have then deleted a random file so there’s only 99 left. Thus in this example we assume that only 99% of all requests map to existing files even though the actual app has a success rate in excess of 99.9%. Note that the two methods each hit a separate folder - Test and Test2. This is to avoid any advantage of prewarming the cache before running the second test.</p>
+<figure class="highlight csharp"><pre><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">testLocalUnsafely</span>()
+{
+    <span class="keyword">for</span> (<span class="keyword">int</span> file = <span class="number">1</span>; file &lt;= <span class="number">100</span>; file++)
+        serveFileUnsafely(<span class="string">@"E:\Test"</span> + file + <span class="string">".txt"</span>);
+}
+
+<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">testLocalSafely</span>()
+{
+    <span class="keyword">for</span> (<span class="keyword">int</span> file = <span class="number">1</span>; file &lt;= <span class="number">100</span>; file++)
+        serveFileSafely(<span class="string">@"E:\Test2"</span> + file + <span class="string">".txt"</span>);
+}
+</pre></figure>
+
+<p>The actual profiling goes like this. I’ll be using my <a href="http://www.improve.dk/blog/2008/04/16/profiling-code-the-easy-way" target="_blank">CodeProfiler</a> class to make the measurements, running a total of 500 iterations using a single thread - as well as running an automatic warmup iteration.</p>
+<figure class="highlight csharp"><pre>TimeSpan safeLocalTime = CodeProfiler.ProfileAction<span class="function"><span class="params">(() =&gt; testLocalSafely(), <span class="number">500</span>, <span class="number">1</span>)</span>;
+<span class="title">TimeSpan</span> <span class="title">unsafeLocalTime</span> = <span class="title">CodeProfiler</span>.<span class="title">ProfileAction</span><span class="params">(() =&gt; testLocalUnsafely(), <span class="number">500</span>, <span class="number">1</span>)</span>;
+
+<span class="title">Console</span>.<span class="title">WriteLine</span><span class="params">(<span class="string">"Safe: "</span> + safeLocalTime.TotalSeconds)</span>;
+<span class="title">Console</span>.<span class="title">WriteLine</span><span class="params">(<span class="string">"Unsafe: "</span> + unsafeLocalTime.TotalSeconds)</span>;</span>
+</pre></figure>
+
+<p>And the results?</p>
+<blockquote>
+<p>Safe: 4,211061<br>Unsafe: 4,9368481  </p>
+<p>Conclusion: Unsafe is 17% slower than safe.</p>
+</blockquote>
+<p>Interestingly the defensive method actual performs the best! It’s easy to conclude that throwing the exception is somewhat more expensive than hitting the IO layer to check for the files existance.</p>
+<p>It’s no coincidence that I mention the IO layer and not the disk in the above statement. As this is run locally on a machine with 8GBs of memory all 200 files are easily cached in memory - making it a pure in-memory operation to both check for the files existance as well as reading the file contents. This can be verified as well by the CPU taking up 100% resources while the test is running.</p>
+<h2 id="A_remote_test">A remote test</h2>
+<p>Back to the real scenario. The web servers are not serving files off of local disks, they’re serving the files from a backend SAN exposed as CIFS shares.</p>
+<p>I’ve copied the two test file directories onto two directories on a remote share.</p>
+<p>Two new methods have been added. They’re identical to the last ones except that they access a remote share mapped to the local drive Z.</p>
+<figure class="highlight csharp"><pre><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">testShareUnsafely</span>()
+{
+    <span class="keyword">for</span> (<span class="keyword">int</span> file = <span class="number">1</span>; file &lt;= <span class="number">100</span>; file++)
+        serveFileUnsafely(<span class="string">@"Z:\Test"</span> + file + <span class="string">".txt"</span>);
+}
+
+<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">testShareSafely</span>()
+{
+    <span class="keyword">for</span> (<span class="keyword">int</span> file = <span class="number">1</span>; file &lt;= <span class="number">100</span>; file++)
+        serveFileSafely(<span class="string">@"Z:\Test2"</span> + file + <span class="string">".txt"</span>);
+}
+</pre></figure>
+
+<p>The testing is performed like this. Note that I’m only running 10 iterations + warmup here as it’d otherwise take far too long time.</p>
+<figure class="highlight csharp"><pre>TimeSpan safeShareTime = CodeProfiler.ProfileAction<span class="function"><span class="params">(() =&gt; testShareSafely(), <span class="number">10</span>, <span class="number">1</span>)</span>;
+<span class="title">TimeSpan</span> <span class="title">unsafeShareTime</span> = <span class="title">CodeProfiler</span>.<span class="title">ProfileAction</span><span class="params">(() =&gt; testShareUnsafely(), <span class="number">10</span>, <span class="number">1</span>)</span>;
+
+<span class="title">Console</span>.<span class="title">WriteLine</span><span class="params">(<span class="string">"Safe: "</span> + safeShareTime.TotalSeconds)</span>;
+<span class="title">Console</span>.<span class="title">WriteLine</span><span class="params">(<span class="string">"Unsafe: "</span> + unsafeShareTime.TotalSeconds)</span>;</span>
+</pre></figure>
+
+<p>The results?</p>
+<blockquote>
+<p>Safe: 4,1287161<br>Unsafe: 3,1327967  </p>
+<p>Conclusion: Unsafe is 25% faster than safe.</p>
+</blockquote>
+<h2 id="As_usual_-_it_depends!">As usual - it depends!</h2>
+<p>As can be seen, sometimes it’s best to defend against exceptions and sometimes it’s better to just hope for the best and catch the exception if it occurs. In my scenario throwing an exception was… Well. The exception. Make sure you always consider the cost of avoiding exceptions before you do so blindly.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Oct</span>
+			<span class="day">28</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/working-with-identity-column-seed-and-increment-values/" title="Working With Identity Column Seed &amp; Increment Values" rel="bookmark">Working With Identity Column Seed &amp; Increment Values</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Tricks/">SQL Server - Tricks</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>All of the following samples are based on the following table:</p>
+<a id="more"></a>
+
+
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> [dbo].[tblCars]
+(
+	[CarID] [<span class="keyword">int</span>] <span class="keyword">IDENTITY</span>(<span class="number">2</span>,<span class="number">5</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>,
+	[Name] [nvarchar](<span class="number">50</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>,
+)</span>
+</pre></figure>
+
+<h2 id="Find_identity_column_seed_and_increment_values">Find identity column seed and increment values</h2>
+<p>We can use the <a href="http://msdn.microsoft.com/en-us/library/ms189834.aspx" target="_blank">IDENT_SEED</a>, <a href="http://msdn.microsoft.com/en-us/library/ms189795.aspx" target="_blank">IDENT_INCR</a> and <a href="http://msdn.microsoft.com/en-us/library/ms175098.aspx" target="_blank">IDENT_CURRENT</a> functions to retrieve the identity seed and increment values, as well as the current value. Note that the next row will have IDENT_CURRENT() + IDENT_INCR() as its identity value.</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	IDENT_SEED(<span class="string">'tblCars'</span>) <span class="keyword">AS</span> Seed,
+	IDENT_INCR(<span class="string">'tblCars'</span>) <span class="keyword">AS</span> Increment,
+	IDENT_CURRENT(<span class="string">'tblCars'</span>) <span class="keyword">AS</span> CurrentIdentity</span>
+</pre></figure>
+
+<p>Result:</p>
+<figure class="highlight sql"><pre>Seed    Increment    CurrentIdentity
+2       5            17
+</pre></figure>
+
+<p>An alternative way is to query the <a href="http://technet.microsoft.com/en-us/library/ms187334.aspx" target="_blank">sys.identity_columns</a> system view for the same values. Note that the sys.columns view (of which sys.identity_columns inherit) has an object_id column specifying the object ID of the table to which the column belongs. Thus we’ll have to apply a predicate filtering away any columns not belonging to the desired table, tblCars in this example.</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	seed_value <span class="keyword">AS</span> Seed,
+	increment_value <span class="keyword">AS</span> Increment,
+	last_value <span class="keyword">AS</span> CurrentIdentity
+<span class="keyword">FROM</span>
+	sys.identity_columns
+<span class="keyword">WHERE</span>
+	object_id = OBJECT_ID(<span class="string">'tblCars'</span>)</span>
+</pre></figure>
+
+<p>Result:</p>
+<figure class="highlight sql"><pre>Seed    Increment   CurrentIdentity
+2       5           17
+</pre></figure>
+
+<p>A third way of finding the current identity value is to use the <a href="http://technet.microsoft.com/en-us/library/ms176057.aspx" target="_blank">DBCC CHECKIDENT</a> function:</p>
+<figure class="highlight sql"><pre>DBCC CHECKIDENT(tblCars, NORESEED)
+</pre></figure>
+
+<p>Result:</p>
+<figure class="highlight sql"><pre>Checking identity information: current identity value '22', current column value '22'.
+DBCC execution completed. If DBCC printed error messages, contact your system administrator.
+</pre></figure>
+
+<h2 id="Changing_the_seed_value">Changing the seed value</h2>
+<p>Using the DBCC CHECKIDENT command we can manually apply a new seed value to our table. Note that this will enable you to set an identity value that’ll cause the identity column to have duplicates unless you have a unique index on the column, in which case you’ll get an error instead. Thus, if you manually reseed the table, make sure you won’t run into duplicate values.</p>
+<figure class="highlight sql"><pre>DBCC CHECKIDENT(tblCars, RESEED, 500)
+</pre></figure>
+
+<p>Result:</p>
+<figure class="highlight sql"><pre>Checking identity information: current identity value '22', current column value '500'.
+DBCC execution completed. If DBCC printed error messages, contact your system administrator.
+</pre></figure>
+
+<p>If for some reason the identity value has become out of synch with the values in the table, we can automatically reseed the table to a valid identity value. In the following case I’ve manually set the seed to 10 while the highest identity value in the table is 27. After running RESEED with no explicit value, the seed is automatically set to 27, thus the next inserted row will have an identity value of 32, provided the increment is 5.</p>
+<figure class="highlight sql"><pre>DBCC CHECKIDENT(tblCars, RESEED)
+</pre></figure>
+
+<p>Result:</p>
+<figure class="highlight sql"><pre>Checking identity information: current identity value '10', current column value '27'.
+DBCC execution completed. If DBCC printed error messages, contact your system administrator.
+</pre></figure>
+
+<h2 id="Getting_the_maximum_and_minimum_identity_values">Getting the maximum and minimum identity values</h2>
+<p>Using the IDENTITYCOL alias for any identity column in a table (of which there can be at most one), we can easily select the maximum and minimum identity values:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	<span class="aggregate">MAX</span>(IDENTITYCOL) <span class="keyword">AS</span> MaximumIdentity,
+	<span class="aggregate">MIN</span>(IDENTITYCOL) <span class="keyword">AS</span> MinimumIdentity
+<span class="keyword">FROM</span>
+	tblCars</span>
+</pre></figure>
+
+<p>Result:</p>
+<figure class="highlight sql"><pre>MaximumIdentity MinimumIdentity
+27              22
+</pre></figure>
+
+<h2 id="Changing_the_identity_increment_value">Changing the identity increment value</h2>
+<p>Unfortunately there’s no easy way to change the increment value of an identity column. The only way to do so is to drop the identity column and add a new column with the new increment value. The following code will create a new temporary table, copy the data into it, recreate the original table with the correct increment value and then finally copy the data back using <a href="http://msdn.microsoft.com/en-us/library/aa259221(SQL.80" target="_blank">SET IDENTITY_INSERT ON</a>.aspx) to insert explicit values into the identity column.</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">BEGIN</span> TRAN
+
+-- <span class="keyword">Create</span> new <span class="keyword">temporary</span> <span class="keyword">table</span> <span class="keyword">to</span> hold data while restructuring tblCars
+<span class="keyword">CREATE</span> <span class="keyword">TABLE</span> tblCars_TMP
+(
+	CarID <span class="keyword">int</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span>,
+	Name nvarchar(<span class="number">50</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>
+)
+
+-- <span class="keyword">Insert</span> tblCars data <span class="keyword">into</span> tblCars_TMP
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> tblCars_TMP <span class="keyword">SELECT</span> * <span class="keyword">FROM</span> tblCars
+
+-- <span class="keyword">Drop</span> original <span class="keyword">table</span>
+<span class="keyword">DROP</span> <span class="keyword">TABLE</span> tblCars
+
+-- <span class="keyword">Create</span> new tblCars <span class="keyword">table</span> <span class="keyword">with</span> correct <span class="keyword">identity</span> <span class="keyword">values</span> (<span class="number">1</span>,<span class="number">1</span>) <span class="keyword">in</span> this <span class="keyword">case</span>
+<span class="keyword">CREATE</span> <span class="keyword">TABLE</span> [dbo].[tblCars]
+(
+	[CarID] [<span class="keyword">int</span>] <span class="keyword">IDENTITY</span>(<span class="number">1</span>,<span class="number">1</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>,
+	[Name] [nvarchar](<span class="number">50</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>,
+)
+
+-- Reinsert data <span class="keyword">into</span> tblCars <span class="keyword">table</span>
+<span class="keyword">SET</span> IDENTITY_INSERT tblCars <span class="keyword">ON</span>
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> tblCars (CarID, Name) <span class="keyword">SELECT</span> CarID, Name <span class="keyword">FROM</span> tblCars_TMP
+<span class="keyword">SET</span> IDENTITY_INSERT tblCars OFF
+
+<span class="keyword">COMMIT</span></span>
+</pre></figure>
+
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Oct</span>
+			<span class="day">21</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/solving-access-denied-errors-using-process-monitor/" title="Solving Access Denied Errors Using Process Monitor" rel="bookmark">Solving Access Denied Errors Using Process Monitor</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				, 
+			
+				<a href="http://improve.dk/category/IIS/">IIS</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p><a href="http://stackoverflow.com/questions/809144/could-not-load-file-or-assembly-someproject-or-one-of-its-dependencies-access" target="_blank">Access</a> <a href="http://stackoverflow.com/questions/574411/system-error-5-access-is-denied-when-starting-a-net-service" target="_blank">denied</a> <a href="http://stackoverflow.com/questions/951259/could-not-load-file-or-assembly-or-one-of-its-dependencies-access-is-denied" target="_blank">errors</a> are not <a href="http://stackoverflow.com/questions/1166490/could-not-load-file-or-assembly-applicenses-or-one-of-its-dependencies-access" target="_blank">uncommon</a> when deploying new websites / features that interact with the filesystem. While it might work in local testing, it suddenly doesn’t anymore when deployed. Using <a href="http://technet.microsoft.com/en-us/sysinternals/bb896645.aspx" target="_blank">Process Monitor</a> I’ll show how to easily debug these issues.</p>
+<a id="more"></a>
+
+<p>I’ve made a very simple web application project with a Default.aspx file that has the following codebehind code:</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.IO;
+<span class="keyword">using</span> System.Web.UI;
+
+namespace FileWritingWebsite
+{
+	<span class="keyword">public</span> <span class="keyword">partial</span> <span class="keyword">class</span> _Default : Page
+	{
+		<span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">Page_Load</span>(<span class="keyword">object</span> sender, EventArgs e)
+		{
+			File.WriteAllText(<span class="string">@"C:\Test.txt"</span>, <span class="string">"Hello world!"</span>);
+
+			Response.Write(<span class="string">"Done!"</span>);
+		}
+	}
+}
+</pre></figure>
+
+<p>After deploying this to my webserver we receive the archetypical access denied error:</p>
+<div class="imgwrapper" style=""><div><a href="/solving-access-denied-errors-using-process-monitor/procmon1_2.jpg" class="fancy"><img src="/solving-access-denied-errors-using-process-monitor/procmon1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>In this case it’s rather obvious where the error stems from, but the cause isn’t as obvious. We’re running under IIS, but we may be impersonating a user profile, running under a non-standard user account for the application pool (that is, not NETWORK SERVICE) or explicitly writing the file on a thread that’s running on a different user account (which we are not in this case, however).</p>
+<div class="imgwrapper" style=""><div><a href="/solving-access-denied-errors-using-process-monitor/procmon2_2.jpg" class="fancy"><img src="/solving-access-denied-errors-using-process-monitor/procmon2_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Looking at the user permissions for C: it’s clear that no special permissions have been granted for the web user. Thus our task is first and foremost to identify the user that’s trying to write the file.</p>
+<div class="imgwrapper" style=""><div><a href="/solving-access-denied-errors-using-process-monitor/procmon3_2.jpg" class="fancy"><img src="/solving-access-denied-errors-using-process-monitor/procmon3_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Once you startup Process Monitor you’ll quickly be swamped with input data that’s irrelevant to the task at hand. The first filter we’ll apply is the overall event type filter. There’s five standard types, of which the first four are enabled by default: Registry, File, Network, Process &amp; Threads and Profiling. As we’re having an access denied issue with the file system, disable all but the File System events.</p>
+<p>At this point the number of events should already be filtered down a lot - down to 32% in my case. Now click the cyan funnel icon to open up the filter editor window.</p>
+<div class="imgwrapper" style=""><div><a href="/solving-access-denied-errors-using-process-monitor/procmon4_2.jpg" class="fancy"><img src="/solving-access-denied-errors-using-process-monitor/procmon4_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Since we know IIS is running under the w3wp.exe process, we can add a filter that includes all events with a process name of w3wp.exe. As soon as we add an Include filter, all event that do not match an include filter are excluded.</p>
+<div class="imgwrapper" style=""><div><a href="/solving-access-denied-errors-using-process-monitor/procmon5_2.jpg" class="fancy"><img src="/solving-access-denied-errors-using-process-monitor/procmon5_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>At this point th event list is somewhat more manageable. The important event is clearly the one with a result of “ACCESS DENIED”. That event shows we’re trying to write (CreateFile) the C:Test.txt file and we’re receving an ACCESS DENIED error from the file system.</p>
+<div class="imgwrapper" style=""><div><a href="/solving-access-denied-errors-using-process-monitor/procmon6_2.jpg" class="fancy"><img src="/solving-access-denied-errors-using-process-monitor/procmon6_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Now right click the ACCESS DENIED event and go to Properties. Once you’ve opened the properties window, switch to the Process tab. At this point you’ll be ableto see the exact user account that tried to perform the denied action. As can be seen from the screenshot, it was the NETWORK SERVICE user in this case - the default IIS user.</p>
+<div class="imgwrapper" style=""><div><a href="/solving-access-denied-errors-using-process-monitor/procmon7_2.jpg" class="fancy"><img src="/solving-access-denied-errors-using-process-monitor/procmon7_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Once we’ve identified the necessary user account, it’s a simple matter of granting it NTFS write rights to the C: directory.</p>
+<div class="imgwrapper" style=""><div><a href="/solving-access-denied-errors-using-process-monitor/procmon8_2.jpg" class="fancy"><img src="/solving-access-denied-errors-using-process-monitor/procmon8_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>And finally we can run the website again and verify that we’ve now got proper permissions for writing the Test.txt file to the C: directory.</p>
+<h2 id="Not_just_for_web_applications">Not just for web applications</h2>
+<p>While I gave an example of a web application security issue, Process Monitor can be used to solve any kind of permission issues. You can use it for debugging why Windows Services won’t start properly, why Outlook is suddenly complaining about access denied issues etc. Note that Process Monitor will also allow you to monitor the registry and can thus be used to solve security issues just as simple as with the file system.</p>
+<p>Process Monitor is also a great tool for monitoring 3rd party applications to discover their exact usage of the file system and registry.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Oct</span>
+			<span class="day">14</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/how-to-do-url-rewriting-on-iis-7-properly/" title="How To Do URL Rewriting on IIS 7 Properly" rel="bookmark">How To Do URL Rewriting on IIS 7 Properly</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				, 
+			
+				<a href="http://improve.dk/category/IIS/">IIS</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>One of my earlier blog posts, and the all time most popular one, was about <a href="/making-url-rewriting-on-iis7-work-like-iis6/">how to make URL rewriting on IIS 7 work like IIS 6</a>. While my method did provide a means to the goal, it’s humiliatingly far from what I should’ve done. Since the old post is still the most visited post on my blog I feel obligated to write a followup on how to do proper url rewriting in IIS 7.</p>
+<a id="more"></a>
+
+<h2 id="The_scenario">The scenario</h2>
+<p>I’ll assume a completely vanilla IIS 7 setup, contrary to the old post, there’s no IIS tampering required.</p>
+<p>I’ve setup a simple web application solution structure like so:</p>
+<div class="imgwrapper" style=""><div><a href="/how-to-do-url-rewriting-on-iis-7-properly/iis7urlrewritingdoneproperly_1_2.jpg" class="fancy"><img src="/how-to-do-url-rewriting-on-iis-7-properly/iis7urlrewritingdoneproperly_1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>As in the original post my goal is to accept a URL like <a href="http://localhost/blog/2006/12/08/missing-windows-mobile-device-center" target="_blank">http://localhost/blog/2006/12/08/missing-windows-mobile-device-center</a> and map it to the BlogPost.aspx file in the root of my application. During the rewrite process I want to make the year, month, day and title available for the BlogPost.aspx file in an easily accessible way.</p>
+<h2 id="Rewriting_using_Global-asax">Rewriting using Global.asax</h2>
+<p>The easiest way of rewriting URL’s is to add a new Global.asax file to the root of your solution. Now paste in the following code:</p>
+<figure class="highlight csharp"><pre>using System<span class="comment">;</span>
+using System<span class="preprocessor">.Text</span><span class="preprocessor">.RegularExpressions</span><span class="comment">;</span>
+using System<span class="preprocessor">.Web</span><span class="comment">;</span>
+
+namespace IIS7UrlRewritingDoneProperly
+{
+	public class Global : HttpApplication
+	{
+		// Runs at the beginning of each request to the server
+		protected void Application_BeginRequest(object sender, EventArgs e)
+		{
+			// Match the specific blog post URL path as well as pull <span class="keyword">out</span> variables <span class="keyword">in</span> regex groups
+			Match m = Regex<span class="preprocessor">.Match</span>(Request<span class="preprocessor">.Url</span><span class="preprocessor">.LocalPath</span>, @<span class="string">"^/blog/(?&lt;year&gt;d{4})/(?&lt;month&gt;d{2})/(?&lt;day&gt;d{2})/(?&lt;title&gt;.*)/?$"</span>)<span class="comment">;</span>
+
+			// If we match a blog posts URL, save the URL variables <span class="keyword">in</span> Context<span class="preprocessor">.Items</span> <span class="keyword">and</span> rewrite to /BlogPost<span class="preprocessor">.aspx</span>
+			if (m<span class="preprocessor">.Success</span>)
+			{
+				Context<span class="preprocessor">.Items</span>[<span class="string">"Title"</span>] = m<span class="preprocessor">.Groups</span>[<span class="string">"title"</span>]<span class="preprocessor">.Value</span><span class="comment">;</span>
+				Context<span class="preprocessor">.Items</span>[<span class="string">"Year"</span>] = m<span class="preprocessor">.Groups</span>[<span class="string">"year"</span>]<span class="preprocessor">.Value</span><span class="comment">;</span>
+				Context<span class="preprocessor">.Items</span>[<span class="string">"Month"</span>] = m<span class="preprocessor">.Groups</span>[<span class="string">"month"</span>]<span class="preprocessor">.Value</span><span class="comment">;</span>
+				Context<span class="preprocessor">.Items</span>[<span class="string">"Day"</span>] = m<span class="preprocessor">.Groups</span>[<span class="string">"day"</span>]<span class="preprocessor">.Value</span><span class="comment">;</span>
+
+				HttpContext<span class="preprocessor">.Current</span><span class="preprocessor">.RewritePath</span>(<span class="string">"/BlogPost.aspx"</span>)<span class="comment">;</span>
+			}
+		}
+	}
+}
+</pre></figure>
+
+<p>Now all you need is a single change in your web.config file:</p>
+<figure class="highlight xml"><pre><span class="tag">&lt;<span class="title">configuration</span>&gt;</span>
+	<span class="tag">&lt;<span class="title">system.webServer</span>&gt;</span>
+		<span class="tag">&lt;<span class="title">modules</span> <span class="attribute">runAllManagedModulesForAllRequests</span>=<span class="value">"true"</span>&gt;</span>
+	<span class="tag">&lt;/<span class="title">system.webServer</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">configuration</span>&gt;</span>
+</pre></figure>
+
+<p>The web.config change basically does the same as adding the wildcard map in IIS6. It ensures ASP.NET will run our Application_BeginRequest function for all requests - both those that match .aspx files as well as those for static files.</p>
+<h2 id="Rewriting_using_an_HttpModule">Rewriting using an HttpModule</h2>
+<p>As an alternative to putting the rewriting logic into Global.asax, you might want to write it into a distributable HttpModule. If your URL rewriting functionality is common for multiple sites, generic or for any other reason may be usable on multiple sites, we don’t want to replicate the functionality in Global.asax.</p>
+<p>If you added the Global.asax file from before, make sure you remove it again so it doesn’t conflict with the HttpModule we’re about to write. Add a new class project to the solution - I’ve called mine MyUrlRewriter. Add a reference to System.Web and add a single new class file to the project called UrlRewriter. Your solution should look like this:</p>
+<div class="imgwrapper" style=""><div><a href="/how-to-do-url-rewriting-on-iis-7-properly/iis7urlrewritingdoneproperly_2_2.jpg" class="fancy"><img src="/how-to-do-url-rewriting-on-iis-7-properly/iis7urlrewritingdoneproperly_2_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Now paste the following code into the UrlRewriter.cs class file:</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Text.RegularExpressions;
+<span class="keyword">using</span> System.Web;
+
+namespace MyUrlRewriter
+{
+	<span class="keyword">public</span> <span class="keyword">class</span> UrlRewriter : IHttpModule
+	{
+		<span class="comment">// We've got nothing to dispose in this module</span>
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Dispose</span>()
+		{ }
+
+		<span class="comment">// In here we can hook up to any of the ASP.NET events we use in Global.asax</span>
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Init</span>(HttpApplication context)
+		{
+			context.BeginRequest += <span class="keyword">new</span> EventHandler(context_BeginRequest);
+		}
+
+		<span class="comment">// This method does exactly the same as in Global.asax</span>
+		<span class="keyword">private</span> <span class="keyword">void</span> <span class="title">context_BeginRequest</span>(<span class="keyword">object</span> sender, EventArgs e)
+		{
+			<span class="comment">// Match the specific blog post URL path as well as pull out variables in regex groups</span>
+			Match m = Regex.Match(HttpContext.Current.Request.Url.LocalPath, <span class="string">@"^/blog/(?&lt;year&gt;d{4})/(?&lt;month&gt;d{2})/(?&lt;day&gt;d{2})/(?&lt;title&gt;.*)/?$"</span>);
+
+			<span class="comment">// If we match a blog posts URL, save the URL variables in Context.Items and rewrite to /BlogPost.aspx</span>
+			<span class="keyword">if</span> (m.Success)
+			{
+				HttpContext.Current.Items[<span class="string">"Title"</span>] = m.Groups[<span class="string">"title"</span>].Value;
+				HttpContext.Current.Items[<span class="string">"Year"</span>] = m.Groups[<span class="string">"year"</span>].Value;
+				HttpContext.Current.Items[<span class="string">"Month"</span>] = m.Groups[<span class="string">"month"</span>].Value;
+				HttpContext.Current.Items[<span class="string">"Day"</span>] = m.Groups[<span class="string">"day"</span>].Value;
+
+				HttpContext.Current.RewritePath(<span class="string">"/BlogPost.aspx"</span>);
+			}
+		}
+	}
+}
+</pre></figure>
+
+<p>Notice that the context_BeginRequest function is identical to the one we had in Global.asax, except we have to reference HttpContext.Current explicitly since it’s not implicitly available as in Global.asax.</p>
+<p>Now add a reference from the original web application project to the MyUrlRewriter class project. Once this is done we just need to ensure our HttpModule is included in our web application by modifying the web.config:</p>
+<figure class="highlight xml"><pre><span class="tag">&lt;<span class="title">configuration</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">system.webServer</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">modules</span> <span class="attribute">runAllManagedModulesForAllRequests</span>=<span class="value">"true"</span>&gt;</span>
+            <span class="tag">&lt;<span class="title">add</span> <span class="attribute">name</span>=<span class="value">"UrlRewriter"</span> <span class="attribute">type</span>=<span class="value">"MyUrlRewriter.UrlRewriter, MyUrlRewriter"</span>/&gt;</span>
+        <span class="tag">&lt;/<span class="title">modules</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">system.webServer</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">configuration</span>&gt;</span>
+</pre></figure>
+
+<p>At this point you should be able to run the website with the exact same URL rewriting functionality as we had before - though this time in a redistributable assembly called MyUrlRewriter.dll which can easily be included into any website by adding a single line to the section of the web.config file.</p>
+<h2 id="Not_Invented_Here_Syndrome">Not Invented Here Syndrome</h2>
+<p>If you have basic requirements to your URL rewriting solution you may often be able to settle with one of the many readymade HttpModules that you can simply plug into your application. IIS 7 also has a <a href="http://learn.iis.net/page.aspx/461/creating-rewrite-rules-for-the-url-rewrite-module/" target="_blank">URL Rewrite Module</a> that you can install and easily configure through the IIS manager.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Oct</span>
+			<span class="day">07</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/simple-file-synchronization-using-robocopy/" title="Simple File Synchronization Using Robocopy" rel="bookmark">Simple File Synchronization Using Robocopy</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/Windows/">Windows</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>On numerous occations I’ve had a need for synchronizing directories of files &amp; subdirectories. I’ve used it for synchronizing work files from my stationary PC to my laptop in the pre-always-on era (today I use SVN for almost all files that needs to be in synch). Recently I needed to implement a very KISS backup solution that simply synchronized two directories once a week for offsite storing of the backup data.</p>
+<a id="more"></a>
+
+<p>While seemingly simple the only hitch was that there would be several thousands of files in binary format, so compression was out of the question. All changes would be additions and deletions - that is, no incremental updates. Finally I’d only have access to the files through a share so it wouldn’t be possible to deploy a local backup solution that monitored for changes and only sent diffs.</p>
+<p>I started out using <a href="http://www.tgrmn.com/web/file_synchronization.htm" target="_blank">ViceVersa PRO</a> with the <a href="http://www.tgrmn.com/web/vvengine/vvengine.htm" target="_blank">VVEngine</a> addon for scheduling. It worked great for some time although it wasn’t the most speedy solution given my scenario. Some time later ViceVersa stopped working. Apparently it was simply unable to handle more than a million files (give or take a bit). Their forums are filled with people asking for solutions, though the only suggestion they have is to split the backup job into several smaller jobs. Hence I started taking backups of MyShare/A<em>, MyShare/B</em>, etc. This quickly grew out of hand as the number of files increased.</p>
+<p>Sometime later I was introduced to <a href="http://technet.microsoft.com/en-us/library/cc733145(WS.10" target="_blank">Robocopy</a>.aspx). Robocopy ships with Vista, Win7 and Server 2008. For server 2003 and XP it can be downloaded as part of the<a href="http://www.microsoft.com/Downloads/details.aspx?FamilyID=9d467a69-57ff-4ae7-96ee-b18c4790cffd&amp;displaylang=en" target="_blank">Windows Server 2003 Resource Kit Tools</a>.</p>
+<p>Robocopy (Robust File Copy) does one job extremely well - it copies files. It’s run from the command line, though there has been made a <a href="http://technet.microsoft.com/en-us/magazine/2006.11.utilityspotlight.aspx" target="_blank">wrapper GUI</a> for it. The basic syntax for calling robocopy is:</p>
+<figure class="highlight"><pre>robocopy &lt;Source&gt; &lt;Destination&gt; [&lt;File&gt;[ <span class="keyword">...</span>]] [&lt;Options&gt;]
+</pre></figure>
+
+<p>You give it a source and a destination address and it’ll make sure all files &amp; directories from the source are copied to the destination. If an error occurs it’ll wait for 30 seconds (configurable) before retrying, and it’ll continue doing this a million times (configurable). That means robocopy will survive a network error and just resume the copying process once the network is back up again.</p>
+<p>What makes robocopy really shine is not it’s ability to copy files, but it’s ability to mirror one directory into another. That means it’ll not just copy files, it’ll also delete any extra files in the destination directory. In comparison to ViceVersa, robocopy goes through the directory structure in a linear fashion and in doing so doesn’t have any major requirements of memory. ViceVersa would initially scan the source and destination and then perform the comparison. As source and destination became larger and larger, more memory was required to perform the initial comparison - until a certain point where it’d just give up.</p>
+<p>I ended up with the following command for mirroring the directories using robocopy:</p>
+<figure class="highlight"><pre>robocopy <span class="command">\\</span>SourceServer<span class="command">\Share</span> <span class="command">\\</span>DestinationServer<span class="command">\Share</span> /MIR /FFT /Z /XA:H /W:5
+</pre></figure>
+
+<ul>
+<li>/MIR specifies that robocopy should mirror the source directory and the destination directory. Beware that this may delete files at the destination.</li>
+<li>/FFT uses fat file timing instead of NTFS. This means the granularity is a bit less precise. For across-network share operations this seems to be much more reliable - just don’t rely on the file timings to be completely precise to the second.</li>
+<li>/Z ensures robocopy can resume the transfer of a large file in mid-file instead of restarting.</li>
+<li>/XA:H makes robocopy ignore hidden files, usually these will be system files that we’re not interested in.</li>
+<li>/W:5 reduces the wait time between failures to 5 seconds instead of the 30 second default.</li>
+</ul>
+<p>The robocopy script can be setup as a simply Scheduled Task that runs daily, hourly, weekly etc. Note that robocopy also contains a switch that’ll make robocopy monitor the source for changes and invoke the synchronization script each time a configurable number of changes has been made. This may work in your scenario, but be aware that robocopy will not just copy the changes, it will scan the complete directory structure just like a normal mirroring procedure. If there’s a lot of files &amp; directories, this may hamper performance.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Sep</span>
+			<span class="day">30</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/writing-a-calculator-in-csharp-using-sablecc/" title="Writing a Calculator in C# Using SableCC" rel="bookmark">Writing a Calculator in C# Using SableCC</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Writing a calculator is a simple task - just add nine buttons labeled 1-9 and add a plus and minus button and we’re almost good to go. In this entry I’m going to write a calculator called SimpleCalc that does not have a GUI, instead it’ll take in an arbitrary expression and calculate the results of it. The input I’ll use as my immediate goal is the following:</p>
+<a id="more"></a>
+
+
+<figure class="highlight"><pre><span class="number">25</span>-<span class="number">37</span>+<span class="number">2</span><span class="variable">*(</span><span class="number">1.22</span>+<span class="keyword">cos</span>(<span class="number">5</span>))<span class="variable">*sin</span>(<span class="number">5</span>)<span class="variable">*2</span>+<span class="number">5</span><span class="variable">%2</span><span class="variable">*3</span><span class="variable">*sqrt</span>(<span class="number">5</span>+<span class="number">2</span>)
+</pre></figure>
+
+<p><a href="http://www.google.dk/search?rlz=1C1CHMG_daDK293DK303&amp;sourceid=chrome&amp;ie=UTF-8&amp;q=25-37%2B2*%281.22%2Bcos%285%29%29*sin%285%29*2%2B5%252*3*sqrt%285%2B2%29" target="_blank">According to Google</a> the result is -9.83033875. Some of the tricky subjects we’ll have to handle is <a href="http://en.wikipedia.org/wiki/Order_of_operations" target="_blank">operator precedence</a> (multiplication before addition etc), nested expressions (2*1.22+cos(5) != 2*(1.22+cos(5))) and <a href="http://en.wikipedia.org/wiki/Associativity" target="_blank">associativity</a> (5+7 == 7+5 &amp; 7-5 != 5-7 etc).</p>
+<h2 id="Parsing_the_input_using_SableCC">Parsing the input using SableCC</h2>
+<p>Before doing any calculations, we need to parse the input expression so we have an in-memory representation of the input. We need to have the input represented in the form of an <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree" target="_blank">abstract syntax tree</a> that defines the order of operations and allows us to traverse the different parts of the expression individually. To perform this task, we’ll be using <a href="http://sablecc.org/" target="_blank">SableCC</a>.</p>
+<blockquote>
+<p>SableCC is a parser generator which generates fully featured object-oriented frameworks for building compilers, interpreters and other text parsers. In particular, generated frameworks include intuitive strictly-typed abstract syntax trees and tree walkers. SableCC also keeps a clean separation between machine-generated code and user-written code which leads to a shorter development cycle.</p>
+</blockquote>
+<p>In short, SableCC can be used to automatically generate the parser code that’s used in any compiler, as well as in a lot of other cases where input needs to be parsed - like in this case. SableCC itself is written in Java by <a href="http://www.labunix.uqam.ca/~gagnon_et/en/" target="_blank">Etienne M. Gagnon</a> and the <a href="http://sablecc.org/browser/src" target="_blank">source code</a> is freely available.</p>
+<p>The standard output from SableCC is Java code. Thus, the parser we’re about to generate will be made into a number of Java files that we can incorporate into our own source code and extend. As I’ll be writing the calculator in C#, I’d much prefer to work with C# source files directly, rather than having to port the Java output or call it by other means. Luckily <a href="http://www.mare.ee/indrek/" target="_blank">Indrek Mandre</a> has made a SableCC variant that’ll generate the parser in either Java, C#, C++, O’Caml, Python, C, Graphviz Dot or XML. All we need to do is to download the <a href="http://www.mare.ee/indrek/sablecc/" target="_blank">sablecc-3-beta.3.altgen.20041114</a> zip file from the frontpage of Indrek’s SableCC page. Once it’s downloaded and unpacked we’re able to run it, as long as Java is installed. First create a bat file with the following contents:</p>
+<figure class="highlight"><pre>java -jar <span class="string">"C:Program FilesSableCCsablecc-3-beta.3.altgen.20041114libsablecc.jar"</span> <span class="variable">%1</span> <span class="variable">%2</span> <span class="variable">%3</span> <span class="variable">%4</span> <span class="variable">%5</span> <span class="variable">%6</span> <span class="variable">%7</span> <span class="variable">%8</span> <span class="variable">%9</span>
+</pre></figure>
+
+<p>Make sure to replace my path with whatever path you’ve extracted the SableCC altgen package into. When we invoke SableCC from now on, we’ll do it through this bat file that I’ve chosen to call <strong>sablecc_altgen.bat</strong>, just to make the syntax simpler.</p>
+<h2 id="Defining_the_grammar">Defining the grammar</h2>
+<p>For SableCC to be able to generate our parser, we first need to define the language it should support. The way we do this is to define the language in the <a href="http://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_Form" target="_blank">(E)BNF</a>format. I won’t be writing a generic tutorial on how to write grammers in SableCC as there’s already a number of good ones on the <a href="http://sablecc.org/wiki/DocumentationPage" target="_blank">SableCC Documentation</a> page, as well as <a href="http://nat.truemesh.com/archives/000531.html" target="_blank">one by Nat Pryce</a> that’s not on the documentation page. Finally there’s also a <a href="http://www.nabble.com/SableCC-f12279r0.html" target="_blank">mailing list</a>, though the activity is limited.</p>
+<p>We’ll start out by creating a new text file called <em>simplecalc.sablecc</em>, this is where we’ll be defining our SimpleCalc grammar. Furthermore I’ve created a new bat file called simplecalc_sable.bat with the following contents:</p>
+<figure class="highlight"><pre><span class="keyword">cls</span>
+sablecc_altgen -d generated -t csharp simplecalc<span class="preprocessor">.sablecc</span>
+</pre></figure>
+
+<p>The above bat file will call the one we previously made. <strong>-d generated</strong> specifies the output directory name. <strong>-t csharp</strong> specifies the output source code type, C# in this case. The last argument is the name of the input sablecc file. From now on we can simply run <strong>simplecalc_sable</strong> to start the SableCC compilation process.</p>
+<p>I’ll post the full simplecalc.sablecc file contents first, and then go through the specific sections one by one afterwards.</p>
+<figure class="highlight"><pre>Package SimpleCalc;
+
+Helpers
+	digit	= [<span class="comment">'0' .. '9'];</span>
+
+Tokens
+	number	= (digit+ | digit+ <span class="comment">'.' digit+);</span>
+	add	= <span class="comment">'+';</span>
+	<span class="keyword">sub</span>	= <span class="comment">'-';</span>
+	mul	= <span class="comment">'*';</span>
+	div	= <span class="comment">'/';</span>
+	mod	= <span class="comment">'%';</span>
+	sqrt	= <span class="comment">'sqrt';</span>
+	<span class="built_in">cos</span>	= <span class="comment">'cos';</span>
+	<span class="built_in">sin</span>	= <span class="comment">'sin';</span>
+	lparen	= <span class="comment">'(';</span>
+	rparen	= <span class="comment">')';</span>
+
+Productions		
+	<span class="built_in">exp</span> {-&gt; <span class="built_in">exp</span>}
+		= {add}		[<span class="built_in">left</span>]:<span class="built_in">exp</span> add [<span class="built_in">right</span>]:factor		{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.add(<span class="built_in">left</span>, <span class="built_in">right</span>.<span class="built_in">exp</span>)}
+		| {<span class="keyword">sub</span>}		[<span class="built_in">left</span>]:<span class="built_in">exp</span> <span class="keyword">sub</span> [<span class="built_in">right</span>]:factor		{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.<span class="keyword">sub</span>(<span class="built_in">left</span>, <span class="built_in">right</span>.<span class="built_in">exp</span>)}
+		| {factor}	factor					{-&gt; factor.<span class="built_in">exp</span>}
+		;
+		
+	factor {-&gt; <span class="built_in">exp</span>}
+		= {mul}		[<span class="built_in">left</span>]:factor mul [<span class="built_in">right</span>]:unary		{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.mul(<span class="built_in">left</span>.<span class="built_in">exp</span>, <span class="built_in">right</span>.<span class="built_in">exp</span>)}
+		| {div}		[<span class="built_in">left</span>]:factor div [<span class="built_in">right</span>]:unary		{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.div(<span class="built_in">left</span>.<span class="built_in">exp</span>, <span class="built_in">right</span>.<span class="built_in">exp</span>)}
+		| {mod}		[<span class="built_in">left</span>]:factor mod [<span class="built_in">right</span>]:unary		{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.mod(<span class="built_in">left</span>.<span class="built_in">exp</span>, <span class="built_in">right</span>.<span class="built_in">exp</span>)}
+		| {unary}	unary					{-&gt; unary.<span class="built_in">exp</span>}
+		;
+		
+	unary {-&gt; <span class="built_in">exp</span>}
+		= {number}	number					{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.number(number)}
+		| {sqrt}	sqrt lparen <span class="built_in">exp</span> rparen			{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.sqrt(<span class="built_in">exp</span>)}
+		| {<span class="built_in">cos</span>}		<span class="built_in">cos</span> lparen <span class="built_in">exp</span> rparen			{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.<span class="built_in">cos</span>(<span class="built_in">exp</span>)}
+		| {<span class="built_in">sin</span>}		<span class="built_in">sin</span> lparen <span class="built_in">exp</span> rparen			{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.<span class="built_in">sin</span>(<span class="built_in">exp</span>)}
+		| {paren}	lparen <span class="built_in">exp</span> rparen			{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.paren(<span class="built_in">exp</span>)}
+		;
+		
+	exp_list {-&gt; <span class="built_in">exp</span>*}
+		= {single}	<span class="built_in">exp</span>					{-&gt; [<span class="built_in">exp</span>.<span class="built_in">exp</span>]}
+		| {multi}	<span class="built_in">exp</span> [tail]:exp_list			{-&gt; [<span class="built_in">exp</span>.<span class="built_in">exp</span>, tail.<span class="built_in">exp</span>]}
+		;
+		
+Abstract Syntax Tree
+	<span class="built_in">exp</span>
+		= {add}			[<span class="built_in">left</span>]:<span class="built_in">exp</span> [<span class="built_in">right</span>]:<span class="built_in">exp</span>
+		| {<span class="keyword">sub</span>}			[<span class="built_in">left</span>]:<span class="built_in">exp</span> [<span class="built_in">right</span>]:<span class="built_in">exp</span>
+		| {mul}			[<span class="built_in">left</span>]:<span class="built_in">exp</span> [<span class="built_in">right</span>]:<span class="built_in">exp</span>
+		| {div}			[<span class="built_in">left</span>]:<span class="built_in">exp</span> [<span class="built_in">right</span>]:<span class="built_in">exp</span>
+		| {mod}			[<span class="built_in">left</span>]:<span class="built_in">exp</span> [<span class="built_in">right</span>]:<span class="built_in">exp</span>
+		| {paren}		<span class="built_in">exp</span>
+		| {sqrt}		<span class="built_in">exp</span>
+		| {<span class="built_in">cos</span>}			<span class="built_in">exp</span>
+		| {<span class="built_in">sin</span>}			<span class="built_in">exp</span>
+		| {number}		number
+		;
+</pre></figure>
+
+<p>In the grammar we’re using 5 different sections, Package, Helpers, Tokens, Productions and Abstract Syntax Tree.</p>
+<figure class="highlight"><pre><span class="keyword">Package</span> SimpleCalc;
+</pre></figure>
+
+<p>The Package declaration simply defines the name of the overall package. If this is excluded (which is valid according to SableCC) our namesapces int he generated C# code will be blank and thus invalid.</p>
+<figure class="highlight"><pre>Helpers
+	digit	= [<span class="string">'0'</span> .. <span class="string">'9'</span>];
+</pre></figure>
+
+<p>Helpers are basically placeholders you can setup and use throughout the SableCC file. They have no deeper meaning or functionality, it’s just a way to easily be able to express common code by its name. As we’ll be referring to <em>digits</em> multiple times it helps to define it as a helper instead of replicating <strong>[‘0’ .. ‘9’]</strong> multiple times in the code. <strong>[‘0’ .. ‘9’]</strong> means all digits between 0 and 9.</p>
+<figure class="highlight"><pre>Tokens
+	number		= (digit+ | digit+ <span class="string">'.'</span> digit+);
+	add		= <span class="string">'+'</span>;
+	<span class="sub"><span class="keyword">sub</span>		= '-';</span>
+	mul		= <span class="string">'*'</span>;
+	div		= <span class="string">'/'</span>;
+	mod		= <span class="string">'%'</span>;
+	<span class="keyword">sqrt</span>		= <span class="string">'sqrt'</span>;
+	<span class="keyword">cos</span>		= <span class="string">'cos'</span>;
+	<span class="keyword">sin</span>		= <span class="string">'sin'</span>;
+	lparen		= <span class="string">'('</span>;
+	rparen		= <span class="string">')'</span>;
+</pre></figure>
+
+<p>Note that I’m jumping ahead and ignoring <strong>Productions</strong> section for now, I’ll come to that in just a bit. The <strong>Abstract Syntax Tree</strong> defines the nodes that will be present in our parsed AST. Each type of operation and function has a corresponding node in the AST. Thus, and add operation will consist of an Add node with two children - a left and a right expression. Those expressions may themselves be constant numbers or nested expressions - since they’re defined as <strong>exp</strong> which is a recursive reference to the actual AST exp type.</p>
+<p><strong>Add</strong>, <strong>sub</strong>, <strong>mul</strong>, <strong>div</strong> and <strong>mod</strong> are <strong>binary</strong> operators and thus have two child expressions. <strong>Paren</strong>, <strong>sqrt</strong>, <strong>cos</strong> and <strong>sin</strong> (and in some ways, number) are unary operators in that they only have a single child/parameter - an expression. Number is a leaf node that expresses an actual number constant.</p>
+<p>The <strong>Productions</strong> section defines our mapping from the actual input to the AST that we’ve just defined.</p>
+<figure class="highlight"><pre>Productions
+	<span class="built_in">exp</span> {-&gt; <span class="built_in">exp</span>}
+		= {add}		[<span class="built_in">left</span>]:<span class="built_in">exp</span> add [<span class="built_in">right</span>]:factor		{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.add(<span class="built_in">left</span>, <span class="built_in">right</span>.<span class="built_in">exp</span>)}
+		| {<span class="keyword">sub</span>}		[<span class="built_in">left</span>]:<span class="built_in">exp</span> <span class="keyword">sub</span> [<span class="built_in">right</span>]:factor 		{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.<span class="keyword">sub</span>(<span class="built_in">left</span>, <span class="built_in">right</span>.<span class="built_in">exp</span>)}
+		| {factor}	factor					{-&gt; factor.<span class="built_in">exp</span>}
+		;
+</pre></figure>
+
+<p>The first production we define is a generic one for expressing expressions. Note that the way we define operator precedence is by first expressing the least prioritized operator (<strong>add</strong> &amp; <strong>sub</strong>) and then referencing the factor operations (<strong>mul</strong>, <strong>div</strong>, <strong>mod</strong> &amp; <strong>unary</strong>) and thus forth. <strong>exp {-&gt; exp}</strong> signifies that the concrete syntax of an expression is mapped into the abstract syntax tree node called “exp” as well. <strong>Productions</strong> and <strong>Abstract Syntax Tree</strong> are two different namespaces and they may thus share the same names.</p>
+<figure class="highlight"><pre><span class="header">= {add}		[left]:exp add [right]:factor		{-&gt; New exp.add(left, right.exp)}</span>
+</pre></figure>
+
+<p>The <strong>add</strong> operation is defined by a left expression followed by the add token (defined as ‘+’ previously) and then a factor expression on the right, hence defining the precedence relation between the add operation and factor operations. Finally we define that the add operation maps into a new instance of the exp AST node, having the left and right expressions as parameters (children in the AST). The sub operation is almost identical to the add operator.</p>
+<figure class="highlight"><pre>| <span class="cell">{factor}</span>	<span class="built_in">factor</span>		<span class="cell">{-&gt; factor.exp}</span>
+</pre></figure>
+
+<p>Any factor expressions are simply mapped onto the factor production defined later on.</p>
+<figure class="highlight"><pre>factor {-&gt; <span class="built_in">exp</span>}
+	= {mul}		[<span class="built_in">left</span>]:factor mul [<span class="built_in">right</span>]:unary		{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.mul(<span class="built_in">left</span>.<span class="built_in">exp</span>, <span class="built_in">right</span>.<span class="built_in">exp</span>)}
+	| {div}		[<span class="built_in">left</span>]:factor div [<span class="built_in">right</span>]:unary		{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.div(<span class="built_in">left</span>.<span class="built_in">exp</span>, <span class="built_in">right</span>.<span class="built_in">exp</span>)}
+	| {mod}		[<span class="built_in">left</span>]:factor mod [<span class="built_in">right</span>]:unary		{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.mod(<span class="built_in">left</span>.<span class="built_in">exp</span>, <span class="built_in">right</span>.<span class="built_in">exp</span>)}
+	| {unary}	unary					{-&gt; unary.<span class="built_in">exp</span>}
+	;
+</pre></figure>
+
+<p>The <strong>mul</strong>, <strong>div</strong> and <strong>mod</strong> expressions are basically identical to the add and sub expressions, except defining unary as the next production in the operator precedence chain.</p>
+<figure class="highlight"><pre>unary {-&gt; <span class="built_in">exp</span>}
+	= {number}	number					{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.number(number)}
+	| {sqrt}	sqrt lparen <span class="built_in">exp</span> rparen			{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.sqrt(<span class="built_in">exp</span>)}
+	| {<span class="built_in">cos</span>}		<span class="built_in">cos</span> lparen <span class="built_in">exp</span> rparen			{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.<span class="built_in">cos</span>(<span class="built_in">exp</span>)}
+	| {<span class="built_in">sin</span>}		<span class="built_in">sin</span> lparen <span class="built_in">exp</span> rparen			{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.<span class="built_in">sin</span>(<span class="built_in">exp</span>)}
+	| {paren}	lparen <span class="built_in">exp</span> rparen			{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.paren(<span class="built_in">exp</span>)}
+	;
+</pre></figure>
+
+<p>The simplest of all expressions is the unary <strong>number</strong> expression that defines a numeric constant. The number expression is mapped into a new AST node of the type exp.number, having the actual number as a parameter. The <strong>sqrt</strong>, <strong>cos</strong> and <strong>sin</strong> functions all define the input as the function name and the parameter expression enclosed in parentheses. Finally we define the <strong>{paren}</strong> unary function which is an arbitrary expression enclosed in parentheses. This gets mapped into the exp.paren AST type, taking the arbitrary expression as a parameter. The {paren} function allows us to differentiate between expressions like “5*2-7” and “5*(2-7)”.</p>
+<figure class="highlight"><pre>exp_list {-&gt; <span class="built_in">exp</span>*}
+	= {single}	<span class="built_in">exp</span>					{-&gt; [<span class="built_in">exp</span>.<span class="built_in">exp</span>]}
+	| {multi}	<span class="built_in">exp</span> [tail]:exp_list			{-&gt; [<span class="built_in">exp</span>.<span class="built_in">exp</span>, tail.<span class="built_in">exp</span>]}
+	;
+</pre></figure>
+
+<p>The final production is what allows us to chain expressions. Without the <strong>exp_list</strong> production only single operations would be allowed (5+2, 3*7 etc), not chains of expressions (5+2+3, 5*2+3 etc). <strong>exp_list {-&gt; exp*}</strong> defines that the exp_list production maps into a list of exp’s in the AST.</p>
+<p>Anyone having done functional programming will recognize the <a href="http://en.wikipedia.org/wiki/Tail_recursion" target="_blank">tail recursion</a> going on here. If there’s only a single expression, we map it into a list of expressions containing just that one expression. If there’s a single expression and a list of expressions following it (which may be one or more expressions), we map it into a list of expressions containing the first expression as well as the rest of the expressions represented by the tail parameter.</p>
+<h2 id="Generating_the_parser">Generating the parser</h2>
+<p>Once we’ve defined the grammar, we’re ready to run the <strong>simplecalc_sable</strong> bat file, hopefully resulting in the following output:</p>
+<figure class="highlight"><pre>D:<span class="subst">\</span>Webmentor Projekter<span class="subst">\</span>Eclipse Projects<span class="subst">\</span>SableCC<span class="subst">\&gt;</span>simplecalc_sable <span class="attribute">-d</span> generated <span class="attribute">-t</span> c
+sharp simplecalc<span class="built_in">.</span>sablecc
+
+D:<span class="subst">\</span>Webmentor Projekter<span class="subst">\</span>Eclipse Projects<span class="subst">\</span>SableCC<span class="subst">\&gt;</span>java <span class="attribute">-jar</span> <span class="string">"C:Program FilesSabl
+eCCsablecc-3-beta.3.altgen.20041114libsablecc.jar"</span> <span class="attribute">-d</span> generated <span class="attribute">-t</span> csharp sim
+plecalc<span class="built_in">.</span>sablecc
+
+SableCC version <span class="number">3</span><span class="attribute">-beta</span><span class="number">.3</span><span class="built_in">.</span>altgen<span class="number">.20040327</span>
+Copyright (C) <span class="number">1997</span><span class="subst">-</span><span class="number">2003</span> Etienne M<span class="built_in">.</span> Gagnon <span class="subst">&lt;</span>etienne<span class="built_in">.</span>gagnon@uqam<span class="built_in">.</span>ca<span class="subst">&gt;</span> <span class="literal">and</span>
+others<span class="built_in">.</span>  <span class="literal">All</span> rights reserved<span class="built_in">.</span>
+
+This software comes <span class="keyword">with</span> ABSOLUTELY NO WARRANTY<span class="built_in">.</span>  This is free software,
+<span class="literal">and</span> you are welcome <span class="keyword">to</span> redistribute it under certain conditions<span class="built_in">.</span>
+
+<span class="keyword">Type</span> <span class="string">'sablecc -license'</span> <span class="keyword">to</span> view
+the complete copyright notice <span class="literal">and</span> license<span class="built_in">.</span>
+
+
+ <span class="subst">--</span> Generating parser for simplecalc<span class="built_in">.</span>sablecc <span class="keyword">in</span> D:Webmentor ProjekterEclipse P
+rojectsSableCCgenerated
+Verifying identifiers<span class="built_in">.</span>
+Verifying ast identifiers<span class="built_in">.</span>
+Adding empty productions <span class="literal">and</span> empty alternative transformation <span class="keyword">if</span> necessary<span class="built_in">.</span>
+Adding productions <span class="literal">and</span> alternative transformation <span class="keyword">if</span> necessary<span class="built_in">.</span>
+computing alternative symbol table identifiers<span class="built_in">.</span>
+Verifying production transform identifiers<span class="built_in">.</span>
+Verifying ast alternatives transform identifiers<span class="built_in">.</span>
+Generating token classes<span class="built_in">.</span>
+Generating production classes<span class="built_in">.</span>
+Generating alternative classes<span class="built_in">.</span>
+Generating analysis classes<span class="built_in">.</span>
+Generating utility classes<span class="built_in">.</span>
+Generating the lexer<span class="built_in">.</span>
+ State: INITIAL
+ <span class="subst">-</span> Constructing NFA<span class="built_in">.</span>
+<span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span>
+ <span class="subst">-</span> Constructing DFA<span class="built_in">.</span>
+<span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span>
+<span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="built_in">..</span>
+ <span class="subst">-</span> resolving ACCEPT states<span class="built_in">.</span>
+Generating the parser<span class="built_in">.</span>
+<span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span>
+<span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span>
+<span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span>
+<span class="built_in">..</span>
+<span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span>
+</pre></figure>
+
+<p>Now if we look in the generated directory, there should be six files: <strong>analysis.cs</strong>, <strong>lexer.cs</strong>, <strong>nodes.cs</strong>, <strong>parser.cs</strong>, <strong>prods.cs</strong> and <strong>tokens.cs</strong>. The files should contain classes in the <strong>SimpleCalc</strong> namespace.</p>
+<h2 id="Printing_the_abstract_syntax_tree">Printing the abstract syntax tree</h2>
+<p>To help ourselves, the first task we’ll do is to simply print out the AST so we can verify what gets parsed is correct. Create a solution called <strong>SimpleCalc</strong> and either copy the genrated files or create a solution link to the folder. Add a new file called <strong>AstPrinter.cs</strong> and paste the following contents:</p>
+<figure class="highlight csharp"><pre>using System;
+using SimpleCalc.analysis;
+using SimpleCalc.node;
+
+namespace SimpleCalc
+{
+	class AstPrinter : DepthFirstAdapter
+	{
+		int indent;
+
+		private void printIndent()
+		{
+			Console.Write(<span class="string">""</span>.PadLeft(indent, 't'));
+		}
+
+		private void printNode(Node node)
+		{
+			printIndent();
+
+			Console.ForegroundColor = ConsoleColor.White;
+			Console.Write(node.GetType().ToString().Replace(<span class="string">"SimpleCalc.node."</span>, <span class="string">""</span>));
+
+			if (node is ANumberExp)
+			{
+				Console.ForegroundColor = ConsoleColor.DarkGray;
+				Console.WriteLine(<span class="string">"  "</span> + node.ToString());
+			}
+			else
+				Console.WriteLine();
+		}
+
+		public override void DefaultIn(Node node)
+		{
+			printNode(node);
+			indent++;
+		}
+
+		public override void DefaultOut(Node node)
+		{
+			indent--;
+		}
+	}
+}
+</pre></figure>
+
+<p>The <strong>DepthFirstAdapter</strong> is a class auto generated by SableCC. It allows us to easily traverse the generated AST depth first, while giving us various hook points along the way. Each node in the tree has an In and Out method that we can override. In is called before the children are traversed while Out is called after the children have been traversed. Note that we may change the tree during the traversal - though we’re not going to do so.</p>
+<p>In the AstPrinter class I’ve overriden the <strong>DefaultIn</strong> and <strong>DefaultOut</strong> methods that gets called for each node unless we’ve overriden their specific default methods. In the In method we increase the indent, and likewise we decrease it in the Out method. Furthermore, in the In method we also print the actual node contents to the console. If it’s a ANumberExp node (the name of the node corresponding to the number type in the AST) then we print the actual number, otherwise we just print the name of the node itself.</p>
+<p>In the main program file, paste the following:</p>
+<figure class="highlight csharp"><pre>using System;
+using System.IO;
+using SimpleCalc.lexer;
+using SimpleCalc.node;
+using SimpleCalc.parser;
+
+namespace SimpleCalc
+{
+	class Program
+	{
+		private static void Main(string[] args)
+		{
+			if (args.Length != 1)
+				exit(<span class="string">"Usage: Simplecalc.exe filename"</span>);
+
+			using (StreamReader sr = new StreamReader(File.Open(args[0], FileMode.Open)))
+			{
+				// Read source
+				Lexer lexer = new Lexer(sr);
+
+				// Parse source
+				Parser parser = new Parser(lexer);
+				Start ast = null;
+
+				try
+				{
+					ast = parser.Parse();
+				}
+				catch (Exception ex)
+				{
+					exit(ex.ToString());
+				}
+
+				// Print tree
+				AstPrinter printer = new AstPrinter();
+				ast.Apply(printer);
+			}
+
+			exit(<span class="string">"Done"</span>);
+		}
+
+		private static void exit(string msg)
+		{
+			if (msg != null)
+				Console.WriteLine(msg);
+			else
+				Console.WriteLine();
+			
+			Console.WriteLine(<span class="string">"Press any key to exit..."</span>);
+			Console.Read();
+			Environment.Exit(0);
+		}
+	}
+}
+</pre></figure>
+
+<p>I’ve made it so the program takes in a single argument, a filename where our calculation expression is written. By taking a file as a parameter, it’s easier for me to change the expression directly in Visual Studio without having to setup launch parameters. The only launch parameter that needs to be set is the file argument.</p>
+<div class="imgwrapper" style=""><div><a href="/writing-a-calculator-in-csharp-using-sablecc/simplecalc_properties_2.jpg" class="fancy"><img src="/writing-a-calculator-in-csharp-using-sablecc/simplecalc_properties_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>The program tries to open the file and then instantiates the SableCC auto generated <a href="http://en.wikipedia.org/wiki/Lexical_analysis" target="_blank">lexer</a> and <a href="http://en.wikipedia.org/wiki/Parsing" target="_blank">parser</a>.</p>
+<p>Now let’s make a new file called <strong>test.ss</strong> and paste the following expression into it: <strong>25-37+2*(1.22+cos(5))*sin(5)*2+5%2*3*sqrt(5+2)</strong>. If you run the application at this point, you should see an output like the following:</p>
+<div class="imgwrapper" style=""><div><a href="/writing-a-calculator-in-csharp-using-sablecc/simplecalc_ast_2.jpg" class="fancy"><img src="/writing-a-calculator-in-csharp-using-sablecc/simplecalc_ast_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>By comparing the printed AST with the input expression, we’ll see that they match both in contents and in regards to operator precedence. Now all that’s left is to perform the actual calculation of the expression.</p>
+<h2 id="Calculating_the_expression_based_on_the_abstract_syntax_tree">Calculating the expression based on the abstract syntax tree</h2>
+<p>Add a new file called <strong>AstCalculator.cs</strong> and paste the following contents:</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Collections.Generic;
+<span class="keyword">using</span> System.Globalization;
+<span class="keyword">using</span> SimpleCalc.analysis;
+<span class="keyword">using</span> SimpleCalc.node;
+
+namespace SimpleCalc
+{
+	class AstCalculator : DepthFirstAdapter
+	{
+		<span class="keyword">private</span> <span class="keyword">double</span>? result;
+		<span class="keyword">private</span> Stack&lt;<span class="keyword">double</span>&gt; stack = <span class="keyword">new</span> Stack&lt;<span class="keyword">double</span>&gt;();
+
+		<span class="keyword">public</span> <span class="keyword">double</span> CalculatedResult
+		{
+			<span class="keyword">get</span>
+			{
+				<span class="keyword">if</span> (result == <span class="keyword">null</span>)
+					<span class="keyword">throw</span> <span class="keyword">new</span> InvalidOperationException(<span class="string">"Must apply AstCalculator to the AST first."</span>);
+
+				<span class="keyword">return</span> result.Value;
+			}
+		}
+
+		<span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">OutStart</span>(Start node)
+		{
+			<span class="keyword">if</span> (stack.Count != <span class="number">1</span>)
+				<span class="keyword">throw</span> <span class="keyword">new</span> Exception(<span class="string">"Stack should contain only one element at end."</span>);
+
+			result = stack.Pop();
+		}
+		
+		<span class="comment">// Associative operators</span>
+		<span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">OutAMulExp</span>(AMulExp node)
+		{
+			stack.Push(stack.Pop() * stack.Pop());
+		}
+
+		<span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">OutAAddExp</span>(AAddExp node)
+		{
+			stack.Push(stack.Pop() + stack.Pop());
+		}
+
+		<span class="comment">// Non associative operators</span>
+		<span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">OutASubExp</span>(ASubExp node)
+		{
+			<span class="keyword">double</span> numB = stack.Pop();
+
+			stack.Push(stack.Pop() - numB);
+		}
+
+		<span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">OutAModExp</span>(AModExp node)
+		{
+			<span class="keyword">double</span> numB = stack.Pop();
+
+			stack.Push(stack.Pop() % numB);
+		}
+
+		<span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">OutADivExp</span>(ADivExp node)
+		{
+			<span class="keyword">double</span> numB = stack.Pop();
+
+			stack.Push(stack.Pop() / numB);
+		}
+
+		<span class="comment">// Unary</span>
+		<span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">OutASqrtExp</span>(ASqrtExp node)
+		{
+			stack.Push(Math.Sqrt(stack.Pop()));
+		}
+
+		<span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">OutACosExp</span>(ACosExp node)
+		{
+			stack.Push(Math.Cos(stack.Pop()));
+		}
+
+		<span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">OutASinExp</span>(ASinExp node)
+		{
+			stack.Push(Math.Sin(stack.Pop()));
+		}
+
+		<span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">InANumberExp</span>(ANumberExp node)
+		{
+			stack.Push(Convert.ToDouble(node.GetNumber().Text.Trim(), <span class="keyword">new</span> CultureInfo(<span class="string">"en-us"</span>)));
+		}
+	}
+}
+</pre></figure>
+
+<p>I will not go through all parts of the calculator as many functions are very similar. I’ll outline the important ones below.</p>
+<figure class="highlight csharp"><pre><span class="keyword">private</span> <span class="keyword">double</span>? result;
+<span class="keyword">private</span> Stack&lt;<span class="keyword">double</span>&gt; stack = <span class="keyword">new</span> Stack&lt;<span class="keyword">double</span>&gt;();
+
+<span class="keyword">public</span> <span class="keyword">double</span> CalculatedResult
+{
+	<span class="keyword">get</span>
+	{
+		<span class="keyword">if</span> (result == <span class="keyword">null</span>)
+			<span class="keyword">throw</span> <span class="keyword">new</span> InvalidOperationException(<span class="string">"Must apply AstCalculator to the AST first."</span>);
+
+		<span class="keyword">return</span> result.Value;
+	}
+}
+</pre></figure>
+
+<p>As all numbers are treated as doubles, the result will be a double as well. The result can be retrieved through the <strong>CalculatedResult</strong> property, but only once the calculation has been performed - thus we check whether the result is null or not.</p>
+<p>While traversing the AST to perform the calculations we maintain state through the use of a generic stack of doubles.</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">OutStart</span>(Start node)
+{
+	<span class="keyword">if</span> (stack.Count != <span class="number">1</span>)
+		<span class="keyword">throw</span> <span class="keyword">new</span> Exception(<span class="string">"Stack should contain only one element at end."</span>);
+
+	result = stack.Pop();
+}
+</pre></figure>
+
+<p>When starting out the stack will be empty. Once we’ve traversed the tree the stack should only contain a single element - the result. To ensure there’s no errors we make sure the stack only contains a single element, after which we return it by popping it from the stack.</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">InANumberExp</span>(ANumberExp node)
+{
+	stack.Push(Convert.ToDouble(node.GetNumber().Text.Trim(), <span class="keyword">new</span> CultureInfo(<span class="string">"en-us"</span>)));
+}
+</pre></figure>
+
+<p>Probably the most important unary operator is the constant number. Whenever we’re in a <strong>ANumberExp</strong> node we read in the number and push it onto the stack.</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">OutASqrtExp</span>(ASqrtExp node)
+{
+	stack.Push(Math.Sqrt(stack.Pop()));
+}
+</pre></figure>
+
+<p>The other unary operators follow the same pattern. We pop the stack and perform a math operation on the popped value, after which we push the result back onto the stack.</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">OutAMulExp</span>(AMulExp node)
+{
+	stack.Push(stack.Pop() * stack.Pop());
+}
+</pre></figure>
+
+<p>The associative operators are simple in that they have no requirements as to which order the input parameters are in. As such, a multiplication simple pops two numbers from the stack and push the multiplied result back onto the stack.</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">OutASubExp</span>(ASubExp node)
+{
+	<span class="keyword">double</span> numB = stack.Pop();
+
+	stack.Push(stack.Pop() - numB);
+}
+</pre></figure>
+
+<p>The non associative opreators need to first pop one number and store it in a temporary variable. The reason we need to do this is that we’re working with a <a href="http://en.wikipedia.org/wiki/FIFO_%28computing%29" target="_blank">FIFO</a> stack, meaning the second number will not be the topmost on the stack and thus we can’t perform the calculation in a single expression.</p>
+<p>Now that we’ve made the AstCalculator class we just need to modify the main method so it runs the calculator.</p>
+<figure class="highlight csharp"><pre><span class="comment">// Print tree</span>
+AstPrinter printer = <span class="keyword">new</span> AstPrinter();
+ast.Apply(printer);
+
+<span class="comment">// Calculate expression</span>
+AstCalculator calculator = <span class="keyword">new</span> AstCalculator();
+ast.Apply(calculator);
+
+Console.WriteLine(<span class="string">"Calculation result: "</span> + calculator.CalculatedResult);
+</pre></figure>
+
+<p>Simply instantiate a new <strong>AstCalculator</strong> after printing the AST, and then apply it to the AST. If you make the above modification and run the program, you should see an output similar to this:</p>
+<div class="imgwrapper" style=""><div><a href="/writing-a-calculator-in-csharp-using-sablecc/simplecalc_calculation_2.jpg" class="fancy"><img src="/writing-a-calculator-in-csharp-using-sablecc/simplecalc_calculation_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Lo and behold, the result is identical to the one provided by Google originally!</p>
+<h2 id="Wrapping_up">Wrapping up</h2>
+<p>I’ve now shown how we can define a language grammar in SableCC and have it auto generate a parser for us. Using the SableCC parser we can read an input string and transform it into an abstract syntax tree. Once we have the abstract syntax tree, we can easily traverse it and modify it.</p>
+<p>While SableCC originally was only able to generate Java output, we now have multiple options for the output language. Unfortunately the generated C# classes are not partial - a feature that would’ve been very useful once we start doing more advanced stuff with the AST. It’s rather easy to modify the six source files manually, as well as setting up an automated script to do it for us.</p>
+<p>Once we read the input and transformed it into an AST we used stack based approach to traverse it and calculate sub results in a very simple way, emulating how most higher level languages work internally.</p>
+<p>I’ll be following up on this post later on by extending the grammar and interpreter functionality.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Sep</span>
+			<span class="day">25</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/iis7-w3wp-process-hung-on-shutdown/" title="IIS 7 w3wp Process Hung on Shutdown" rel="bookmark">IIS 7 w3wp Process Hung on Shutdown</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/IIS/">IIS</a>
+				, 
+			
+				<a href="http://improve.dk/category/Windbg/">Windbg</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>A single server has started to sometime leave zombie w3wp.exe processes when trying to recycle. A new process is spawned properly and everything seems to work, except the old processes are still present and take up memory. Task manager reports there’s only a single thread left, far from the active ones that have between 40 and 70 threads usually.  Using <a href="http://technet.microsoft.com/en-us/sysinternals/dd996900.aspx" target="_blank">ProcDump</a> I’ve taken a full memory dump to analyze further in <a href="http://www.microsoft.com/whdc/DevTools/Debugging/default.mspx" target="_blank">WinDbg</a>.  The machine is a Server 2008 R2 x64 8 core machine as stated by WinDbg:</p>
+<a id="more"></a>
+
+
+<figure class="highlight"><pre>Windows <span class="number">7</span> <span class="keyword">Version</span> <span class="number">7600</span> MP (<span class="number">8</span> procs) Free x64
+</pre></figure>
+
+<p>After loading sos a printout of the managed threads reveals the following:</p>
+<figure class="highlight"><pre><span class="number">0</span>:<span class="number">000</span>&gt; !threads
+ThreadCount: <span class="number">19</span>
+UnstartedThread: <span class="number">0</span>
+BackgroundThread: <span class="number">19</span>
+PendingThread: <span class="number">0</span>
+DeadThread: <span class="number">0</span>
+Hosted Runtime: no
+                                              PreEmptive                                                Lock
+       ID OSID        ThreadOBJ     State   GC     GC Alloc <span class="keyword">Context</span>                  Domain           <span class="keyword">Count</span> APT Exception
+XXXX    <span class="number">1</span>  <span class="number">9</span>d0 <span class="number">000000000209</span>b4c0      <span class="number">8220</span> <span class="keyword">Enabled</span>  <span class="number">0000000000000000</span>:<span class="number">0000000000000000</span> <span class="number">000000000208e770</span>     <span class="number">0</span> Ukn
+XXXX    <span class="number">2</span>  c60 <span class="number">00000000020</span>c3130      b220 <span class="keyword">Enabled</span>  <span class="number">000000013</span>fbe5ed0:<span class="number">000000013</span>fbe7da8 <span class="number">000000000208e770</span>     <span class="number">0</span> MTA (Finalizer)
+XXXX    <span class="number">3</span>  a24 <span class="number">00000000020</span>f0d60   <span class="number">880</span>a220 <span class="keyword">Enabled</span>  <span class="number">0000000000000000</span>:<span class="number">0000000000000000</span> <span class="number">000000000208e770</span>     <span class="number">0</span> MTA (Threadpool Completion Port)
+XXXX    <span class="number">4</span>  <span class="number">97</span>c <span class="number">0000000002105180</span>    <span class="number">80</span>a220 <span class="keyword">Enabled</span>  <span class="number">0000000000000000</span>:<span class="number">0000000000000000</span> <span class="number">000000000208e770</span>     <span class="number">0</span> MTA (Threadpool Completion Port)
+XXXX    <span class="number">5</span>  c28 <span class="number">000000000210</span>bfe0      <span class="number">1220</span> <span class="keyword">Enabled</span>  <span class="number">0000000000000000</span>:<span class="number">0000000000000000</span> <span class="number">000000000208e770</span>     <span class="number">0</span> Ukn
+XXXX    <span class="number">6</span>  d40 <span class="number">00000000053</span>f9080   <span class="number">180</span>b220 <span class="keyword">Enabled</span>  <span class="number">00000001</span>bfe75d20:<span class="number">00000001</span>bfe767c8 <span class="number">000000000208e770</span>     <span class="number">0</span> MTA (Threadpool Worker)
+XXXX    <span class="number">7</span>  c18 <span class="number">00000000053</span>f9b30   <span class="number">180</span>b220 <span class="keyword">Enabled</span>  <span class="number">00000000</span>fff95880:<span class="number">00000000</span>fff97210 <span class="number">000000000208e770</span>     <span class="number">0</span> MTA (Threadpool Worker)
+XXXX    <span class="number">8</span>  f7c <span class="number">00000000053</span>fa5e0   <span class="number">180</span>b220 <span class="keyword">Enabled</span>  <span class="number">000000011</span>fbea268:<span class="number">000000011</span>fbea920 <span class="number">000000000208e770</span>     <span class="number">0</span> MTA (Threadpool Worker)
+XXXX    <span class="number">9</span>  <span class="number">91</span>c <span class="number">00000000053</span>fb090   <span class="number">180</span>b220 <span class="keyword">Enabled</span>  <span class="number">00000001</span>dfc39138:<span class="number">00000001</span>dfc39670 <span class="number">000000000208e770</span>     <span class="number">0</span> MTA (Threadpool Worker)
+XXXX    a  fb0 <span class="number">00000000053</span>fbd20   <span class="number">180</span>b220 <span class="keyword">Enabled</span>  <span class="number">00000000</span>fff922b0:<span class="number">00000000</span>fff93210 <span class="number">000000000208e770</span>     <span class="number">0</span> MTA (Threadpool Worker)
+XXXX    b  fc8 <span class="number">00000000053</span>fc9b0   <span class="number">180</span>b220 <span class="keyword">Enabled</span>  <span class="number">0000000160053</span>ea0:<span class="number">0000000160054778</span> <span class="number">000000000208e770</span>     <span class="number">0</span> MTA (Threadpool Worker)
+XXXX    c  <span class="number">538</span> <span class="number">00000000053</span>fd460   <span class="number">180</span>b220 <span class="keyword">Enabled</span>  <span class="number">000000017</span>fd8fc98:<span class="number">000000017</span>fd911f8 <span class="number">000000000208e770</span>     <span class="number">0</span> MTA (Threadpool Worker)
+XXXX    d  <span class="number">604</span> <span class="number">00000000053</span>fdf10   <span class="number">180</span>b220 <span class="keyword">Enabled</span>  <span class="number">000000019</span>fd7aa78:<span class="number">000000019</span>fd7c648 <span class="number">000000000208e770</span>     <span class="number">0</span> MTA (Threadpool Worker)
+   <span class="number">0</span>    f  <span class="number">2</span>cc <span class="number">0000000005514</span>c60       <span class="number">220</span> <span class="keyword">Enabled</span>  <span class="number">0000000000000000</span>:<span class="number">0000000000000000</span> <span class="number">000000000208e770</span>     <span class="number">0</span> Ukn
+XXXX   <span class="number">10</span>  <span class="number">9</span>bc <span class="number">00000000020</span>a90c0       <span class="number">220</span> <span class="keyword">Enabled</span>  <span class="number">0000000000000000</span>:<span class="number">0000000000000000</span> <span class="number">000000000208e770</span>     <span class="number">0</span> Ukn
+XXXX   <span class="number">11</span>  <span class="number">9</span>c0 <span class="number">00000000056</span>b7a00       <span class="number">220</span> <span class="keyword">Enabled</span>  <span class="number">0000000000000000</span>:<span class="number">0000000000000000</span> <span class="number">000000000208e770</span>     <span class="number">0</span> Ukn
+XXXX    e  <span class="number">9</span>d4 <span class="number">00000000056</span>b7fd0       <span class="number">220</span> <span class="keyword">Enabled</span>  <span class="number">0000000000000000</span>:<span class="number">0000000000000000</span> <span class="number">000000000208e770</span>     <span class="number">0</span> Ukn
+XXXX   <span class="number">12</span>  <span class="number">9</span>d8 <span class="number">00000000056</span>b85a0       <span class="number">220</span> <span class="keyword">Enabled</span>  <span class="number">0000000000000000</span>:<span class="number">0000000000000000</span> <span class="number">000000000208e770</span>     <span class="number">0</span> Ukn
+XXXX   <span class="number">13</span>  cb8 <span class="number">00000000056</span>b8b70       <span class="number">220</span> <span class="keyword">Enabled</span>  <span class="number">0000000000000000</span>:<span class="number">0000000000000000</span> <span class="number">000000000208e770</span>     <span class="number">0</span> Ukn
+</pre></figure>
+
+<p>Of more interest however is probably the output of a stack backtrace for the single unmanaged thread remaining:</p>
+<figure class="highlight"><pre><span class="number">0</span>:<span class="number">000</span>&gt; ~* kb <span class="number">2000</span>
+
+<span class="label">.  0  Id: 85c.2cc Suspend: -1 Teb:</span> <span class="number">000007</span>ff<span class="escape">`f</span>ffd3000 Unfrozen
+<span class="label">RetAddr           : Args to Child                                                           :</span> Call Site
+<span class="number">000007</span>fe<span class="escape">`f</span>dcc1843 : <span class="number">00000000</span><span class="escape">`0</span>0fd6b60 <span class="number">00000000</span><span class="escape">`0</span>0fd6b60 ffffffff<span class="escape">`f</span>fffffff <span class="number">00000000</span><span class="escape">`7</span>7bc04a0 : ntdll!ZwClose+<span class="number">0</span>xa
+<span class="number">00000000</span><span class="escape">`7</span>7ab2c41 : <span class="number">00000000</span><span class="escape">`7</span>7bc1670 <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`7</span>7bc04a0 <span class="number">7</span>fffffff<span class="escape">`f</span>fffffff : KERNELBASE!CloseHandle+<span class="number">0</span>x13
+<span class="number">000007</span>fe<span class="escape">`f</span>56537c6 : <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`0</span>12da080 <span class="number">000007</span>fe<span class="escape">`f</span>5442eac : kernel32!CloseHandleImplementation+<span class="number">0</span>x3d
+<span class="number">000007</span>fe<span class="escape">`f</span>54443d2 : <span class="number">00000000</span><span class="escape">`0</span>0000007 <span class="number">000007</span>fe<span class="escape">`f</span>5443d3c <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`7</span>7bc9997 : httpapi!HttpCloseRequestQueue+<span class="number">0</span>xa
+<span class="number">000007</span>fe<span class="escape">`f</span>54444c3 : <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`0</span>12e6900 <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`7</span>7bd5afa : w3dt!UL_APP_POOL::Cleanup+<span class="number">0</span>x62
+<span class="number">000007</span>fe<span class="escape">`f</span>549384a : <span class="number">00000000</span><span class="escape">`0</span>12da080 <span class="number">00000000</span><span class="escape">`0</span>0c93a28 <span class="number">00000000</span><span class="escape">`0</span>12e6900 <span class="number">00000000</span><span class="escape">`0</span>0000000 : w3dt!WP_CONTEXT::CleanupOutstandingRequests+<span class="number">0</span>x83
+<span class="number">000007</span>fe<span class="escape">`f</span>549417a : <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`0</span>000ffff <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`7</span>7bcf9fd : iiscore!W3_SERVER::StopListen+<span class="number">0</span>x4a
+<span class="number">000007</span>fe<span class="escape">`f</span>562b5bf : <span class="number">00000000</span><span class="escape">`0</span>12d2f30 <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`0</span>000ffff : iiscore!IISCORE_PROTOCOL_MANAGER::StopListenerChannel+<span class="number">0</span>x5a
+<span class="number">000007</span>fe<span class="escape">`f</span>5626e8f : <span class="number">00000000</span><span class="escape">`0</span>12d2f30 <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`0</span>0424380 <span class="number">00000000</span><span class="escape">`0</span>0000000 : w3wphost!LISTENER_CHANNEL_STOP_WORKITEM::ExecuteWorkItem+<span class="number">0</span>x7b
+<span class="number">00000000</span><span class="escape">`7</span>7bcf8eb : <span class="number">00000000</span><span class="escape">`0</span>21782b0 <span class="number">00000000</span><span class="escape">`0</span>21782b0 <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`0</span>0000001 : w3wphost!W3WP_HOST::ExecuteWorkItem+<span class="number">0</span>xf
+<span class="number">00000000</span><span class="escape">`7</span>7bc9d9f : <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`0</span>12d2f30 <span class="number">00000000</span><span class="escape">`0</span>0424380 <span class="number">00000000</span><span class="escape">`0</span>10aa528 : ntdll!RtlpTpWorkCallback+<span class="number">0</span>x16b
+<span class="number">00000000</span><span class="escape">`7</span>7aaf56d : <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`0</span>0000000 : ntdll!TppWorkerThread+<span class="number">0</span>x5ff
+<span class="number">00000000</span><span class="escape">`7</span>7be3281 : <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`0</span>0000000 : kernel32!BaseThreadInitThunk+<span class="number">0</span>xd
+<span class="number">00000000</span><span class="escape">`0</span>0000000 : <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`0</span>0000000 : ntdll!RtlUserThreadStart+<span class="number">0</span>x1d
+</pre></figure>
+
+<p>From the stack trace it’s obvious that the w3wp process is trying to shut down and perform its cleanup tasks, but for some reason ntdll!ZwClose is hanging up. It’s been hung for several days without change - and without apparent side effects besides an increased amount of memory usage.</p>
+<p>The w3wp processes do not hang up all the time, I have yet to find a reproducible pattern. In the meantime, any suggestions for further debugging?</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+
+<div class="paging">
+	<a href="/page/13/"><div class="past">« Past</div></a>
+	<a href="/page/11/"><div class="future">Future »</div></a>
+	<div class="clear"></div>
+</div>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

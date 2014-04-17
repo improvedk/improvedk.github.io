@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Compiling Java in Visual Studio | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Sep</span>
+			<span class="day">29</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/compiling-java-in-visual-studio/" title="Compiling Java in Visual Studio" rel="bookmark">Compiling Java in Visual Studio</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/Visual Studio/">Visual Studio</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on Compiling Java in Visual Studio">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>I often see my fellow comp. sci. students writing their (relatively) simple Java code in applications like Emacs, Nano or Eclipse. I’m not fond of either application. I much prefer Visual Studios text handling, solution overview, output windows and so forth. What most people don’t know is that you can actually extend Visual Studio to a great extent. One way to extend Visual Studio is to write plugins using .NET, but there’s a way that is much simpler (albeit also more limited). I will now show how you can make Visual Studio compile and run your Java applications all within Visual Studio itself.</p>
+<a id="more"></a>
+
+<p>First of all, you need to <a href="http://java.sun.com/javase/downloads/index.jsp" target="_blank">download and install the Java JDK</a>. Basically, you need to be able to call “javac” and “java” from any command prompt - which means you have to setup the environment settings so you have your JDK bin in the PATH variable.</p>
+<div class="imgwrapper" style=""><div><a href="/compiling-java-in-visual-studio/javac_1_2.jpg" class="fancy"><img src="/compiling-java-in-visual-studio/javac_1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/compiling-java-in-visual-studio/javac_2_2.jpg" class="fancy"><img src="/compiling-java-in-visual-studio/javac_2_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Create a new Visual Studio project. It really doesn’t matter much what type you choose as there is no native Java project types. Choosing J# will not give you any advantages over, say a C# project. In this example I’ll use a C# Class Library project.</p>
+<div class="imgwrapper" style=""><div><a href="/compiling-java-in-visual-studio/javac_3_2.jpg" class="fancy"><img src="/compiling-java-in-visual-studio/javac_3_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Start out by deleting the automatically created Class1.cs file. Add a new text file instead, I’ll call it MyApplication.java. You can write any standard Java code in the Java files, just like you’d ordinarily do.</p>
+<div class="imgwrapper" style=""><div><a href="/compiling-java-in-visual-studio/javac_4_2.jpg" class="fancy"><img src="/compiling-java-in-visual-studio/javac_4_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>One of the really cool features of Visual Studio is that it actually includes Intellisense for a lot of the standard Java classes, so you’re not left totally on your own.</p>
+<div class="imgwrapper" style=""><div><a href="/compiling-java-in-visual-studio/javac_5_2.jpg" class="fancy"><img src="/compiling-java-in-visual-studio/javac_5_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Now comes the compilation part. Add a new text file to the project and call it Compile.bat. This will be the bat file that manages the actual compilation and execution of the application afterwards. Leave the file empty for now, we’ll enter the code in a short while.</p>
+<div class="imgwrapper" style=""><div><a href="/compiling-java-in-visual-studio/javac_6_2.jpg" class="fancy"><img src="/compiling-java-in-visual-studio/javac_6_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Go to Tools -&gt; External Tools…</p>
+<div class="imgwrapper" style=""><div><a href="/compiling-java-in-visual-studio/javac_7_2.jpg" class="fancy"><img src="/compiling-java-in-visual-studio/javac_7_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Add a new entry called “Javac”, set the command path to your Compile.bat file and make sure the directory is set to the ProjectDir macro path. Check the “Use Output window” checkbox, this ensures the output is output directly into the Visual Studio output window.</p>
+<div class="imgwrapper" style=""><div><a href="/compiling-java-in-visual-studio/javac_8_2.jpg" class="fancy"><img src="/compiling-java-in-visual-studio/javac_8_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Now enter the following into the Compile.bat file:</p>
+<figure class="highlight java"><pre>del Output /S /Q
+mkdir Output
+javac *.java -d Output
+cd Output
+start java MyApplication
+</pre></figure>
+
+<p>Modify the MyApplication.java file so it ends with a call to System.in.read(), this ensures the application will stay open after we start it.</p>
+<figure class="highlight java"><pre><span class="keyword">import</span> java.io.*;
+
+class MyApplication
+{
+	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span>(String args[]) <span class="keyword">throws</span> IOException
+	{
+		System.out.println(<span class="string">"Hello World!"</span>);
+		System.in.read();
+	}
+}
+</pre></figure>
+
+<p>Now simply go to Tools -&gt; Javac and watch your Java application compile and run.</p>
+<div class="imgwrapper" style=""><div><a href="/compiling-java-in-visual-studio/javac_9_2.jpg" class="fancy"><img src="/compiling-java-in-visual-studio/javac_9_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>You can of course modify the build script in whatever way you wish to support larger applications. You could also use ANT build scripts, unit tests and so forth. To make compiling easier, you can create a key command (Tools -&gt; Options -&gt; Keyboard -&gt; Tools.ExternalCommandX where X is the Javac commands index in the Tools menu) to the Javac command in the Visual Studio settings, I use Ctrl+Shift+J for Java compilation myself.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=Compiling%20Java%20in%20Visual%20Studio%20http%3A%2F%2Fimprove.dk%2Fcompiling-java-in-visual-studio%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fcompiling-java-in-visual-studio%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fcompiling-java-in-visual-studio%2F&title=Compiling%20Java%20in%20Visual%20Studio" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/compiling-java-in-visual-studio/compiling-java-in-visual-studio.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'compiling-java-in-visual-studio';
+	var disqus_url = 'http://improve.dk/compiling-java-in-visual-studio/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

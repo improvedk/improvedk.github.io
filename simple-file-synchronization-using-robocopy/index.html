@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Simple File Synchronization Using Robocopy | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Oct</span>
+			<span class="day">07</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/simple-file-synchronization-using-robocopy/" title="Simple File Synchronization Using Robocopy" rel="bookmark">Simple File Synchronization Using Robocopy</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/Windows/">Windows</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on Simple File Synchronization Using Robocopy">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>On numerous occations I’ve had a need for synchronizing directories of files &amp; subdirectories. I’ve used it for synchronizing work files from my stationary PC to my laptop in the pre-always-on era (today I use SVN for almost all files that needs to be in synch). Recently I needed to implement a very KISS backup solution that simply synchronized two directories once a week for offsite storing of the backup data.</p>
+<a id="more"></a>
+
+<p>While seemingly simple the only hitch was that there would be several thousands of files in binary format, so compression was out of the question. All changes would be additions and deletions - that is, no incremental updates. Finally I’d only have access to the files through a share so it wouldn’t be possible to deploy a local backup solution that monitored for changes and only sent diffs.</p>
+<p>I started out using <a href="http://www.tgrmn.com/web/file_synchronization.htm" target="_blank">ViceVersa PRO</a> with the <a href="http://www.tgrmn.com/web/vvengine/vvengine.htm" target="_blank">VVEngine</a> addon for scheduling. It worked great for some time although it wasn’t the most speedy solution given my scenario. Some time later ViceVersa stopped working. Apparently it was simply unable to handle more than a million files (give or take a bit). Their forums are filled with people asking for solutions, though the only suggestion they have is to split the backup job into several smaller jobs. Hence I started taking backups of MyShare/A<em>, MyShare/B</em>, etc. This quickly grew out of hand as the number of files increased.</p>
+<p>Sometime later I was introduced to <a href="http://technet.microsoft.com/en-us/library/cc733145(WS.10" target="_blank">Robocopy</a>.aspx). Robocopy ships with Vista, Win7 and Server 2008. For server 2003 and XP it can be downloaded as part of the<a href="http://www.microsoft.com/Downloads/details.aspx?FamilyID=9d467a69-57ff-4ae7-96ee-b18c4790cffd&amp;displaylang=en" target="_blank">Windows Server 2003 Resource Kit Tools</a>.</p>
+<p>Robocopy (Robust File Copy) does one job extremely well - it copies files. It’s run from the command line, though there has been made a <a href="http://technet.microsoft.com/en-us/magazine/2006.11.utilityspotlight.aspx" target="_blank">wrapper GUI</a> for it. The basic syntax for calling robocopy is:</p>
+<figure class="highlight"><pre>robocopy &lt;Source&gt; &lt;Destination&gt; [&lt;File&gt;[ <span class="keyword">...</span>]] [&lt;Options&gt;]
+</pre></figure>
+
+<p>You give it a source and a destination address and it’ll make sure all files &amp; directories from the source are copied to the destination. If an error occurs it’ll wait for 30 seconds (configurable) before retrying, and it’ll continue doing this a million times (configurable). That means robocopy will survive a network error and just resume the copying process once the network is back up again.</p>
+<p>What makes robocopy really shine is not it’s ability to copy files, but it’s ability to mirror one directory into another. That means it’ll not just copy files, it’ll also delete any extra files in the destination directory. In comparison to ViceVersa, robocopy goes through the directory structure in a linear fashion and in doing so doesn’t have any major requirements of memory. ViceVersa would initially scan the source and destination and then perform the comparison. As source and destination became larger and larger, more memory was required to perform the initial comparison - until a certain point where it’d just give up.</p>
+<p>I ended up with the following command for mirroring the directories using robocopy:</p>
+<figure class="highlight"><pre>robocopy <span class="command">\\</span>SourceServer<span class="command">\Share</span> <span class="command">\\</span>DestinationServer<span class="command">\Share</span> /MIR /FFT /Z /XA:H /W:5
+</pre></figure>
+
+<ul>
+<li>/MIR specifies that robocopy should mirror the source directory and the destination directory. Beware that this may delete files at the destination.</li>
+<li>/FFT uses fat file timing instead of NTFS. This means the granularity is a bit less precise. For across-network share operations this seems to be much more reliable - just don’t rely on the file timings to be completely precise to the second.</li>
+<li>/Z ensures robocopy can resume the transfer of a large file in mid-file instead of restarting.</li>
+<li>/XA:H makes robocopy ignore hidden files, usually these will be system files that we’re not interested in.</li>
+<li>/W:5 reduces the wait time between failures to 5 seconds instead of the 30 second default.</li>
+</ul>
+<p>The robocopy script can be setup as a simply Scheduled Task that runs daily, hourly, weekly etc. Note that robocopy also contains a switch that’ll make robocopy monitor the source for changes and invoke the synchronization script each time a configurable number of changes has been made. This may work in your scenario, but be aware that robocopy will not just copy the changes, it will scan the complete directory structure just like a normal mirroring procedure. If there’s a lot of files &amp; directories, this may hamper performance.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=Simple%20File%20Synchronization%20Using%20Robocopy%20http%3A%2F%2Fimprove.dk%2Fsimple-file-synchronization-using-robocopy%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fsimple-file-synchronization-using-robocopy%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fsimple-file-synchronization-using-robocopy%2F&title=Simple%20File%20Synchronization%20Using%20Robocopy" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/simple-file-synchronization-using-robocopy/simple-file-synchronization-using-robocopy.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'simple-file-synchronization-using-robocopy';
+	var disqus_url = 'http://improve.dk/simple-file-synchronization-using-robocopy/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

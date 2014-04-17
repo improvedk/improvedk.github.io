@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Routing Requests for a Subdirectory to Another Server Using IIS Application Request Routing | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jun</span>
+			<span class="day">21</span>
+		</div>
+		<div class="lower">2010</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/routing-requests-for-a-subdirectory-to-another-server-using-iis-application-request-routing/" title="Routing Requests for a Subdirectory to Another Server Using IIS Application Request Routing" rel="bookmark">Routing Requests for a Subdirectory to Another Server Using IIS Application Request Routing</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/IIS/">IIS</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on Routing Requests for a Subdirectory to Another Server Using IIS Application Request Routing">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>In this post I’ll walk you through how to setup <a href="http://www.iis.net/download/applicationrequestrouting" target="_blank">IIS Application Request Routing</a> so that any requests for a /wiki/ subdirectory are routed onto a separate server, while all other requests are handled by the server itself.</p>
+<a id="more"></a>
+
+<p>Let’s imagine a fictional scenario where I want to add a wiki to my website. Thus, all requests to improve.dk/wiki/* are mapped to a dedicated LAMP based server that runs some kind of wiki software. All other requests should be served by the normal improve.dk webserver.</p>
+<p>The first task is to setup a new server farm, called Wiki in my case. Add the server to the list of servers, using its hostname, MyWikiServer in this case. If you setup (temporarily, for testing) improve.dk so it maps to the wiki server, requesting <a href="http://improve.dk/Wiki/">http://improve.dk/Wiki/</a> should return back the expected result from the wiki server, if requested from the normal webserver.</p>
+<div class="imgwrapper" style=""><div><a href="/routing-requests-for-a-subdirectory-to-another-server-using-iis-application-request-routing/rrsa1_2.jpg" class="fancy"><img src="/routing-requests-for-a-subdirectory-to-another-server-using-iis-application-request-routing/rrsa1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+
+<figure class="highlight xml"><pre><span class="tag">&lt;<span class="title">webfarms</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">webfarm</span> <span class="attribute">enabled</span>=<span class="value">"true"</span> <span class="attribute">name</span>=<span class="value">"Wiki"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">server</span> <span class="attribute">enabled</span>=<span class="value">"true"</span> <span class="attribute">address</span>=<span class="value">"MyWikiServer"</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">server</span>&gt;</span><span class="tag">&lt;/<span class="title">webfarm</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">applicationrequestrouting</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">hostaffinityproviderlist</span>&gt;</span>
+            <span class="tag">&lt;<span class="title">add</span> <span class="attribute">name</span>=<span class="value">"Microsoft.Web.Arr.HostNameRoundRobin"</span>&gt;</span>
+            <span class="tag">&lt;<span class="title">add</span> <span class="attribute">name</span>=<span class="value">"Microsoft.Web.Arr.HostNameMemory"</span>&gt;</span>
+        <span class="tag">&lt;/<span class="title">add</span>&gt;</span><span class="tag">&lt;/<span class="title">add</span>&gt;</span><span class="tag">&lt;/<span class="title">hostaffinityproviderlist</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">applicationrequestrouting</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">webfarms</span>&gt;</span>
+</pre></figure>
+
+<p>Next, setup a URL Rewrite rule at the global level like the following:</p>
+<div class="imgwrapper" style=""><div><a href="/routing-requests-for-a-subdirectory-to-another-server-using-iis-application-request-routing/rrsa2_2.jpg" class="fancy"><img src="/routing-requests-for-a-subdirectory-to-another-server-using-iis-application-request-routing/rrsa2_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>The rule matches all requests for the /wiki/ directory, whether there’s a trailing slash or further subdirectories. It ensures not to match a request like /wikipedia/. The request is routed onto the Wiki webfarm which sends the request onto the MyWikiServer server. Note that there’s a condition ensuring this rule will only match requests for the improve.dk domain so other websites aren’t affected. There are no changes to the actual improve.dk website setup.</p>
+<p><strong>Correction:</strong> As noted by Rob Hudson, the regular expression should actually be:</p>
+<blockquote>
+<p>^wiki$|^wiki/(.*)</p>
+</blockquote>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=Routing%20Requests%20for%20a%20Subdirectory%20to%20Another%20Server%20Using%20IIS%20Application%20Request%20Routing%20http%3A%2F%2Fimprove.dk%2Frouting-requests-for-a-subdirectory-to-another-server-using-iis-application-request-routing%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Frouting-requests-for-a-subdirectory-to-another-server-using-iis-application-request-routing%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Frouting-requests-for-a-subdirectory-to-another-server-using-iis-application-request-routing%2F&title=Routing%20Requests%20for%20a%20Subdirectory%20to%20Another%20Server%20Using%20IIS%20Application%20Request%20Routing" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/routing-requests-for-a-subdirectory-to-another-server-using-iis-application-request-routing/routing-requests-for-a-subdirectory-to-another-server-using-iis-application-request-routing.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'routing-requests-for-a-subdirectory-to-another-server-using-iis-application-request-routing';
+	var disqus_url = 'http://improve.dk/routing-requests-for-a-subdirectory-to-another-server-using-iis-application-request-routing/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

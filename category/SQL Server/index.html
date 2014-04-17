@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Nov</span>
+			<span class="day">06</span>
+		</div>
+		<div class="lower">2013</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/sql-server-corruption-recovery-when-all-else-fails/" title="SQL Server Corruption Recovery - When All Else Fails" rel="bookmark">SQL Server Corruption Recovery - When All Else Fails</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server/">SQL Server</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>In this post I want to walk through a number of SQL Server corruption recovery techniques for when you’re out of luck, have no backups, and the usual methods don’t work. I’ll be using the <a href="http://msftdbprodsamples.codeplex.com/releases/view/93587" target="_blank">AdventureWorksLT2008R2 sample database</a> as my victim.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Nov</span>
+			<span class="day">05</span>
+		</div>
+		<div class="lower">2013</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/corrupting-databases-purpose-using-orcamdf-corruptor/" title="Corrupting Databases on Purpose Using the OrcaMDF Corruptor" rel="bookmark">Corrupting Databases on Purpose Using the OrcaMDF Corruptor</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server/">SQL Server</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Sometimes you must first do evil, to do good. Such is the case when you want to hone your skills in corruption recovery of SQL Server databases.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Nov</span>
+			<span class="day">04</span>
+		</div>
+		<div class="lower">2013</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/orcamdf-rawdatabase-a-swiss-army-knife-for-mdf-files/" title="OrcaMDF RawDatabase - A Swiss Army Knife for MDF Files" rel="bookmark">OrcaMDF RawDatabase - A Swiss Army Knife for MDF Files</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server/">SQL Server</a>
+				, 
+			
+				<a href="http://improve.dk/category/Tools of the Trade/">Tools of the Trade</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>When I initially started working on <a href="/introducing-orcamdf/">OrcaMDF</a> I had just one goal, to gain a deeper knowledge of MDF file internals than I could through most books available.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Oct</span>
+			<span class="day">23</span>
+		</div>
+		<div class="lower">2013</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/announcing-tribalsql/" title="Announcing Tribal SQL" rel="bookmark">Announcing Tribal SQL</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Community/">SQL Server - Community</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server/">SQL Server</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>I’m slightly late to announce this, but better late than never!</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jan</span>
+			<span class="day">01</span>
+		</div>
+		<div class="lower">2013</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/and-thus-i-lost-my-introduction/" title="And Thus I Lost My Introduction" rel="bookmark">And Thus I Lost My Introduction</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Community/">SQL Server - Community</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server/">SQL Server</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Seeing as most of my presentations are rather technical, I like to start by pointing out the fact that I have no finished higher education (though in progress), no major certifications or recognitions/awards. This leaves a perfect opportunity for me to explain, from the ground up, why I still feel qualified to be standing in front of the audience.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Feb</span>
+			<span class="day">20</span>
+		</div>
+		<div class="lower">2012</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/stop-worrying-about-exhausting-bigints/" title="Stop Worrying About Exhausting Bigints" rel="bookmark">Stop Worrying About Exhausting Bigints</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server/">SQL Server</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>I’ve done it myself, worried about what to do when I exhausted my bigint identity value. I was worried that part of the LSN being a bigint – what would happen when it ran out? Would it perform an integer overflow? The answer? Worrying about exhausting the range of a bigint is not something you should spend time on. Allow me to elaborate.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jan</span>
+			<span class="day">25</span>
+		</div>
+		<div class="lower">2012</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/broadcom-nics-considered-harmful/" title="Broadcom NICs Considered Harmful?" rel="bookmark">Broadcom NICs Considered Harmful?</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server/">SQL Server</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Every night at around 2AM I get an email from my best friend, confirming that she’s OK. It usually looks something like this:</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Oct</span>
+			<span class="day">20</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/what-do-airlines-use-for-primary-keys/" title="What Do Airlines Use for Primary Keys?" rel="bookmark">What Do Airlines Use for Primary Keys?</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server/">SQL Server</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>On my way home from the PASS Summit in Seattle, I had a layover in Amsterdam before continuing onto Copenhagen. For various reasons, we were about one and a half hours delayed, and I arrived in AMS at 9:30, my CPH flight departing at 9:35. As you’d probably guessed, I missed my flight.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Aug</span>
+			<span class="day">01</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/how-not-to-reinvent-indexes/" title="How Not to Reinvent Indexes" rel="bookmark">How Not to Reinvent Indexes</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server/">SQL Server</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>In a moment of weakness I <a href="https://twitter.com/#!/improvedk/status/96646125402062849" target="_blank">pleged to make an absolute fool of myself</a> for this months <a href="http://thomaslarock.com/2011/07/meme-monday-for-august/" target="_blank">Meme Monday</a>. I wish I could say that this happened 20 years ago, when I was but a young grasshopper. To my disgrace, this happened fewer years ago than I’d like to admit.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Mar</span>
+			<span class="day">23</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/sql-server-mirroring-a-practical-approach/" title="SQL Server Mirroring - A Practical Approach" rel="bookmark">SQL Server Mirroring - A Practical Approach</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server/">SQL Server</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>In this post I’ll take a practical approach at talking about what SQL Server Mirroring is, the advantages and considerations that follows.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Nov</span>
+			<span class="day">25</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/weighted-random-selections-in-sql-server/" title="Weighted Random Selections in SQL Server" rel="bookmark">Weighted Random Selections in SQL Server</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server/">SQL Server</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><h2 id="UPDATE">UPDATE</h2>
+<p>After testing my code through based on JP’s comments, I’ve realized my implementation was way too naïve and cannot be used for most datasets. For a correct weighted random implementation, see <a href="http://stackoverflow.com/questions/58457/random-weighted-choice-in-t-sql/454454#454454" target="_blank">Dems’ answer on StackOverflow</a>.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Dec</span>
+			<span class="day">13</span>
+		</div>
+		<div class="lower">2006</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/sql-server-datetime-rounding-made-easy/" title="SQL Server Datetime Rounding Made Easy" rel="bookmark">SQL Server Datetime Rounding Made Easy</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server/">SQL Server</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p><strong>Update:</strong> As noted in the comments, this method does not actually round, it truncates the datetime value.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

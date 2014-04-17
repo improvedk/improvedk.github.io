@@ -1,0 +1,1512 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Sep</span>
+			<span class="day">23</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/iis-request-filtering-woes/" title="IIS Request Filtering Woes" rel="bookmark">IIS Request Filtering Woes</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/IIS/">IIS</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I recently put a number of load balanced websites in production by using the newly released <a href="http://www.iis.net/extensions/ApplicationRequestRouting" target="_blank">IIS7 Application Request Routing</a> v2 Beta extension. Everything seemed to run perfectly both performance and functionality wise. There was a slight problem however.</p>
+<a id="more"></a>
+
+<p>Some users were reporting mysterious errors when uploading files to the website, apparently seeming like a timeout. When I tried to reproduce, all smallish files when through, though larger files did fail. I checked out the responses in <a href="http://www.fiddler2.com/fiddler2/" target="_blank">Fiddler</a> and to my surprise the ones working returned 200 while the failing ones returned a 404 error after a while. To the trained eye, the problem might already be apparent - unfortunately it wasn’t apparent to me at the time. I’d expect a status 200 for working uploads and a 500 for failed uploads. A 404 should only happen when the URL is wrong, which certainly shouldn’t vary depending on file size.</p>
+<p>Circumventing the ARR load balancing server fixed the issue, so I quickly pinpointed that the addition of the ARR load balancer was the root cause. Enabling IIS logging on the content servers revealed that the failing requests never reached the content servers, hinting that the actual problem occurred on the ARR machine before even being proxied on to the content servers.</p>
+<p>Checking out the IIS log of the ARR server revealed the following crucial line (unimportant parts abbreviated):</p>
+<figure class="highlight"><pre>[DATETIME] [USER_IP] <span class="keyword">GET</span> / - <span class="number">80</span> - [USER_IP] [UserAgent] <span class="number">404</span> <span class="number">13</span> <span class="number">0</span> <span class="number">1</span>
+</pre></figure>
+
+<p>The HTTP status code is 404 as shown by Fiddler. The interesting part however is the HTTP substatus code of 13. Checking up on the HTTP substatus codes utilized by the <a href="http://www.iis.net/ConfigReference/system.webServer/security/requestFiltering" target="_blank">IIS7 Request Filtering module</a> revals that 404.13 is caused by a too large content length. If the ARR IIS had spat out a detailed IIS error page instead of a generic 404, the problem would have been apparent much quicker since the substatus code would’ve been included. Unfortunately the detailed errors are disabled on the ARR ISS for security reasons.</p>
+<p>The solution is simple. By opening the <a href="http://learn.iis.net/page.aspx/124/introduction-to-applicationhostconfig/" target="_blank">C:WindowsSystem32inetsrvconfigapplicationHost.config</a> (the main IIS configuration file) and setting the <a href="http://msdn.microsoft.com/en-us/library/ms689462.aspx" target="_blank">maxAllowedContentLength</a><br>in system.webServer/security/requestFiltering/requestLimits to a higher value, we automatically allow larger bodies for incoming requests and thus avoiding the 404.13 error caused by the request filtering module. In the below example I’ve set the limit to 256 MB - the value is expressed in bytes.</p>
+<figure class="highlight xml"><pre><span class="tag">&lt;<span class="title">system.webServer</span>&gt;</span>
+	<span class="tag">&lt;<span class="title">security</span>&gt;</span>
+		<span class="tag">&lt;<span class="title">requestFiltering</span>&gt;</span>
+			<span class="tag">&lt;<span class="title">requestLimits</span> <span class="attribute">maxAllowedContentLength</span>=<span class="value">"268435456"</span> /&gt;</span>
+		<span class="tag">&lt;/<span class="title">requestFiltering</span>&gt;</span>
+	<span class="tag">&lt;/<span class="title">security</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">system.webServer</span>&gt;</span>
+</pre></figure>
+
+<p>Tip: Instead of editing the applicationHost.config file manually you can also install the <a href="http://blogs.msdn.com/carlosag/archive/2008/05/13/IISAdminPackTechnicalPreview2Released.aspx" target="_blank">IIS Admin Pack Tech Preview 2</a> which will give you the option to edit request filtering settings directly from the IIS Manager, as well as a number of other management GUI improvements.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Sep</span>
+			<span class="day">16</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/combining-paths-with-multiple-parts/" title="Combining Paths With Multiple Parts" rel="bookmark">Combining Paths With Multiple Parts</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Whenever you concatenate multiple strings into a path, you really ought to be using the <a href="http://msdn.microsoft.com/en-us/library/system.io.path.aspx" target="_blank">System.IO.Path</a> class’s Combine method. At times you may be concatenating a number of smaller parts of a path instead of just the two that the <a href="http://msdn.microsoft.com/en-us/library/fyy7a5kt.aspx" target="_blank">Path.Combine()</a> method takes. Nested Path.Combine calls quickly become difficult to read and error prone:</p>
+<a id="more"></a>
+
+
+<figure class="highlight csharp"><pre><span class="keyword">string</span> partOne = <span class="string">@"C:"</span>;
+<span class="keyword">string</span> partTwo = <span class="string">"Windows"</span>;
+<span class="keyword">string</span> partThree = <span class="string">@"System32\drivers"</span>;
+<span class="keyword">string</span> partFour = <span class="string">@"etc\hosts"</span>;
+<span class="keyword">string</span> combinedPath;
+
+combinedPath = Path.Combine(Path.Combine(Path.Combine(partOne, partTwo), partThree), partFour);
+</pre></figure>
+
+<p>Often we won’t have all of our path parts in named variables, and even when we do, they’ll rarely be named partOne, partTwo, partX etc. If we mix literal strings with variables and multiple levels of nested Path.Combine calls, mayhem will arise.</p>
+<p>As an alternative I’m using a simple wrapper method above the Path.Combine method:</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> PathCombiner
+{
+	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">string</span> <span class="title">Combine</span>(<span class="keyword">string</span> path1, <span class="keyword">string</span> path2, <span class="keyword">params</span> <span class="keyword">string</span>[] pathn)
+	{
+		<span class="keyword">string</span> path = Path.Combine(path1, path2);
+
+		<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; pathn.Length; i++)
+			path = Path.Combine(path, pathn[i]);
+
+		<span class="keyword">return</span> path;
+	}
+}
+</pre></figure>
+
+<p>The C# <a href="http://msdn.microsoft.com/en-us/library/w5zay9db(VS.71" target="_blank">params</a>.aspx) keyword allows us to make a method take in any number of parameters of the same type - string in this case. Note that I’ve split the paths up into three parts - path1, path2 and pathn. If we were to only take the params string[] parameter, the user might send in no parameters at all - which wouldn’t make sense. By forcing the user to send in at least two paths, we maintain the interface of Path.Combine and just add extra functionality on top of it - though the user may still just send in two paths as before.</p>
+<figure class="highlight csharp"><pre>static void Main(string[] args)
+{
+	string partOne = @<span class="string">"C:"</span>;
+	string partTwo = <span class="string">"Windows"</span>;
+	string partThree = @<span class="string">"System32\drivers"</span>;
+	string partFour = @<span class="string">"etc\hosts"</span>;
+	string combinedPath;
+
+	// Using System.IO.Path
+	combinedPath = Path.Combine(Path.Combine(Path.Combine(partOne, partTwo), partThree), partFour);
+	Console.WriteLine(combinedPath);
+	
+	// Using PathCombiner
+	combinedPath = PathCombiner.Combine(partOne, partTwo, partThree, partFour);
+	Console.WriteLine(combinedPath);
+
+	Console.Read();
+}
+</pre></figure>
+
+<p>An extension method you say? The logical place to put this function would be in the Path class itself, perhaps named CombineMultiple. Unfortunately the Path class is static so we’re unable to extend it. Another option might be directly on string as a CombinePath method like this:</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> PathCombiner
+{
+	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">string</span> <span class="title">Combine</span>(<span class="keyword">string</span> path1, <span class="keyword">string</span> path2, <span class="keyword">params</span> <span class="keyword">string</span>[] pathn)
+	{
+		<span class="keyword">string</span> path = Path.Combine(path1, path2);
+
+		<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; pathn.Length; i++)
+			path = Path.Combine(path, pathn[i]);
+
+		<span class="keyword">return</span> path;
+	}
+
+	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">string</span> <span class="title">CombinePath</span>(<span class="keyword">this</span> <span class="keyword">string</span> path1, <span class="keyword">string</span> path2, <span class="keyword">params</span> <span class="keyword">string</span>[] pathn)
+	{
+		<span class="keyword">return</span> Combine(path1, path2, pathn);
+	}
+}
+</pre></figure>
+
+<p>We’d call the extension method like so:</p>
+<figure class="highlight csharp"><pre>combinedPath = partOne<span class="preprocessor">.CombinePath</span>(partTwo)<span class="preprocessor">.CombinePath</span>(partThree)<span class="preprocessor">.CombinePath</span>(partFour)<span class="comment">;</span>
+</pre></figure>
+
+<p>While this does work, I really don’t recommend it. I’m against overly use of extension methods unless there’s a good reason. I think it’s much cleaner to contain this code in a separate class whose only purpose is path combining. Now devs are going to be confused when they sometimes see the CombinePath method in Intellisense and not at other times, depending on whether the namespace has been imported. Also, I think the PathCombiner.Combine syntax is the cleanest on top of that, but you be the judge:</p>
+<figure class="highlight csharp"><pre>string partOne = @<span class="string">"C:"</span><span class="comment">;</span>
+string partTwo = <span class="string">"Windows"</span><span class="comment">;</span>
+string partThree = @<span class="string">"System32\drivers"</span><span class="comment">;</span>
+string partFour = @<span class="string">"etc\hosts"</span><span class="comment">;</span>
+string combinedPath<span class="comment">;</span>
+
+// Using System<span class="preprocessor">.IO</span><span class="preprocessor">.Path</span>
+combinedPath = Path<span class="preprocessor">.Combine</span>(Path<span class="preprocessor">.Combine</span>(Path<span class="preprocessor">.Combine</span>(partOne, partTwo), partThree), partFour)<span class="comment">;</span>
+Console<span class="preprocessor">.WriteLine</span>(combinedPath)<span class="comment">;</span>
+
+// Using PathCombiner
+combinedPath = PathCombiner<span class="preprocessor">.Combine</span>(partOne, partTwo, partThree, partFour)<span class="comment">;</span>
+Console<span class="preprocessor">.WriteLine</span>(combinedPath)<span class="comment">;</span>
+
+combinedPath = partOne<span class="preprocessor">.CombinePath</span>(partTwo)<span class="preprocessor">.CombinePath</span>(partThree)<span class="preprocessor">.CombinePath</span>(partFour)<span class="comment">;</span>
+Console<span class="preprocessor">.WriteLine</span>(combinedPath)<span class="comment">;</span>
+
+Console<span class="preprocessor">.Read</span>()<span class="comment">;</span>
+</pre></figure>
+
+
+<figure class="highlight csharp"><pre>C:<span class="command">\Windows</span><span class="command">\System</span>32<span class="command">\drivers</span><span class="command">\etc</span><span class="command">\hosts</span>
+C:<span class="command">\Windows</span><span class="command">\System</span>32<span class="command">\drivers</span><span class="command">\etc</span><span class="command">\hosts</span>
+C:<span class="command">\Windows</span><span class="command">\System</span>32<span class="command">\drivers</span><span class="command">\etc</span><span class="command">\hosts</span>
+</pre></figure>
+
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Sep</span>
+			<span class="day">12</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/the-cost-of-latent-logging-code/" title="The Cost of Latent Logging Code" rel="bookmark">The Cost of Latent Logging Code</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Logging is an integral part of most applications, whether it’s for logging performance metrics or causality data. Avoiding performance hits due to logging can be tricky though as we don’t want to spend CPU cycles on the logging infrastructure when logging is disabled, while still keeping the full logging ability when required.</p>
+<a id="more"></a>
+
+<p>Imagine the following scenario in which we want to log an exception in our application:</p>
+<figure class="highlight csharp"><pre>Logger<span class="preprocessor">.Log</span>(<span class="string">"An error occured at "</span> + DateTime<span class="preprocessor">.Now</span> + <span class="string">" on computer "</span> + Environment<span class="preprocessor">.MachineName</span> + <span class="string">" in process"</span> + Process<span class="preprocessor">.GetCurrentProcess</span>()<span class="preprocessor">.ProcessName</span> + <span class="string">"."</span>)<span class="comment">;</span>
+</pre></figure>
+
+<p>Inside the Logger.Log method we may have a check for whether logging is enabled like the following:</p>
+<figure class="highlight csharp"><pre>if(LoggingEnabled)
+	<span class="keyword">File</span>.AppendAllText(<span class="string">"Log.txt"</span>, logMessage + <span class="keyword">Environment</span>.NewLine);
+</pre></figure>
+
+<p>What’s the problem? Although we do not touch the file system when logging is disabled, we still incur the rather large overhead of string concatenation and retrieving the machine and process name. Usually this overhead will be even larger depending on what extra information is logged as part of the actual log message. Yes, we could append the machine and process names within the Logger.Log method, but that’s beyond the problem I’m describing.</p>
+<p>We can avoid this by checking for LoggingEnabled in our actual application code:</p>
+<figure class="highlight csharp"><pre>if(Logger<span class="preprocessor">.LoggingEnabled</span>)
+	Logger<span class="preprocessor">.Log</span>(<span class="string">"An error occured at "</span> + DateTime<span class="preprocessor">.Now</span> + <span class="string">" on computer "</span> + Environment<span class="preprocessor">.MachineName</span> + <span class="string">" in process"</span> + Process<span class="preprocessor">.GetCurrentProcess</span>()<span class="preprocessor">.ProcessName</span> + <span class="string">"."</span>)<span class="comment">;</span>
+</pre></figure>
+
+<p>While this does save us from doing string concatenation and retrieving other data when logging is disabled, it’s rather ugly to have logging checks scattered around the application code.</p>
+<p>An alternative to sending a log message directly to the Logger.Log method would be to send a Func that fetches the log message if needed:</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> Logger
+{
+	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">Log</span>(Func&lt;<span class="keyword">string</span>&gt; message)
+	{
+		<span class="keyword">if</span> (LoggingEnabled)
+			File.AppendAllText(<span class="string">"Log.txt"</span>, message() + Environment.NewLine);
+	}
+}
+</pre></figure>
+
+
+<figure class="highlight csharp"><pre>Logger<span class="preprocessor">.Log</span>(() =&gt; <span class="string">"An error occured at "</span> + DateTime<span class="preprocessor">.Now</span> + <span class="string">" on computer "</span> + Environment<span class="preprocessor">.MachineName</span> + <span class="string">" in process"</span> + Process<span class="preprocessor">.GetCurrentProcess</span>()<span class="preprocessor">.ProcessName</span> + <span class="string">"."</span>)<span class="comment">;</span>
+</pre></figure>
+
+<p>This has the big benefit of only executing the actual logging message functionality if logging is enabled, thus reducing the overhead to a near zero.</p>
+<p>While this is rather straight forward as long as the logging is performed synchrounously, there’s a pitfall if we perform asynchronous logging. Take the following asynchronous Logger implementation as an example:</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> Logger
+{
+	<span class="keyword">private</span> <span class="keyword">static</span> Queue&lt;Func&lt;<span class="keyword">string</span>&gt;&gt; logMessages = <span class="keyword">new</span> Queue&lt;Func&lt;<span class="keyword">string</span>&gt;&gt;();
+	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">bool</span> LoggingEnabled { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+
+	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">Log</span>(Func&lt;<span class="keyword">string</span>&gt; message)
+	{
+		<span class="keyword">if</span> (LoggingEnabled)
+			logMessages.Enqueue(message);
+	}
+
+	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">FlushMessages</span>()
+	{
+		<span class="keyword">while</span>(logMessages.Count &gt; <span class="number">0</span>)
+			File.AppendAllText(<span class="string">"Log.txt"</span>, logMessages.Dequeue()() + Environment.NewLine);
+	}
+}
+</pre></figure>
+
+<p>Instead of outputting the log message to the log file immediately when the Log function is called, we now store the actual log messages in a <a href="http://en.wikipedia.org/wiki/FIFO_(computing" target="_blank">FIFO</a>) queue. At some point we’ll call Logger.FlushMessages to flush out the messages to the text file. To optimize the process we’d usually concatenate the messages in a StringBuilder and perform just a single sequential write to disk, but to KISS I’m just writing out the messages one by one.</p>
+<p>We’ll perform a number of logs using the following code:</p>
+<figure class="highlight csharp"><pre>string date = DateTime<span class="preprocessor">.Now</span><span class="preprocessor">.ToString</span>()<span class="comment">;</span>
+
+Logger<span class="preprocessor">.Log</span>(<span class="string">"An error occured at "</span> + DateTime<span class="preprocessor">.Now</span> + <span class="string">" ("</span> + date + <span class="string">") on computer "</span> + Environment<span class="preprocessor">.MachineName</span> + <span class="string">" in process"</span> + Process<span class="preprocessor">.GetCurrentProcess</span>()<span class="preprocessor">.ProcessName</span> + <span class="string">"."</span>)<span class="comment">;</span>
+</pre></figure>
+
+<p>If you open the log file, you’ll notice a discrepancy between the two dates that are logged, while you might expect them to be identical. As the actual lambda function is performed at log flush time instead of log time, the DateTime.Now variable will include the flush moment instead of the original logging moment.</p>
+<p>The solution in this case is simple. All we need to do is to store the results of the log Funcs instead of the actual funcs:</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> Logger
+{
+	<span class="keyword">private</span> <span class="keyword">static</span> Queue&lt;<span class="keyword">string</span>&gt; logMessages = <span class="keyword">new</span> Queue&lt;<span class="keyword">string</span>&gt;();
+	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">bool</span> LoggingEnabled { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+
+	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">Log</span>(Func&lt;<span class="keyword">string</span>&gt; message)
+	{
+		<span class="keyword">if</span> (LoggingEnabled)
+			logMessages.Enqueue(message());
+	}
+
+	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">FlushMessages</span>()
+	{
+		<span class="keyword">while</span>(logMessages.Count &gt; <span class="number">0</span>)
+			File.AppendAllText(<span class="string">"Log.txt"</span>, logMessages.Dequeue() + Environment.NewLine);
+	}
+}
+</pre></figure>
+
+<p>We can still implement asynchronous logging, as long as the actual log message is retrieved synchronously or we make sure the logging Func only references local immutable variables - though the last case kinda destroys the performance gain.</p>
+<figure class="highlight csharp"><pre>string date = DateTime<span class="preprocessor">.Now</span><span class="preprocessor">.ToString</span>()<span class="comment">;</span>
+
+Logger<span class="preprocessor">.Log</span>(() =&gt; <span class="string">"An error occured at "</span> + date + <span class="string">" on computer "</span> + Environment<span class="preprocessor">.MachineName</span> + <span class="string">" in process"</span> + Process<span class="preprocessor">.GetCurrentProcess</span>()<span class="preprocessor">.ProcessName</span> + <span class="string">"."</span>)<span class="comment">;</span>
+</pre></figure>
+
+<p>To sum up the speed gains of using deferrered lambda logging, I’ve implemented a simple synchronous Logger implementation:</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> Logger
+{
+	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">bool</span> LoggingEnabled { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+
+	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">Log</span>(<span class="keyword">string</span> message)
+	{
+		<span class="keyword">if</span> (LoggingEnabled)
+			File.AppendAllText(<span class="string">"Log.txt"</span>, message + Environment.NewLine);
+	}
+
+	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">Log</span>(Func&lt;<span class="keyword">string</span>&gt; message)
+	{
+		<span class="keyword">if</span> (LoggingEnabled)
+			File.AppendAllText(<span class="string">"Log.txt"</span>, message() + Environment.NewLine);
+	}
+}
+</pre></figure>
+
+<p>And to perform the actual performance measurements I’m using my <a href="http://www.improve.dk/blog/2008/04/16/profiling-code-the-easy-way" target="_blank">CodeProfiler</a> class with 1000 iterations of the logging code:</p>
+<figure class="highlight csharp"><pre>class Program
+{
+	static void Main(string[] args)
+	{
+		Logger.LoggingEnabled = true;
+		var timeWithLoggingEnabled = profileCode();
+		var lambdaTimeWithLoggingEnabled = profileLambdaCode();
+
+		Logger.LoggingEnabled = false;
+		var timeWithLoggingDisabled = profileCode();
+		var lambdaTimeWithLoggingDisabled = profileLambdaCode();
+
+		Console.WriteLine(<span class="string">"Logging enabled: "</span> + timeWithLoggingEnabled.TotalMilliseconds);
+		Console.WriteLine(<span class="string">"Lambda logging enabled: "</span> + lambdaTimeWithLoggingEnabled.TotalMilliseconds);
+		Console.WriteLine(<span class="string">"Logging disabled: "</span> + timeWithLoggingDisabled.TotalMilliseconds);
+		Console.WriteLine(<span class="string">"Lambda logging disabled: "</span> + lambdaTimeWithLoggingDisabled.TotalMilliseconds);
+		Console.Read();
+	}
+
+	static TimeSpan profileCode()
+	{
+		return CodeProfiler.ProfileAction(() =&gt;
+		{
+			Logger.Log(<span class="string">"An error occured at "</span> + DateTime.Now + <span class="string">" on computer "</span> + Environment.MachineName + <span class="string">" in process"</span> + Process.GetCurrentProcess().ProcessName + <span class="string">"."</span>);
+		}, 1000);
+	}
+
+	static TimeSpan profileLambdaCode()
+	{
+		return CodeProfiler.ProfileAction(() =&gt;
+		{
+			Logger.Log(() =&gt; <span class="string">"An error occured at "</span> + DateTime.Now + <span class="string">" on computer "</span> + Environment.MachineName + <span class="string">" in process"</span> + Process.GetCurrentProcess().ProcessName + <span class="string">"."</span>);
+		}, 1000);
+	}
+}
+</pre></figure>
+
+<p>The results:</p>
+<blockquote><br>Logging enabled: 1440,2764<br>Lambda logging enabled: 1483,0738<br>Logging disabled: 763,1717<br>Lambda logging disabled: 0,6516<br></blockquote>
+
+<p>As we can see from the results, even with logging disabled it still costs us 763ms using the normal logging procedure. By deferring the execution of the log message we only incur an overhead of 0,65ms when logging is disabled. When logging is enabled the execution costs are ~identical.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Aug</span>
+			<span class="day">24</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/making-the-aspnet-state-service-work-across-network/" title="Making the ASP.NET State Service Work Across Network" rel="bookmark">Making the ASP.NET State Service Work Across Network</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				, 
+			
+				<a href="http://improve.dk/category/IIS/">IIS</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Once you start distributing your ASP.NET website across multiple webservers, you’re going to need a way to share session state. That is, unless your app is stateless, in which case scaling it should be a breeze!</p>
+<a id="more"></a>
+
+<p>One of the easiest ways to provide common session state for a small cluster (very dependant on load and hardware specs, but ~10 servers max, per state server), is to use the built-in ASP.NET State Service. It’s a free service that’s installed alongside the .NET Framework on all Windows servers.</p>
+<p>While the InProc session storage is stored directly in the w3wp process, the ASP.NET State Service is an independant process that runs alongside your IIS w3wp processes. The State Service does not have to run on a machine with IIS installed - it can run on a machine dedicated to serving session state for other web servers running IIS.</p>
+<h2 id="Performance">Performance</h2>
+<p>Switching from InProc to State Service <em>will</em> have an impact on performance. We now have to cross not only process boundaries, but also machine boundaries. Furthermore, once we go out-of-process, all objects will have to be serialized, requiring extra work and requires all objects to be marked with the <a href="http://msdn.microsoft.com/en-us/library/system.serializableattribute.aspx" target="_blank">[Serializable]</a> attribute.</p>
+<p>The State Service performance is heavily reliant on memory. Once physical memory has been exhausted it’ll start paging to disk which will kill performance quickly. Make sure to monitor the memory load on your State Service machine(s) and adjust memory accordingly.</p>
+<h2 id="Enabling_remote_connectivity">Enabling remote connectivity</h2>
+<p>By default, the State Service will only allow local-to-machine connections. To allow remote connections you’ll have to set the HKLMSYSTEMCurrentControlSetServicesaspnet_stateParametersAllowRemoteConnection key to a value of ‘1’. After changing the AllowRemoveConnection key value, you’ll have to restart the State Service service for the change to take effect. Also make sure your firewall allows connectivity to the State Service port (TCP 42424 by default).</p>
+<h2 id="Requirements">Requirements</h2>
+<ul>
+<li>All session objects must be serializable.</li>
+<li>All IIS websites that are to share session state must have a common IIS application path (the ID column in the sites list). I strongly recommend you look into the IIS7 <a href="http://learn.iis.net/page.aspx/264/shared-configuration/" target="_blank">Shared Configuration</a> feature as it’ll help you keep all the web servers IIS7 configuration in synch, including the application path.</li>
+<li>All websites that are to share session state must have the same <a href="http://msdn.microsoft.com/en-us/library/ms998288.aspx" target="_blank"><machineKey /></a> values so they’re able to read one anothers sessions. You can <a href="http://aspnetresources.com/tools/keycreator.aspx" target="_blank">generate the keys online</a>.</li>
+</ul>
+<h2 id="Scalability">Scalability</h2>
+<p>If you start saturating your dedicated State Service machine, it’s possible to implement session state partitioning by implementing the<a href="http://msdn.microsoft.com/en-us/library/system.web.ipartitionresolver.aspx" target="_blank">System.Web.IPartitionResolver</a> interface. By creating your own implementating, you can route new requests to different state servers and perhaps even check whether the state servers are available or not, to add redundancy. Note however that this will not give you redundancy in case the State Service crashes either due to software or hardware.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Aug</span>
+			<span class="day">17</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/devlink-2009-followup/" title="devLink 2009 Followup" rel="bookmark">devLink 2009 Followup</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/Conferences and Presenting/">Conferences and Presenting</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I’m finally sitting in the train on my way home from the Airport and an excellent week spent in Nashville, also known as Nash Vegas.</p>
+<a id="more"></a>
+
+<p>First of all, major kudos go out to <a href="http://www.johnkellar.com/" target="_blank">John Kellar (@johnkellar)</a> and the rest of the <a href="http://www.devlink.net/" target="_blank">devLINK</a> team. I still can’t believe the amazing quality of devLINK as a conference, the speaker lineup, food, party, etc, all for a price of just $75! From what I gathered, there were only three international participants at devLINK this year, including me and <a href="http://www.twitter.com/KasperVesth" target="_blank">@KasperVesth</a> - if devLINK continues its current path, I’m sure there’ll be plenty more next year.</p>
+<p>Also thanks to Elijah Manor for giving me and <a href="http://www.twitter.com/KasperVesth" target="_blank">@KasperVesth</a> a ride home from <a href="http://www.lipscomb.edu/" target="_blank">Lipscomb</a> - cabs are nowhere to be found out there! Likewise, thanks to John Doe (sorry, can’t remember your name!) from who we hitched a ride back to the Sheraton from Lipscomb after having walked a mile down the road and realized cabs weren’t around.</p>
+<p>Besides having to reboot my laptop at the last minute due to my virtual machines not recognizing my network, I think the presentation went quite well. Not as many people as I’d hoped for, but I guess having the last slot with a narrow topic is a challenge in that regard.</p>
+<p>You can download my <a href="http://www.improve.dk/downloads/Speech_NLB.rar" target="_blank">code, slides and videos here</a>. I’ve not included the virtual PCs since they’d take up around 40GB to download.</p>
+<p>I hope I’ll be able to join you again next year, providing the economy &amp; work schedule allows it :)</p>
+<div class="imgwrapper" style=""><div><a href="/devlink-2009-followup/devlink1_2.jpg" class="fancy"><img src="/devlink-2009-followup/devlink1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p><em><a href="http://twitter.com/gainesk" target="_blank">Gaines Kergosien</a> in his chainmail at the Community Leadership Summit the day before devLINK.</em></p>
+<div class="imgwrapper" style=""><div><a href="/devlink-2009-followup/devlink2_2.jpg" class="fancy"><img src="/devlink-2009-followup/devlink2_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p><em>The outdoor eating area.</em></p>
+<div class="imgwrapper" style=""><div><a href="/devlink-2009-followup/devlink3_2.jpg" class="fancy"><img src="/devlink-2009-followup/devlink3_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p><em>I’ve never seen this high a concentration of guitars at any conference!</em></p>
+<div class="imgwrapper" style=""><div><a href="/devlink-2009-followup/devlink4_2.jpg" class="fancy"><img src="/devlink-2009-followup/devlink4_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p><em>The main entrance at Lipscomb University - perfect venue for the event. Could’ve used more cabs in the vicinity however.</em></p>
+<div class="imgwrapper" style=""><div><a href="/devlink-2009-followup/devlink5_2.jpg" class="fancy"><img src="/devlink-2009-followup/devlink5_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/devlink-2009-followup/devlink6_2.jpg" class="fancy"><img src="/devlink-2009-followup/devlink6_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p><em>Hands down the best conference party I’ve attended. Free buffet at the local Nashville Sounds baseball game. Awesome.</em></p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">08</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/iis7-the-object-identifier-does-not-represent-a-valid-object/" title="The Object Identifier Does Not Represent a Valid Object" rel="bookmark">The Object Identifier Does Not Represent a Valid Object</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				, 
+			
+				<a href="http://improve.dk/category/IIS/">IIS</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>When adding sites to IIS7 either by script or by editing the config files directly, you may receive an error in the sites list that says:</p>
+<a id="more"></a>
+
+<blockquote>
+<p>Unknown: The object identifier does not represent a valid object. (Exception from HRESULT: 0x800710D8)</p>
+</blockquote>
+<div class="imgwrapper" style=""><div><a href="/iis7-the-object-identifier-does-not-represent-a-valid-object/iisvalidobject_2.jpg" class="fancy"><img src="/iis7-the-object-identifier-does-not-represent-a-valid-object/iisvalidobject_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>I’m running multiple servers in an NLB setup, using the shared configuration feature of IIS7 (config files are stored on a SAN exposed through a CIFS share). My first thoughts were that this was probably related to the shared configuration / network access, but I’m able to reproduce the problem even with location configuration. An interesting observation is that all IIS’s on all servers using the shared config will display the same errors on the same sites.</p>
+<p>Restarting the sites, app pool or even IIS does not help on the issue, neither does restarting the IIS Manager itself. I have not tried restarting the servers, and I’m not going to.</p>
+<p>The only relevant info I could find on Google was <a href="http://forums.iis.net/t/1151841.aspx" target="_blank">this thread</a> on forums.iis.net. Besides various mutations of the restart option, the thread mentions it might be a permissions issue. I’m running IIS Manager under an administrative account and all application pools run under processes with access to the configuration directory. Running Process Monitor confirms that there are no permission issues.</p>
+<p>What I’ve found since then is that a simple file tocuh will fix the problem. That is, if I open the file in notepad and make/undo a change and save the file, all IIS’s will reload the configuration and all sites will have loaded correctly on all servers. Using Process Monitor I’ve verified that change notifications are being sent out to all servers, thereby notifying them of an update to the configuration, causing the reload in IIS. The aforementioned thread does note that IIS will basically start a timer with an interval of a few ms before it’ll update the site list of a config change - if reading the config file takes longer than this timeout, we may be in trouble. However, this issue should be fixed by a refresh and most certainly by a restart of the IIS. Also, since this is happening on all servers, it would seem weird that they all exceed the timeout.</p>
+<p>To add confusion, this bug is temporal. If I add three sites programmaticaly (three transactions - they’re not committed all at once, but in succession) using code like this:</p>
+<figure class="highlight csharp"><pre>using (ServerManager mgr = new ServerManager())
+{
+	if (mgr<span class="preprocessor">.Sites</span>[name] != null)
+		mgr<span class="preprocessor">.Sites</span><span class="preprocessor">.Remove</span>(mgr<span class="preprocessor">.Sites</span>[name])<span class="comment">;</span>
+
+	// Create site
+	Site site = mgr<span class="preprocessor">.Sites</span><span class="preprocessor">.Add</span>(name, <span class="string">"http"</span>, <span class="string">"*:80:"</span> + domain, physicalPath)<span class="comment">;</span>
+
+	// <span class="keyword">Set</span> app pool
+	foreach (var app <span class="keyword">in</span> site<span class="preprocessor">.Applications</span>)
+		app<span class="preprocessor">.ApplicationPoolName</span> = pool<span class="comment">;</span>
+
+	// <span class="keyword">Add</span> extra bindings
+	foreach (string hostname <span class="keyword">in</span> extraBindings)
+		site<span class="preprocessor">.Bindings</span><span class="preprocessor">.Add</span>(<span class="string">"*:80:"</span> + hostname, <span class="string">"http"</span>)<span class="comment">;</span>
+
+	mgr<span class="preprocessor">.CommitChanges</span>()<span class="comment">;</span>
+}
+</pre></figure>
+
+<p>Sometimes all sites work, sometimes 1-3 of them don’t. Usually two of them will have failed while one will be working. Running the exact code again will fix the problem. The code is made so it’ll just recreate a website if it already exists and thus running the code again will basically just touch the file, causing reloads of the config files across the servers. If I try to access the sites programmatically, I’ll receive the same exception as is displayed in the IIS Manager and as a result I might actually be able to detect this issue and just keep retrying until all sites work.</p>
+<p>As an alternative, I’ve also tried just generating the complete applicationHost.config file from scratch so that all changes are definitely made at the same time. By creating the applicationHost.config file separately and then replacing the old one, I don’t get the “valid object” error any more. However, a random number of websites &amp; pools will be in the “stopped” state for no apparent reason. All sites &amp; pools have the auto start attributes set to true. I can start the sites manully without problems, it’s not a good solution though seeing as there’s hundreds of sites and it’ll take a considerably amount of time to start half of them manually. Fortunately that part is easy to script:</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> (ServerManager mgr = <span class="keyword">new</span> ServerManager())
+{
+	<span class="comment">// Start all app pools</span>
+	<span class="keyword">foreach</span> (<span class="keyword">var</span> pool <span class="keyword">in</span> mgr.ApplicationPools)
+		pool.Start();
+
+	log(<span class="string">"Pools started - Done"</span>);
+
+	<span class="comment">// Start all sites</span>
+	<span class="keyword">foreach</span> (<span class="keyword">var</span> site <span class="keyword">in</span> mgr.Sites)
+		site.Start();
+
+	log(<span class="string">"Sites started - Done"</span>);
+}
+</pre></figure>
+
+<p>Anyone else experiencing this issue and have found the cause? Or do you have a better workaround than what I’m doing?</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">06</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/tricky-sql-server-decimal-math/" title="Tricky SQL Server Decimal Math" rel="bookmark">Tricky SQL Server Decimal Math</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Data Types/">SQL Server - Data Types</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - Optimization/">SQL Server - Optimization</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>SQL Server datatypes are not always what they seem to be. <a href="http://www.performanceduo.com/" target="_blank">Martin Schmidt</a> recently had an <a href="http://www.performanceduo.com/post/Gc3a6t-en-Datatype-.aspx" target="_blank">interesting blog post (in danish)</a> regarding implicit decimal conversion that sparked my interest.</p>
+<a id="more"></a>
+
+<p>Let me sketch up the scenario. We have a simple table with a decimal column like so:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> tblDecimalTest
+(
+	DecimalColumn <span class="keyword">dec</span>(<span class="number">5</span>,<span class="number">2</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>
+)</span>
+</pre></figure>
+
+<p>Note that the DecimalColumn has a precision of five and a scale of two. That basically boils down to 999.99 being the largest number we can store and -999.99 being the smallest. The precision of five defines the maximum number of digits in the number, scale defines the number of digits to the right of the decimal point. If we insert an integer value of 999 it’ll have .00 stored implicity, thus we can’t insert neither 1000 nor 10000 without any decimal digits. Knowing the configured precision and scale is important, as we’ll see in just a moment.</p>
+<p>Let us insert a single row into the tblDecimalTest table.</p>
+<figure class="highlight sql"><pre>DECLARE @Decimal1 dec(5,2) = 20.5
+DECLARE @Decimal2 dec(5,2) = 27.52
+<span class="operator"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> tblDecimalTest (DecimalColumn) <span class="keyword">VALUES</span> (@Decimal1 / @Decimal2)</span>
+</pre></figure>
+
+<p>This is the result if we perform a select on the table:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> tblDecimalTest
+
+DecimalColumn
+<span class="number">0.74</span></span>
+</pre></figure>
+
+<p>Both decimal variables were declared as dec(5,2) so it matches the column in the table. Calculating 20.5 / 27.52 on a standard calculator gives a result of 0.7449127, but as we’re storing this with a scale of two, the value is rounded off to 0.74.</p>
+<p>We just inserted a value of 20.5 / 27.52 into a dec(5,2) column. Let’s make a select using those same variables:</p>
+<figure class="highlight sql"><pre>DECLARE @Decimal1 dec(5,2) = 20.5
+DECLARE @Decimal2 dec(5,2) = 27.52
+<span class="operator"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> tblDecimalTest <span class="keyword">WHERE</span> DecimalColumn = @Decimal1 / @Decimal2
+
+Results:
+(<span class="number">0</span> <span class="keyword">row</span>(s) affected)</span>
+</pre></figure>
+
+<p>What is that? No results! Why does this happen? After all, we just inserted @Decimal1 / @Decimal2, so surely we should be able to select that row again? The key lies in how SQL Server <a href="http://msdn.microsoft.com/en-us/library/ms190476.aspx" target="_blank">converts decimal datatypes during math operations</a>. What we’re looking for is the divison operator which defines the following precision and scale calculations:</p>
+<figure class="highlight"><pre>e1 / e2:
+Result <span class="keyword">precision</span> = p1 - s1 + s2 + <span class="built_in">max</span>(<span class="number">6</span>, s1 + p2 + <span class="number">1</span>)
+Result scale = <span class="built_in">max</span>(<span class="number">6</span>, s1 + p2 + <span class="number">1</span>)
+</pre></figure>
+
+<p>Let’s input our values into that formula.</p>
+<figure class="highlight"><pre>dec(<span class="number">5</span>,<span class="number">2</span>) <span class="subst">/</span> dec(<span class="number">5</span>,<span class="number">2</span>):
+Precision	<span class="subst">=</span> p1<span class="attribute">-s1</span><span class="subst">+</span>s2 <span class="subst">+</span> <span class="keyword">max</span>(<span class="number">6</span>, s1<span class="subst">+</span>p2<span class="subst">+</span><span class="number">1</span>)	<span class="subst">=</span> <span class="number">5</span><span class="subst">-</span><span class="number">2</span><span class="subst">+</span><span class="number">2</span> <span class="subst">+</span> <span class="keyword">max</span>(<span class="number">6</span>, <span class="number">2</span><span class="subst">+</span><span class="number">5</span><span class="subst">+</span><span class="number">1</span>)		<span class="subst">=</span> <span class="number">5</span> <span class="subst">+</span> <span class="keyword">max</span>(<span class="number">6</span>,<span class="number">8</span>)	<span class="subst">=</span> <span class="number">5</span><span class="subst">+</span><span class="number">8</span> <span class="subst">=</span> <span class="number">13</span>
+Scale		<span class="subst">=</span> <span class="keyword">max</span>(<span class="number">6</span>, s1<span class="subst">+</span>p2<span class="subst">+</span><span class="number">1</span>)		<span class="subst">=</span> <span class="keyword">max</span>(<span class="number">6</span>, <span class="number">2</span><span class="subst">+</span><span class="number">5</span><span class="subst">+</span><span class="number">1</span>)			<span class="subst">=</span> <span class="keyword">max</span>(<span class="number">6</span>,<span class="number">8</span>)	<span class="subst">=</span> <span class="number">8</span>
+<span class="keyword">Type</span>		<span class="subst">=</span> dec(<span class="number">13</span>,<span class="number">8</span>)
+</pre></figure>
+
+<p>Thus, our division of two dec(5,2) variables is implicitly converted into a dec(13,8) value! Similar conversions are made for addition, subtraction and multiplication.</p>
+<figure class="highlight"><pre>dec(<span class="number">5</span>,<span class="number">2</span>) <span class="subst">+</span> dec(<span class="number">5</span>,<span class="number">2</span>), dec(<span class="number">5</span>,<span class="number">2</span>) <span class="subst">-</span> dec(<span class="number">5</span>,<span class="number">2</span>):
+Precision	<span class="subst">=</span> <span class="keyword">max</span>(s1, s2) <span class="subst">+</span> <span class="keyword">max</span>(p1<span class="attribute">-s1</span>, p2<span class="attribute">-s2</span>) <span class="subst">+</span> <span class="number">1</span>	<span class="subst">=</span> <span class="keyword">max</span>(<span class="number">5</span>, <span class="number">5</span>) <span class="subst">+</span> <span class="keyword">max</span>(<span class="number">3</span>, <span class="number">3</span>) <span class="subst">+</span> <span class="number">1</span>	<span class="subst">=</span> <span class="number">5</span><span class="subst">+</span><span class="number">3</span><span class="subst">+</span><span class="number">1</span>	<span class="subst">=</span> <span class="number">9</span>
+Scale		<span class="subst">=</span> <span class="keyword">max</span>(<span class="number">2</span>, <span class="number">2</span>)				<span class="subst">=</span> <span class="number">2</span>
+<span class="keyword">Type</span>		<span class="subst">=</span> dec(<span class="number">9</span>,<span class="number">2</span>)
+
+dec(<span class="number">5</span>,<span class="number">2</span>) <span class="subst">*</span> dec(<span class="number">5</span>,<span class="number">2</span>):
+Precision	<span class="subst">=</span> p1<span class="subst">+</span>p2<span class="subst">+</span><span class="number">1</span>	<span class="subst">=</span> <span class="number">5</span><span class="subst">+</span><span class="number">5</span><span class="subst">+</span><span class="number">1</span>	<span class="subst">=</span> <span class="number">11</span>
+Scale		<span class="subst">=</span> s1<span class="subst">+</span><span class="number">2</span>		<span class="subst">=</span> <span class="number">2</span><span class="subst">+</span><span class="number">2</span>	<span class="subst">=</span> <span class="number">4</span>
+<span class="keyword">Type</span>		<span class="subst">=</span> dec(<span class="number">11</span>,<span class="number">4</span>)
+</pre></figure>
+
+<p>Let’s try and check the division result directly:</p>
+<figure class="highlight sql"><pre>DECLARE @Decimal1 dec(5,2) = 20.5
+DECLARE @Decimal2 dec(5,2) = 27.52
+<span class="operator"><span class="keyword">SELECT</span> @Decimal1 / @Decimal2
+
+(<span class="keyword">No</span> <span class="keyword">column</span> name)
+<span class="number">0.74491279</span></span>
+</pre></figure>
+
+<p>When performing the WHERE clause, we’re in fact comparing a dec(5,2) column with a dec(13,8) value. Behind the scenes, SQL Server will implicitly convert the values to a common datatype that fits both - which is dec(13,8). With a precision of 13 and a scale of 8, 0.74 and 0.74491279 are not equal, and thus we don’t get any results back. If we were to cast the divison as a dec(5,2) explicitly, we would find the row:</p>
+<figure class="highlight sql"><pre>DECLARE @Decimal1 dec(5,2) = 20.5
+DECLARE @Decimal2 dec(5,2) = 27.52
+<span class="operator"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> tblDecimalTest <span class="keyword">WHERE</span> DecimalColumn = <span class="keyword">CAST</span>(@Decimal1 / @Decimal2 <span class="keyword">AS</span> <span class="keyword">dec</span>(<span class="number">5</span>,<span class="number">2</span>))
+
+DecimalColumn
+<span class="number">0.74</span></span>
+</pre></figure>
+
+<p>While testing in SQL Server Management Studio, this might be an obvious problem. When encountering the same problem from code, it’s much more difficult to notice - especially if you don’t know the precise schema you’re working against. Observe the following code working on an empty tblDecimalTest table.</p>
+<figure class="highlight csharp"><pre>using(SqlConnection conn = new SqlConnection(@"Data Source=.SQL2008;Initial Catalog=Test;Integrated Security=SSPI"))
+{
+	using(SqlCommand cmd = conn.CreateCommand())
+	{
+		decimal dec1 = 20.5M;
+		decimal dec2 = 27.52M;
+
+		cmd.CommandText = "<span class="operator"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> tblDecimalTest (DecimalColumn) <span class="keyword">VALUES</span> (@DecimalValue)<span class="string">";
+		cmd.Parameters.Add("</span>@DecimalValue<span class="string">", SqlDbType.Decimal).Value = dec1 / dec2;
+
+		conn.Open();
+		cmd.ExecuteNonQuery();
+
+		cmd.CommandText = "</span><span class="keyword">SELECT</span> <span class="aggregate">COUNT</span>(*) <span class="keyword">FROM</span> tblDecimalTest <span class="keyword">WHERE</span> DecimalColumn = @DecimalValue<span class="string">";
+		Console.WriteLine("</span>Implicit <span class="keyword">cast</span>: <span class="string">" + cmd.ExecuteScalar());
+
+		cmd.CommandText = "</span><span class="keyword">SELECT</span> <span class="aggregate">COUNT</span>(*) <span class="keyword">FROM</span> tblDecimalTest <span class="keyword">WHERE</span> DecimalColumn = <span class="keyword">CAST</span>(@DecimalValue <span class="keyword">as</span> <span class="keyword">dec</span>(<span class="number">5</span>,<span class="number">2</span>))<span class="string">";
+		Console.WriteLine("</span>Explicit <span class="keyword">cast</span>: <span class="string">" + cmd.ExecuteScalar());
+	}
+}</span></span>
+</pre></figure>
+
+<p>The result:</p>
+<figure class="highlight"><pre>Implicit <span class="keyword">cast</span>: <span class="number">0</span>
+Explicit <span class="keyword">cast</span>: <span class="number">1</span>
+</pre></figure>
+
+<p>Without knowledge of the schema, and how SQL Server treats decimal math operations, this could’ve been a tough bug to track down.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">01</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/evolution-of-the-simple-genetic-algorithm/" title="Evolution of The Simple Genetic Algorithm" rel="bookmark">Evolution of The Simple Genetic Algorithm</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Based on my previous post on how to <a href="http://www.improve.dk/blog/2009/04/29/implementing-a-simple-genetic-algorithm" target="_blank">implement a simple genetic algorithm</a>, I got some great comments pointing out that the algorithm might not be the most pure form of a genetic algorithm. I won’t disagree, though I will point out that evolution also does occur due to mutation alone, so genetic algorithms may come in different forms.</p>
+<a id="more"></a>
+
+<h2 id="Making_it_more_“genetic”">Making it more “genetic”</h2>
+<p>The basic point is that I was only mutating my chromosomes, I wasn’t actually pairing them up and reproducing via a <a href="http://en.wikipedia.org/wiki/Crossover_(genetic_algorithm" target="_blank">crossover function</a>).</p>
+<p>I’ve changed my GeneticAlgorithm class slightly to give more control to the subclasses of how reproduction works, whether it be by mutation and/or crossover. What I’ve done is to change the Mutate method into a Reproduce method, taking in the complete survivor enumeration of IChromosome’s instead. That way, the implementing subclass has full control over the selection and breeding of the survivors.</p>
+<figure class="highlight csharp"><pre><span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> Creates an arbitrary number of mutated chromosomes, based on the input chromosome.</span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+<span class="keyword">protected</span> <span class="keyword">abstract</span> IEnumerable&lt;IChromosome&lt;T&gt;&gt; <span class="title">Reproduce</span>(IEnumerable&lt;IChromosome&lt;T&gt;&gt; survivors);
+</pre></figure>
+
+<p>The PerformEvolution method has been changed as well. Instead of selecting the survivor to mutate here, we let it be up to the subclass. Thus, we just loop until we’ve reached our ChromosomePopulationSize, while passing the survivors into the Reproduce method.</p>
+<figure class="highlight csharp"><pre><span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> Performs an evolution by picking up the generation survivors and mutating them.</span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">PerformEvolution</span>()
+{
+	IList&lt;IChromosome&lt;T&gt;&gt; newGeneration = <span class="keyword">new</span> List&lt;IChromosome&lt;T&gt;&gt;();
+
+	<span class="comment">// Get the survivors of the last generation</span>
+	IEnumerable&lt;IChromosome&lt;T&gt;&gt; survivors = GetGenerationSurvivors();
+
+	<span class="comment">// Add the survivors of the previous generation</span>
+	<span class="keyword">foreach</span> (<span class="keyword">var</span> survivor <span class="keyword">in</span> survivors)
+		newGeneration.Add(survivor);
+
+	<span class="comment">// Until the population is full, add a new mutation of any two survivors, selected by weighted random based on their fitness.</span>
+	Random rnd = <span class="keyword">new</span> Random();
+
+	<span class="keyword">while</span> (newGeneration.Count &lt; ChromosomePopulationSize)
+		<span class="keyword">foreach</span> (<span class="keyword">var</span> offspring <span class="keyword">in</span> Reproduce(survivors))
+		{
+			newGeneration.Add(offspring);
+
+			<span class="keyword">if</span> (newGeneration.Count == ChromosomePopulationSize)
+				<span class="keyword">break</span>;
+		}
+
+	<span class="comment">// Overwrite current population</span>
+	ChromosomePopulation = newGeneration;
+
+	<span class="comment">// Increment the current generation</span>
+	CurrentGenerationNumber++;
+}
+</pre></figure>
+
+<p>Instead of overriding Mutate() in the RgbGuesser class, we’re now overriding Reproduce. Given that we have three basic genes in each of our chromosomes (R, G &amp; B), we can produce 2^3 different combinations, including the original two combinations AAA and BBB. Each time Reproduce is called, we’ll create all eight different combinations and mutate them slightly, before returning them to the GeneticAlgorithm. This way we’re producing eight children of each parent pair of chromosomes, and thus, as Matt^2 pointed out, allowing the chromosomes of developing partial solutions themselves more efficiently.</p>
+<figure class="highlight csharp"><pre>protected override IEnumerable&lt;IChromosome&lt;Rgb&gt;&gt; Reproduce(IEnumerable&lt;IChromosome&lt;Rgb&gt;&gt; survivors)
+{
+	// Get two random chromosomes from the survivors
+	var chromA = survivors
+		<span class="preprocessor">.OrderBy</span>(c =&gt; random<span class="preprocessor">.NextDouble</span>() * c<span class="preprocessor">.Fitness</span>)
+		<span class="preprocessor">.First</span>()<span class="comment">;</span>
+
+	var chromB = survivors
+		<span class="preprocessor">.OrderBy</span>(c =&gt; random<span class="preprocessor">.NextDouble</span>() * c<span class="preprocessor">.Fitness</span>)
+		<span class="preprocessor">.Where</span>(c =&gt; c != chromA)
+		<span class="preprocessor">.First</span>()<span class="comment">;</span>
+
+	// Now generate <span class="keyword">and</span> return each different combination based on the two parents, with slight mutation
+	var aaa = new RgbChromosome(chromA<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.R</span>, chromA<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.G</span>, chromA<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.B</span>)<span class="comment">;</span>
+	mutateChromosome(aaa)<span class="comment">;</span>
+	yield return aaa<span class="comment">;</span>
+
+	var aab = new RgbChromosome(chromA<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.R</span>, chromA<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.G</span>, chromB<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.B</span>)<span class="comment">;</span>
+	mutateChromosome(aab)<span class="comment">;</span>
+	yield return aab<span class="comment">;</span>
+
+	var abb = new RgbChromosome(chromA<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.R</span>, chromB<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.G</span>, chromB<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.B</span>)<span class="comment">;</span>
+	mutateChromosome(abb)<span class="comment">;</span>
+	yield return abb<span class="comment">;</span>
+
+	var aba = new RgbChromosome(chromA<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.R</span>, chromB<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.G</span>, chromA<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.B</span>)<span class="comment">;</span>
+	mutateChromosome(aba)<span class="comment">;</span>
+	yield return aba<span class="comment">;</span>
+
+	var baa = new RgbChromosome(chromB<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.R</span>, chromA<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.G</span>, chromA<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.B</span>)<span class="comment">;</span>
+	mutateChromosome(baa)<span class="comment">;</span>
+	yield return baa<span class="comment">;</span>
+
+	var bba = new RgbChromosome(chromB<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.R</span>, chromB<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.G</span>, chromA<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.B</span>)<span class="comment">;</span>
+	mutateChromosome(bba)<span class="comment">;</span>
+	yield return bba<span class="comment">;</span>
+
+	var bab = new RgbChromosome(chromB<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.R</span>, chromA<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.G</span>, chromB<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.B</span>)<span class="comment">;</span>
+	mutateChromosome(bab)<span class="comment">;</span>
+	yield return bab<span class="comment">;</span>
+
+	var bbb = new RgbChromosome(chromB<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.R</span>, chromB<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.G</span>, chromB<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.B</span>)<span class="comment">;</span>
+	mutateChromosome(bbb)<span class="comment">;</span>
+	yield return bbb<span class="comment">;</span>
+}
+
+private void mutateChromosome(IChromosome&lt;Rgb&gt; chromosome)
+{
+	chromosome<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.R</span> = Math<span class="preprocessor">.Min</span>(<span class="number">255</span>, Math<span class="preprocessor">.Max</span>(<span class="number">0</span>, chromosome<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.R</span> + random<span class="preprocessor">.Next</span>(-<span class="number">5</span>, <span class="number">6</span>)))<span class="comment">;</span>
+	chromosome<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.G</span> = Math<span class="preprocessor">.Min</span>(<span class="number">255</span>, Math<span class="preprocessor">.Max</span>(<span class="number">0</span>, chromosome<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.G</span> + random<span class="preprocessor">.Next</span>(-<span class="number">5</span>, <span class="number">6</span>)))<span class="comment">;</span>
+	chromosome<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.B</span> = Math<span class="preprocessor">.Min</span>(<span class="number">255</span>, Math<span class="preprocessor">.Max</span>(<span class="number">0</span>, chromosome<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.B</span> + random<span class="preprocessor">.Next</span>(-<span class="number">5</span>, <span class="number">6</span>)))<span class="comment">;</span>
+}
+</pre></figure>
+
+<h2 id="Reducing_the_chance_of_mutation">Reducing the chance of mutation</h2>
+<p>As weenie points out in the comments, reducing the chance of mutation will actually improve results. By changing the mutateChromosome slightly, we only mutate it for every 1/3 reproductions.</p>
+<p>At this point we’ve got several variables to tune - population size, survivor count, mutation probability &amp; mutation severeness. This sounds like an optimal problem for an evolutionary algorithm :)</p>
+<figure class="highlight csharp"><pre>private void mutateChromosome(IChromosome&lt;Rgb&gt; chromosome)
+{
+	if (random<span class="preprocessor">.Next</span>(<span class="number">1</span>, <span class="number">4</span>) == <span class="number">1</span>)
+	{
+		chromosome<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.R</span> = Math<span class="preprocessor">.Min</span>(<span class="number">255</span>, Math<span class="preprocessor">.Max</span>(<span class="number">0</span>, chromosome<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.R</span> + random<span class="preprocessor">.Next</span>(-<span class="number">5</span>, <span class="number">6</span>)))<span class="comment">;</span>
+		chromosome<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.G</span> = Math<span class="preprocessor">.Min</span>(<span class="number">255</span>, Math<span class="preprocessor">.Max</span>(<span class="number">0</span>, chromosome<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.G</span> + random<span class="preprocessor">.Next</span>(-<span class="number">5</span>, <span class="number">6</span>)))<span class="comment">;</span>
+		chromosome<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.B</span> = Math<span class="preprocessor">.Min</span>(<span class="number">255</span>, Math<span class="preprocessor">.Max</span>(<span class="number">0</span>, chromosome<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.B</span> + random<span class="preprocessor">.Next</span>(-<span class="number">5</span>, <span class="number">6</span>)))<span class="comment">;</span>
+	}
+}
+</pre></figure>
+
+<h2 id="Downloads">Downloads</h2>
+<p><a href="GeneticTesting2.zip">GeneticTesting2.zip - Sample code</a></p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">29</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/implementing-a-simple-genetic-algorithm/" title="Implementing a Simple Genetic Algorithm" rel="bookmark">Implementing a Simple Genetic Algorithm</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>In this blog post I’ll give a quick introduction to what <a href="http://en.wikipedia.org/wiki/Genetic_algorithm" target="_blank">genetic algorithms</a> are and what they can be used for. We’ll implement a genetic algorithm that attempts to guess an RGB color by evolving upon a random set of initial guesses, until it at some point evolves into the correct RGB value.</p>
+<a id="more"></a>
+
+<h2 id="What_are_genetic_algorithms?">What are genetic algorithms?</h2>
+<p>Contrary to other types of algorithms, genetic algorithms do not have a clear path of improvement for solution candidiates, and it’s not an exhaustive search. A genetic algorithm requires a few base components:</p>
+<ul>
+<li>A representation of a candidate solutions.</li>
+<li>A way of calculating the correctness of a candidate solution, commonly referred to as the fitness function.</li>
+<li>A mutation function that changes a candidate solution slightly, in an attempt to obtain a better candidate.</li>
+</ul>
+<p>There are many different ways of implementing genetic algorithms, and there are usually many variables to adjust in a genetic algorithm. How large should the initial population be? How many solutions survives each generation? How do the survivors reproduce? In reproduction, does each survivor give birth to a single child, or multiple? As is noticeable from the terminology, genetic algorithms closely simulate biology.</p>
+<h2 id="The_building_blocks">The building blocks</h2>
+<p>What we’re trying to accomplish with this demo implementation, is to guess a random RGB value. The RGB values are stored in what is basically a triple class. The only added functionality is an override of the ToString function to make it easier for us to print the solution candidates.</p>
+<figure class="highlight csharp"><pre>class Rgb
+{
+	<span class="keyword">internal</span> <span class="keyword">int</span> R { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	<span class="keyword">internal</span> <span class="keyword">int</span> G { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	<span class="keyword">internal</span> <span class="keyword">int</span> B { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+
+	<span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">string</span> <span class="title">ToString</span>()
+	{
+		<span class="keyword">return</span> <span class="keyword">string</span>.Format(<span class="string">"({0}, {1}, {2})"</span>, R, G, B);
+	}
+}
+</pre></figure>
+
+<p>Next up, we have an interface that represents a basic chromosome. In this implementation, a chromosome is basically a candidate solution. The chromosome is also the type that implements the fitness function, to evaluate it’s own correctness. The fitness is returned as an arbitrary double value, the higher the value the better a candidate. The ChromosomeValue property is the actual value being tested - in this case, an instance of Rgb.</p>
+<figure class="highlight csharp"><pre><span class="keyword">interface</span> IChromosome&lt;T&gt;
+{
+	<span class="keyword">double</span> Fitness { <span class="keyword">get</span>; }
+	T ChromosomeValue { <span class="keyword">get</span>; }
+}
+</pre></figure>
+
+<h2 id="Template_based_genetic_algorithm">Template based genetic algorithm</h2>
+<p>I’ve implemented the genetic algorithm using the <a href="http://www.dofactory.com/Patterns/PatternTemplate.aspx" target="_blank">template pattern</a> for easy customization and implementation of the algorithm. The algorithm itself is an abstract generic class. This means we have to subtype it before we can use it, a requirement due to the abstract template based implementation.</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> GeneticAlgorithm&lt;T&gt;
+</pre></figure>
+
+<p>There’s a number of properties that are rather self explanatory, given the commenting.</p>
+<figure class="highlight csharp"><pre><span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> This is the amount of chromosomes that will be in the population at any generation.</span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+<span class="keyword">protected</span> <span class="keyword">int</span> ChromosomePopulationSize;
+
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> This is the number of chromosomes that survive each generation, after which they're mutated.</span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+<span class="keyword">protected</span> <span class="keyword">int</span> GenerationSurvivorCount;
+
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> This list holdes the chromosomes of the current population.</span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+<span class="keyword">protected</span> IList&lt;IChromosome&lt;T&gt;&gt; ChromosomePopulation;
+
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> This is the current generation number. Incremented each time a new generation is made.</span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+<span class="keyword">public</span> <span class="keyword">int</span> CurrentGenerationNumber;
+
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> This is the current generation population.</span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+<span class="keyword">public</span> IEnumerable&lt;IChromosome&lt;T&gt;&gt; CurrentGenerationPopulation
+{
+	<span class="keyword">get</span> { <span class="keyword">return</span> ChromosomePopulation.AsEnumerable(); }
+}
+</pre></figure>
+
+<p>The constructor takes in two parameters, the size of the population at any given generation, as well as the number of survivors when an evolution is performed - and a new generation is created, based on the survivors of the old generation.</p>
+<p>Lastly, we set the current generation as generation number 1, and then we call createInitialChromosomes to instantiate the initial generation 1 population.</p>
+<figure class="highlight csharp"><pre><span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> Initializes the genetic algorithm by evolving the initial generation of chromosomes.</span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="chromosomePopulationSize"&gt;</span>The size of any generation.<span class="xmlDocTag">&lt;/param&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="generationSurvivorCount"&gt;</span>The number of chromosomes to survive the evolution of a generation.<span class="xmlDocTag">&lt;/param&gt;</span></span>
+<span class="keyword">public</span> <span class="title">GeneticAlgorithm</span>(<span class="keyword">int</span> populationSize, <span class="keyword">int</span> generationSurvivorCount)
+{
+	<span class="keyword">if</span> (generationSurvivorCount &gt;= populationSize)
+		<span class="keyword">throw</span> <span class="keyword">new</span> ArgumentException(<span class="string">"The survival count of a generation must be smaller than the population size. Otherwise the population will become stagnant"</span>);
+
+	<span class="keyword">if</span> (generationSurvivorCount &lt; <span class="number">2</span>)
+		<span class="keyword">throw</span> <span class="keyword">new</span> ArgumentException(<span class="string">"Where would we be today if either Adam or Eve were alone?"</span>);
+
+	ChromosomePopulationSize = populationSize;
+	GenerationSurvivorCount = generationSurvivorCount;
+
+	<span class="comment">// Create initial population and set generation</span>
+	CurrentGenerationNumber = <span class="number">1</span>;
+	createInitialChromosomes();
+}
+</pre></figure>
+
+<p>The createInitialChromosome initializes the ChromosomePopulation list, and then it’ll continue adding new chromosomes to it until the current population reaches the specified ChromosomePopulationSize. The initial random chromosomes are returned from the CreateInitialRandomChromosome function.</p>
+<figure class="highlight csharp"><pre><span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> Creates the initial population of random chromosomes.</span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+<span class="keyword">private</span> <span class="keyword">void</span> <span class="title">createInitialChromosomes</span>()
+{
+	ChromosomePopulation = <span class="keyword">new</span> List&lt;IChromosome&lt;T&gt;&gt;();
+
+	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; ChromosomePopulationSize; i++)
+		ChromosomePopulation.Add(CreateInitialRandomChromosome());
+}
+</pre></figure>
+
+<p>There are three abstract methods that must be implemented by any subclass, CreateInitialRandomChromosome being one of them. I’ll go over the actual implementations later on.</p>
+<figure class="highlight csharp"><pre><span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> Creates an arbitrary number of mutated chromosomes, based on the input chromosome.</span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+<span class="keyword">protected</span> <span class="keyword">abstract</span> IEnumerable&lt;IChromosome&lt;T&gt;&gt; <span class="title">Mutate</span>(IChromosome&lt;T&gt; chromosome);
+
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> Creates a single random chromosome for the initial chromosome population.</span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+<span class="keyword">protected</span> <span class="keyword">abstract</span> IChromosome&lt;T&gt; <span class="title">CreateInitialRandomChromosome</span>();
+
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> Selects the surviving chromosomes of the current generation.</span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>Returns a list of survivors of the current generation.<span class="xmlDocTag">&lt;/returns&gt;</span></span>
+<span class="keyword">protected</span> <span class="keyword">abstract</span> IEnumerable&lt;IChromosome&lt;T&gt;&gt; <span class="title">GetGenerationSurvivors</span>();
+</pre></figure>
+
+<p>The last method that’s implemented in the abstract GeneticAlgorithm class is PerformEvolution. PerformEvolution will create a new population for the next generation. First the survivors of the old generation are selected by calling the GetGenerationSurvivors method, which is to be implemented by a subclass. All survivors of the old generation are automatically added to the new generation population.</p>
+<p>Then we’ll select a random survivor based on an weighted average of their fitness. The randomly selected survivor will be mutated, and the result of the mutation is added to the new generation population. The Mutate function may return an arbitrary number of results, so technically a single survivor could be the parent of all children in the new generation.</p>
+<p>Finally we set the current population and increment the generation number.</p>
+<figure class="highlight csharp"><pre><span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> Performs an evolution by picking up the generation survivors and mutating them.</span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">PerformEvolution</span>()
+{
+	IList&lt;IChromosome&lt;T&gt;&gt; newGeneration = <span class="keyword">new</span> List&lt;IChromosome&lt;T&gt;&gt;();
+
+	<span class="comment">// Get the survivors of the last generation</span>
+	IEnumerable&lt;IChromosome&lt;T&gt;&gt; survivors = GetGenerationSurvivors();
+
+	<span class="comment">// Add the survivors of the previous generation</span>
+	<span class="keyword">foreach</span> (<span class="keyword">var</span> survivor <span class="keyword">in</span> survivors)
+		newGeneration.Add(survivor);
+
+	<span class="comment">// Until the population is full, add a new mutation of any two survivors, selected by weighted random based on their fitness.</span>
+	Random rnd = <span class="keyword">new</span> Random();
+
+	<span class="keyword">while</span> (newGeneration.Count &lt; ChromosomePopulationSize)
+	{
+		<span class="comment">// Get two random survivors, weighted random sort based on fitness</span>
+		<span class="keyword">var</span> randomSurvivor = survivors
+			.OrderBy(c =&gt; rnd.NextDouble() * c.Fitness)
+			.First();
+
+		<span class="keyword">foreach</span> (<span class="keyword">var</span> offspring <span class="keyword">in</span> Mutate(randomSurvivor))
+		{
+			<span class="keyword">if</span> (newGeneration.Count == ChromosomePopulationSize)
+				<span class="keyword">break</span>;
+
+			newGeneration.Add(offspring);
+		}
+	}
+
+	<span class="comment">// Overwrite current population</span>
+	ChromosomePopulation = newGeneration;
+
+	<span class="comment">// Increment the current generation</span>
+	CurrentGenerationNumber++;
+}
+</pre></figure>
+
+<h2 id="The_rgb_guessing_implementation">The rgb guessing implementation</h2>
+<p>The actual implementation is a class inheriting from GeneticAlgorithm, specifying Rgb as the generic type we’ll be working with.</p>
+<figure class="highlight csharp"><pre><span class="class"><span class="keyword">class</span> <span class="title">RgbGuesser</span> : <span class="title">GeneticAlgorithm</span><span class="inheritance">&lt;<span class="parent">Rgb</span></span>&gt;</span>
+</pre></figure>
+
+<p>The constructor just calls the base class directly, specifying the population size to be 100, and that there should be 10 survivors of each generation.</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="title">RgbGuesser</span>()
+	: <span class="title">base</span>(100, 10)
+{ }
+</pre></figure>
+
+<p>The CreateInitialRandomChromosome method just returns a new Rgb instance with random R, G and B vlaues between 1 and 255.</p>
+<figure class="highlight csharp"><pre><span class="keyword">protected</span> <span class="keyword">override</span> IChromosome&lt;Rgb&gt; <span class="title">CreateInitialRandomChromosome</span>()
+{
+	<span class="keyword">return</span> <span class="keyword">new</span> RgbChromosome(random.Next(<span class="number">1</span>, <span class="number">256</span>), random.Next(<span class="number">1</span>, <span class="number">256</span>), random.Next(<span class="number">1</span>, <span class="number">256</span>));
+}
+</pre></figure>
+
+<p>I’ve implemented an optimization that makes sure the most fit candidate chromosome is always included in the survivors of each generation. This’ll make sure we’ll never have a new generation with a worse candidate solution that the last.</p>
+<p>After returning the top candidate, we then return the remaining candidates based on a weighted random selection of the remaining population. The reason why we’re not just returning the “top GenerationSurvivorCount” chromosomes is to avoid <a href="http://en.wikipedia.org/wiki/Genetic_algorithm" target="_blank">premature convergence</a>. Premature convergence is basically a fancy way to describe inbreeding. When our gene pool diversity is limited, so is the range of candidates that may come out of it. It’s not a really big issue in the RGB guessing implementation, but premature convergence can be a big issue in other implementations - especially depending on the mutation implementation.</p>
+<figure class="highlight csharp"><pre><span class="keyword">protected</span> <span class="keyword">override</span> IEnumerable&lt;IChromosome&lt;Rgb&gt;&gt; <span class="title">GetGenerationSurvivors</span>()
+{
+	<span class="comment">// Return the best chromosome</span>
+	<span class="keyword">var</span> topChromosome = <span class="keyword">this</span>.ChromosomePopulation
+		.OrderByDescending(c =&gt; c.Fitness)
+		.First();
+
+	<span class="comment">// Return the remaining chromosomes from the pool</span>
+	<span class="keyword">var</span> survivors = <span class="keyword">this</span>.ChromosomePopulation
+		.Where(c =&gt; c != topChromosome)
+		.OrderByDescending(c =&gt; random.NextDouble() * c.Fitness)
+		.Take(<span class="keyword">this</span>.GenerationSurvivorCount - <span class="number">1</span>);
+
+	<span class="keyword">yield</span> <span class="keyword">return</span> topChromosome;
+
+	<span class="keyword">foreach</span> (<span class="keyword">var</span> survivor <span class="keyword">in</span> survivors)
+		<span class="keyword">yield</span> <span class="keyword">return</span> survivor;
+}
+</pre></figure>
+
+<p>The final method to implement is the Mutate method. This is the one that’s responsible for mutating a survivor into a new candidate solution that’ll hopefully be better than the last. The implementation is really simple. We just make a new RgbChromosome and set it’s R, G and B values to the same value as the parent chromosome, added a random value between -5 and 5. The Math.Max and Math.Min juggling is to avoid negative and 255+ values.</p>
+<figure class="highlight csharp"><pre>protected override IEnumerable&lt;IChromosome&lt;Rgb&gt;&gt; Mutate(IChromosome&lt;Rgb&gt; chromosome)
+{
+	RgbChromosome mutation = new RgbChromosome(chromosome<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.R</span>, chromosome<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.G</span>, chromosome<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.B</span>)<span class="comment">;</span>
+	mutation<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.R</span> = Math<span class="preprocessor">.Min</span>(<span class="number">255</span>, Math<span class="preprocessor">.Max</span>(<span class="number">0</span>, mutation<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.R</span> + random<span class="preprocessor">.Next</span>(-<span class="number">5</span>, <span class="number">6</span>)))<span class="comment">;</span>
+	mutation<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.G</span> = Math<span class="preprocessor">.Min</span>(<span class="number">255</span>, Math<span class="preprocessor">.Max</span>(<span class="number">0</span>, mutation<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.G</span> + random<span class="preprocessor">.Next</span>(-<span class="number">5</span>, <span class="number">6</span>)))<span class="comment">;</span>
+	mutation<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.B</span> = Math<span class="preprocessor">.Min</span>(<span class="number">255</span>, Math<span class="preprocessor">.Max</span>(<span class="number">0</span>, mutation<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.B</span> + random<span class="preprocessor">.Next</span>(-<span class="number">5</span>, <span class="number">6</span>)))<span class="comment">;</span>
+
+	yield return mutation<span class="comment">;</span>
+}
+</pre></figure>
+
+<h2 id="The_RgbChromosome">The RgbChromosome</h2>
+<p>The final class is the one implementing the IChromosome interface.</p>
+<figure class="highlight csharp"><pre><span class="class"><span class="keyword">class</span> <span class="title">RgbChromosome</span> : <span class="title">IChromosome</span><span class="inheritance">&lt;<span class="parent">Rgb</span></span>&gt;</span>
+</pre></figure>
+
+<p>In this case I’ve hardcoded a target RGB value that we wish to guess. Note that this is only for demonstrations sake - usually in genetic algorithms we don’t know the “answer” and will therefor have to base the fitness function on a set of rules that evaluate the fitness of the candidate.</p>
+<figure class="highlight csharp"><pre><span class="keyword">private</span> <span class="built_in">Rgb</span> targetRgb = <span class="keyword">new</span> <span class="built_in">Rgb</span> { R = <span class="number">127</span>, G = <span class="number">240</span>, B = <span class="number">50</span> };
+</pre></figure>
+
+<p>The fitness function calculates the total difference in RGB values and subtracts that from the maximum difference. As a result, we get a fitness value with lower values indicating a worse solution.</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">double</span> Fitness
+{
+	<span class="keyword">get</span>
+	{
+		<span class="keyword">int</span> maxDiff = <span class="number">255</span> * <span class="number">3</span>;
+
+		<span class="keyword">int</span> rDiff = Math.Abs(chromosome.R - targetRgb.R);
+		<span class="keyword">int</span> gDiff = Math.Abs(chromosome.G - targetRgb.G);
+		<span class="keyword">int</span> bDiff = Math.Abs(chromosome.B - targetRgb.B);
+		<span class="keyword">int</span> totalDiff = rDiff + gDiff + bDiff;
+
+		<span class="keyword">return</span> maxDiff - totalDiff;
+	}
+}
+</pre></figure>
+
+<p>Here is the full IChromosome implementation:</p>
+<figure class="highlight csharp"><pre>class RgbChromosome : IChromosome&lt;Rgb&gt;
+{
+	<span class="keyword">private</span> Rgb targetRgb = <span class="keyword">new</span> Rgb { R = <span class="number">127</span>, G = <span class="number">240</span>, B = <span class="number">50</span> };
+	<span class="keyword">private</span> Rgb chromosome;
+
+	<span class="keyword">public</span> <span class="title">RgbChromosome</span>(<span class="keyword">int</span> r, <span class="keyword">int</span> g, <span class="keyword">int</span> b)
+	{
+		<span class="keyword">this</span>.chromosome = <span class="keyword">new</span> Rgb { R = r, G = g, B = b };
+	}
+
+	<span class="keyword">public</span> <span class="keyword">double</span> Fitness
+	{
+		<span class="keyword">get</span>
+		{
+			<span class="keyword">int</span> maxDiff = <span class="number">255</span> * <span class="number">3</span>;
+
+			<span class="keyword">int</span> rDiff = Math.Abs(chromosome.R - targetRgb.R);
+			<span class="keyword">int</span> gDiff = Math.Abs(chromosome.G - targetRgb.G);
+			<span class="keyword">int</span> bDiff = Math.Abs(chromosome.B - targetRgb.B);
+			<span class="keyword">int</span> totalDiff = rDiff + gDiff + bDiff;
+
+			<span class="keyword">return</span> maxDiff - totalDiff;
+		}
+	}
+
+	<span class="keyword">public</span> Rgb ChromosomeValue
+	{
+		<span class="keyword">get</span> { <span class="keyword">return</span> chromosome; }
+	}
+}
+</pre></figure>
+
+<h2 id="Running_the_algorithm">Running the algorithm</h2>
+<p>Running the algorithm is as simple as instantiating a new RgbGuesser and then calling PerformEvolution on it repeatedly. Note that there’s no built in stop criteria in the algorithm, so it’ll continue to evolve the candidates even though a perfect candidate may already have been evolved. This I’ve introduced a simple check to see whether a perfect candidate exists:</p>
+<figure class="highlight csharp"><pre>if (topChromosomes<span class="preprocessor">.Where</span>(c =&gt; c<span class="preprocessor">.Fitness</span> == <span class="number">255</span> * <span class="number">3</span>)<span class="preprocessor">.Count</span>() &gt; <span class="number">0</span>)
+</pre></figure>
+
+<p>The full code can be seen below:</p>
+<figure class="highlight csharp"><pre>// Setup RgbGuesser
+RgbGuesser rgbGuesser = new RgbGuesser()<span class="comment">;</span>
+
+// For each generation, write the generation number + top <span class="number">5</span> chromosomes + fitness
+for (int i = <span class="number">1</span><span class="comment">; i &lt; 100000; i++)</span>
+{
+	Console<span class="preprocessor">.WriteLine</span>(<span class="string">"Generation: "</span> + rgbGuesser<span class="preprocessor">.CurrentGenerationNumber</span>)<span class="comment">;</span>
+	Console<span class="preprocessor">.WriteLine</span>(<span class="string">"-----"</span>)<span class="comment">;</span>
+
+	// Get top <span class="number">5</span> chromosomes
+	var topChromosomes = rgbGuesser<span class="preprocessor">.CurrentGenerationPopulation</span>
+		<span class="preprocessor">.OrderByDescending</span>(c =&gt; c<span class="preprocessor">.Fitness</span>)
+		<span class="preprocessor">.Take</span>(<span class="number">5</span>)<span class="comment">;</span>
+
+	// Get bottom <span class="number">5</span> chromosomes
+	var bottomChromosomes = rgbGuesser<span class="preprocessor">.CurrentGenerationPopulation</span>
+		<span class="preprocessor">.OrderBy</span>(c =&gt; c<span class="preprocessor">.Fitness</span>)
+		<span class="preprocessor">.Take</span>(<span class="number">5</span>)<span class="comment">;</span>
+
+	if (topChromosomes<span class="preprocessor">.Where</span>(c =&gt; c<span class="preprocessor">.Fitness</span> == <span class="number">255</span> * <span class="number">3</span>)<span class="preprocessor">.Count</span>() &gt; <span class="number">0</span>)
+	{
+		Console<span class="preprocessor">.WriteLine</span>()<span class="comment">;</span>
+		Console<span class="preprocessor">.WriteLine</span>()<span class="comment">;</span>
+		Console<span class="preprocessor">.WriteLine</span>()<span class="comment">;</span>
+		Console<span class="preprocessor">.WriteLine</span>(<span class="string">"### Perfect match found at generation "</span> + rgbGuesser<span class="preprocessor">.CurrentGenerationNumber</span> + <span class="string">"!"</span>)<span class="comment">;</span>
+		Console<span class="preprocessor">.Read</span>()<span class="comment">;</span>
+		return<span class="comment">;</span>
+	}
+
+	// Print <span class="keyword">out</span> top <span class="number">5</span> <span class="keyword">and</span> bottom <span class="number">5</span> chromosomes
+	foreach (var chromosome <span class="keyword">in</span> topChromosomes)
+		Console<span class="preprocessor">.WriteLine</span>(Convert<span class="preprocessor">.ToInt</span>32(chromosome<span class="preprocessor">.Fitness</span>)<span class="preprocessor">.ToString</span>()<span class="preprocessor">.PadLeft</span>(<span class="number">3</span>) + <span class="string">": "</span> + chromosome<span class="preprocessor">.ChromosomeValue</span>)<span class="comment">;</span>
+	Console<span class="preprocessor">.WriteLine</span>(<span class="string">"-----"</span>)<span class="comment">;</span>
+	foreach (var chromosome <span class="keyword">in</span> bottomChromosomes<span class="preprocessor">.OrderByDescending</span>(c =&gt; c<span class="preprocessor">.Fitness</span>))
+		Console<span class="preprocessor">.WriteLine</span>(Convert<span class="preprocessor">.ToInt</span>32(chromosome<span class="preprocessor">.Fitness</span>)<span class="preprocessor">.ToString</span>()<span class="preprocessor">.PadLeft</span>(<span class="number">3</span>) + <span class="string">": "</span> + chromosome<span class="preprocessor">.ChromosomeValue</span>)<span class="comment">;</span>
+
+	Console<span class="preprocessor">.WriteLine</span>()<span class="comment">;</span>
+	Console<span class="preprocessor">.WriteLine</span>()<span class="comment">;</span>
+
+	// Homage to Charles Darwin
+	rgbGuesser<span class="preprocessor">.PerformEvolution</span>()<span class="comment">;</span>
+}
+
+Console<span class="preprocessor">.WriteLine</span>(<span class="string">"Done"</span>)<span class="comment">;</span>
+Console<span class="preprocessor">.ReadLine</span>()<span class="comment">;</span>
+</pre></figure>
+
+<p>Running the application should eventually result in a perfect candidate being found. If you’re lucky, you’ll find it at generation 42 :)</p>
+<div class="imgwrapper" style=""><div><a href="/implementing-a-simple-genetic-algorithm/genetic_run_2.jpg" class="fancy"><img src="/implementing-a-simple-genetic-algorithm/genetic_run_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Doing_the_numbers">Doing the numbers</h2>
+<p>There are different ways of guessing an RGB value. We could just randomly guess until we hit the correct one - with a probability of 1/(255^3).</p>
+<p>We could also iterate over all 255^3 solutions, eventually hitting one. Provided the target is completely random, we should hit it after 50% of the solutions have been tested - that is, after just about 8 million tests.</p>
+<p>Another more clever approach, given the fitness function would be to just increment each RGB value once and fine the point at which an increment results in a lower score - then we’ve solved one of the RGB values. Using this approach, we can solve the problem in just 255*3 number of tries at most. But really, that’s no fun!</p>
+<p>Based on a quick series of tests, 50 seems to be the average max generation we’ll have to hit before we’ve guess the correct RGB value. That’s 50 generations of 100 candidates, for a total candidate count of 5000 - somewhat less than the random guessing and iterative solutions. To conclude - in this case, a genetic algorithm is far from the optimal solution, but it’s an interesting way of approaching hard-to-define problems that may not have a single optimal solution that can be calculated within a certain time restraint. In those cases genetic algorithms can be a great way of approximating a close-to-perfect solution.</p>
+<h2 id="Update">Update</h2>
+<p>Based on some of the comments I’ve received, I’ve posted an <a href="http://www.improve.dk/blog/2009/05/01/evolution-of-the-simple-genetic-algorithm" target="_blank">update to the genetic algorithm</a> to make it more “genetic”.</p>
+<h2 id="Downloads">Downloads</h2>
+<p>Sample solution code:<br><a href="GeneticTesting.zip">GeneticTesting.zip</a></p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">24</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/txf-presentation-materials/" title="TxF presentation materials" rel="bookmark">TxF presentation materials</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/Conferences and Presenting/">Conferences and Presenting</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Yesterday I presented on how to use Transactional NTFS (TxF) in .NET, at the <a href="http://www.cnug.dk/" target="_blank">Copenhagen .NET User Group</a>.</p>
+<a id="more"></a>
+
+<h2 id="Downloads">Downloads</h2>
+<p>Slides: <a href="TxF.pptx">TxF.pptx</a><br>Materials: <a href="TxFMaterials.zip">TxFMaterials.zip</a></p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+
+<div class="paging">
+	<a href="/page/14/"><div class="past">« Past</div></a>
+	<a href="/page/12/"><div class="future">Future »</div></a>
+	<div class="clear"></div>
+</div>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

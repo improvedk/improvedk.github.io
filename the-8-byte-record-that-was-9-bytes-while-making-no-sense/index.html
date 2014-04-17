@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>The 8 Byte Record That Was 9 Bytes While Making No Sense | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">16</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/the-8-byte-record-that-was-9-bytes-while-making-no-sense/" title="The 8 Byte Record That Was 9 Bytes While Making No Sense" rel="bookmark">The 8 Byte Record That Was 9 Bytes While Making No Sense</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on The 8 Byte Record That Was 9 Bytes While Making No Sense">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>Warning: this is a <em>select is (most likely) not broken, it’s just not working as I’d expect</em>. It may very well be that I’m just overlooking something, in which case I hope someone will correct me :)</p>
+<a id="more"></a>
+
+<p>I’ve previously blogged about <a href="/the-null-bitmap-is-not-always-present-in-data-records/">how sparse-column-only table records didn’t have a null bitmap</a>, nor did they store the usual column count, except for the number of variable length columns. In my effort to test <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a>, I added the following SQL code as the setup for a test:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> ScanAllNullSparse
+(
+	A <span class="keyword">int</span> SPARSE,
+	B <span class="keyword">int</span> SPARSE
+)
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> ScanAllNullSparse <span class="keyword">DEFAULT</span> <span class="keyword">VALUES</span></span>
+</pre></figure>
+
+<p>Dumping out the resulting record yields the following:</p>
+<div class="imgwrapper" style=""><div><a href="/the-8-byte-record-that-was-9-bytes-while-making-no-sense/image_21.png" class="fancy"><img src="/the-8-byte-record-that-was-9-bytes-while-making-no-sense/image_21.png" style="max-height: 250px"/></a></div></div>
+
+<p>And this is where things start to get weird. The status bits (<span style="color: #ff0000;">red</span>) are all off, meaning there’s neither a null bitmap nor variable length columns in this record. The next two (<span style="color: #0000ff;">blue</span>) bytes indicate the end offset of the fixed length portion – right after those two very bytes, since we don’t have any fixed length data.</p>
+<p>At this point I’m not too sure what to expect next – after all, in the <a href="/the-null-bitmap-is-not-always-present-in-data-records/">previous blog post</a> I showed how the column count wasn’t stored in all-sparse tables. Also, the status bits indicate that there’s no null bitmap. But what is the <span style="color: #008000;">green</span> 0x0100 (decimal value 1) bytes then? The only value I can see them possible indicating is the number of variable length columns. But why would that be present when the status bits indicate there are no such columns? Oh well, if that’s the case, then the next two (<span style="color: #ff0080;">pink</span>) bytes must be the offset array entry for the variable length column – having a value of 8 indicates that the variable length column has no value.</p>
+<p>But wait, if the variable length column doesn’t have a value, then what is that last (<span style="color: #d16349;">orange/brownish</span>) 0x00 byte doing at the very end? That’s beyond the offset marked in the (assumedly) variable length offset array… And if the <span style="color: #ff0080;">pink</span> bytes really is the variable length offset array – should it not indicate a complex column for the sparse vector? (though it would make sense for it not to do so, if it weren’t stored in the record).</p>
+<p>I can still parse this by just taking some precautions, but I still don’t understand what’s going on. Any suggestions?</p>
+<h2 id="It’s_not_just_DBCC_PAGE">It’s not just DBCC PAGE</h2>
+<p>To clear DBCC PAGE of any suspicion I amended my original test by inserting two extra rows with DEFAULT VALUES. The resulting offset table looks like this:</p>
+<div class="imgwrapper" style=""><div><a href="/the-8-byte-record-that-was-9-bytes-while-making-no-sense/image_42.png" class="fancy"><img src="/the-8-byte-record-that-was-9-bytes-while-making-no-sense/image_42.png" style="max-height: 250px"/></a></div></div>
+
+<p>As can be seen, the storage engine allocates 9 bytes for all three rows (though we can only verify the first two). Thus it’s not just DBCC PAGE that reads the records as being 9 bytes, so does the storage engine. This just strengthens the case that SQL Server knows best, now if only I could figure out why :)</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=The%208%20Byte%20Record%20That%20Was%209%20Bytes%20While%20Making%20No%20Sense%20http%3A%2F%2Fimprove.dk%2Fthe-8-byte-record-that-was-9-bytes-while-making-no-sense%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fthe-8-byte-record-that-was-9-bytes-while-making-no-sense%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fthe-8-byte-record-that-was-9-bytes-while-making-no-sense%2F&title=The%208%20Byte%20Record%20That%20Was%209%20Bytes%20While%20Making%20No%20Sense" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/the-8-byte-record-that-was-9-bytes-while-making-no-sense/the-8-byte-record-that-was-9-bytes-while-making-no-sense.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'the-8-byte-record-that-was-9-bytes-while-making-no-sense';
+	var disqus_url = 'http://improve.dk/the-8-byte-record-that-was-9-bytes-while-making-no-sense/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

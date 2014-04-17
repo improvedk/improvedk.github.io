@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">03</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/getting-a-process-from-a-handle/" title="Getting a Process From a Handle" rel="bookmark">Getting a Process From a Handle</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>So we have a handle, what process does it belong to? Our goal is to obtain a .NET System.Diagnostics.Process object that corresponds to the owner process of the handle we input.</p>
+<a id="more"></a>
+
+<p>Let’s first open up an Internet Explorer window, just leave it at the start page, whatever yours is.</p>
+<div class="imgwrapper" style=""><div><a href="/getting-a-process-from-a-handle/win32_1_1_2.jpg" class="fancy"><img src="/getting-a-process-from-a-handle/win32_1_1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Now fire up Winspector and locate the Internet Explorer window, you’ll see the handle in HEX format in the treeview.</p>
+<div class="imgwrapper" style=""><div><a href="/getting-a-process-from-a-handle/win32_1_2_2.jpg" class="fancy"><img src="/getting-a-process-from-a-handle/win32_1_2_2.jpg" style="max-height: 250px"/></a></div></div>
+
+
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Runtime.InteropServices;
+<span class="keyword">using</span> System.Globalization;
+<span class="keyword">using</span> System.Diagnostics;
+
+namespace Get_process_from_handle
+{
+	class Program
+	{
+		<span class="comment">// The DllImport attribute specifies the Win32 DLL that contains the function we're importing,</span>
+		<span class="comment">// in this case it's the user32.dll file that resides in the C:WindowsSystem32 directory.</span>
+		<span class="comment">// The function we're importing is GetWindowThreadProcessId, it takes a handle and a reference</span>
+		<span class="comment">// to an outgoing integer that'll return the process ID of the handle.</span>
+		[DllImport(<span class="string">"user32"</span>)]
+		<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">extern</span> <span class="keyword">int</span> <span class="title">GetWindowThreadProcessId</span>(<span class="keyword">int</span> hWnd, <span class="keyword">out</span> <span class="keyword">int</span> lpdwProcessId);
+
+		<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
+		{
+			<span class="comment">// First, read the handle from the console, remember this has to be in HEX format!</span>
+			<span class="keyword">int</span> handle = <span class="keyword">int</span>.Parse(Console.ReadLine(), NumberStyles.HexNumber);
+
+			<span class="comment">// Now that we have the handle, create an uninitialized integer that'll hold the process ID</span>
+			<span class="comment">// of the handle process.</span>
+			<span class="keyword">int</span> processID;
+			GetWindowThreadProcessId(handle, <span class="keyword">out</span> processID);
+
+			<span class="comment">// Now that we have the process ID, we can use the built in .NET function to obtain a process object.</span>
+			Process p = Process.GetProcessById(processID);
+
+			<span class="comment">// Finally we'll write out the process name to confirm success.</span>
+			Console.Write(p.ProcessName);
+			Console.Read();
+		}
+	}
+}
+</pre></figure>
+
+<p>And the result:</p>
+<div class="imgwrapper" style=""><div><a href="/getting-a-process-from-a-handle/win32_1_3_2.jpg" class="fancy"><img src="/getting-a-process-from-a-handle/win32_1_3_2.jpg" style="max-height: 250px"/></a></div></div>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">02</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/the-basics/" title="The Basics" rel="bookmark">The Basics</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>First of all, to manipulate and use the Win32 API, we must know about the system itself, the windows, the controls and so forth. Visual Studio comes bundled with Spy++ which enables us to identity the various windows and controls of application, but honestly, it’s pretty bad. Instead you should <a href="http://www.windows-spy.com/" target="_blank">download Winspector</a>.</p>
+<a id="more"></a>
+
+<h2 id="Threads_&amp;_processes">Threads &amp; processes</h2>
+<p>Each application/window in Windows belongs to a given thread under a given process. A process may have multiple threads and windows, but a thread and a window can only belong to a single process.</p>
+<h2 id="Windows_&amp;_handles">Windows &amp; handles</h2>
+<p>Usually we refer to a window as the overall container of visual representation of data in Windows, in this case it’s a bit more detailed though. In all API work a window is a standard Win32 control, that could be a button, a toolbar, a label, a window (as per the usual definition) and so forth. Each window is assigned a handle, and by using this handle we can uniquely reference any given window. A window may have any number of child windows, that could be the controls of a dialog box, and the children may have children themselves and so forth.</p>
+<p>Try and mess around with Winspector a bit. Identify the various windows of the system (including those that are not visible). Inspect their properties, the process they belong to, their parent windows and so forth. Most, if not all, of the API tips &amp; tricks posts will include references to windows, handles, processes and threads - so get used to them.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Mar</span>
+			<span class="day">29</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/turning-the-world-upside-down/" title="Turning the World Upside Down" rel="bookmark">Turning the World Upside Down</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/Tools of the Trade/">Tools of the Trade</a>
+				, 
+			
+				<a href="http://improve.dk/category/Windows/">Windows</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>So, tell me, do you notice anything unusual in the picture below?</p>
+<a id="more"></a>
+
+<div class="imgwrapper" style=""><div><a href="/turning-the-world-upside-down/upsidedown_2.jpg" class="fancy"><img src="/turning-the-world-upside-down/upsidedown_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>For a month or so I’ve used my computer with the Windows Start menu at the top. Am I crazy? Most likely. I started out doing it on my home computer (on all monitors), while keeping the start menu at the bottom at work. Honestly, it is feels quite weird and wrong in the beginning, and I was constantly throwing my mouse southwards just to realize that my work had been for nothing, as the Start menu was actually up north. I really couldn’t impose this waste of time upon my employers, that’s why I kept it down south there.</p>
+<p>After a couple of weeks had passed, things started to shift. I was now starting to notice how wrong it was for the Start menu to be at the bottom at work - and how cumbersome it really is! So I moved it. And everybody laughed at me.</p>
+<p>So why’d you want to move your Start menu to the top of the monitor?</p>
+<div class="imgwrapper" style=""><div><a href="/turning-the-world-upside-down/topmenu_2.jpg" class="fancy"><img src="/turning-the-world-upside-down/topmenu_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>See how all the menus are in the top? Usually - excluding gaming and other special applications - our mouse will be working inside a menu, dragging a window, using the Start menu, or in the main content area of a browser/application. Common to most of these are that they all happen at the top of the monitor. As the monitor gets larger, the distance between the top and the bottom becomes greater.</p>
+<p>Having the Start menu at the top really saves a lot of mouse movement. The only negative side that I’ve become aware of is that you can’t just toss the mouse top-right like a maniac and click to close a window - that’ll now activate the system clock. When using multiple monitors, that really isn’t an issue as you wouldn’t be able to do that anyways since your mouse would enther the other monitor.</p>
+<p>The greatest opponent of this efficiency improvement really is… Tradition. I shall not try to hide the fact that it takes a lot of getting used to. After having moved my mouse towards the bottom and hammering a fist in the table for the 100th time, I was almost about to give up. But hang in, for the sake of your carpal tunnel syndrome suffering hand, MOVE THAT START MENU!</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Mar</span>
+			<span class="day">29</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/dedicated-to-the-api/" title="Dedicated to the API" rel="bookmark">Dedicated to the API</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Unfortunately it’s been quite silent around here for the last couple of months. I want to change that, so why not make a promise?</p>
+<a id="more"></a>
+
+<p>I’ve always been bullied by my wannabe developer friends for memorizing most of the Win32 (XP onwards) API. What they don’t realize is just how useful the API is - how powerful it is!</p>
+<p>For the complete month of April 2007, I will post a new blog each day containing a Win32 API trick including demonstration code. Although my samples will be in C#, this being the Win32 API, it’s actually usable in more or less any language you want.</p>
+<p>I look forward to my missionary work in the name of the holy Win32 API!</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Mar</span>
+			<span class="day">16</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/car-fire/" title="Car fire :(" rel="bookmark">Car fire :(</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/Life/">Life</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Boy am I glad I’ve got my baby insured, guess I’ll need it now :(</p>
+<a id="more"></a>
+
+<div class="imgwrapper" style=""><div><a href="/car-fire/carburn1_2.jpg" class="fancy"><img src="/car-fire/carburn1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/car-fire/carburn2_2.jpg" class="fancy"><img src="/car-fire/carburn2_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/car-fire/carburn3_2.jpg" class="fancy"><img src="/car-fire/carburn3_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/car-fire/carburn4_2.jpg" class="fancy"><img src="/car-fire/carburn4_2.jpg" style="max-height: 250px"/></a></div></div>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Feb</span>
+			<span class="day">25</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/uml-love/" title="UML Love" rel="bookmark">UML Love</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/Poker/">Poker</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I was asked to make a graph of my most recent relationship, what other way is there to express oneself than UML?</p>
+<a id="more"></a>
+
+<p>My world:</p>
+<div class="imgwrapper" style=""><div><a href="/uml-love/relationdiagram_2.jpg" class="fancy"><img src="/uml-love/relationdiagram_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>My relationship:</p>
+<div class="imgwrapper" style=""><div><a href="/uml-love/relationtimeline_2.jpg" class="fancy"><img src="/uml-love/relationtimeline_2.jpg" style="max-height: 250px"/></a></div></div>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Feb</span>
+			<span class="day">14</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/audi-tt/" title="Audi TT" rel="bookmark">Audi TT</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/Life/">Life</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I’ve been asked quite a lot of times why I hadn’t put up any pictures of my new ride yet. There’s still a couple of things missing such as the Audi logos for the rims, at least I got the alarms installed yesterday, this is now officially the most secure car in Denmark, sporting a Viper 5000XL, Cobra CONNEX GPS/GSM tracker and a Credex VGS MK-III smoke machine :D</p>
+<a id="more"></a>
+
+<div class="imgwrapper" style=""><div><a href="/audi-tt/tt1_2.jpg" class="fancy"><img src="/audi-tt/tt1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/audi-tt/tt2_2.jpg" class="fancy"><img src="/audi-tt/tt2_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/audi-tt/tt3_2.jpg" class="fancy"><img src="/audi-tt/tt3_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/audi-tt/tt4_2.jpg" class="fancy"><img src="/audi-tt/tt4_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/audi-tt/tt5_2.jpg" class="fancy"><img src="/audi-tt/tt5_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/audi-tt/tt6_2.jpg" class="fancy"><img src="/audi-tt/tt6_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/audi-tt/tt7_2.jpg" class="fancy"><img src="/audi-tt/tt7_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Yes, those plates are mine :)</p>
+<div class="imgwrapper" style=""><div><a href="/audi-tt/tt9_2.jpg" class="fancy"><img src="/audi-tt/tt9_2.jpg" style="max-height: 250px"/></a></div></div>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Feb</span>
+			<span class="day">07</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/dollar-6000-an-hour/" title="$6.000 An Hour" rel="bookmark">$6.000 An Hour</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/Life/">Life</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>First off, let me give you the good news. I just bought a new car. A ‘2000 Audi TT 1,8T to be precise. The bad news however is that I’m 21 years old, only got about one and a half years seniority and at last, I’m male. Those three properties make up for a worst case scenario for any insurance application form. Anyways, here’s a chronological list of the insurance companies I called and their reponses:</p>
+<a id="more"></a>
+
+<h3 id="Tryg">Tryg</h3>
+<p>Tryg was able to offer me an impressive price of 94.000 kroners ($16.337) per year. Thats roughly 1/3 the price of the car. Thanks… I guess.</p>
+<h3 id="GF">GF</h3>
+<p>Forget it. GF is my current company, they didn’t want nothing to do with my new car.</p>
+<h3 id="Topdanmark">Topdanmark</h3>
+<p>Topdanmark just saved me 60k, they were able to offer me the same insurance for 34.000 kroners ($5.909) per year.</p>
+<h3 id="Alka">Alka</h3>
+<p>Alka didn’t want to insure me, even though I offered to take their “Respekt for fart” (respect for speed) training course.</p>
+<h3 id="AROS">AROS</h3>
+<p>“NO way, we don’t insure cars like that”.</p>
+<h3 id="Alm-_Brand">Alm. Brand</h3>
+<p>The best so far, giving me an offer of 27.000 per year ($4.692).</p>
+<h3 id="Fair">Fair</h3>
+<p>The Fair CS started laughing after I’d mentioned my age and car, then he hung up.</p>
+<h3 id="Trekroner">Trekroner</h3>
+<p>Trekroner is the winner. They offered me an insurance of 25.000 per year ($4.345).</p>
+<h3 id="Danske_Forsikringer">Danske Forsikringer</h3>
+<p>“I wouldn’t bet on that”, that’s what they told me before giving me the price of 69.000 per year ($11.992).</p>
+<h3 id="Codan">Codan</h3>
+<p>After explicitly requiring me to move all my other insurances over to them, Codan offered me an insurance on the car for 36.000 per year ($6.256).</p>
+<h3 id="IF">IF</h3>
+<p>IF thought I was joking when I called them and told my age and car. While trying to reason with them that I weren’t joking, they hung up.</p>
+<h2 id="Conclusion">Conclusion</h2>
+<p>All in all, calling around to the various insurance companies took me a total of about two hours. The result of those two hours is that I went from $16.337 per year all the way down to $4.345 per year. That’s a saving of $11.992, giving me an hourly wage of about $6.000, that’s not too shabby!</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jan</span>
+			<span class="day">28</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/ces-2007-pictures/" title="CES 2007 Pictures" rel="bookmark">CES 2007 Pictures</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/Conferences and Presenting/">Conferences and Presenting</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>A series of pictures I took at the 2007 CES show.</p>
+<p>Microsoft didn’t exactly hide itself at the CES, you could see Vista icons, banners, stickers and posters everywhere!</p>
+<a id="more"></a>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces1_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces2_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces2_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces3_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces3_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces4_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces4_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Honda showcased it’s famous ASIMO robot, pronounced very much like the awesome-o robot from South Park.</p>
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces5_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces5_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces6_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces6_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>The whole north hall was full of custom car manufacturer showoffs and ICE equipment.</p>
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces7_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces7_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces8_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces8_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces9_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces9_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces10_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces10_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces11_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces11_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces12_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces12_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces13_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces13_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces14_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces14_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces15_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces15_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces16_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces16_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces17_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces17_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces18_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces18_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces19_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces19_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces20_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces20_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces21_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces21_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces22_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces22_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces23_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces23_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces24_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces24_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces25_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces25_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces26_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces26_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces27_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces27_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces28_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces28_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces29_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces29_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces30_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces30_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces31_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces31_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces32_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces32_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces33_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces33_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>The finish of this car was incredibly cool, unfortunately it’s absolutely impossible to maintain.</p>
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces34_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces34_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces35_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces35_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces36_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces36_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces37_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces37_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces38_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces38_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces39_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces39_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces40_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces40_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces41_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces41_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Without doubt, the most impressive woofer system on show was the dual 22” Jackhammer Escalade, featured by Pimp my Ride’s Mad Mike.</p>
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces42_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces42_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces43_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces43_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces44_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces44_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces45_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces45_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces46_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces46_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces47_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces47_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces48_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces48_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>By placing your hand in between the censors, you could control a cursor on the screen.</p>
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces49_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces49_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>The Microsoft booth / hall.</p>
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces50_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces50_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces51_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces51_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>LG’s combined Blu-ray &amp; HD player.</p>
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces52_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces52_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Do not underestimate the deadly power of vending machines!</p>
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces53_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces53_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces54_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces54_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Hellgate London, oh the joy of trying it. Can’t wait until it releases!</p>
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces55_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces55_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Hmm, I don’t really know what this booth was about.</p>
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces56_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces56_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces57_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces57_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Intels F1 simulator.</p>
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces58_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces58_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>An LCD monitor mounted on a glass plate, almost invisible wires.</p>
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces59_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces59_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces60_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces60_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Sharp/Aquos’ 108” LCD. There was a thinly veiled line down through the middle, revealing that it’s probably just two smaller panels stitched together.</p>
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces61_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces61_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces62_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces62_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Panasonics monitor booth.</p>
+<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces63_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces63_2.jpg" style="max-height: 250px"/></a></div></div>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jan</span>
+			<span class="day">23</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/one-mans-sin-another-mans-blessing/" title="One Mans Sin, Another Mans Blessing" rel="bookmark">One Mans Sin, Another Mans Blessing</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/Windows/">Windows</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>This is a reply to the <a href="http://www.intelliadmin.com/blog/2007/01/5-sins-of-vista.html" target="_blank">Top 5 sins of Vista</a> blog post written by Steve Wiseman.</p>
+<a id="more"></a>
+
+<h2 id="Number_1_-_The_new_file_browsing_interface_is_different">Number 1 - The new file browsing interface is different</h2>
+<p>Yes, Notepad’s great, we all use it, whether we want to admit or not. The file browsing interface however, is also great. That is, if you’re willing to acknowledge it!</p>
+<div class="imgwrapper" style=""><div><a href="/one-mans-sin-another-mans-blessing/filebrowsing_2.jpg" class="fancy"><img src="/one-mans-sin-another-mans-blessing/filebrowsing_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Admitted, there’s no reason for the web site addresses to figure in the drop down. But why use the drop down at all? Haven’t you noticed the button on the bottom left hand side, cleverly called, “Folders”? Click this and you’ll see the usual tree view of folders that you seem to miss so much. Keep in mind that this file browsing interface is in every new Vista aware application - including the tree view.</p>
+<h2 id="Number_2_-_The_new_start_menu_rocks_(kinda)">Number 2 - The new start menu rocks (kinda)</h2>
+<p>I think we can all agree that the new almost instantanious application search feature of the start menu is just great! You however, as I, would like to open various folders in an easy way as we used to. You say you used to click the start menu, click Run, type in the location and click enter. I however, do not believe you. You seem like someone who knows the system better than the average person.</p>
+<div class="imgwrapper" style=""><div><a href="/one-mans-sin-another-mans-blessing/rundialog_2.jpg" class="fancy"><img src="/one-mans-sin-another-mans-blessing/rundialog_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Surely you know of the Windows key + R key combination that opens the Run dialog - as it also does on Vista. Pressing Winkey+R gives the run dialog in which you can type “C:” and have that drive open up for you. Much faster than going through the start menu in any way.</p>
+<h2 id="Number_3_-_Windows_networking_is_a_bless(ing)">Number 3 - Windows networking is a bless(ing)</h2>
+<p>When I first started up Vista and went into the network configuration, oh boy was I disappointed. I had more or less the same feelings as you describe. Luckily for me I was able to accept that Vista is an all new milestone compared to XP. Are Microsoft not allowed to change something that was - admittedly - working before? Having used Vista for no more than a week, surely you’ll have gotten used to the new way of browsing the networks as well as the network configuration. “If you have never used Vista before - Quickly tell me how to change the IP address on my wireless card!”. Now, how in gods name can you expect anyone who has never used a system to be able to tell you this? Were you instantly able to change the IP address of a network adapter the very first time you launched Windows 2000, XP?</p>
+<div class="imgwrapper" style=""><div><a href="/one-mans-sin-another-mans-blessing/networkconnections_2.jpg" class="fancy"><img src="/one-mans-sin-another-mans-blessing/networkconnections_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Simply click “Manage network connections” from the tasks section of the menu and we’re back to the good old interface. It really isn’t that cumbersome.</p>
+<h2 id="Number_4_-_Windows_Search_is_as_broken_as_it_has_always_been">Number 4 - Windows Search is as broken as it has always been</h2>
+<p>Windows Search is not broken. It actually works. Have you tried it? Ok, so you can’t do a content based search on unknown file types, but have you ever been able to do so using Windows Search? You can however easily search through your email, documents, file name based search and so forth.</p>
+<div class="imgwrapper" style=""><div><a href="/one-mans-sin-another-mans-blessing/vistasearch_2.jpg" class="fancy"><img src="/one-mans-sin-another-mans-blessing/vistasearch_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p><em>Please</em>, please, please don’t tell me that a command prompt wildcard directory search enables you to do content based searches. Click the Location:Everywhere item and you’re all set for directory searches as we used to in XP.</p>
+<h2 id="Number_5_-_Windows_copying_has_improved">Number 5 - Windows copying has improved</h2>
+<p>Given the title of my website I should know what the word “improve” means. To improve something requires that you change something for the better. To improve something you must not make it worse than before. “Sure they have made the interface look cooler, a snazzy progress bar here and there.” You don’t call this an improvement? Sure, it’s not the robust search that you’re looking for, but honestly, isn’t it an improvement? I would really like to have seen the WinFS file system to have been a part of Vista. But surely, even though WinFS did not make it to Vista, I’ll not go as far as saying that Vista is not an improvement over XP. Explorer still has the old bugs, especially in regards of network sharing (shame on you Microsoft!), but still, you cannot say that it has not been <em>improved</em>.</p>
+<div class="imgwrapper" style=""><div><a href="/one-mans-sin-another-mans-blessing/filecopy_2.jpg" class="fancy"><img src="/one-mans-sin-another-mans-blessing/filecopy_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>I for one, love the fact that we can now see the transfer speed during transfers, even during network transfers!</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+
+<div class="paging">
+	<a href="/page/21/"><div class="past">« Past</div></a>
+	<a href="/page/19/"><div class="future">Future »</div></a>
+	<div class="clear"></div>
+</div>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

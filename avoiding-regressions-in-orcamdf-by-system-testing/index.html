@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Avoiding Regressions in OrcaMDF by System Testing | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jun</span>
+			<span class="day">14</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/avoiding-regressions-in-orcamdf-by-system-testing/" title="Avoiding Regressions in OrcaMDF by System Testing" rel="bookmark">Avoiding Regressions in OrcaMDF by System Testing</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				, 
+			
+				<a href="http://improve.dk/category/Testing/">Testing</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on Avoiding Regressions in OrcaMDF by System Testing">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>As I continue to add new features &amp; support for new data structures in <a href="/introducing-orcamdf">OrcaMDF</a>, the risk of <a href="http://en.wikipedia.org/wiki/Software_regression" target="_blank">regressions</a> increase. Especially so as I’m developing in a largely unknown field, given that I can’t plan for structures and relations that I do not yet know about. To reduce the risk of regressions, testing is an obvious need.</p>
+<a id="more"></a>
+
+<h2 id="Unit_testing">Unit testing</h2>
+<p><a href="http://en.wikipedia.org/wiki/Unit_testing" target="_blank">Unit testing</a> is the process of testing the smallest parts of the code, which would be functions in object oriented programming. A sample test for the <a href="https://github.com/improvedk/OrcaMDF/blob/694dd0cff213dc48b5153b040a41fdc707914680/src/OrcaMDF.Core/Engine/SqlTypes/SqlBigInt.cs" target="_blank">SqlBigInt</a> data type parsing class could look like this:</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> NUnit.Framework;
+<span class="keyword">using</span> OrcaMDF.Core.Engine.SqlTypes;
+
+namespace OrcaMDF.Core.Tests.Engine.SqlTypes
+{
+	[TestFixture]
+	<span class="keyword">public</span> <span class="keyword">class</span> SqlBigIntTests
+	{
+		[Test]
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">GetValue</span>()
+		{
+			<span class="keyword">var</span> type = <span class="keyword">new</span> SqlBigInt();
+			<span class="keyword">byte</span>[] input;
+
+			input = <span class="keyword">new</span> <span class="keyword">byte</span>[] { <span class="number">0xFF</span>, <span class="number">0xFF</span>, <span class="number">0xFF</span>, <span class="number">0xFF</span>, <span class="number">0xFF</span>, <span class="number">0xFF</span>, <span class="number">0xFF</span>, <span class="number">0x7F</span> };
+			Assert.AreEqual(<span class="number">9223372036854775807</span>, Convert.ToInt64(type.GetValue(input)));
+
+			input = <span class="keyword">new</span> <span class="keyword">byte</span>[] { <span class="number">0x82</span>, <span class="number">0x5A</span>, <span class="number">0x03</span>, <span class="number">0x1B</span>, <span class="number">0xD5</span>, <span class="number">0x3E</span>, <span class="number">0xCD</span>, <span class="number">0x71</span> };
+			Assert.AreEqual(<span class="number">8200279581513702018</span>, Convert.ToInt64(type.GetValue(input)));
+
+			input = <span class="keyword">new</span> <span class="keyword">byte</span>[] { <span class="number">0x7F</span>, <span class="number">0xA5</span>, <span class="number">0xFC</span>, <span class="number">0xE4</span>, <span class="number">0x2A</span>, <span class="number">0xC1</span>, <span class="number">0x32</span>, <span class="number">0x8E</span> };
+			Assert.AreEqual(-<span class="number">8200279581513702017</span>, Convert.ToInt64(type.GetValue(input)));
+		}
+
+		[Test]
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Length</span>()
+		{
+			<span class="keyword">var</span> type = <span class="keyword">new</span> SqlBigInt();
+
+			Assert.Throws&lt;ArgumentException&gt;(() =&gt; type.GetValue(<span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">9</span>]));
+			Assert.Throws&lt;ArgumentException&gt;(() =&gt; type.GetValue(<span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">7</span>]));
+		}
+	}
+}
+</pre></figure>
+
+<p>This tests the main entrypoints for the SqlBigInt class, testing for over/underflow of the long bigint data type, as well as checking the length. This works great for simple classes like SqlBigInt. Unit testing more complex interrelated classes requires infrastructure support for mocking out called methods, related classes, etc. While this is a working strategy, it arguably requires some effort, especially at the early stage of a project where the architecture is dynamic.</p>
+<h2 id="System_testing">System testing</h2>
+<p>On the other end of the spectrum, we have <a href="http://en.wikipedia.org/wiki/System_testing" target="_blank">system testing</a>. System testing seeks to test the system as a whole, largely ignoring the inner workings of either system, which merits a categorization as <a href="http://en.wikipedia.org/wiki/Black_box_testing" target="_blank">black-box testing</a>. In the case of OrcaMDF I’ve estimated that I can catch 90% of all regressions using just 10% of the time, compared to unit testing which would have the reverse properties. As such, it’s a great way to test during development, while allowing for the introduction of key unit &amp; integration tests as necessary.</p>
+<p>Say I wanted to test the parsing of user table names in the <a href="https://github.com/improvedk/OrcaMDF/blob/694dd0cff213dc48b5153b040a41fdc707914680/src/OrcaMDF.Core/MetaData/DatabaseMetaData.cs" target="_blank">DatabaseMetaData</a> class, I could mock the values of the SysObjects list, while also mocking <a href="https://github.com/improvedk/OrcaMDF/blob/694dd0cff213dc48b5153b040a41fdc707914680/src/OrcaMDF.Core/Engine/MdfFile.cs" target="_blank">MdfFile</a> as that’s a require parameter for the constructor. To do that, I’d have to extract MdfFile into an interface and use a mocking framework on top of that.</p>
+<p>Taking the system testing approach, I’m instead performing the following workflow:</p>
+<ul>
+<li>Connect to a running SQL Server.</li>
+<li>Create test schema in the fixture setup.</li>
+<li>Detach the database.</li>
+<li>Run OrcaMDF on the detached .mdf file and validate the results.</li>
+</ul>
+<p>A sample test, creating two user tables and validating the output from the DatabaseMetaData, looks like this:</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System.Data.SqlClient;
+<span class="keyword">using</span> NUnit.Framework;
+<span class="keyword">using</span> OrcaMDF.Core.Engine;
+
+namespace OrcaMDF.Core.Tests.Integration
+{
+	<span class="keyword">public</span> <span class="keyword">class</span> ParseUserTableNames : SqlServerSystemTest
+	{
+		[Test]
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">ParseTableNames</span>()
+		{
+			<span class="keyword">using</span>(<span class="keyword">var</span> mdf = <span class="keyword">new</span> MdfFile(MdfPath))
+			{
+				<span class="keyword">var</span> metaData = mdf.GetMetaData();
+
+				Assert.AreEqual(<span class="number">2</span>, metaData.UserTableNames.Length);
+				Assert.AreEqual(<span class="string">"MyTable"</span>, metaData.UserTableNames[<span class="number">0</span>]);
+				Assert.AreEqual(<span class="string">"XYZ"</span>, metaData.UserTableNames[<span class="number">1</span>]);
+			}
+		}
+
+		<span class="keyword">protected</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">RunSetupQueries</span>(SqlConnection conn)
+		{
+			<span class="keyword">var</span> cmd = <span class="keyword">new</span> SqlCommand(<span class="string">@"
+				CREATE TABLE MyTable (ID int);
+				CREATE TABLE XYZ (ID int);"</span>, conn);
+			cmd.ExecuteNonQuery();
+		}
+	}
+}
+</pre></figure>
+
+<p>This allows for extremely quick testing of actual real life scenarios. Want to test the parsing of forwarded records? Simply create a new test, write the T-SQL code to generate the desired database state and then validate the scanned table data.</p>
+<h2 id="The_downside_to_system_testing">The downside to system testing</h2>
+<p>Unfortunately system testing is no panacea; it has its downsides. The most obvious one is performance. A unit test is usually required to run extremely fast, allowing you to basically run them in the background on each file save. Each of these system tests takes about half a second to run, being CPU bound. Fortunately, they can be run in parallel without problems. On a quad core machine that’ll allow me to run 480 tests per minute. This’ll allow a manageable test time for a complete test set, while still keeping a subset test very quick. Usually a code change won’t impact more than handful of tests.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=Avoiding%20Regressions%20in%20OrcaMDF%20by%20System%20Testing%20http%3A%2F%2Fimprove.dk%2Favoiding-regressions-in-orcamdf-by-system-testing%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Favoiding-regressions-in-orcamdf-by-system-testing%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Favoiding-regressions-in-orcamdf-by-system-testing%2F&title=Avoiding%20Regressions%20in%20OrcaMDF%20by%20System%20Testing" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/avoiding-regressions-in-orcamdf-by-system-testing/avoiding-regressions-in-orcamdf-by-system-testing.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'avoiding-regressions-in-orcamdf-by-system-testing';
+	var disqus_url = 'http://improve.dk/avoiding-regressions-in-orcamdf-by-system-testing/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

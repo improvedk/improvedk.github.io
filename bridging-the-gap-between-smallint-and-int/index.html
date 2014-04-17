@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Bridging the Gap Between Smallint and Int | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">19</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/bridging-the-gap-between-smallint-and-int/" title="Bridging the Gap Between Smallint and Int" rel="bookmark">Bridging the Gap Between Smallint and Int</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Optimization/">SQL Server - Optimization</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on Bridging the Gap Between Smallint and Int">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>Being a proponent of <a href="/wasted-bytes-add-up-consider-your-data-types-carefully">carefully choosing your data types</a>, I’ve often longed for the <a href="http://dev.mysql.com/doc/refman/5.0/en/numeric-types.html" target="_blank">mediumint data type</a> that MySQL has. Both smallint and int are signed data types, meaning their ranges are –32,768 to 32,767 for smallint and –2,147,483,648 to 2,147,483,647 for int. For most relational db schemas, positive identity values are used, meaning we’re looking at a possible 32,767 vs 2,147,483,647 values for smallint vs int. That’s a humongous difference, and it comes at a storage cost as well – 2 vs 4 bytes per column. If only there was something in between…</p>
+<a id="more"></a>
+
+<h2 id="You_say_mediumint,_I_say_binary(3)">You say mediumint, I say binary(3)</h2>
+<p>While there’s no native mediumint data type in SQL Server, there is a binary data type. Internally it’s basically just a byte array, just as any other data type. An int is just a binary(4) with some custom processing on top of it, smallint being a binary(2) and nvarchar being a binary(length * 2). What that means is there’s no stopping us from saving whatever bytes we want into a binary(3) column, including numbers. Using the following sample table:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> ThreeByteInt
+(
+	MediumInt binary(<span class="number">3</span>),
+	Filler <span class="keyword">char</span>(<span class="number">20</span>) <span class="keyword">NULL</span>
+)
+
+<span class="keyword">CREATE</span> CLUSTERED INDEX CX_ThreeByteInt <span class="keyword">ON</span> ThreeByteInt (MediumInt)</span>
+</pre></figure>
+
+<p>We can insert values through SQL either using byte constants or using numbers as normal:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> ThreeByteInt (MediumInt) <span class="keyword">VALUES</span> (<span class="number">0xC9DF48</span>)
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> ThreeByteInt (MediumInt) <span class="keyword">VALUES</span> (<span class="number">0x000000</span>)
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> ThreeByteInt (MediumInt) <span class="keyword">VALUES</span> (<span class="number">0xFFFFFF</span>)
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> ThreeByteInt (MediumInt) <span class="keyword">VALUES</span> (<span class="number">13229896</span>)
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> ThreeByteInt (MediumInt) <span class="keyword">VALUES</span> (<span class="number">1500</span>)
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> ThreeByteInt (MediumInt) <span class="keyword">VALUES</span> (<span class="number">0</span>)
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> ThreeByteInt (MediumInt) <span class="keyword">VALUES</span> (<span class="number">16777215</span>)</span>
+</pre></figure>
+
+<p>And querying works like normal as well:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> ThreeByteInt</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/bridging-the-gap-between-smallint-and-int/image_23.png" class="fancy"><img src="/bridging-the-gap-between-smallint-and-int/image_23.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Scans_ahoy!">Scans ahoy!</h2>
+<p>However, take a look at the plans for these two queries:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> ThreeByteInt <span class="keyword">WHERE</span> MediumInt = <span class="number">1500</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> ThreeByteInt <span class="keyword">WHERE</span> MediumInt = <span class="number">0x0005DC</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/bridging-the-gap-between-smallint-and-int/image_41.png" class="fancy"><img src="/bridging-the-gap-between-smallint-and-int/image_41.png" style="max-height: 250px"/></a></div></div>
+
+<p>They both contain a predicate looking for a value of 1500, one written as an integer constant, the other as a hex constant. One is causing a scan, the other is using a seek. Taking a closer look at the scan reveals an IMPLICIT_CONVERT which renders are index useless and thus causing the scan:</p>
+<div class="imgwrapper" style=""><div><a href="/bridging-the-gap-between-smallint-and-int/image_61.png" class="fancy"><img src="/bridging-the-gap-between-smallint-and-int/image_61.png" style="max-height: 250px"/></a></div></div>
+
+<p>The easiest way of avoiding this is just to replace the implicit conversion with an explicit cast in the query:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> ThreeByteInt <span class="keyword">WHERE</span> MediumInt = <span class="keyword">CAST</span>(<span class="number">1500</span> <span class="keyword">as</span> binary(<span class="number">3</span>))</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/bridging-the-gap-between-smallint-and-int/image_81.png" class="fancy"><img src="/bridging-the-gap-between-smallint-and-int/image_81.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Unsigned_integers_&amp;_overflow">Unsigned integers &amp; overflow</h2>
+<p>Whereas smallint, int and bigint are all signed integer types (the ability to have negative values), tinyint is not. Tinyint is able to store values in the 0-255 range. Had it been a signed type, it would be able to handle values in the –128 to 127 range. Just like tinyint, binary(3)/mediumint is an unsigned type, giving us a range of 0 to 16,777,215.</p>
+<p>Most developers &amp; DBAs have experienced <a href="http://en.wikipedia.org/wiki/Integer_overflow" target="_blank">integer overflow</a> at some point, usually causing havoc in the application. In short, an overflow occurs when you assign a value larger or smaller than what the data type can handle. In our case, that might be –1 or 16,777,216. We can easily demonstrate what’s happening by casting an integer to binary(3) and back to int again like so:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	<span class="keyword">CAST</span>(<span class="keyword">CAST</span>(<span class="number">16777214</span> <span class="keyword">AS</span> binary(<span class="number">3</span>)) <span class="keyword">AS</span> <span class="keyword">int</span>),
+	<span class="keyword">CAST</span>(<span class="keyword">CAST</span>(<span class="number">16777215</span> <span class="keyword">AS</span> binary(<span class="number">3</span>)) <span class="keyword">AS</span> <span class="keyword">int</span>),
+	<span class="keyword">CAST</span>(<span class="keyword">CAST</span>(<span class="number">16777216</span> <span class="keyword">AS</span> binary(<span class="number">3</span>)) <span class="keyword">AS</span> <span class="keyword">int</span>)
+
+<span class="keyword">UNION</span> <span class="keyword">ALL</span>
+
+<span class="keyword">SELECT</span>
+	<span class="keyword">CAST</span>(<span class="keyword">CAST</span>(-<span class="number">1</span> <span class="keyword">AS</span> binary(<span class="number">3</span>)) <span class="keyword">AS</span> <span class="keyword">int</span>),
+	<span class="keyword">CAST</span>(<span class="keyword">CAST</span>(<span class="number">0</span> <span class="keyword">AS</span> binary(<span class="number">3</span>)) <span class="keyword">AS</span> <span class="keyword">int</span>),
+	<span class="keyword">CAST</span>(<span class="keyword">CAST</span>(<span class="number">1</span> <span class="keyword">AS</span> binary(<span class="number">3</span>)) <span class="keyword">AS</span> <span class="keyword">int</span>)
+
+<span class="keyword">UNION</span> <span class="keyword">ALL</span>
+
+<span class="keyword">SELECT</span>
+	<span class="keyword">CAST</span>(<span class="keyword">CAST</span>(<span class="number">33554430</span> <span class="keyword">AS</span> binary(<span class="number">3</span>)) <span class="keyword">AS</span> <span class="keyword">int</span>),
+	<span class="keyword">CAST</span>(<span class="keyword">CAST</span>(<span class="number">33554431</span> <span class="keyword">AS</span> binary(<span class="number">3</span>)) <span class="keyword">AS</span> <span class="keyword">int</span>),
+	<span class="keyword">CAST</span>(<span class="keyword">CAST</span>(<span class="number">33554432</span> <span class="keyword">AS</span> binary(<span class="number">3</span>)) <span class="keyword">AS</span> <span class="keyword">int</span>)</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/bridging-the-gap-between-smallint-and-int/image_101.png" class="fancy"><img src="/bridging-the-gap-between-smallint-and-int/image_101.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Working_with_binary(3)_on_the_client_side">Working with binary(3) on the client side</h2>
+<p>Now that we’ve got our mediumint data type, all we need is to be able to insert &amp; query data from the client.</p>
+<p>Inserting is easy – just send values is as integers and it’ll be converted as appropriate – just make sure to check for over/underflows as necessary:</p>
+<figure class="highlight csharp"><pre>using(var conn = new SqlConnection("Data Source=.;Initial Catalog=MediumIntTest;Integrated Security=SSPI;"))
+{
+	var <span class="operator"><span class="keyword">insert</span> = new SqlCommand(<span class="string">"INSERT INTO ThreeByteInt (MediumInt) VALUES (@MediumInt)"</span>);</span>
+	<span class="operator"><span class="keyword">insert</span>.Parameters.<span class="keyword">Add</span>(<span class="string">"@MediumInt"</span>, SqlDbType.<span class="keyword">Int</span>).<span class="keyword">Value</span> = <span class="number">439848</span>;</span>
+	<span class="operator"><span class="keyword">insert</span>.<span class="keyword">Connection</span> = conn;</span>
+
+	conn.Open();
+	<span class="operator"><span class="keyword">insert</span>.ExecuteNonQuery();</span>
+	conn.Close();
+}
+</pre></figure>
+
+<p>Querying requires slightly more effort. We’ll still pass in the value as an integer, but we’ll have to perform a CAST in the query to avoid scans. We could also pass the value in as a three byte array, but provided we have access to the query text, it’s easier to perform the conversion there. Furthermore there’s no standard three byte integer type in C#, so we’ll have do perform some ugly magic to convert the three bytes into a normal .NET integer:</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span>(<span class="keyword">var</span> conn = <span class="keyword">new</span> SqlConnection(<span class="string">"Data Source=.;Initial Catalog=MediumIntTest;Integrated Security=SSPI;"</span>))
+{
+	<span class="keyword">var</span> <span class="keyword">select</span> = <span class="keyword">new</span> SqlCommand(<span class="string">"SELECT MediumInt FROM ThreeByteInt WHERE MediumInt = CAST(@MediumInt AS binary(3))"</span>);
+	<span class="keyword">select</span>.Parameters.Add(<span class="string">"@MediumInt"</span>, SqlDbType.Int).Value = <span class="number">439848</span>;
+	<span class="keyword">select</span>.Connection = conn;
+
+	conn.Open();
+	<span class="keyword">byte</span>[] bytes = (<span class="keyword">byte</span>[])<span class="keyword">select</span>.ExecuteScalar();
+	<span class="keyword">int</span> result = BitConverter.ToInt32(<span class="keyword">new</span> <span class="keyword">byte</span>[] { bytes[<span class="number">2</span>], bytes[<span class="number">1</span>], bytes[<span class="number">0</span>], <span class="number">0</span> }, <span class="number">0</span>);
+	conn.Close();
+
+	Console.WriteLine(result);
+}
+</pre></figure>
+
+<h2 id="Summing_it_up">Summing it up</h2>
+<p>As I’ve shown, we can easily create our own mediumint data type, just as we can create a 5 byte integer, 6 byte… Well, you get it. However, there are obviously some trade offs in that you’ll have to manage this data type yourself. While you can query it more or less like a normal data type, you have to be wary of scans. Finally, retrieving values will require some extra work, though that could easily be abstracted away in a custom type.</p>
+<p>So should you do it? Probably not. Saving a single byte per column will gain you very little, unless you have a humongous table, especially so if you have a lot of columns that fit in between the smallint and int value range. For those humongous archival tables, this might just be a way to shave an extra byte off per <em>mediumint</em> column.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=Bridging%20the%20Gap%20Between%20Smallint%20and%20Int%20http%3A%2F%2Fimprove.dk%2Fbridging-the-gap-between-smallint-and-int%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fbridging-the-gap-between-smallint-and-int%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fbridging-the-gap-between-smallint-and-int%2F&title=Bridging%20the%20Gap%20Between%20Smallint%20and%20Int" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/bridging-the-gap-between-smallint-and-int/bridging-the-gap-between-smallint-and-int.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'bridging-the-gap-between-smallint-and-int';
+	var disqus_url = 'http://improve.dk/bridging-the-gap-between-smallint-and-int/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

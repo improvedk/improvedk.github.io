@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Bundling Image Requests for Increased Performance | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jun</span>
+			<span class="day">07</span>
+		</div>
+		<div class="lower">2010</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/bundling-image-requests-for-increased-performance/" title="Bundling Image Requests for Increased Performance" rel="bookmark">Bundling Image Requests for Increased Performance</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				, 
+			
+				<a href="http://improve.dk/category/AS/Flex/Flash/">AS/Flex/Flash</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on Bundling Image Requests for Increased Performance">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>A common scenario in RIA’s is to show a large amount of small pictures on a single page. Let’s say we want to show 100 images in a grid. While the simplest approach is to just put in 100 image objects and load in the images one by one, I believe it can be done smarter…</p>
+<a id="more"></a>
+
+<h2 id="The_cost_of_a_request">The cost of a request</h2>
+<p>Each and every request will have a header overhead of about ~400 bytes outgoing and ~200 bytes ingoing - both varying depending on the host, cookies, headers etc. Multiply that by 100 requests and we’ve got about 60KB of data overhead, just for the headers. Even worse is the actual roundtrip time of sending the packets to the server and getting a reply back; Even with reuse of the connections, there’s a large cost involved.</p>
+<h2 id="Bundling_requests">Bundling requests</h2>
+<p>Imagine if we could just make a single request to the server - “Hey, please send me these 100 images, ty” - and then we’ll get back a single response containing all the images. One way of doing this would be to zip the images on the server and then unzip them on the client - there’s open zip libraries for both Silverlight and Flash. However, this has a large CPU cost on not only the server, but also on the client. Furthermore, images usually don’t compress much so it’s basically just a waste. In this post I’ll present a C# class for bundling images as well as an AS3 class for reading the bundled image stream. While the RIA sample is in Actionscript, it’s easily applicable to Silverlight as well - should anyone feel like implementing the client side in Silverlight, please let me know so I can link you.</p>
+<h2 id="Generating_sample_images">Generating sample images</h2>
+<p>Our first task is to generate some sample images. The following code will create 100 images named 1-100.jpg containing the greytones from #000000 (well, almost) to #FFFFFF.</p>
+<figure class="highlight csharp"><pre><span class="keyword">for</span>(<span class="built_in">int</span> i=<span class="number">1</span>; i&lt;=<span class="number">100</span>; i++)
+{
+    <span class="built_in">int</span> <span class="built_in">rgb</span> = Convert.ToInt32(i / <span class="number">100</span>d * <span class="number">255</span>);
+
+    using(Bitmap bmp = <span class="keyword">new</span> Bitmap(<span class="number">100</span>, <span class="number">100</span>))
+    using(Graphics g = Graphics.FromImage(bmp))
+    {
+        g.FillRectangle(<span class="keyword">new</span> SolidBrush(Color.FromArgb(<span class="built_in">rgb</span>, <span class="built_in">rgb</span>, <span class="built_in">rgb</span>)), <span class="number">0</span>, <span class="number">0</span>, <span class="number">100</span>, <span class="number">100</span>);
+        bmp.Save(i + <span class="string">".jpg"</span>);
+    }
+}
+</pre></figure>
+
+<h2 id="On_the_server_side:_ImageStream-cs">On the server side: ImageStream.cs</h2>
+<p>The ImageStream class contains a dictionary that’ll hold references to the files untill we’re ready to write them out. Each added file consists of a key as well as a filepath. To keep things simple, I’m limiting the key names to ASCII codes between 32 and 126 to avoid unprintable characters.</p>
+<p>The class has a Write method that’ll write all the added images to the provided stream. Each image consists of four parts:</p>
+<ul>
+<li>4 bytes (int) that contains the combined length of the key and payload plus two extra bytes for specifying the key length.</li>
+<li>2 bytes (short) that contains the key length.</li>
+<li>X bytes containing the key using UTF8Encoding. I’ll explain later why I’m using UTF8Encoding and not ASCIIEncoding.</li>
+<li>X bytes containing the actual file contents.</li>
+</ul>
+<h3 id="ImageStream-cs">ImageStream.cs</h3>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> ImageStream
+{
+    IDictionary files = <span class="keyword">new</span> Dictionary();
+
+    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title">AddFile</span>(<span class="keyword">string</span> key, <span class="keyword">string</span> filePath)
+    {
+        files.Add(key, <span class="keyword">new</span> FileInfo(filePath));
+
+        <span class="keyword">if</span> (key.ToCharArray().Any(x =&gt; x &lt; <span class="number">32</span> || x &gt; <span class="number">126</span>))
+            <span class="keyword">throw</span> <span class="keyword">new</span> ArgumentException(<span class="string">"Invalid character used in key."</span>);
+    }
+
+    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Write</span>(Stream stream)
+    {
+        <span class="comment">// For each file, write the contents</span>
+        <span class="keyword">foreach</span> (<span class="keyword">var</span> file <span class="keyword">in</span> files)
+        {
+            <span class="comment">// Write payload length</span>
+            stream.Write(BitConverter.GetBytes((<span class="keyword">int</span>)file.Value.Length + file.Key.Length), <span class="number">0</span>, <span class="number">4</span>);
+
+            <span class="comment">// Write key length</span>
+            stream.Write(BitConverter.GetBytes((<span class="keyword">ushort</span>)file.Key.Length), <span class="number">0</span>, <span class="number">2</span>);
+
+            <span class="comment">// Write key</span>
+            stream.Write(Encoding.UTF8.GetBytes(file.Key), <span class="number">0</span>, file.Key.Length);
+
+            <span class="comment">// Write file</span>
+            stream.Write(File.ReadAllBytes(file.Value.FullName), <span class="number">0</span>, (<span class="keyword">int</span>)file.Value.Length);
+        }
+    }
+}
+</pre></figure>
+
+<h2 id="On_the_server_side:_Image-ashx">On the server side: Image.ashx</h2>
+<p>All we need now is a file to serve the ImageStream. I’m using an HttpHandler called Image.ashx to loop through all the files (located in “/Imgs/“) and add them to the ImageStream before writing them out to the output stream.</p>
+<h3 id="Image-ashx">Image.ashx</h3>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> Image : IHttpHandler
+{
+    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title">ProcessRequest</span>(HttpContext context)
+    {
+        context.Response.ContentType = <span class="string">"application/octet-stream"</span>;
+        context.Response.Buffer = <span class="keyword">false</span>;
+
+        <span class="keyword">var</span> imgc = <span class="keyword">new</span> ImageStream();
+
+        <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">1</span>; i&lt;=<span class="number">100</span>; i++)
+            imgc.AddFile(<span class="string">"img"</span> + i, context.Server.MapPath(<span class="string">"Imgs/"</span> + i + <span class="string">".jpg"</span>));
+
+        imgc.Write(context.Response.OutputStream);
+    }
+
+    <span class="keyword">public</span> <span class="keyword">bool</span> IsReusable
+    {
+        <span class="keyword">get</span> { <span class="keyword">return</span> <span class="keyword">true</span>; }
+    }
+}
+</pre></figure>
+
+<h2 id="On_the_client_side:_CombinedFileReader-as">On the client side: CombinedFileReader.as</h2>
+<p>The CombinedFileReader class takes a url in the constructor, pointing to the stream we want to retrieve. Once we call load() we spawn a URLStream and listen for the PROGRESS and COMPLETE events. The core of the class is the onProgress method, being invoked on both PROGRESS and COMPLETE events. We don’t really care which event it is as both means there’s new data for us to consume.</p>
+<p>The onProgress method works as a simple state machine. This could be done much cleaner by abstracting away the state functionality, but it’s simple enough to be easily understood. There are just two states we can be in:</p>
+<h3 id="header">header</h3>
+<p>In this state we’re currently waiting for there to be 4 bytes available, meaning we can read the first integer containing the number of bytes required to load the current file. Once this has been loaded into the currentFileLength variable, we change the state to “payload”.</p>
+<h3 id="payload">payload</h3>
+<p>In this state we’re waiting for the remaining bytes to be available. As soon as they become available, we read the key using the readUTF() method on the URLStream class. readUTF automatically reads a short first and expects these two bytes to contain the length of the string to be read in UTF format - thus the use of UTF8Encoding over ASCIIEncoding. As both encodings take up the same amount of bytes, it’s purely a matter of convenience. After this we read in the payload - the image. It’s important to explicitly set the ByteArray endianness to avoid problems since the ByteArray by default uses little endian while our ImageStream uses big endian. Note that the header bytes contains the combined length of the key + payload, thus we should only read in currentFileLength - currentKey.length bytes. Finally we dispatch a custom FileReadEvent (see code further down) taking in the key and payload bytes as parameters.</p>
+<h3 id="CombinedFileReader-as">CombinedFileReader.as</h3>
+<figure class="highlight actionscript"><pre><span class="package"><span class="keyword">package</span> <span class="title">dk</span>.<span class="title">improve</span>.<span class="title">net</span>
+{</span>
+    <span class="preprocessor"><span class="keyword">import</span> flash.events.*;</span>
+    <span class="preprocessor"><span class="keyword">import</span> flash.net.*;</span>
+    <span class="preprocessor"><span class="keyword">import</span> flash.utils.*;</span>
+
+    <span class="preprocessor"><span class="keyword">import</span> mx.events.FlexEvent;</span>
+
+    <span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CombinedFileReader</span> <span class="keyword">extends</span> <span class="title">EventDispatcher</span>
+    {</span>
+        <span class="keyword">private</span> <span class="keyword">var</span> url:String;
+        <span class="keyword">private</span> <span class="keyword">var</span> urlStream:URLStream;
+        <span class="keyword">private</span> <span class="keyword">var</span> currentState:String = <span class="string">"header"</span>;
+        <span class="keyword">private</span> <span class="keyword">var</span> currentFileLength:int;
+        <span class="keyword">private</span> <span class="keyword">var</span> currentKey:String;
+
+        <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">CombinedFileReader</span><span class="params">(url:String)</span>
+        {</span>
+            <span class="keyword">this</span>.url = url;
+        }
+
+        <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">load</span><span class="params">()</span><span class="type">:void</span>
+        {</span>
+            urlStream = <span class="keyword">new</span> URLStream();
+            urlStream.endian = Endian.LITTLE_ENDIAN;
+            urlStream.addEventListener(ProgressEvent.PROGRESS, onProgress);
+            urlStream.addEventListener(Event.COMPLETE, onProgress);
+            urlStream.load(<span class="keyword">new</span> URLRequest(url));
+        }
+
+        <span class="keyword">private</span> <span class="function"><span class="keyword">function</span> <span class="title">onProgress</span><span class="params">(evt:Event)</span><span class="type">:void</span>
+        {</span>
+            <span class="keyword">switch</span>(currentState)
+            {
+                <span class="keyword">case</span> <span class="string">"header"</span>:
+                    <span class="keyword">if</span>(urlStream.bytesAvailable &gt;= <span class="number">4</span>)
+                    {
+                        currentFileLength = urlStream.readInt();
+                        currentState = <span class="string">"payload"</span>;
+
+                        onProgress(evt);
+                    }
+                    <span class="keyword">break</span>;
+
+                <span class="keyword">case</span> <span class="string">"payload"</span>:
+                    <span class="keyword">if</span>(urlStream.bytesAvailable &gt;= currentFileLength)
+                    {
+                        currentKey = urlStream.readUTF();
+                        <span class="keyword">var</span> payloadLength = currentFileLength - currentKey.length;
+
+                        <span class="keyword">var</span> bytes:ByteArray = <span class="keyword">new</span> ByteArray();
+                        bytes.endian = Endian.BIG_ENDIAN;
+                        urlStream.readBytes(bytes, <span class="number">0</span>, payloadLength);
+
+                        dispatchEvent(<span class="keyword">new</span> FileReadEvent(FileReadEvent.ON_LOADED, currentKey, bytes));
+
+                        currentState = <span class="string">"header"</span>;
+
+                        onProgress(evt);
+                    }
+                    <span class="keyword">break</span>;
+            }
+        }
+    }
+}
+</pre></figure>
+
+<h3 id="FileReadEvent-as">FileReadEvent.as</h3>
+<figure class="highlight actionscript"><pre><span class="package"><span class="keyword">package</span> <span class="title">dk</span>.<span class="title">improve</span>.<span class="title">net</span>
+{</span>
+    <span class="preprocessor"><span class="keyword">import</span> flash.events.Event;</span>
+    <span class="preprocessor"><span class="keyword">import</span> flash.utils.ByteArray;</span>
+
+    <span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FileReadEvent</span> <span class="keyword">extends</span> <span class="title">Event</span>
+    {</span>
+        <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">const</span> ON_LOADED:String = <span class="string">"onLoaded"</span>;
+        <span class="keyword">public</span> <span class="keyword">var</span> file:ByteArray;
+        <span class="keyword">public</span> <span class="keyword">var</span> key:String;
+
+        <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">FileReadEvent</span><span class="params">(type:String, key:String, file:ByteArray)</span><span class="type">:void</span>
+        {</span>
+            <span class="keyword">this</span>.file = file;
+            <span class="keyword">this</span>.key = key;
+
+            <span class="keyword">super</span>(type);
+        }
+    }
+}
+</pre></figure>
+
+<h2 id="On_the_client_side:_Thumbnails-mxml">On the client side: Thumbnails.mxml</h2>
+<p>The final part of demoing the bundled image stream is to actually consume the stream by using the CombinedFileReader AS3 class. Once the application loads we instantiate a new CombinedFileReader, passing in the url to the Image.ashx HttpHandler I mentioned earlier. Before calling the load() method we subscribe to the ON_LOADED event that’s dispatched by the CombinedFileReader.</p>
+<p>Once we’ve read in a file and onFileLoaded() is called, we first need to create a new Loader object and pass the bytes into it using loadBytes(). Before loading the bytes we store a position object in a dictionary. The position object will contain the x &amp; y coordinates for the image once it’s loaded. We can count on the onFileLoaded function to be called in the same order as the images are streamed. Due to the asynchronous nature of loadBytes() the onLoadComplete() function will be called at random times and will thus not be sequential. Once the bytes are loaded in and onLoadComplete is called, we create a new Image, set the source to the loaded content, set the size and coordinate. Finally we add the image to the current application as an element. Note that the images are 100x100px but to conserve space I’m resizing the client side to 50x50px.</p>
+<h3 id="Thumbnails-mxml">Thumbnails.mxml</h3>
+<figure class="highlight xml"><pre><span class="pi">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="pi">&lt;?xml:namespace prefix = s /&gt;
+    &lt;?xml:namespace prefix = fx /&gt;</span>
+</pre></figure>
+
+<h2 id="The_result">The result</h2>
+<p>If all goes well, the result should look like this:</p>
+<div class="imgwrapper" style=""><div><a href="/bundling-image-requests-for-increased-performance/combinedimagereader_1_2.jpg" class="fancy"><img src="/bundling-image-requests-for-increased-performance/combinedimagereader_1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/bundling-image-requests-for-increased-performance/combinedimagereader_2_2.jpg" class="fancy"><img src="/bundling-image-requests-for-increased-performance/combinedimagereader_2_2.jpg" style="max-height: 250px"/></a></div></div>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=Bundling%20Image%20Requests%20for%20Increased%20Performance%20http%3A%2F%2Fimprove.dk%2Fbundling-image-requests-for-increased-performance%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fbundling-image-requests-for-increased-performance%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fbundling-image-requests-for-increased-performance%2F&title=Bundling%20Image%20Requests%20for%20Increased%20Performance" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/bundling-image-requests-for-increased-performance/bundling-image-requests-for-increased-performance.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'bundling-image-requests-for-increased-performance';
+	var disqus_url = 'http://improve.dk/bundling-image-requests-for-increased-performance/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

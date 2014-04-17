@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>I Don&#39;t Like Static Methods | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Oct</span>
+			<span class="day">16</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/i-dont-like-static-methods/" title="I Don&#39;t Like Static Methods" rel="bookmark">I Don&#39;t Like Static Methods</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on I Don&#39;t Like Static Methods">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>Inspired by a recent <a href="http://stackoverflow.com/questions/205689/class-with-single-method-best-approach" target="_blank">question on StackOverflow</a>, I felt like sharing my thoughts on static methods in general.</p>
+<a id="more"></a>
+
+<p>I used to love utility classes filled up with static methods. They made a great consolidation of helper methods that would otherwise lie around causing redundancy and maintenance hell. They’re very easy to use, no instantiation, no disposal, just fire’n’forget. I guess this was my first unwitting attempt at creating a service oriented architecture - lots of stateless services that just did their job and nothing else. As a system grows however, dragons be coming.</p>
+<h2 id="Polymorphism">Polymorphism</h2>
+<p>Say we have the method UtilityClass.SomeMethod that happily buzzes along. Suddenly we need to change the functionality slightly. Most of the functionality is the same, but we have to change a couple of parts nonetheless. Had it not been a static method, we could make a derivate class and change the method contents as needed. As it’s a static method, we can’t. Sure, if we just need to add functionality either before or after the old method, we can create a new class and call the old one inside of it - but that’s just gross.</p>
+<h2 id="Interface_woes">Interface woes</h2>
+<p>Static methods cannot be defined through interfaces for logic reasons. And since we can’t override static methods, static classes are useless when we need to pass them around by their interface. This renders us unable to use static classes as part of a strategy pattern. We might patch some issues up by <a href="http://blogs.msdn.com/kirillosenkov/archive/2008/02/06/how-to-override-static-methods.aspx" target="_blank">passing delegates instead of interfaces</a>.</p>
+<h2 id="Testing">Testing</h2>
+<p>This basically goes hand in hand with the interface woes mentioned above. As our ability of interchanging implementations is very limited, we’ll also have trouble replacing production code with test code. Again, we can wrap them up but it’ll require us to change large parts of our code just to be able to accept wrappers instead of the actual objects.</p>
+<h2 id="Fosters_blobs">Fosters blobs</h2>
+<p>As static methods are usually used as utility methods and utility methods usually will have different purposes, we’ll quickly end up with a large class filled up with non-coherent functionality - ideally, each class should have a single purpose within the system. I’d much rather have a five times the classes as long as their purposes are well defined.</p>
+<h2 id="Parameter_creep">Parameter creep</h2>
+<p>To begin with, that little cute and innocent static method might take a single parameter. As functionality grows, a couple of new parameters are added. Soon further parameters are added that are optional, so we create overloads of the method (or just add default values, in languages that support them). Before long, we have a method that takes 10 parameters. Only the first three are really required, parameters 4-7 are optional. But if parameter 6 is specified, 7-9 are required to be filled in as well… Had we created a class with the single purpose of doing what this static method did, we could solve this by taking in the required parameters in the constructor, and allowing the user to set optional values through properties, or methods to set multiple interdependent values at the same time. Also, if a method has grown to this amount of complexity, it most likely needs to be in its own class anyways.</p>
+<h2 id="Demanding_consumers_to_create_an_instance_of_classes_for_no_reason">Demanding consumers to create an instance of classes for no reason</h2>
+<p>One of the most common arguments is, why demand that consumers of our class create an instance for invoking this single method, while having no use for the instance afterwards? Creating an instance of a class is a very very cheap operation in most languages, so speed is not an issue. Adding an extra line of code to the consumer is a low cost for laying the foundation of a much more maintainable solution in the future. And finally, if you want to avoid creating instances, simply create a singleton wrapper of your class that allows for easy reuse - although this does make the requirement that your class is stateless. If it’s not stateless, you can still create static wrapper methods that handle everything, while still giving you all the benefits in the long run. Finally, you could also make a class that hides the instantiation as if it was a singleton: MyWrapper.Instance is a property that just returns new MyClass();</p>
+<h2 id="Only_a_Sith_deals_in_absolutes">Only a Sith deals in absolutes</h2>
+<p>Of course, there are exceptions to my dislike of static methods. True utility classes that do not pose any risk to bloat are excellent cases for static methods - System.Convert as an example. If your project is a one-off with no requirements for future maintenance, the overall architecture really isn’t very important - static or non static, doesn’t really matter - development speed does, however.</p>
+<h2 id="Standards,_standards,_standards!">Standards, standards, standards!</h2>
+<p>Using instance methods does not inhibit you from also using static methods, and vice versa. As long as there’s reasoning behind the differentiation and it’s standardised. There’s nothing worse than looking over a business layer sprawling with different implementation methods.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=I%20Don't%20Like%20Static%20Methods%20http%3A%2F%2Fimprove.dk%2Fi-dont-like-static-methods%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fi-dont-like-static-methods%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fi-dont-like-static-methods%2F&title=I%20Don't%20Like%20Static%20Methods" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/i-dont-like-static-methods/i-dont-like-static-methods.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'i-dont-like-static-methods';
+	var disqus_url = 'http://improve.dk/i-dont-like-static-methods/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>LINQPad - The Perfect Playground for Amazon Web Services | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Feb</span>
+			<span class="day">17</span>
+		</div>
+		<div class="lower">2012</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/linqpad-ndash-the-perfect-playground-for-amazon-web-services/" title="LINQPad - The Perfect Playground for Amazon Web Services" rel="bookmark">LINQPad - The Perfect Playground for Amazon Web Services</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				, 
+			
+				<a href="http://improve.dk/category/Amazon Web Services/">Amazon Web Services</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on LINQPad - The Perfect Playground for Amazon Web Services">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>I’ve previously written on <a href="/how-to-set-up-and-serve-private-content-using-s3">why I don’t want to rely on third party GUIs</a> for managing my AWS services. Assuming I’ll be interacting with AWS through the SDK later on, I much prefer doing the initial setup using the SDK as well, to ensure I fully understand what I’ve done. <a href="/how-to-set-up-and-serve-private-content-using-s3">In</a> <a href="/pushing-the-limits-of-amazon-s3-upload-performance">previous</a> <a href="/optimizing-single-instance-amazon-s3-delete-performance">posts</a>, I’ve shown full console application examples on how to use the SDK for various tasks; however, creating a console application project, compiling and running it can be kind of cumbersome, especially if you’re just doing some quick testing or API exploration.</p>
+<a id="more"></a>
+
+<h2 id="Enter_LINQPad">Enter LINQPad</h2>
+<p>If you haven’t tried <a href="http://www.linqpad.net/" target="_blank">LINQPad</a> out before, go do it now! It’s an awesome scratchpad style application for writing and running C#/VB.NET/F# code, either as a single expression, a set of statements or a full application. There are also various plugins for easily connecting to databases, Azure services and lots more. Probably just a matter of time before someone writes a <a href="http://www.linqpad.net/extensibility.aspx" target="_blank">custom provider</a> for AWS as well.</p>
+<h3 id="Getting_started_with_the_AWS_SDK_in_LINQPad">Getting started with the AWS SDK in LINQPad</h3>
+<p>First up, you need to <a href="http://aws.amazon.com/sdkfornet/" target="_blank">download</a> and install the AWS SDK. Once installed, open LINQPad and press F4. In the following dialog, click Add…</p>
+<div class="imgwrapper" style=""><div><a href="/linqpad-ndash-the-perfect-playground-for-amazon-web-services/image_2.png" class="fancy"><img src="/linqpad-ndash-the-perfect-playground-for-amazon-web-services/image_2.png" style="max-height: 250px"/></a></div></div>
+
+<p>You can either browse to the AWSSDK.dll file manually, or you can pick it from the GAC – which would be the easiest option if you’re just doing some quick testing.</p>
+<div class="imgwrapper" style=""><div><a href="/linqpad-ndash-the-perfect-playground-for-amazon-web-services/image_4.png" class="fancy"><img src="/linqpad-ndash-the-perfect-playground-for-amazon-web-services/image_4.png" style="max-height: 250px"/></a></div></div>
+
+<p>After adding it, as a final step, go to the <em>Additional Namespace Imports</em> tab and add Amazon to the list.</p>
+<div class="imgwrapper" style=""><div><a href="/linqpad-ndash-the-perfect-playground-for-amazon-web-services/image_61.png" class="fancy"><img src="/linqpad-ndash-the-perfect-playground-for-amazon-web-services/image_61.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Discoverability">Discoverability</h2>
+<p>There are generally two ways to approach a new and unknown API. You <a href="http://aws.amazon.com/documentation/" target="_blank">could read the documentation</a>, or you could just throw yourself at it, relying on intellisense. Unfortunately the free version of LINQPad does not come with intellisense/auto completion, however, at a price of $39 it’s a bargain.</p>
+<div class="imgwrapper" style=""><div><a href="/linqpad-ndash-the-perfect-playground-for-amazon-web-services/image_121.png" class="fancy"><img src="/linqpad-ndash-the-perfect-playground-for-amazon-web-services/image_121.png" style="max-height: 250px"/></a></div></div>
+
+<h3 id="Exception_output">Exception output</h3>
+<p>Inevitably, you’ll probably run into an exception or two. Take the following piece of code for example; it works perfectly, but I forgot to assign the IAM user access to the bucket I’m trying to interact with (and before you remind me to remove the keys, don’t worry, the IAM user was temporary and no longer exists):</p>
+<figure class="highlight csharp"><pre><span class="keyword">var</span> accessKeyID = <span class="string">"AKIAIKB6FI6SSOGGOP7A"</span>;
+<span class="keyword">var</span> secretKey = <span class="string">"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"</span>;
+
+<span class="keyword">using</span> (<span class="keyword">var</span> client = AWSClientFactory.CreateAmazonS3Client(accessKeyID, secretKey))
+{
+	<span class="keyword">var</span> request = <span class="keyword">new</span> Amazon.S3.Model.ListObjectsRequest()
+		.WithBucketName(<span class="string">"improve-us.dk"</span>);
+
+	<span class="keyword">using</span> (<span class="keyword">var</span> result = client.ListObjects(request))
+	{
+		result.Dump();
+	}
+}
+</pre></figure>
+
+<p>What you’ll see is a clear notification saying an exception has occurred, as well as a repeated exception in the output pane:</p>
+<div class="imgwrapper" style=""><div><a href="/linqpad-ndash-the-perfect-playground-for-amazon-web-services/image_141.png" class="fancy"><img src="/linqpad-ndash-the-perfect-playground-for-amazon-web-services/image_141.png" style="max-height: 250px"/></a></div></div>
+
+<p>But look what happens once we expand the exception:</p>
+<div class="imgwrapper" style=""><div><a href="/linqpad-ndash-the-perfect-playground-for-amazon-web-services/image_161.png" class="fancy"><img src="/linqpad-ndash-the-perfect-playground-for-amazon-web-services/image_161.png" style="max-height: 250px"/></a></div></div>
+
+<p>We get all of the output! Any object, returned or thrown from the code, will automatically be displayed in the output, and can easily be drilled into.</p>
+<h3 id="Dumping_objects">Dumping objects</h3>
+<p>In case you’re code neither throws exceptions (by some miracle, in my case) nor returns objects, you can always call the .Dump() extension method on any object. Once I granted the IAM user the correct permissions, result.Dump() was called and the result of the ListObjectsRequest was output:</p>
+<div class="imgwrapper" style=""><div><a href="/linqpad-ndash-the-perfect-playground-for-amazon-web-services/image_181.png" class="fancy"><img src="/linqpad-ndash-the-perfect-playground-for-amazon-web-services/image_181.png" style="max-height: 250px"/></a></div></div>
+
+<p>Once again it’s easy to drill down and see all of the properties of the result.</p>
+<h2 id="Conclusion">Conclusion</h2>
+<p>Adhering to my original statement of not liking third party GUIs, using tools like LINQPad is an excellent option for easily writing test code, without the added overhead of starting Visual Studio, compiling, running, etc. The output is neatly presented and really helps you to get a feeling for the API.</p>
+<p>Just to finish off – LINQPad has plenty of uses besides AWS, this is just one scenario for which I’ve been using it extensively lately. I’m really considering creating a LINQPad provider for <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a> as one of my next projects.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=LINQPad%20-%20The%20Perfect%20Playground%20for%20Amazon%20Web%20Services%20http%3A%2F%2Fimprove.dk%2Flinqpad-ndash-the-perfect-playground-for-amazon-web-services%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Flinqpad-ndash-the-perfect-playground-for-amazon-web-services%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Flinqpad-ndash-the-perfect-playground-for-amazon-web-services%2F&title=LINQPad%20-%20The%20Perfect%20Playground%20for%20Amazon%20Web%20Services" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/linqpad-ndash-the-perfect-playground-for-amazon-web-services/linqpad-ndash-the-perfect-playground-for-amazon-web-services.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'linqpad-ndash-the-perfect-playground-for-amazon-web-services';
+	var disqus_url = 'http://improve.dk/linqpad-ndash-the-perfect-playground-for-amazon-web-services/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

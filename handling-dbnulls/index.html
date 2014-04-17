@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Handling DBNulls | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Oct</span>
+			<span class="day">08</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/handling-dbnulls/" title="Handling DBNulls" rel="bookmark">Handling DBNulls</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on Handling DBNulls">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>Reading and writing values to the DB has always been a bit cumbersome when you had to take care of nullable types and DBNull values. Here’s a way to make it easy.  Based on <a href="http://aspalliance.com/852" target="_blank">this post by Peter Johnson</a> and <a href="http://www.falafel.com/community/blogs/techbits/archive/2006/10/13/Casting-DBNull-Gracefully-and-Elegantly-Using-Generics.aspx" target="_blank">this post by Adam Anderson</a> I gathered a couple of ideas and combined them to make a completely generic class that will handle DBNulls for both reads and writes, as well as handling nullable types.  Let me present the code, I’ll go over it afterwards:</p>
+<a id="more"></a>
+
+
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> DBConvert
+{
+	<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+	<span class="comment"><span class="xmlDocTag">///</span> Handles reading DBNull values from database in a generic fashion</span>
+	<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+	<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;typeparam name="T"&gt;</span>The type of the value to read<span class="xmlDocTag">&lt;/typeparam&gt;</span></span>
+	<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="value"&gt;</span>The input value to convert<span class="xmlDocTag">&lt;/param&gt;</span></span>
+	<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>A strongly typed result, null if the input value is DBNull<span class="xmlDocTag">&lt;/returns&gt;</span></span>
+	<span class="keyword">public</span> <span class="keyword">static</span> T To&lt;T&gt;(<span class="keyword">object</span> <span class="keyword">value</span>)
+	{
+		<span class="keyword">if</span> (<span class="keyword">value</span> <span class="keyword">is</span> DBNull)
+			<span class="keyword">return</span> <span class="keyword">default</span>(T);
+		<span class="keyword">else</span>
+			<span class="keyword">return</span> (T)changeType(<span class="keyword">value</span>, <span class="keyword">typeof</span>(T));
+	}
+
+	<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+	<span class="comment"><span class="xmlDocTag">///</span> Handles reading DBNull values from database in a generic fashion, simplifies frontend databinding</span>
+	<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+	<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;typeparam name="T"&gt;</span>The type of the value to read<span class="xmlDocTag">&lt;/typeparam&gt;</span></span>
+	<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="ri"&gt;</span>The Container item in a databinding operation<span class="xmlDocTag">&lt;/param&gt;</span></span>
+	<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="column"&gt;</span>The dataitem to read<span class="xmlDocTag">&lt;/param&gt;</span></span>
+	<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>A strongly typed result, null if the input value is DBNull<span class="xmlDocTag">&lt;/returns&gt;</span></span>
+	<span class="keyword">public</span> <span class="keyword">static</span> T To&lt;T&gt;(RepeaterItem ri, <span class="keyword">string</span> column)
+	{
+		<span class="keyword">if</span> (DataBinder.Eval(ri.DataItem, column) <span class="keyword">is</span> DBNull)
+			<span class="keyword">return</span> <span class="keyword">default</span>(T);
+		<span class="keyword">else</span>
+			<span class="keyword">return</span> (T)changeType(DataBinder.Eval(ri.DataItem, column), <span class="keyword">typeof</span>(T));
+	}
+
+	<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+	<span class="comment"><span class="xmlDocTag">///</span> Internal method that wraps Convert.ChangeType() so it handles Nullable<span class="xmlDocTag">&lt;&gt;</span> types</span>
+	<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+	<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="value"&gt;</span>The value to convert<span class="xmlDocTag">&lt;/param&gt;</span></span>
+	<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="conversionType"&gt;</span>The type to convert into<span class="xmlDocTag">&lt;/param&gt;</span></span>
+	<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>The input value converted to type conversionType<span class="xmlDocTag">&lt;/returns&gt;</span></span>
+	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">object</span> <span class="title">changeType</span>(<span class="keyword">object</span> <span class="keyword">value</span>, Type conversionType)
+	{
+		<span class="keyword">if</span> (conversionType.IsGenericType && conversionType.GetGenericTypeDefinition().Equals(<span class="keyword">typeof</span>(Nullable&lt;&gt;)))
+		{
+			<span class="keyword">if</span> (<span class="keyword">value</span> == <span class="keyword">null</span>)
+				<span class="keyword">return</span> <span class="keyword">null</span>;
+
+			conversionType = Nullable.GetUnderlyingType(conversionType);
+		}
+
+		<span class="keyword">return</span> Convert.ChangeType(<span class="keyword">value</span>, conversionType);
+	}
+
+	<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+	<span class="comment"><span class="xmlDocTag">///</span> Simplifies setting SqlParameter values by handling null issues</span>
+	<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+	<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="value"&gt;</span>The value to return<span class="xmlDocTag">&lt;/param&gt;</span></span>
+	<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>DBNull if value == null, otherwise we pass through value<span class="xmlDocTag">&lt;/returns&gt;</span></span>
+	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">object</span> <span class="title">From</span>(<span class="keyword">object</span> <span class="keyword">value</span>)
+	{
+		<span class="keyword">if</span> (<span class="keyword">value</span> == <span class="keyword">null</span>)
+			<span class="keyword">return</span> DBNull.Value;
+		<span class="keyword">else</span>
+			<span class="keyword">return</span> <span class="keyword">value</span>;
+	}
+}
+</pre></figure>
+
+<p>The first To method significantly simplifies the process of setting database values when using SqlParameters (we all do, right?).</p>
+<p>This is how I used to handle possible DBNulls when reading into a nullable integer:</p>
+<figure class="highlight csharp"><pre><span class="keyword">if</span>(dr[<span class="string">"CountryID"</span>] <span class="keyword">is</span> DBNull)
+	c.CountryID = <span class="keyword">null</span>;
+<span class="keyword">else</span>
+	c.CountryID = Convert.ToInt32(dr[<span class="string">"CountryID"</span>]);
+</pre></figure>
+
+<p>And this is how it’s done using my DBConvert class:</p>
+<figure class="highlight csharp"><pre>c<span class="preprocessor">.CountryID</span> = DBConvert<span class="preprocessor">.To</span>&lt;int?&gt;(dr[<span class="string">"CountryID"</span>])<span class="comment">;</span>
+c<span class="preprocessor">.Recommended</span> = DBConvert<span class="preprocessor">.To</span>&lt;bool&gt;(dr[<span class="string">"Recommended"</span>])<span class="comment">;</span>
+d<span class="preprocessor">.companyMessageCreated</span> = DBConvert<span class="preprocessor">.To</span>&lt;DateTime?&gt;(dr[<span class="string">"CompanyMessageCreated"</span>])<span class="comment">;</span>
+d<span class="preprocessor">.Message</span> = DBConvert<span class="preprocessor">.To</span>&lt;string&gt;(dr[<span class="string">"Message"</span>])<span class="comment">;</span>
+d<span class="preprocessor">.OverallScore</span> = DBConvert<span class="preprocessor">.To</span>&lt;int&gt;(dr[<span class="string">"OverallScore"</span>])<span class="comment">;</span>
+</pre></figure>
+
+<p>Notice how it works for both nullable ints, DateTimes and whatever other nullable types you wish. It also works for normal types like string, int and so forth. It’ll automatically typecast it into the type specified as a generic parameter. However, remember that the database value must match the value being converted to, you cannot use .To(“some string value”), it will fail.</p>
+<p>The private changeType() method is a wrapper for the ChangeType() method that takes care of nullable types since the builtin Convert.ChangeType() method does not support casting into nullable types.</p>
+<p>The second To simplifies databinding values in the frontend ASPX files. This is how I used to print a DateTime column in a ShortDateString format:</p>
+<figure class="highlight csharp"><pre><span class="vbscript">&lt;%# Convert.ToDateTime(DataBinder.<span class="built_in">Eval</span>(Container.DataItem, <span class="string">"Created"</span>)).ToShortDateString() %&gt;</span>
+</pre></figure>
+
+<p>And this is how it can be done using the DBConvert class, generically:</p>
+<figure class="highlight csharp"><pre><span class="vbscript">&lt;%# DBConvert.<span class="keyword">To</span>&lt;DateTime&gt;(Container, <span class="string">"Created"</span>).ToShortDateString() %&gt;</span>
+</pre></figure>
+
+<p>Nullable types, as well as null strings also have to be handled when assigning SqlParameter values. The usual way for both nullable types as well as strings might look like this:</p>
+<figure class="highlight csharp"><pre>if(CountryID == null)
+	cmd<span class="preprocessor">.Parameters</span><span class="preprocessor">.Add</span>(<span class="string">"@CountryID"</span>, SqlDbType<span class="preprocessor">.Int</span>)<span class="preprocessor">.Value</span> = DBNull<span class="preprocessor">.Value</span><span class="comment">;</span>
+else
+	cmd<span class="preprocessor">.Parameters</span><span class="preprocessor">.Add</span>(<span class="string">"@CountryID"</span>, SqlDbType<span class="preprocessor">.Int</span>)<span class="preprocessor">.Value</span> = CountryID<span class="comment">;</span>
+</pre></figure>
+
+<p>Using the DBConvert class this can be done a bit simpler:</p>
+<figure class="highlight csharp"><pre>cmd<span class="preprocessor">.Parameters</span><span class="preprocessor">.Add</span>(<span class="string">"@CountryID"</span>, SqlDbType<span class="preprocessor">.Int</span>)<span class="preprocessor">.Value</span> = DBConvert<span class="preprocessor">.From</span>(CountryID)<span class="comment">;</span>
+cmd<span class="preprocessor">.Parameters</span><span class="preprocessor">.Add</span>(<span class="string">"@CountryID"</span>, SqlDbType<span class="preprocessor">.NVarChar</span>, <span class="number">2048</span>)<span class="preprocessor">.Value</span> = DBConvert<span class="preprocessor">.From</span>(MyString)<span class="comment">;</span>
+</pre></figure>
+
+<p>This will automatically convert null strings as well as nulled nullable types to DBNull.</p>
+<p>Enjoy :)</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=Handling%20DBNulls%20http%3A%2F%2Fimprove.dk%2Fhandling-dbnulls%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fhandling-dbnulls%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fhandling-dbnulls%2F&title=Handling%20DBNulls" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/handling-dbnulls/handling-dbnulls.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'handling-dbnulls';
+	var disqus_url = 'http://improve.dk/handling-dbnulls/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

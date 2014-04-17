@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jan</span>
+			<span class="day">31</span>
+		</div>
+		<div class="lower">2012</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/seemingly-random-exceptions-thrown-from-cachedpathdata-validatepath/" title="Seemingly Random Exceptions Thrown From CachedPathData.ValidatePath" rel="bookmark">Seemingly Random Exceptions Thrown From CachedPathData.ValidatePath</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Several times a day I’d get an error report email noting that the following exception had occurred in our ASP.NET 4.0 application:</p>
+<a id="more"></a>
+
+<blockquote>
+<p>System.Web.HttpException (0x80004005)<br>at System.Web.CachedPathData.ValidatePath(String physicalPath)<br>at System.Web.HttpApplication.PipelineStepManager.ValidateHelper(HttpContext context)</p>
+</blockquote>
+<p>The 80004005 code is a red herring – it’s used for lots of different errors and doesn’t really indicate what’s wrong. Besides that, there’s no message on the exception, so I was at a loss for what might’ve caused it.</p>
+<p>We have several 100k’s of visitors each day and I only got 5-10 of these exceptions a day, so it wasn’t critical. Even so, I don’t like exceptions being thrown without reason. After much digging (and cursing at the combination of our error logging and gmail trimming the affected URL’s), I discovered the cause.</p>
+<p>All of the URL’s had an extra %20 at the end – caused by others linking incorrectly to our site.</p>
+<p>After a short bit of Googling, I found the new <a href="http://msdn.microsoft.com/en-us/library/system.web.configuration.httpruntimesection.relaxedurltofilesystemmapping.aspx" target="_blank">RelaxedUrlToFileSystemMapping httpRuntime attribute</a> in .NET 4.0. And sure enough, setting it to false (or letting it have it’s default false value), an exception is thrown when I add %20 to the URL. Once set to true, everything works as expected.</p>
+<p>Though I got the problem solved, I would’ve appreciated a more descriptive exception being thrown.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jan</span>
+			<span class="day">30</span>
+		</div>
+		<div class="lower">2012</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/the-anatomy-of-row-amp-page-compressed-integers/" title="The Anatomy of Row &amp; Page Compressed Integers" rel="bookmark">The Anatomy of Row &amp; Page Compressed Integers</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>While working on row compression support for <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a>, I ran into some challenges when trying to parse integers. Contrary to normal non-compressed integer storage, these are all variable width – meaning an integer with a value of <em>50</em> will only take up one byte, instead of the usual four. That wasn’t new though, seeing as <a href="/how-are-vardecimals-stored">vardecimals are also stored as variable width</a>. What is different however is the way the numbers are stored on disk. Note that while I was only implementing row compression, the integer compression used in page compression is exactly the same, so this goes for both types of compression.</p>
+<a id="more"></a>
+
+<h2 id="Tinyint">Tinyint</h2>
+<p>Tinyint is pretty much identical to the usual tinyint storage. The only exception being that a value of 0 will take up no bytes when row compressed, where as in non-compressed storage it’ll store the value 0x0, taking up a single byte. All of the integer types are the same regarding 0-values – the value is indicated by the compression row metadata and thus requires no actual value stored.</p>
+<h2 id="Smallint">Smallint</h2>
+<p>Let’s start out by looking at a normal non-compressed smallint, for the values –2, –1, 1 and 2. As mentioned before, 0 isn’t interesting as nothing is stored. Note that all of these values are represented exactly as they’re stored on disk – in this case they’re stored in <a href="http://en.wikipedia.org/wiki/Endianness" target="_blank">little endian</a>.</p>
+<figure class="highlight csharp"><pre>-<span class="ruby"><span class="number">2</span>	=	<span class="number">0xFEFF</span>
+</span>-<span class="ruby"><span class="number">1</span>	=	<span class="number">0xFFFF</span>
+</span>1	=	0x0100
+2	=	0x0200
+</pre></figure>
+
+<p>Starting with the values 1 and 2, they’re very straightforward. Simply convert it into decimal and you’ve got the actual number. –1 however, is somewhat different. The value 0xFFFF converted to decimal is 65.535 – the maximum value we can store in an unsigned two-byte integer. The SQL Server range for a smallint is –32.768 to 32.767.</p>
+<p>Calculating the actual values relies on what’s called <a href="http://en.wikipedia.org/wiki/Integer_overflow" target="_blank">integer overflows</a>. Take a look at the following C# snippet:</p>
+<figure class="highlight csharp"><pre>unchecked
+{
+	Console.WriteLine(<span class="number">0</span> + (short)<span class="number">32767</span>);
+	Console.WriteLine(<span class="number">0</span> + (short)<span class="number">32768</span>);
+	Console.WriteLine(<span class="number">0</span> + (short)<span class="number">32769</span>);
+	// <span class="keyword">...</span>
+	Console.WriteLine(<span class="number">0</span> + (short)<span class="number">65534</span>);
+	Console.WriteLine(<span class="number">0</span> + (short)<span class="number">65535</span>);
+}
+</pre></figure>
+
+<p>The output is as follows:</p>
+<figure class="highlight csharp"><pre>32767
+-<span class="ruby"><span class="number">32768</span>
+</span>-<span class="ruby"><span class="number">32767</span>
+</span>-<span class="ruby"><span class="number">2</span>
+</span>-<span class="ruby"><span class="number">1</span></span>
+</pre></figure>
+
+<p>If we start with the value 0 and add the maximum value for a signed short, 32.767, we obviously end up with just that – 32.767. However, if we add 32.768, which is outside the range of the short, we rollover and end up with the smallest possible short value. Since these are constant numbers, the compiler won’t allow the overflow – unless we encapsulate our code in an unchecked {} section.</p>
+<p>You may have heard of the fabled <a href="http://en.wikipedia.org/wiki/Sign_bit" target="_blank">sign bit</a>. Basically it’s the highest order bit that’s being used to designate whether a number is positive or negative. As special sounding as it is, it should be obvious from the above that the sign bit isn’t special in any way – though it can be queried to determine the sign of a given number. Take a look at what happens to the sign bit when we overflow:</p>
+<figure class="highlight csharp"><pre>32.767	=	0b0111111111111111
+-<span class="ruby"><span class="number">32.768</span>	=	0b100000000000000<span class="number">0</span>
+</span>-<span class="ruby"><span class="number">32.767</span>	=	0b1000000000000001</span>
+</pre></figure>
+
+<p>For the number to become large enough for it to cause an overflow, the high order “sign bit” needs to be set. It isn’t magical in any way, it’s simply used to cause the overflow.</p>
+<p>OK, so that’s some background information on how normal non-compressed integers are stored. Now let’s have a look at how those same smallint values are stored in a row compressed table:</p>
+<figure class="highlight csharp"><pre>-<span class="ruby"><span class="number">2</span>	=	<span class="number">0x7E</span>
+</span>-<span class="ruby"><span class="number">1</span>	=	<span class="number">0x7F</span>
+</span>1	=	0x81
+2	=	0x82
+</pre></figure>
+
+<p>Let’s try and convert those directly to decimal, as we did before:</p>
+<figure class="highlight csharp"><pre>-<span class="ruby"><span class="number">2</span>	=	<span class="number">0x7E</span>	=	<span class="number">126</span>
+</span>-<span class="ruby"><span class="number">1</span>	=	<span class="number">0x7F</span>	=	<span class="number">127</span>
+</span>1	=	0x81	=	129
+2	=	0x82	=	130
+</pre></figure>
+
+<p>Obviously, these are not stored the same way. The immediate difference is that we’re now only using a single byte – due to the variable-width storage nature. When parsing these values, we should simply look at the number of byte stored. If it’s using a single byte, we know it’s in the 0 to 255 range (for tinyints) or –128 to 127 range for smallints. Smallints in that range will be stored using a single signed byte.</p>
+<p>If we use the same methodology as  before, we obviously get the wrong results.1 &lt;&gt; 0 + 129. The trick in this case is to treat the stored values as unsigned integers, and then minimum value as the offset. That is, instead of using 0 as the offset, we’ll use the signed 1-byte minimum value of –128 as the offset:</p>
+<figure class="highlight csharp"><pre>-<span class="ruby"><span class="number">2</span>	=	<span class="number">0x7E</span>	=	-<span class="number">128</span> + <span class="number">126</span>
+</span>-<span class="ruby"><span class="number">1</span>	=	<span class="number">0x7F</span>	=	-<span class="number">128</span> + <span class="number">127</span>
+</span>1	=	0x81	=	-128 + 129
+2	=	0x82	=	-128 + 130
+</pre></figure>
+
+<p>Aha, so that must mean we’ll need to store two bytes as soon as we exceed the signed 1-byte range, right? Right!</p>
+<div class="imgwrapper" style=""><div><a href="/the-anatomy-of-row-amp-page-compressed-integers/image_2.png" class="fancy"><img src="/the-anatomy-of-row-amp-page-compressed-integers/image_2.png" style="max-height: 250px"/></a></div></div>
+
+<p>One extremely important difference is that the non-compressed values will always be stored in little endian on disk, whereas the row compressed integers are stored using big endian! So not only do they use different offset values, they also use different endianness. The end result is the same, but the calculations involved are dramatically different.</p>
+<h2 id="Int_&amp;_bigint">Int &amp; bigint</h2>
+<p>Once I figured out the endianness and number scheme of the row-compressed integer values, int and bigint were straightforward to implement. As with the other types, they’re still variable width so you may have a 5-byte bigint as well as a 1-byte int. Here’s the main parsing code for my SqlBigInt type implementation:</p>
+<figure class="highlight csharp"><pre><span class="keyword">switch</span> (<span class="keyword">value</span>.Length)
+{
+	<span class="keyword">case</span> <span class="number">0</span>:
+		<span class="keyword">return</span> <span class="number">0</span>;
+
+	<span class="keyword">case</span> <span class="number">1</span>:
+		<span class="keyword">return</span> (<span class="keyword">long</span>)(-<span class="number">128</span> + <span class="keyword">value</span>[<span class="number">0</span>]);
+
+	<span class="keyword">case</span> <span class="number">2</span>:
+		<span class="keyword">return</span> (<span class="keyword">long</span>)(-<span class="number">32768</span> + BitConverter.ToUInt16(<span class="keyword">new</span>[] { <span class="keyword">value</span>[<span class="number">1</span>], <span class="keyword">value</span>[<span class="number">0</span>] }, <span class="number">0</span>));
+
+	<span class="keyword">case</span> <span class="number">3</span>:
+		<span class="keyword">return</span> (<span class="keyword">long</span>)(-<span class="number">8388608</span> + BitConverter.ToUInt32(<span class="keyword">new</span> <span class="keyword">byte</span>[] { <span class="keyword">value</span>[<span class="number">2</span>], <span class="keyword">value</span>[<span class="number">1</span>], <span class="keyword">value</span>[<span class="number">0</span>], <span class="number">0</span> }, <span class="number">0</span>));
+
+	<span class="keyword">case</span> <span class="number">4</span>:
+		<span class="keyword">return</span> (<span class="keyword">long</span>)(-<span class="number">2147483648</span> + BitConverter.ToUInt32(<span class="keyword">new</span>[] { <span class="keyword">value</span>[<span class="number">3</span>], <span class="keyword">value</span>[<span class="number">2</span>], <span class="keyword">value</span>[<span class="number">1</span>], <span class="keyword">value</span>[<span class="number">0</span>] }, <span class="number">0</span>));
+
+	<span class="keyword">case</span> <span class="number">5</span>:
+		<span class="keyword">return</span> (<span class="keyword">long</span>)(-<span class="number">549755813888</span> + BitConverter.ToInt64(<span class="keyword">new</span> <span class="keyword">byte</span>[] { <span class="keyword">value</span>[<span class="number">4</span>], <span class="keyword">value</span>[<span class="number">3</span>], <span class="keyword">value</span>[<span class="number">2</span>], <span class="keyword">value</span>[<span class="number">1</span>], <span class="keyword">value</span>[<span class="number">0</span>], <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span> }, <span class="number">0</span>));
+
+	<span class="keyword">case</span> <span class="number">6</span>:
+		<span class="keyword">return</span> (<span class="keyword">long</span>)(-<span class="number">140737488355328</span> + BitConverter.ToInt64(<span class="keyword">new</span> <span class="keyword">byte</span>[] { <span class="keyword">value</span>[<span class="number">5</span>], <span class="keyword">value</span>[<span class="number">4</span>], <span class="keyword">value</span>[<span class="number">3</span>], <span class="keyword">value</span>[<span class="number">2</span>], <span class="keyword">value</span>[<span class="number">1</span>], <span class="keyword">value</span>[<span class="number">0</span>], <span class="number">0</span>, <span class="number">0</span> }, <span class="number">0</span>));
+
+	<span class="keyword">case</span> <span class="number">7</span>:
+		<span class="keyword">return</span> (<span class="keyword">long</span>)(-<span class="number">36028797018963968</span> + BitConverter.ToInt64(<span class="keyword">new</span> <span class="keyword">byte</span>[] { <span class="keyword">value</span>[<span class="number">6</span>], <span class="keyword">value</span>[<span class="number">5</span>], <span class="keyword">value</span>[<span class="number">4</span>], <span class="keyword">value</span>[<span class="number">3</span>], <span class="keyword">value</span>[<span class="number">2</span>], <span class="keyword">value</span>[<span class="number">1</span>], <span class="keyword">value</span>[<span class="number">0</span>], <span class="number">0</span> }, <span class="number">0</span>));
+
+	<span class="keyword">case</span> <span class="number">8</span>:
+		<span class="keyword">return</span> (<span class="keyword">long</span>)(-<span class="number">9223372036854775808</span> + BitConverter.ToInt64(<span class="keyword">new</span>[] { <span class="keyword">value</span>[<span class="number">7</span>], <span class="keyword">value</span>[<span class="number">6</span>], <span class="keyword">value</span>[<span class="number">5</span>], <span class="keyword">value</span>[<span class="number">4</span>], <span class="keyword">value</span>[<span class="number">3</span>], <span class="keyword">value</span>[<span class="number">2</span>], <span class="keyword">value</span>[<span class="number">1</span>], <span class="keyword">value</span>[<span class="number">0</span>] }, <span class="number">0</span>));
+
+	<span class="keyword">default</span>:
+		<span class="keyword">throw</span> <span class="keyword">new</span> ArgumentException(<span class="string">"Invalid value length: "</span> + <span class="keyword">value</span>.Length);
+}
+</pre></figure>
+
+<p>The <em>value</em> variable is a byte array containing the bytes as stored on disk. If the length is 0, nothing is stored and hence we know it has a value of 0. For each of the remaining valid lengths, it’s simply a matter of using the smallest representable number as the offset and then adding the stored value onto it.</p>
+<p>For non-compressed values we can use the BitConverter class directly as it expects the input value to be in system endianness – and for most Intel and AMD systems, that’ll be little endian (which means OrcaMDF won’t run on a big endian system!). However, as the compressed values are stored in big endian, I have to remap the input array into little endian format, as well as pad the 0-bytes so it matches up with the short, int and long sizes.</p>
+<p>For the shorts and ints I’m reading unsigned values in, as that’s really what I’m interested in. This works since int + uint is coerced into a long value. I can’t do the same for the long’s since there’s no data type larger than a long. For the maximum long value of 9.223.372.036.854.775.807, what’s actually stored on disk is 0xFFFFFFFFFFFFFFFF. Parsing that as a signed long value using BitConverter results in the value –1 due to the overflow. Wrong as that may be, it all works out in the end due to an extra negative overflow:</p>
+<figure class="highlight csharp"><pre>-<span class="ruby"><span class="number">9.223</span>.<span class="number">372.036</span>.<span class="number">854.775</span>.<span class="number">808</span> + <span class="number">0xFFFFFFFFFFFFFF</span> =&gt;
+</span>-<span class="ruby"><span class="number">9.223</span>.<span class="number">372.036</span>.<span class="number">854.775</span>.<span class="number">808</span> + -<span class="number">1</span> =
+</span>9.223.372.036.854.775.807
+</pre></figure>
+
+<h2 id="Conclusion">Conclusion</h2>
+<p>As usual, I’ve had a lot of fun trying to figure out how the bytes on disk ended up as the values I saw when performing a SELECT query. It doesn’t take long to realize that while the excellent Internals book really takes you far, there’s so much more to dive into.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jan</span>
+			<span class="day">26</span>
+		</div>
+		<div class="lower">2012</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/presenting-at-sqlbits-x/" title="Presenting at SQLBits X" rel="bookmark">Presenting at SQLBits X</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/Conferences and Presenting/">Conferences and Presenting</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p><a href="http://www.sqlbits.com/" target="_blank">SQLBits X</a> is coming up soon, and by the looks of it, it’ll feature a full house of excited attendees:</p>
+<a id="more"></a>
+
+<div class="imgwrapper" style=""><div><a href="/presenting-at-sqlbits-x/image_4.png" class="fancy"><img src="/presenting-at-sqlbits-x/image_4.png" style="max-height: 250px"/></a></div></div>
+
+<p>If you haven’t been before, just take a look at these <a href="http://sqlblogcasts.com/blogs/simons/archive/2012/01/26/ten-reason-to-attend-sqlbits-x.aspx?utm_source=twitterfeed&amp;utm_medium=twitter&amp;utm_campaign=Feed%3A+SimonsSqlServerStuff+%28SimonS+SQL+Server+Stuff%29" target="_blank">ten reasons, provided by Simon Sabin</a>. Not convinced yet? Take a look at <a href="http://www.simple-talk.com/community/blogs/jonathanallen/archive/2010/09/20/94522.aspx#105686" target="_blank">10 more reasons, provided by Jonathan Allen</a> (though written for SQLBits 7, they’re just as applicable for SQLBits X).</p>
+<h2 id="Revealing_the_Magic">Revealing the Magic</h2>
+<p>To my big surprise, I’ve got another chance at speaking at SQLBits – I must’ve done <a href="/sqlbits-9-session-evaluation">something right</a> after all :)</p>
+<p>I will once again be presenting a session based on my work with <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a>. Here’s the abstract:</p>
+<blockquote>
+<p>Think SQL Server is magical? You’re right! However, there’s some sense to the magic, and that’s what I’ll show you in this level 500 deep dive session. Through my work in creating OrcaMDF, an open source parser for SQL Server databases, I’ve learned a lot of internal details for the SQL Server database file format. In this session, I will walk you through the internal storage format of MDF files, how we might go about parsing a complete database ourselves, using nothing but a hex editor. I will cover how SQL Server stores its own internal metadata about objects, how it knows where to find your data on disk, and once it finds it, how to read it. Using the knowledge from this session, you’ll find it much easier to predict performance characteristics of queries since you’ll know what needs to be done.</p>
+</blockquote>
+<p>The basis of the session is the same as <a href="/sqlbits-9-agenda-published">the one I gave last year</a>. However, based on the feedback I got, as well as the work I’ve done with OrcaMDF since then, I’ll be readjusting the content a bit. I’ll not be covering disaster recovery, just as I’ll trim some sections to leave room for some new stuff like compression internals.</p>
+<p>Just as last time, the session is meant to <strong>inspire</strong>, not to teach. There’ll be far too much content to understand everything during the session. My hope is to reveal how SQL Server is really governed by a relatively small set of rules – and once you know those, you’ve got a powerful tool to add to your existing arsenal.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jan</span>
+			<span class="day">25</span>
+		</div>
+		<div class="lower">2012</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/broadcom-nics-considered-harmful/" title="Broadcom NICs Considered Harmful?" rel="bookmark">Broadcom NICs Considered Harmful?</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server/">SQL Server</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Every night at around 2AM I get an email from my best friend, confirming that she’s OK. It usually looks something like this:</p>
+<a id="more"></a>
+
+<blockquote>
+<p>JOB RUN:    ‘Backup.Daily’ was run on 04-08-2011 at 02:00:00<br>DURATION:    0 hours, 5 minutes, 57 seconds<br>STATUS:     Succeeded<br>MESSAGES:    The job succeeded.  The Job was invoked by Schedule 9 (Backup.Daily (Mon-Sat)).  The last step to run was step 1 (Daily).</blockquote></p>
+</blockquote>
+<p>Just the other night, I got one that didn’t look right:</p>
+<blockquote>
+<p>DURATION: 4 hours, 3 minutes, 32 seconds</p>
+</blockquote>
+<p>Looking at the event log revealed a symptom of the problem:</p>
+<blockquote>
+<p>SQL Server has encountered 2 occurrence(s) of I/O requests taking longer than 15 seconds to complete on file [J:XXX.mdf] in database [XXX] (150).  The OS file handle is 0x0000000000003294.  The offset of the latest long I/O is: 0x00000033da0000</p>
+</blockquote>
+<p>Our databases were the same, the workload was the same. The only teeny, tiny little thing that had changed was that I’d moved all of the data files + backup drive onto a new SAN. Obviously, that’s gotta be the problem.</p>
+<h2 id="Broadcom,_how_I_loathe_thee!">Broadcom, how I loathe thee!</h2>
+<p>Through some help on #sqlhelp and Database Administrators, I managed to find the root cause as well as to fix it. For a full walkthrough of the process, please see <a href="http://dba.stackexchange.com/questions/10950/i-o-requests-taking-longer-than-15-seconds" target="_blank">my post on Database Administrators</a>.</p>
+<p>Mark Storey-Smith ended up giving the vital clue – a link to a <a href="http://blog.serverfault.com/2011/03/04/broadcom-die-mutha/" target="_blank">post by Kyle Brandt</a> which I clearly remember reading earlier on, but didn’t suspect was applicable to my situation. I ended up disabling jumbo frames, large send offload (LSO) and TCP connection offload (TOE), and lo and behold, everything was running smoothly. By enabling each of the features individually I pinpointed the issue to the Broadcom TOE feature on the NICs. Once I enabled TOE, my IO requests were stalling. As soon as I disabled TOE, everything ran smoothly.</p>
+<div class="imgwrapper" style=""><div><a href="/broadcom-nics-considered-harmful/image_10.png" class="fancy"><img src="/broadcom-nics-considered-harmful/image_10.png" style="max-height: 250px"/></a></div></div>
+
+<p>After disabling TOE on both NICs, my backups went from looking like this:</p>
+<div class="imgwrapper" style=""><div><a href="/broadcom-nics-considered-harmful/image_14.png" class="fancy"><img src="/broadcom-nics-considered-harmful/image_14.png" style="max-height: 250px"/></a></div></div>
+
+<p>To this:</p>
+<div class="imgwrapper" style=""><div><a href="/broadcom-nics-considered-harmful/image_12.png" class="fancy"><img src="/broadcom-nics-considered-harmful/image_12.png" style="max-height: 250px"/></a></div></div>
+
+<p>At this point the backup timing was back on track and the event log was all green. I did use the same Broadcom NICs with TOE enabled for the previous SAN, so obviously something must have triggered the issue, whether it’s a problem between the new switches, the drivers, cables, I have no idea. All I know is that I’m apparently not the first to suffer similar issues with Broadcom NICs and I know for sure that I’ll get Intels in my next servers.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jan</span>
+			<span class="day">23</span>
+		</div>
+		<div class="lower">2012</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/presenting-at-miracle-open-world-2012/" title="Presenting at Miracle Open World 2012" rel="bookmark">Presenting at Miracle Open World 2012</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/Conferences and Presenting/">Conferences and Presenting</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Having presented at Miracle Open World back to back in 2010 and 2011, I’m excited to announce I’ll also be present in 2012! Not only will I be presenting, I’ll be presenting a full day track.</p>
+<a id="more"></a>
+
+<p>I’ve been continually improving my original internals training day that I <a href="/presenting-a-precon-at-sqlbits">presented at SQLBits</a>. At MOW, I’ll be presenting the evolved session, which now also includes compression internals. As the allotted time at MOW is slightly shorter than at SQLBits, and I have slightly more material, expect to bring coffee :)</p>
+<p>For more details on the session, please see <a href="http://mow2012.dk/program/sql-server-storage-engine.aspx" target="_blank">the description at the MOW website</a>.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Dec</span>
+			<span class="day">13</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/how-are-vardecimals-stored/" title="The Anatomy of Vardecimals" rel="bookmark">The Anatomy of Vardecimals</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>In this post I’ll do a deep dive into how vardecimals are stored on disk. For a general introduction to what they are and how/when to use them, <a href="http://msdn.microsoft.com/en-us/library/bb326755.aspx" target="_blank">see this post</a>.</p>
+<a id="more"></a>
+
+<h2 id="Is_vardecimal_storage_enabled?">Is vardecimal storage enabled?</h2>
+<p>First up, we need to determine whether vardecimals are enabled, since it completely changes the way decimals are stored on disk. Vardecimal is not a type itself, so all columns, whether stored as decimals are vardecimals share the same system type (106). Note that in SQL Server, <em>numeric</em> is exactly the same as decimal. Anywhere I mention decimal, you can substitute that with numeric and get the same result.</p>
+<p>Provided SQL Server is running, you can execute the following to determine the vardecimal status of any given table:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span> OBJECTPROPERTY(OBJECT_ID(<span class="string">'MyTable'</span>), <span class="string">'TableHasVarDecimalStorageFormat'</span>)</span>
+</pre></figure>
+
+<p>If you don’t have access to, or do not want to use the OBJECTPROPERTY function, you can query the sys.system_internals_partition_columns DMV to obtain the same information – see <a href="/determining-if-vardecimal-is-enabled-for-a-table-without-using">Determining If vardecimal Is Enabled For a Table Without Using OBJECTPROPERTY</a>.</p>
+<h2 id="Fixed_length_goes_variable_length">Fixed length goes variable length</h2>
+<p>Normal decimal columns are stored in the fixed length portion of a <a href="http://sqlskills.com/blogs/paul/post/Inside-the-Storage-Engine-Anatomy-of-a-record.aspx" target="_blank">record</a>. This means all that’s actually stored is the data itself. There is no need for length information as the number of required storage bytes can be calculated exclusively by the use of metadata. Once you enable vardecimals, all decimals are no longer stored in the fixed length portion of the record, but as a variable length field instead.</p>
+<p>Storing the decimal as a variable length field has a couple of implications:</p>
+<ul>
+<li>We can no longer statically calculate the number of bytes required to store a given value.</li>
+<li>There’s a two byte overhead for storing the record offset value in the variable length offset array.</li>
+<li>If the record previously had no variable length records, that overhead is actually four bytes since we also need to store the number of variable length records in the record offset array.</li>
+<li>The actual value of the decimal has a variable amount of bytes that we need to decipher.</li>
+</ul>
+<h2 id="What_does_the_vardecimal_value_consist_of?">What does the vardecimal value consist of?</h2>
+<p>Once we’ve parsed the record and thereby retrieved the vardecimal value bytes from the variable length portion of the record, we need to parse it. There will <em>always</em> be at least <em>two</em> bytes for the value, though there can be up to 20 at most.</p>
+<p>Where normal decimals are basically stored as one humongous integer (with the scale metadata defining the decimal position), vardecimals are stored using <a href="http://en.wikipedia.org/wiki/Scientific_notation" target="_blank">scientific notation</a>. Using scientific notation, we need to store three different values:</p>
+<ul>
+<li>The sign (positive/negative).</li>
+<li>The exponent.</li>
+<li>The mantissa.</li>
+</ul>
+<p>Using these three components, we can calculate the actual number using the following formula:</p>
+<figure class="highlight"><pre>(sign) * mantissa * 10<span class="tag">&lt;<span class="title">sup</span>&gt;</span>exponent<span class="tag">&lt;/<span class="title">sup</span>&gt;</span>
+</pre></figure>
+
+<h3 id="Example">Example</h3>
+<p>Assume we have a vardecimal(5,2) column and we store the value 123.45. In scientific notation, that would be expressed as 1.2345 * 10<sup>2</sup>. In this case we have positive sign (1), an mantissa of 1.2345 and an exponent of 2. SQL Server knows that the mantissa always has a fixed decimal point after the first digit, and as such it simply stores the integer value 12345 as the mantissa. While the exponent is 2, SQL Server knows we have a scale of 2 defined, and it subtracts that from the exponent and thus stores 0 as the actual exponent.</p>
+<p>Once we read it, we end up with a formula like this for calculating the mantissa (note that at this point we don’t care if the mantissa is positive or negative – we’ll take that into account later):</p>
+<figure class="highlight"><pre>mantissa / 10<span class="tag">&lt;<span class="title">sup</span>&gt;</span>floor(log10(mantissa))<span class="tag">&lt;/<span class="title">sup</span>&gt;</span>
+</pre></figure>
+
+<p>And plotting in our values, we get:</p>
+<figure class="highlight"><pre>12345 / 10<span class="tag">&lt;<span class="title">sup</span>&gt;</span>floor(log10(12345))<span class="tag">&lt;/<span class="title">sup</span>&gt;</span>
+</pre></figure>
+
+<p>Through basic simplification we get:</p>
+<figure class="highlight"><pre>12345 / 10<span class="tag">&lt;<span class="title">sup</span>&gt;</span>4<span class="tag">&lt;/<span class="title">sup</span>&gt;</span>
+</pre></figure>
+
+<p>Which finally ends up in the scientific notation version of the mantissa:</p>
+<figure class="highlight"><pre>1.2345
+</pre></figure>
+
+<p>So far so good – we now have the mantissa value. At this point we need just two things – to apply the sign and to move the decimal into the right position by factoring in the exponent. As SQL Server knows the scale is 2, it stores an exponent value of 2 instead of 4, in effect subtracting the scale from the exponent value – enabling us to ignore the scale and just calculate the number directly.</p>
+<p>And thus we have all we need to calculate the final number:</p>
+<figure class="highlight"><pre>(sign) * mantissa * 10<span class="tag">&lt;<span class="title">sup</span>&gt;</span>exponent<span class="tag">&lt;/<span class="title">sup</span>&gt;</span> =&gt; (1) * 1.2345 * 10<span class="tag">&lt;<span class="title">sup</span>&gt;</span>2<span class="tag">&lt;/<span class="title">sup</span>&gt;</span> =&gt; 1.2345 * 10<span class="tag">&lt;<span class="title">sup</span>&gt;</span>2<span class="tag">&lt;/<span class="title">sup</span>&gt;</span> = 123.45
+</pre></figure>
+
+<h2 id="Reading_the_sign_&amp;_exponent">Reading the sign &amp; exponent</h2>
+<p>The very first byte of the value contains the sign and the exponent. In the previous sample, the value takes up four bytes (plus an additional two for the offset array entry):</p>
+<figure class="highlight"><pre>0xC21EDC20
+</pre></figure>
+
+<p>If we take a look at just the first byte, and convert it to binary, we get the following:</p>
+<pre>
+Hex: C2
+Bin: <span style="background-color: #dfce04;">1</span>1000010
+</pre>
+
+<p>The most significant bit (the leftmost one), or bit 7 (0-indexed) is the sign bit. If it’s set, the value is positive. If it’s not set, it’s negative. Since it has a value of 1, we know that the result is positive.</p>
+<p>Bits 0-6 is a 7-bit value containing the exponent. A normal unsigned 7-bit value can contain values from 0 to 127. As the decimal data type has a range of –10<sup>38</sup>+1 to 10<sup>38</sup>-1, we need to be able to store negative numbers. We could use one of those 7 bits as a sign bit, and then store the value in just 6 bits, allowing a range from –64 to 63. SQL Server however does use all 7 bits for the value itself, but stores the value offset by 64. Thus, an exponent value of 0 will store the value 64. An exponent of –1 will store 63 while an exponent of 1 will store 65, and so forth.</p>
+<p>In our sample, reading bits 0-6 gives the following value:</p>
+<pre>
+<span style="font-family: 'Courier New';"><span style="font-size: medium;">0b1</span><span style="font-family: 'Courier New';"><span style="font-size: medium;"><span style="background-color: #dfce04; color: #444444;">1000010</span></span></span><span style="font-family: 'Courier New';"><span style="font-size: medium;"> = 66</span></span> </span>
+</pre>
+
+<p>Subtracting the offset of 64 leaves us with an exponent value of 2.</p>
+<h2 id="Mantissa_chunk_storage">Mantissa chunk storage</h2>
+<p>The remaining bytes contain the mantissa value. Before we get started, let’s convert them into binary:</p>
+<pre>
+<span style="font-family: 'Courier New'; font-size: medium;">Hex: </span><span style="font-family: 'Courier New'; font-size: medium;">1E       DC       20
+
+Bin: 00011110 11011100 00100000</span>
+</pre>
+
+<p>The mantissa is stored in chunks of 10 bits, each chunk representing three digits in the mantissa (and remember, the mantissa is just one large integer – it’s not until later that we begin to think of it as a decimal pointer number). Splitting the bytes into chunks gives us the following grouping:</p>
+<pre>
+<span style="font-family: 'Courier New'; font-size: medium;">Hex:   1E       DC       20
+Bin:   <span style="background-color: #f3a447;">00011110 11</span><span style="background-color: #dfce04;">011100 0010</span>0000
+
+Chunk: <span style="background-color: #f3a447;">1          </span><span style="background-color: #dfce04;">2          </span></span>
+</pre>
+
+<p>In this case, SQL Server wastes 4 bits by using a chunk size that doesn’t align with the 8-bit byte size. This begs the question, why choose a chunk size of just exactly 10 bits? Those 10 bits are required to represent all possible values of a three-digit integer (0-999). What if we instead wanted to use a chunk size representing just a single digit?</p>
+<p>In that case, we’d need to represent the values 0-9. That requires a total of 4 bits (0b1001 = 9). However, using those 4 bits, we can actually represent a range spanning from 0 to 15 – which means we’re wasting 6 of those values as they’ll never be needed. In percentages, we’re wasting 6/16 = 37.5%!</p>
+<p>Let’s try and plot some different chunk sizes into a graph:</p>
+<div class="imgwrapper" style=""><div><a href="/how-are-vardecimals-stored/image_3.png" class="fancy"><img src="/how-are-vardecimals-stored/image_3.png" style="max-height: 250px"/></a></div></div>
+
+<p>We see that chunk sizes of both 4 and 7 have massive waste compared to a chunk size of 10. At 20 bits, we’re getting closer, but still waste twice as much as at 10.</p>
+<p>Now, waste isn’t everything. For compression, ideally we don’t want to use more digits than absolutely necessary. With a chunk size of 10, representing 3 digits, we’re wasting two digits for values in the range of 0-9. However, for numbers in the range 100-999, we’re spot on. If we were to use a chunk size of 20 bits, representing 6 digits per chunk, we’d be wasting bytes for values 0-99999, while we’d be spot on for values 1000000-999999. Basically it’s a tradeoff – the higher the granularity, with the least amount of waste, the better. The further to the right we go in the graph, the less the granularity. With this, it seems obvious that a chunk size of 10 bits is an excellent choice – it has the lowest amount of waste with a suitable amount of granularity at 3 digits.</p>
+<p>There’s just one more detail before we move on. Imagine we need to store the mantissa value 4.12, effectively resulting in the integer value 412.</p>
+<pre><span style="font-family: 'Courier New'; font-size: medium;">Dec: 412
+Bin: 01100111 00
+Hex: 67       0
+</span></pre>
+
+<p>In this case, we’d waste 8 bits in the second byte, since we only need a single chunk, but we need two bytes to represent those 10 bits. In this case, given that the last two bits aren’t set, SQL Server will simply truncate that last byte. Thus, if you’re reading a chunk and you run out of bits on disk, you can assume that the remaining bits aren’t set.</p>
+<h2 id="Parsing_a_vardecimal_value">Parsing a vardecimal value</h2>
+<p>Finally – we’re ready to actually parse a stored vardecimal (implemented in C#)! We’ll use the previous example, storing the 123.45 value in a decimal(5,2) column. On disk, we read the following into a byte array called <em>value</em>:</p>
+<pre><span style="font-family: 'Courier New'; font-size: medium;">Hex: C2       1E       DC       20
+Bin: 11000010 00011110 11011100 00100000</span></pre>
+
+<h3 id="Reading_the_sign_bit">Reading the sign bit</h3>
+<p>Reading the sign bit is relatively simple. We’ll only be working on the first byte:</p>
+<pre><span style="font-family: 'Courier New'; font-size: medium;">Hex: C2       1E       DC       20
+Bin: <span style="background-color: #dfce04;">1</span>1000010 <span style="color: #a5a5a5;">00011110 11011100 00100000</span></span></pre>
+
+<p>By shifting the bits 7 spots to the right, all we’re left with is the most significant bit, the least significant position. This means we’ll get a value of 1 is the sign is positive, and 0 if it’s negative.</p>
+<figure class="highlight csharp"><pre><span class="keyword">decimal</span> sign = (<span class="keyword">value</span>[<span class="number">0</span>] &gt;&gt; <span class="number">7</span>) == <span class="number">1</span> ? <span class="number">1</span> : -<span class="number">1</span>;
+</pre></figure>
+
+<h3 id="Reading_the_exponent">Reading the exponent</h3>
+<p>The next (technically these bits come before the sign bit) 7 bits contain the exponent value.</p>
+<pre><span style="font-family: 'Courier New'; font-size: medium;">Hex: C2       <span style="color: #a5a5a5;">1E       DC       20</span>
+Bin: 1<span style="background-color: #dfce04;">1000010</span> <span style="color: #a5a5a5;">00011110 11011100 00100000</span></pre>
+
+<p>Converting the value 0b1000010 into decimal yields the decimal result 66. As we know the exponent is always offset by a value of 64, we need to subtract 64 from the stored value to get to the actual exponent value:</p>
+<pre><span style="font-family: 'Courier New'; font-size: medium;">Exponent = 0b1000010 – 0n64 <=> Exponent = 66 – 64 = 2</span></pre>
+
+<h3 id="Reading_the_mantissa">Reading the mantissa</h3>
+<p>Next up is the mantissa value. As mentioned, we need to read it in chunks of 10 bits, while taking care of there potentially being some truncated bits.</p>
+<p>First, we need to know how many bits there are available. Doing this is straightforward – we simply multiply the number of mantissa bytes (which is all of the bytes, except one) by 8:</p>
+<figure class="highlight csharp"><pre><span class="keyword">int</span> totalBits = (<span class="keyword">value</span>.Length - <span class="number">1</span>) * <span class="number">8</span>;
+</pre></figure>
+
+<p>Once we know how many bits are available (3 bytes of 8 bits = 24 in this case), we can calculate the number of chunks:</p>
+<figure class="highlight csharp"><pre><span class="keyword">int</span> mantissaChunks = (<span class="keyword">int</span>)Math.Ceiling(totalBits / <span class="number">10</span>d);
+</pre></figure>
+
+<p>Since each chunk takes up 10 bits, we just need to divide the total number of bits by 10. If there’s padding at the end, to match a byte boundary, it’ll all be 0’s and won’t change the end result. Thus for a 2-byte mantissa we’ll have 8 bits to spare, which will all be non-significant 0’s. For a 3-byte mantissa we’ll have 4 bits to spare – once again adding 0 to the total mantissa value.</p>
+<p>At this point we’re ready to read the chunk values. Before doing so, we’ll allocate two variables:</p>
+<figure class="highlight csharp"><pre><span class="keyword">decimal</span> mantissa = <span class="number">0</span>;
+<span class="keyword">int</span> bitPointer = <span class="number">8</span>;
+</pre></figure>
+
+<p>The mantissa variable contains the cumulative mantissa value, accumulating value each time we read a new 10-bit chunk. The <em>bitPointer</em> is a pointer to the index of the bit currently being. As we’re not going to read the first byte, we’ll start this one off at bit index 8 (0-based, thus bit index 8 = the first bit of the second byte).</p>
+<p>Looking at the bits as one long stream makes it look simple – we just read from left to right, right? Not quite. As you may remember, (visually) the rightmost bit is the least significant, and is thus the first one we should read. However – we need to read one byte at a time. As such, the <em>overall</em> direction is left-to-right, chunkwise. Once we get to any given chunk, we need to read one byte at a time. Bits 1-8 in the first chunk are read from the first byte, while bits 9-10 are read from the second byte, following the orange arrows in the figure (byte read order following the large ones, individual byte bit read order following the smaller ones):</p>
+<div class="imgwrapper" style=""><div><a href="/how-are-vardecimals-stored/image_26.png" class="fancy"><img src="/how-are-vardecimals-stored/image_26.png" style="max-height: 250px"/></a></div></div>
+
+<p>To easily access all of the bits, and to avoid doing a lot of manual bit shifting, I initialize a BitArray that contains all of the data bits:</p>
+<figure class="highlight csharp"><pre><span class="keyword">var</span> mantissaBits = <span class="keyword">new</span> BitArray(<span class="keyword">value</span>);
+</pre></figure>
+
+<p>Using this, you have to know how the bit array maps into the bytes. Visually, it looks like this, the mantissaBits array index being on top:</p>
+<div class="imgwrapper" style=""><div><a href="/how-are-vardecimals-stored/image_28.png" class="fancy"><img src="/how-are-vardecimals-stored/image_28.png" style="max-height: 250px"/></a></div></div>
+
+<p>I know this may seem complex, but it’s all just a matter of knowing which pointers point to which values. Our source is the array of <em>bytes</em>. The way we access the individual bits is through the <em>mantissaBits</em> array, which is just one big array of pointers to the individual bits.</p>
+<p>Looking at just the first 8 bits, the manitssaBits array aligns nicely with the direction we need to read. The first entry (mantissaBits[0]) points to the first/rightmost bit in the first byte. The second entry points to the second bit we need to read, and so forth. Thus, the first 8 bits are straightforward to read. The next two however, they require us to skip 6 entries in the mantissaBits array so we read index 14 and 15, as those point to the last two bits in the next byte.</p>
+<p>Reading the second chunk, we have to go back and read bit index 8-13 and then skip to index 20-23, ignoring entries 16-19 as they’re just irrelevant padding. This is rather tricky to get right. Fortunately we can freely choose to read the bits from the least significant to the most significant, or the other way around.</p>
+<p>Let’s first look at the implementation:</p>
+<figure class="highlight csharp"><pre>for (int chunk = mantissaChunks; chunk &gt; 0; chunk--)
+{
+	// The cumulative value for this 10-bit chunk
+	decimal chunkValue = 0;
+
+	// For each bit in the chunk, shift it into position, provided it's set
+	for (int chunkBit = 9; chunkBit &gt;= 0; chunkBit--)
+	{
+		// Since we're looping bytes left-to-right, but read bits right-to-left, we need
+		// to transform the bit pointer into a relative index within the current byte.
+		int byteAwareBitPointer = bitPointer + 7 - bitPointer % 8 - (7 - (7 - bitPointer % 8));
+
+		// If the bit is set and it's available (SQL Server will truncate 0's), shift it into position
+		if (mantissaBits.Length &gt; bitPointer && mantissaBits[byteAwareBitPointer])
+			chunkValue += (1 &lt;&lt; chunkBit);
+
+		bitPointer++;
+	}
+
+	// Once all bits are in position, we need to raise the significance according to the chunk
+	// position. First chunk is most significant, last is the least significant. Each chunk
+	// defining three digits.
+	mantissa += chunkValue * (decimal)Math.Pow(10, (chunk - 1) * 3);
+}
+</pre></figure>
+
+<p>The outer for loop loops through the chunks, going from the most significant to the least significant chunk. In this case we’ll first iterate over chunk 2, then chunk 1.</p>
+<p>The chunkValue variable holds the total value for the chunk that we’re currently reading. We’ll be shifting bits into the variable until we have parsed all 10 bits.</p>
+<p>Next, we loop from the most significant bit to the least significant bit (that is, going from the <em>chunkBit</em> values 9 through 0). By reading the most significant bit first, basically reading the values backwards, we avoid having to skip inside the individual bytes. We’ll always read the bits going from right to left in the mantissaBits array, following the top arrows like this:</p>
+<div class="imgwrapper" style=""><div><a href="/how-are-vardecimals-stored/image_30.png" class="fancy"><img src="/how-are-vardecimals-stored/image_30.png" style="max-height: 250px"/></a></div></div>
+
+<p>Though we do read each byte backward, everything else just follows a natural path, which makes parsing a lot easier.</p>
+<p>The <em>byteAwareBitPointer</em> variable is the index in our mantissaBits array from where we’ll read the current value. The calculation ensures we read each byte starting from the top mantissaBits index to the lower one. The first chunk is read in the following mantissaBit index order:</p>
+<figure class="highlight"><pre>7, 6, 5, 4, 3, 2, 1, 0, 15, 14
+</pre></figure>
+
+<p>And the second chunk is read in the following mantissaBit order:</p>
+<figure class="highlight"><pre>13, 12, 11, 10, 9, 8, 23, 22, 21, 20
+</pre></figure>
+
+<p>Once we’ve read a specific bit, we shift it into position in the chunkValue variable – though only if it’s set and it’s available (that is, it hasn’t been zero-truncated).</p>
+<p>Once all bits have been shifted into position, we apply the chunk significance to the value. In our case, storing the value 12345, we’re actually storing the value 123450 (since each chunk stores three digits, it’ll always be a multiple of 3 digits). The first read chunk (<em>chunk 2</em>) contains the value 123, which corresponds to the value 123000. The second read chunk (<em>chunk 1</em>) contains the value 450. Multiplying by 10<sup>(chunk–1)&lt;<em>3</sup> ensures we get the right order of magnitude (x1000 for </em>chunk 2<em> and x1 for </em>chunk 1*). For each chunk iteration, we add the finalized chunk value to the total mantissa sum.</p>
+<p>Once we have the integer based mantissa value of 123450, we need to insert the decimal point, using the following formula:</p>
+<figure class="highlight"><pre>mantissa = mantissa / 10<span class="tag">&lt;<span class="title">sup</span>&gt;</span>floor(log10(mantissa))<span class="tag">&lt;/<span class="title">sup</span>&gt;</span>
+</pre></figure>
+
+<p>Implemented like so:</p>
+<figure class="highlight csharp"><pre>mantissa = mantissa / (decimal)<span class="built_in">Math</span>.Pow(<span class="number">10</span>, <span class="built_in">Math</span>.Floor(<span class="built_in">Math</span>.Log10((double)mantissa)));
+</pre></figure>
+
+<p>This results in the mantissa having a value of 1.2345</p>
+<h3 id="Mantissa_parsing_performance">Mantissa parsing performance</h3>
+<p>Before you beat me to it – this implementation is far from fast. To start with, we could easily shift whole groups of bits into position instead of just one at a time. That’d ensure each chunk would take no more than two shifting operations, instead of ~10 in this implementation. However, my goal for this implementation is code clarity first and foremost. I’m nowhere near the point where I want to look at optimizing OrcaMDF for speed.</p>
+<h3 id="Putting_it_all_together">Putting it all together</h3>
+<p>Once we have the sign, the exponent and the mantissa, we simply calculate the final value like so:</p>
+<figure class="highlight csharp"><pre><span class="keyword">return</span> sign * mantissa * (<span class="keyword">decimal</span>)Math.Pow(<span class="number">10</span>, exponent);
+</pre></figure>
+
+<p>In our case it has the following result:</p>
+<figure class="highlight"><pre>1 * 1.2345 * 10<span class="tag">&lt;<span class="title">sup</span>&gt;</span>2<span class="tag">&lt;/<span class="title">sup</span>&gt;</span> = 1.2345 * 100 = 123.45
+</pre></figure>
+
+<h2 id="Conclusion">Conclusion</h2>
+<p>Vardecimal was the only option for built-in compression back in SQL Server 2005 SP2. Since 2008, we’ve had row &amp; page compression available (which both feature a superset of the vardecimal storage format). Ever since the release of row &amp; page compression, Microsoft has made it clear that vardecimal is a deprecated feature, and it will be removed in a future version. Since vardecimal requires enterprise edition, just like row &amp; page compression, there’s really no reason to use it, unless you’re running SQL Server 2005, or unless you have a very specific dataset that would only benefit from compressing the decimals and no other values.</p>
+<p>Knowing how the vardecimal storage format works is a great precursor for looking at compression internals – which I’ll be writing about in a later post – and I’ll be presenting on it at the <a href="/presenting-at-the-2012-spring-sql-server-connections">2012 Spring SQL Server Connections</a>.</p>
+<p>In the meantime you can check out my <a href="https://github.com/improvedk/OrcaMDF/blob/83b7460b07d175f6edb21e094106ec8a52d44bf9/src/OrcaMDF.Core/Engine/SqlTypes/SqlDecimal.cs" target="_blank">SqlDecimal.cs implementation on github</a>. Or you can have a look at the complete <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF source code</a>.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Dec</span>
+			<span class="day">12</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/determining-if-vardecimal-is-enabled-for-a-table-without-using/" title="Determining If Vardecimal Is Enabled For a Table Without Using OBJECTPROPERTY" rel="bookmark">Determining If Vardecimal Is Enabled For a Table Without Using OBJECTPROPERTY</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Determining whether <a href="http://msdn.microsoft.com/en-us/library/bb508963(v=sql.90" target="_blank">vardecimal</a>.aspx) is enabled for a given table is usually done by using the OBJECTPROPERTY function like so:</p>
+<a id="more"></a>
+
+
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span> OBJECTPROPERTY(OBJECT_ID(<span class="string">'MyTable'</span>), <span class="string">'TableHasVarDecimalStorageFormat'</span>)</span>
+</pre></figure>
+
+<p>If it’s disabled, you’ll see this:</p>
+<div class="imgwrapper" style=""><div><a href="/determining-if-vardecimal-is-enabled-for-a-table-without-using/image_2.png" class="fancy"><img src="/determining-if-vardecimal-is-enabled-for-a-table-without-using/image_2.png" style="max-height: 250px"/></a></div></div>
+
+<p>Whereas if it’s enabled, you’ll see a 1:</p>
+<div class="imgwrapper" style=""><div><a href="/determining-if-vardecimal-is-enabled-for-a-table-without-using/image_41.png" class="fancy"><img src="/determining-if-vardecimal-is-enabled-for-a-table-without-using/image_41.png" style="max-height: 250px"/></a></div></div>
+
+<p>This works excellent as long as SQL Server is running, and you have access to the OBJECTPROPERTY function. However, as for all I know, there’s no DMV that exposes the vardecimal status for a table. I’ve also not been able to find this property in any of the base tables (if you know where/how it’s actually stored, please let me know!).</p>
+<p>However, I’ve come up with the following query as a workaround for determining if vardecimal is enabled for a given table, without using OBJECTPROPERTY:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	<span class="aggregate">COUNT</span>(*)
+<span class="keyword">FROM</span>
+	sys.system_internals_partition_columns PC
+<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
+	sys.partitions P <span class="keyword">ON</span> P.partition_id = pc.partition_id
+<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
+	sys.tables T <span class="keyword">ON</span> T.object_id = P.object_id
+<span class="keyword">WHERE</span>
+	T.name = <span class="string">'MyTable'</span> <span class="keyword">AND</span>
+	P.index_id &lt;= <span class="number">1</span> <span class="keyword">AND</span>
+	PC.system_type_id = <span class="number">106</span> <span class="keyword">AND</span>
+	PC.leaf_offset &lt; <span class="number">0</span></span>
+</pre></figure>
+
+<p>What this does is to look for all of the decimal columns for the table, stored on any partition (as vardecimal is set at the table level, we don’t really care about the specific partitions) belonging to either the clustered index or heap.</p>
+<p>Note that while this is usually true, you can actually have partitions within the same object, with both decimal and vardecimal columns. If you enable and disable vardecimal quickly, you’ll often see an extra partition with the old schema definition, though no pages are allocated. Thus, if you’re using this method for parsing purposes - make sure to check at the partition level. For most use cases, this won’t be an issue.</p>
+<p>If <em>any</em> of those decimal columns have a negative leaf_offset value (result &gt; 0), we can be sure that vardecimal is enabled for the table. The leaf_offset value determines the physical order of the fixed length columns in the actual records stored on disk. All variable length columns will have a negative value, and as such, normal decimal columns should always have a positive value. If any decimal column has a negative leaf_offset value, we know it’s stored in the variable length section of the records – and only vardecimals are stored that way!</p>
+<h2 id="Example">Example</h2>
+<p>Here’s a table without vardecimal enabled:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> MyDecimalTable (A <span class="keyword">decimal</span>(<span class="number">5</span>, <span class="number">0</span>))
+
+<span class="keyword">SELECT</span>
+	<span class="aggregate">COUNT</span>(*)
+<span class="keyword">FROM</span>
+	sys.system_internals_partition_columns PC
+<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
+	sys.partitions P <span class="keyword">ON</span> P.partition_id = pc.partition_id
+<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
+	sys.tables T <span class="keyword">ON</span> T.object_id = P.object_id
+<span class="keyword">WHERE</span>
+	T.name = <span class="string">'MyDecimalTable'</span> <span class="keyword">AND</span>
+	P.index_id &lt;= <span class="number">1</span> <span class="keyword">AND</span>
+	PC.system_type_id = <span class="number">106</span> <span class="keyword">AND</span>
+	PC.leaf_offset &lt; <span class="number">0</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/determining-if-vardecimal-is-enabled-for-a-table-without-using/image_61.png" class="fancy"><img src="/determining-if-vardecimal-is-enabled-for-a-table-without-using/image_61.png" style="max-height: 250px"/></a></div></div>
+
+<p>And here’s one <em>with</em> vardecimal enabled:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> MyVardecimalTable (A <span class="keyword">decimal</span>(<span class="number">5</span>, <span class="number">0</span>))
+
+<span class="keyword">EXEC</span> sp_tableoption <span class="string">'MyVardecimalTable'</span>, <span class="string">'vardecimal storage format'</span>, <span class="string">'1'</span>
+
+<span class="keyword">SELECT</span>
+	<span class="aggregate">COUNT</span>(*)
+<span class="keyword">FROM</span>
+	sys.system_internals_partition_columns PC
+<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
+	sys.partitions P <span class="keyword">ON</span> P.partition_id = pc.partition_id
+<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
+	sys.tables T <span class="keyword">ON</span> T.object_id = P.object_id
+<span class="keyword">WHERE</span>
+	T.name = <span class="string">'MyVardecimalTable'</span> <span class="keyword">AND</span>
+	P.index_id &lt;= <span class="number">1</span> <span class="keyword">AND</span>
+	PC.system_type_id = <span class="number">106</span> <span class="keyword">AND</span>
+	PC.leaf_offset &lt; <span class="number">0</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/determining-if-vardecimal-is-enabled-for-a-table-without-using/image_8.png" class="fancy"><img src="/determining-if-vardecimal-is-enabled-for-a-table-without-using/image_8.png" style="max-height: 250px"/></a></div></div>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Dec</span>
+			<span class="day">09</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/presenting-at-the-2012-spring-sql-server-connections/" title="Presenting at the 2012 Spring SQL Server Connections" rel="bookmark">Presenting at the 2012 Spring SQL Server Connections</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/Conferences and Presenting/">Conferences and Presenting</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Las Vegas feels like home to me, ever since going there the first time at age 7 and looking at all those ever so banned-for-me slot machines. I’ve since gone there more times than I can count, including my 21st birthday – and what a difference that age does, in a city like Las Vegas. I’ve been to the CES conference, DevConnections (2007) and I’ve played a hand of poker or two, eventually ending up in me staying there for a month to participate in the World Series of Poker (finished #822 out of 8.773).</p>
+<a id="more"></a>
+
+<p>With Las Vegas being so special to me, I’m extremely thrilled and honored to announce that I’ll be presenting at the <a href="http://www.devconnections.com/shows/sp2012/speakers.aspx?s=185" target="_blank">SQL Server Connections</a> conference, March 26-29, 2012 at the MGM Grand in Las Vegas!</p>
+<h2 id="SQL433:_Optimizing_Storage_and_Performance_Using_Page_and_Row_Compression">SQL433: Optimizing Storage and Performance Using Page and Row Compression</h2>
+<p>Since SQL Server 2005, we’ve been able to use the vardecimal data type to store decimals efficiently. With SQL Server 2008 came row and page compression, resulting in much better options for compressing our data. However, neither row nor page compression are panaceas! In this session I’ll walk you through the internals of row and page compression, and based on that knowledge, enable you to better evaluate when to use which type of compression, if compression should be used at all. Once we’ve decided to use compression, how do we determine its effectiveness? What are the pitfalls to look out for? I’ll give you a full tool belt of knowledge to bring home and put to use on your databases.</p>
+<h2 id="SQLConnections">SQLConnections</h2>
+<p>One of the really awesome features of SQLConnections is that it’s co-hosted alongside ASP.NET &amp; Silverlight, Visual Studio, SharePoint as well as Cloud &amp; Windows Connections. Each with their own set of tracks and speakers. It’s a humongous event, and I love the fact that you can mix them together – you can freely mix sessions from all the different conferences.</p>
+<p>If you haven’t already, make sure to <a href="http://devconnections.com/shows/sp2012/registration.aspx?s=185" target="_blank">register today</a>!</p>
+<h2 id="What_about_SQLBits_X_and_SQL_Saturday_105?">What about SQLBits X and SQL Saturday 105?</h2>
+<p>Before being confirmed as a speaker at SQLConnections, I’d already submitted a ton of sessions for <a href="http://sqlbits.com/" target="_blank">SQLBits X</a> and <a href="http://www.sqlsaturday.com/105/eventhome.aspx" target="_blank">SQLSat105</a>. While I could just cram in SQLSat105 in Dublin on the 24th of March, I just can’t afford the extra stop on the trip. Unfortunately that means I’ve had to withdraw my submissions :(</p>
+<p>As for SQLBits X, not going is simply not an option. SQLBits 9 was awesome, and I’ve really been looking forward to going again, whether I’m speaking or not. As such, I’ll be flying out of Vegas in the evening of March 29th, arriving in London on the 30th of March, just in time to catch day two and three of SQLBits X.</p>
+<p>I’m really looking forward to presenting at SQLConnections, and I’m equally excited to meet a lot of good friends again at both Connections and SQLBits X!</p>
+<p>PS – If anyone wants to share rooms at either Connections or SQLBits, <a href="https://twitter.com/improvedk" target="_blank">let me know</a>!</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Dec</span>
+			<span class="day">05</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/sqlbits-9-session-evaluation/" title="SQLBits 9 Session Evaluation" rel="bookmark">SQLBits 9 Session Evaluation</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/Conferences and Presenting/">Conferences and Presenting</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I’d heard many rumors about the excellent SQLBits session evaluation results that speakers are sent. Knowing the SSRS geeks on the SQLBits team, I’d expect nothing short of data &amp; graph filled reports – and I’m glad to say they didn’t disappoint!</p>
+<a id="more"></a>
+
+<p>Besides my <a href="/presenting-a-precon-at-sqlbits">precon</a>, I presented my <a href="http://sqlbits.com/Sessions/Event9/Knowing_the_Internals_Who_Needs_SQL_Server_Anyway" target="_blank">Knowing the Internals, Who Needs SQL Server Anyway</a> session. Before I start – thanks to all of you who attended my session(s), and especially thanks to those of you who filled out the feedback forms! Unfortunately the A/V people had some troubles with the microphone, so the video cuts off after about 10 minutes. Hopefully my SQLRally Nordic presentation will be made public – if/when it does, I’ll post it here.</p>
+<h2 id="The_results">The results</h2>
+<p>Looking at the overall results, I’m extremely pleased to see that I’m pretty much top rated for the demos, expectations and overall categories. While my knowledge trumps all the other ratings I received, someone clearly set the bar extremely high there – I suspect it might be <a href="http://blog.kejser.org/" target="_blank">Thomas Kejser</a> as his session was simply out of this world. Note that the graph is kind of misleading as the scale goes from 1-9, not 10.</p>
+<div class="imgwrapper" style=""><div><a href="/sqlbits-9-session-evaluation/image_4.png" class="fancy"><img src="/sqlbits-9-session-evaluation/image_4.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Score_distribution">Score distribution</h2>
+<p>Looking at the score distribution, I got a single 4 and a single 5, while the rest is 7+ with a heavy bias on 8’s and 9’s – can’t be anything but extremely satisfied. That being said – I’d love to weed out that single 4 &amp; 5, thankfully they’ve included comments with their feedback.</p>
+<div class="imgwrapper" style=""><div><a href="/sqlbits-9-session-evaluation/image_6.png" class="fancy"><img src="/sqlbits-9-session-evaluation/image_6.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Comments">Comments</h2>
+<p>I’ve listed all of the comments I got, including the average score for that comment (on a scale of 1-9). There were 20 evaluations in total, and out of those, 14 were commented. I, as all speakers, really appreciate the comments, whether to critique or praise – thank you!</p>
+<blockquote>
+<p>9 - Excellent content, great overview of what can be achieved.</p>
+<p>9 – Was a lot to cover in one hour but Mark did a fantasic job, has really inspired me to learn a lot more.</p>
+<p>9 – Very impressive!</p>
+<p>9 – Thanks for sharing. This wasn’t the most useful but a great deep dive into SQL internals and did inspire which I think is the purpose of a 1 hour session.</p>
+<p>9 – Far too much spare time on your hands! Enjoyed it though, makes you think about how you store data and use the correct data types.</p>
+<p>9 – While overwhelming at times this was probably my favourite session of SQLBits, It was a very insightful look at the computing principles that make SQL Server work. Considering the very technical content Mark did an excellent job of explaining his thought processes. The slides were very clear and the demos when stopping SQL Server, modifying the file in a Hex editor and then restarting to see the updated stats really joined everything together.</p>
+<p>9 – One of the presentations of the few days for me. Whilst the material was probably a little bit too detailed for any practical use I may currently have, it’s great to watch someone with great presentation skills (rare for a lot of techies?), sense of humour and a genuine enthusiasm for the work/hobby he is undertaking.</p>
+<p>9 – Very impressive session. Technical level of the session was very high (as stated at the start). Watched Klaus Aschenbrenner’s internals session from previous SQL bits and felt this was a good pre-cursor. Will definitely be downloading OrcaMDF.</p>
+<p>8.66 – My favourite talk of the conference. Absolutley superb.</p>
+<p>8.5 – Mark handled a topic with many grey areas with consummate ease. Lots of undocumented detail, quite incredible perseverance with a topic that is largely a black box.</p>
+<p>8.5 – Excellent session - wished id have done the Full day thursday!!!! Marks knowledge in the subjects was second to none!!</p>
+<p>8 – Very interesting session. Not entirely useful yet, but I can believe that by continuing to reverse engineering the file format this would be very useful knowledge to have.</p>
+<p>7.66 – Really interesting stuff. Possibly not immediately usable in the work place, but it’s good background information.</p>
+<p>7.5 – Tough choice between this one and around the world session. Only negative was a bit heavy on the slides but this is a tough topic to demo in 1 hour so maximum respect for pulling this off. Also, it was made clear that the session was to inspire and not teach. He had to push through the session quickly to make the hour and Mark did it well.</p>
+</blockquote>
+<h2 id="Conclusions">Conclusions</h2>
+<p><em>This session is not meant to teach, but to inspire.</em></p>
+<p>That’s how I started out my session, and with good reason. Originally I held a 45 minute session at Miracle Open World earlier this year, which laid the foundation for my precon and session at SQLBits. While developing my precon, I suddenly ended up with a lot of material, way too much to present in just a single hour. I had to compress it somehow, so I basically had two choices – ditch 90% of the material, or ditch just 20% of the material and speed through the rest. I opted for the latter.</p>
+<p>I made the choice that I’d rather give people the same experience that I had at my first SQL Server conference, several years ago. I went to a basic internals session, and suddenly it dawned upon me, how SQL Server wasn’t magic – it’s merely a bunch of deterministic rules for juggling with bytes on disk. Since then, I’ve been on a quest of learning how to SQL Server catches its fish, rather than just eating the fish it provides.</p>
+<p>While I can’t deem any of the comments or ratings as negative, the only critique I got was on the direct practical usability of the content, as well as the amount of material presented in one hour. For both of those, I fully recognize what’s being said. As a result, some of my SQLBits X submissions are sessions that go in-depth on specific topics, that I’d otherwise just skimmed in my last session:</p>
+<ul>
+<li><a href="http://sqlbits.com/Sessions/Event10/OrcaMDF-Real_Life_Usage" target="_blank">OrcaMDF – Real Life Usage</a></li>
+<li><a href="http://sqlbits.com/Sessions/Event10/Creating_the_Optimal_Schema_for_Storage_Efficiency" target="_blank">Creating the Optimal Schema for Storage Efficiency</a></li>
+<li><a href="http://sqlbits.com/Sessions/Event10/Storing_Character_Data_Optimally" target="_blank">Storing Character Data Optimally</a></li>
+<li><a href="http://sqlbits.com/Sessions/Event10/Optimizing_Performance_Using_Page_and_Row_Compression" target="_blank">Optimizing Performance Using Page and Row Compression</a></li>
+<li><a href="http://sqlbits.com/Sessions/Event10/Revealing_the_Magic" target="_blank">Revealing the Magic</a></li>
+</ul>
+<p>Revealing the Magic is the same session as Knowing the Internals – Who Needs SQL Server Anyways? I’ve renamed it to better reflect what my purpose with the session is – to reveal the magic. To hopefully provide that revelation of what SQL Server really is, once we hit the disk.</p>
+<p>I look forward to an excellent 2012 with, hopefully, a lot of presentations to come!</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Nov</span>
+			<span class="day">28</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/automated-testing-of-orcamdf-against-multiple-sql-server-versions/" title="Automated Testing of OrcaMDF Against Multiple SQL Server Versions" rel="bookmark">Automated Testing of OrcaMDF Against Multiple SQL Server Versions</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Since I released <a href="/orcamdf-studio-release-feature-recap">OrcaMDF Studio</a>, I’ve gotten aware of some base table differences between SQL Server 2008 and 2005. These differences causes OrcaMDF to fail since it’s coded against 2008 R2 and expect that format.</p>
+<a id="more"></a>
+
+<p>While working on support for SQL Server 2005, it dawned on me that I need to expand my <a href="/avoiding-regressions-in-orcamdf-by-system-testing">testing</a> to cover multiple SQL Server versions, instead of just hitting a single one. Somehow I also need to support the fact that some tests are only applicable for certain versions (e.g. sparse column tests should only be run for SQL Server 2008+, etc.).</p>
+<h2 id="NUnit_TestCaseSourceAttribute_to_the_rescue!">NUnit TestCaseSourceAttribute to the rescue!</h2>
+<p>NUnit supports <a href="http://www.nunit.org/index.php?p=testCase&amp;r=2.5" target="_blank">inline parameterized tests</a> through the TestCase attribute. Even better, we can also provide the parameter data for test cases dynamically, using the <a href="http://www.nunit.org/index.php?p=testCaseSource&amp;r=2.5" target="_blank">TestCaseSource</a> attribute.</p>
+<p>First up, I implemented a simple enumeration covering the versions that I’m currently working on supporting:</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">enum</span> DatabaseVersion
+{
+	SqlServer2005,
+	SqlServer2008,
+	SqlServer2008R2,
+}
+</pre></figure>
+
+<p>I then created the SqlServerTestAttribute class, inheriting directly from TestCaseSourceAttribute like so:</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlServerTestAttribute : TestCaseSourceAttribute
+{
+	<span class="keyword">private</span> <span class="keyword">static</span> IEnumerable&lt;TestCaseData&gt; versions
+	{
+		<span class="keyword">get</span>
+		{
+			<span class="keyword">foreach</span> (<span class="keyword">var</span> <span class="keyword">value</span> <span class="keyword">in</span> Enum.GetValues(<span class="keyword">typeof</span>(DatabaseVersion)))
+				<span class="keyword">yield</span> <span class="keyword">return</span> <span class="keyword">new</span> TestCaseData(<span class="keyword">value</span>).SetCategory(<span class="keyword">value</span>.ToString());
+		}
+	}
+
+	<span class="keyword">public</span> <span class="title">SqlServerTestAttribute</span>() : <span class="title">base</span>(<span class="title">typeof</span>(SqlServerTestAttribute), "versions")
+	{ }
+}
+</pre></figure>
+
+<p>The SqlServerTestAttribute class tells TestCaseSourceAttribute to find the test case source data in the private static <em>versions</em> property. The versions property enumerates all the DatabaseVersion values and returns them one by one – ensuring to set the test category to the name of the DatabaseVersion value.</p>
+<p>Next up, I converted my current tests to use the new SqlServerTest attribute, instead of the previous vanilla NUnit Test attribute:</p>
+<figure class="highlight csharp"><pre>[SqlServerTest]
+public void HeapForwardedRecord(DatabaseVersion version)
+{
+	<span class="keyword">...</span>
+}
+</pre></figure>
+
+<p>This causes all of my tests to be run once per enumeration value in the DatabaseVersion enumeration, automatically getting each of the values as input values in the version parameter.</p>
+<h2 id="Supporting_different_development_environments">Supporting different development environments</h2>
+<p>Now, I don’t want to force everyone to install all versions of SQL Server – they might just want to support SQL Server 2005 &amp; 2008R2 for example. In the OrcaMDF.Core.Tests project, I’ve defined a connection string for each supported test database like so:</p>
+<figure class="highlight xml"><pre><span class="tag">&lt;<span class="title">connectionStrings</span>&gt;</span>
+	<span class="tag">&lt;<span class="title">clear</span>/&gt;</span>
+	<span class="tag">&lt;<span class="title">add</span> <span class="attribute">name</span>=<span class="value">"SqlServer2005"</span> <span class="attribute">connectionString</span>=<span class="value">"Data Source=.SQL2005;Integrated Security=SSPI"</span>/&gt;</span>
+	<span class="tag">&lt;<span class="title">add</span> <span class="attribute">name</span>=<span class="value">"SqlServer2008R2"</span> <span class="attribute">connectionString</span>=<span class="value">"Data Source=.;Integrated Security=SSPI"</span>/&gt;</span>
+<span class="tag">&lt;/<span class="title">connectionStrings</span>&gt;</span>
+</pre></figure>
+
+<p>If a database doesn’t have a connection (the name corresponding to the DatabaseVersion enumeration value), the test won’t be run for that version, simple as that. In this case I’m currently ignoring SQL Server 2008 as I only have 2005 and 2008R2 installed on my machine.</p>
+<p>To perform the filtering on available databases, I’ve modified my test cases to let the base class actually run the test, using a lambda:</p>
+<figure class="highlight csharp"><pre>[SqlServerTest]
+public void HeapForwardedRecord(DatabaseVersion version)
+{
+	RunDatabaseTest(version, db =&gt;
+	{
+		var scanner = new DataScanner(db)<span class="comment">;</span>
+		var rows = scanner<span class="preprocessor">.ScanTable</span>(<span class="string">"HeapForwardedRecord"</span>)<span class="preprocessor">.ToList</span>()<span class="comment">;</span>
+
+		Assert<span class="preprocessor">.AreEqual</span>(<span class="number">25</span>, rows[<span class="number">0</span>]<span class="preprocessor">.Field</span>&lt;int&gt;(<span class="string">"A"</span>))<span class="comment">;</span>
+		Assert<span class="preprocessor">.AreEqual</span>(<span class="string">""</span><span class="preprocessor">.PadLeft</span>(<span class="number">5000</span>, <span class="string">'A'</span>), rows[<span class="number">0</span>]<span class="preprocessor">.Field</span>&lt;string&gt;(<span class="string">"B"</span>))<span class="comment">;</span>
+
+		Assert<span class="preprocessor">.AreEqual</span>(<span class="number">28</span>, rows[<span class="number">1</span>]<span class="preprocessor">.Field</span>&lt;int&gt;(<span class="string">"A"</span>))<span class="comment">;</span>
+		Assert<span class="preprocessor">.AreEqual</span>(<span class="string">""</span><span class="preprocessor">.PadLeft</span>(<span class="number">4000</span>, <span class="string">'B'</span>), rows[<span class="number">1</span>]<span class="preprocessor">.Field</span>&lt;string&gt;(<span class="string">"B"</span>))<span class="comment">;</span>
+	})<span class="comment">;</span>
+}
+</pre></figure>
+
+<p>The RunDatabase method is exposed in the SqlServerSystemTestBase class:</p>
+<figure class="highlight csharp"><pre><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">RunDatabaseTest</span>(DatabaseVersion version, Action&lt;Database&gt; test)
+{
+	<span class="keyword">string</span> versionConnectionName = version.ToString();
+
+	<span class="comment">// Only run test for this version if a connection string has been provided</span>
+	<span class="keyword">if</span> (ConfigurationManager.ConnectionStrings[versionConnectionName] == <span class="keyword">null</span>)
+		Assert.Inconclusive();
+
+	<span class="comment">// Setup database and store file paths, if we haven't done so already</span>
+	ensureDatabaseIsSetup(version);
+
+	<span class="comment">// Run actual test</span>
+	<span class="keyword">using</span> (<span class="keyword">var</span> db = <span class="keyword">new</span> Database(databaseFiles[version]))
+		test(db);
+}
+</pre></figure>
+
+<p>If a corresponding connection string hasn’t been declared in the configuration file, we abort the test and mark it as inconclusive – we simply weren’t able to run it given the current setup. Next up, ensureDatabaseIsSetup() runs the usual setup code (as detailed in the <a href="/avoiding-regressions-in-orcamdf-by-system-testing">earlier blog post</a>), though this time once per database versions, per fixture. Finally an OrcaMDF instance is created and passed onto the actual test as a parameter.</p>
+<h2 id="Supporting_different_SQL_Server_feature_versions">Supporting different SQL Server feature versions</h2>
+<p>As mentioned, I need a way of executing some tests only on certain versions of SQL Server. The standard SqlServerTestAttribute automatically enumerations <em>all</em> values of the DatabaseVersion enumeration, but there’s no reason we can’t create a SqlServer2005TestAttribute like this:</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlServer2005TestAttribute : TestCaseSourceAttribute
+{
+	<span class="keyword">private</span> <span class="keyword">static</span> IEnumerable&lt;TestCaseData&gt; versions
+	{
+		<span class="keyword">get</span>
+		{
+			<span class="keyword">yield</span> <span class="keyword">return</span> <span class="keyword">new</span> TestCaseData(DatabaseVersion.SqlServer2005).SetCategory(DatabaseVersion.SqlServer2005.ToString());
+		}
+	}
+
+	<span class="keyword">public</span> <span class="title">SqlServer2005TestAttribute</span>() : <span class="title">base</span>(<span class="title">typeof</span>(SqlServer2005TestAttribute), "versions")
+	{ }
+}
+</pre></figure>
+
+<p>Or what about tests that need to be run on SQL Server 2008+?</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlServer2008PlusTestAttribute : TestCaseSourceAttribute
+{
+	<span class="keyword">private</span> <span class="keyword">static</span> IEnumerable&lt;TestCaseData&gt; versions
+	{
+		<span class="keyword">get</span>
+		{
+			<span class="keyword">foreach</span> (<span class="keyword">var</span> <span class="keyword">value</span> <span class="keyword">in</span> Enum.GetValues(<span class="keyword">typeof</span>(DatabaseVersion)))
+				<span class="keyword">if</span>((DatabaseVersion)<span class="keyword">value</span> &gt;= DatabaseVersion.SqlServer2008)
+					<span class="keyword">yield</span> <span class="keyword">return</span> <span class="keyword">new</span> TestCaseData(<span class="keyword">value</span>).SetCategory(<span class="keyword">value</span>.ToString());
+		}
+	}
+
+	<span class="keyword">public</span> <span class="title">SqlServer2008PlusTestAttribute</span>()
+		: <span class="title">base</span>(<span class="title">typeof</span>(SqlServer2008PlusTestAttribute), "versions")
+	{ }
+}
+</pre></figure>
+
+<p>Once we have the attributes, it’s as easy as marking the individual tests with the versions they’re supposed to be run on:</p>
+<figure class="highlight csharp"><pre>[SqlServer2008PlusTest]
+<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">ScanAllNullSparse</span>(DatabaseVersion version)
+{
+	RunDatabaseTest(version, db =&gt;
+	{
+		<span class="keyword">var</span> scanner = <span class="keyword">new</span> DataScanner(db);
+		<span class="keyword">var</span> rows = scanner.ScanTable(<span class="string">"ScanAllNullSparse"</span>).ToList();
+
+		Assert.AreEqual(<span class="keyword">null</span>, rows[<span class="number">0</span>].Field&lt;<span class="keyword">int</span>?&gt;(<span class="string">"A"</span>));
+		Assert.AreEqual(<span class="keyword">null</span>, rows[<span class="number">0</span>].Field&lt;<span class="keyword">int</span>?&gt;(<span class="string">"B"</span>));
+	});
+}
+</pre></figure>
+
+<h2 id="ReSharper_test_runner_support">ReSharper test runner support</h2>
+<p>For the tests to run, you’ll need ReSharper 6.0 as ReSharper 5.1 doesn’t support the TestCaseSource attribute. Once you do, you’ll see a result like this once run (having enabled SQL Server 2005 &amp; 2008 R2 testing in this case):</p>
+<div class="imgwrapper" style=""><div><a href="/automated-testing-of-orcamdf-against-multiple-sql-server-versions/image_24.png" class="fancy"><img src="/automated-testing-of-orcamdf-against-multiple-sql-server-versions/image_24.png" style="max-height: 250px"/></a></div></div>
+
+<p>Each test case is automatically multiplied by each DatabaseVersion (the Parse test isn’t, since it doesn’t implement SqlServerSystemTestBase and thus isn’t run on multiple versions). Most of the tests are failing on SQL Server 2005 since I don’t support it yet. All 2008 tests are inconclusive as I’m not running the tests. And finally, all of the 2008R2 tests are green, yay!</p>
+<h2 id="Filtering_the_tests">Filtering the tests</h2>
+<p>Obviously, we don’t want to run the tests for all versions of SQL Server all the time, that’d simply be too time consuming. One way to disable the testing of a specific version would be to remove the connection string. However, that still yields an inconclusive output, and it’s somewhat cumbersome to edit the configuration file all the time.</p>
+<p>Unfortunately, the ReSharper test runner doesn’t support category filtering of parameterized tests created using the TestCaseSourceAttribute. I’ve created a <a href="http://youtrack.jetbrains.net/issue/RSRP-283463" target="_blank">feature request case on YouTRACK</a> as I really hope they’ll consider adding it for 6.1. If you also think it’d be awesome, please consider voting for the request case!</p>
+<p>Fortunately, the NUnit test runner <em>does</em> support this kind of filtering. Opening the OrcaMDF.Core.Tests assembly in the NUnit test runner gives the following result:</p>
+<div class="imgwrapper" style=""><div><a href="/automated-testing-of-orcamdf-against-multiple-sql-server-versions/image_44.png" class="fancy"><img src="/automated-testing-of-orcamdf-against-multiple-sql-server-versions/image_44.png" style="max-height: 250px"/></a></div></div>
+
+<p>Notice how it already knows about the parameterized test parameters, even before we’ve run the test! Also note how it recognizes that the DifferingRecordFormats test is only to be run on SQL Server 2008+ while the FGSpecificClusteredAllocation test is to be run on 2005+.</p>
+<p>What’s even better – if we go to the Categories tab, we get a list of all the test categories:</p>
+<div class="imgwrapper" style=""><div><a href="/automated-testing-of-orcamdf-against-multiple-sql-server-versions/image_64.png" class="fancy"><img src="/automated-testing-of-orcamdf-against-multiple-sql-server-versions/image_64.png" style="max-height: 250px"/></a></div></div>
+
+<p>By explicitly selecting certain categories, we can choose to run just those versions. Once run, the other versions will be clearly greyed out:</p>
+<div class="imgwrapper" style=""><div><a href="/automated-testing-of-orcamdf-against-multiple-sql-server-versions/image_81.png" class="fancy"><img src="/automated-testing-of-orcamdf-against-multiple-sql-server-versions/image_81.png" style="max-height: 250px"/></a></div></div>
+
+<p>Note the horrible runtime of 89 secs – just over 1 second per test. 98% of that time is spent in the LobTypes feature testing. Thanks to the category format, I can also apply categories to the main tests themselves, and thus easily filter out the long running tests and just concentrate on the quick ones. Lob types are especially demanding to test since they involve a lot of disk activity, creating all of the setup tables &amp; rows before hitting the database.</p>
+<h2 id="Going_forward">Going forward</h2>
+<p>Adding new versions is as simple as installing that version of SQL Server, adding a connection string in the configuration settings, and finally, adding the SQL Server name to the DatabaseVersion enumeration. That’s all there is to it.</p>
+<p>On the more advanced side, at some point, I will need to test the many permutations of upgrade paths. Based on some testing I did, a SQL Server 2005 database upgraded to 2008R2 isn’t necessarily identical to a native 2008R2 one, or to a 2008-2008R2 upgraded one. As such, I’d need to test the many distinct upgrade paths to ensure full compatibility. However, that’s not high on my priority list, and it’d take even more time to test.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+
+<div class="paging">
+	<a href="/page/6/"><div class="past">« Past</div></a>
+	<a href="/page/4/"><div class="future">Future »</div></a>
+	<div class="clear"></div>
+</div>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

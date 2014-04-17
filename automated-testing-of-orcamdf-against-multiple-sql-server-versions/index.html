@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Automated Testing of OrcaMDF Against Multiple SQL Server Versions | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Nov</span>
+			<span class="day">28</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/automated-testing-of-orcamdf-against-multiple-sql-server-versions/" title="Automated Testing of OrcaMDF Against Multiple SQL Server Versions" rel="bookmark">Automated Testing of OrcaMDF Against Multiple SQL Server Versions</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on Automated Testing of OrcaMDF Against Multiple SQL Server Versions">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>Since I released <a href="/orcamdf-studio-release-feature-recap">OrcaMDF Studio</a>, I’ve gotten aware of some base table differences between SQL Server 2008 and 2005. These differences causes OrcaMDF to fail since it’s coded against 2008 R2 and expect that format.</p>
+<a id="more"></a>
+
+<p>While working on support for SQL Server 2005, it dawned on me that I need to expand my <a href="/avoiding-regressions-in-orcamdf-by-system-testing">testing</a> to cover multiple SQL Server versions, instead of just hitting a single one. Somehow I also need to support the fact that some tests are only applicable for certain versions (e.g. sparse column tests should only be run for SQL Server 2008+, etc.).</p>
+<h2 id="NUnit_TestCaseSourceAttribute_to_the_rescue!">NUnit TestCaseSourceAttribute to the rescue!</h2>
+<p>NUnit supports <a href="http://www.nunit.org/index.php?p=testCase&amp;r=2.5" target="_blank">inline parameterized tests</a> through the TestCase attribute. Even better, we can also provide the parameter data for test cases dynamically, using the <a href="http://www.nunit.org/index.php?p=testCaseSource&amp;r=2.5" target="_blank">TestCaseSource</a> attribute.</p>
+<p>First up, I implemented a simple enumeration covering the versions that I’m currently working on supporting:</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">enum</span> DatabaseVersion
+{
+	SqlServer2005,
+	SqlServer2008,
+	SqlServer2008R2,
+}
+</pre></figure>
+
+<p>I then created the SqlServerTestAttribute class, inheriting directly from TestCaseSourceAttribute like so:</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlServerTestAttribute : TestCaseSourceAttribute
+{
+	<span class="keyword">private</span> <span class="keyword">static</span> IEnumerable&lt;TestCaseData&gt; versions
+	{
+		<span class="keyword">get</span>
+		{
+			<span class="keyword">foreach</span> (<span class="keyword">var</span> <span class="keyword">value</span> <span class="keyword">in</span> Enum.GetValues(<span class="keyword">typeof</span>(DatabaseVersion)))
+				<span class="keyword">yield</span> <span class="keyword">return</span> <span class="keyword">new</span> TestCaseData(<span class="keyword">value</span>).SetCategory(<span class="keyword">value</span>.ToString());
+		}
+	}
+
+	<span class="keyword">public</span> <span class="title">SqlServerTestAttribute</span>() : <span class="title">base</span>(<span class="title">typeof</span>(SqlServerTestAttribute), "versions")
+	{ }
+}
+</pre></figure>
+
+<p>The SqlServerTestAttribute class tells TestCaseSourceAttribute to find the test case source data in the private static <em>versions</em> property. The versions property enumerates all the DatabaseVersion values and returns them one by one – ensuring to set the test category to the name of the DatabaseVersion value.</p>
+<p>Next up, I converted my current tests to use the new SqlServerTest attribute, instead of the previous vanilla NUnit Test attribute:</p>
+<figure class="highlight csharp"><pre>[SqlServerTest]
+public void HeapForwardedRecord(DatabaseVersion version)
+{
+	<span class="keyword">...</span>
+}
+</pre></figure>
+
+<p>This causes all of my tests to be run once per enumeration value in the DatabaseVersion enumeration, automatically getting each of the values as input values in the version parameter.</p>
+<h2 id="Supporting_different_development_environments">Supporting different development environments</h2>
+<p>Now, I don’t want to force everyone to install all versions of SQL Server – they might just want to support SQL Server 2005 &amp; 2008R2 for example. In the OrcaMDF.Core.Tests project, I’ve defined a connection string for each supported test database like so:</p>
+<figure class="highlight xml"><pre><span class="tag">&lt;<span class="title">connectionStrings</span>&gt;</span>
+	<span class="tag">&lt;<span class="title">clear</span>/&gt;</span>
+	<span class="tag">&lt;<span class="title">add</span> <span class="attribute">name</span>=<span class="value">"SqlServer2005"</span> <span class="attribute">connectionString</span>=<span class="value">"Data Source=.SQL2005;Integrated Security=SSPI"</span>/&gt;</span>
+	<span class="tag">&lt;<span class="title">add</span> <span class="attribute">name</span>=<span class="value">"SqlServer2008R2"</span> <span class="attribute">connectionString</span>=<span class="value">"Data Source=.;Integrated Security=SSPI"</span>/&gt;</span>
+<span class="tag">&lt;/<span class="title">connectionStrings</span>&gt;</span>
+</pre></figure>
+
+<p>If a database doesn’t have a connection (the name corresponding to the DatabaseVersion enumeration value), the test won’t be run for that version, simple as that. In this case I’m currently ignoring SQL Server 2008 as I only have 2005 and 2008R2 installed on my machine.</p>
+<p>To perform the filtering on available databases, I’ve modified my test cases to let the base class actually run the test, using a lambda:</p>
+<figure class="highlight csharp"><pre>[SqlServerTest]
+public void HeapForwardedRecord(DatabaseVersion version)
+{
+	RunDatabaseTest(version, db =&gt;
+	{
+		var scanner = new DataScanner(db)<span class="comment">;</span>
+		var rows = scanner<span class="preprocessor">.ScanTable</span>(<span class="string">"HeapForwardedRecord"</span>)<span class="preprocessor">.ToList</span>()<span class="comment">;</span>
+
+		Assert<span class="preprocessor">.AreEqual</span>(<span class="number">25</span>, rows[<span class="number">0</span>]<span class="preprocessor">.Field</span>&lt;int&gt;(<span class="string">"A"</span>))<span class="comment">;</span>
+		Assert<span class="preprocessor">.AreEqual</span>(<span class="string">""</span><span class="preprocessor">.PadLeft</span>(<span class="number">5000</span>, <span class="string">'A'</span>), rows[<span class="number">0</span>]<span class="preprocessor">.Field</span>&lt;string&gt;(<span class="string">"B"</span>))<span class="comment">;</span>
+
+		Assert<span class="preprocessor">.AreEqual</span>(<span class="number">28</span>, rows[<span class="number">1</span>]<span class="preprocessor">.Field</span>&lt;int&gt;(<span class="string">"A"</span>))<span class="comment">;</span>
+		Assert<span class="preprocessor">.AreEqual</span>(<span class="string">""</span><span class="preprocessor">.PadLeft</span>(<span class="number">4000</span>, <span class="string">'B'</span>), rows[<span class="number">1</span>]<span class="preprocessor">.Field</span>&lt;string&gt;(<span class="string">"B"</span>))<span class="comment">;</span>
+	})<span class="comment">;</span>
+}
+</pre></figure>
+
+<p>The RunDatabase method is exposed in the SqlServerSystemTestBase class:</p>
+<figure class="highlight csharp"><pre><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">RunDatabaseTest</span>(DatabaseVersion version, Action&lt;Database&gt; test)
+{
+	<span class="keyword">string</span> versionConnectionName = version.ToString();
+
+	<span class="comment">// Only run test for this version if a connection string has been provided</span>
+	<span class="keyword">if</span> (ConfigurationManager.ConnectionStrings[versionConnectionName] == <span class="keyword">null</span>)
+		Assert.Inconclusive();
+
+	<span class="comment">// Setup database and store file paths, if we haven't done so already</span>
+	ensureDatabaseIsSetup(version);
+
+	<span class="comment">// Run actual test</span>
+	<span class="keyword">using</span> (<span class="keyword">var</span> db = <span class="keyword">new</span> Database(databaseFiles[version]))
+		test(db);
+}
+</pre></figure>
+
+<p>If a corresponding connection string hasn’t been declared in the configuration file, we abort the test and mark it as inconclusive – we simply weren’t able to run it given the current setup. Next up, ensureDatabaseIsSetup() runs the usual setup code (as detailed in the <a href="/avoiding-regressions-in-orcamdf-by-system-testing">earlier blog post</a>), though this time once per database versions, per fixture. Finally an OrcaMDF instance is created and passed onto the actual test as a parameter.</p>
+<h2 id="Supporting_different_SQL_Server_feature_versions">Supporting different SQL Server feature versions</h2>
+<p>As mentioned, I need a way of executing some tests only on certain versions of SQL Server. The standard SqlServerTestAttribute automatically enumerations <em>all</em> values of the DatabaseVersion enumeration, but there’s no reason we can’t create a SqlServer2005TestAttribute like this:</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlServer2005TestAttribute : TestCaseSourceAttribute
+{
+	<span class="keyword">private</span> <span class="keyword">static</span> IEnumerable&lt;TestCaseData&gt; versions
+	{
+		<span class="keyword">get</span>
+		{
+			<span class="keyword">yield</span> <span class="keyword">return</span> <span class="keyword">new</span> TestCaseData(DatabaseVersion.SqlServer2005).SetCategory(DatabaseVersion.SqlServer2005.ToString());
+		}
+	}
+
+	<span class="keyword">public</span> <span class="title">SqlServer2005TestAttribute</span>() : <span class="title">base</span>(<span class="title">typeof</span>(SqlServer2005TestAttribute), "versions")
+	{ }
+}
+</pre></figure>
+
+<p>Or what about tests that need to be run on SQL Server 2008+?</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlServer2008PlusTestAttribute : TestCaseSourceAttribute
+{
+	<span class="keyword">private</span> <span class="keyword">static</span> IEnumerable&lt;TestCaseData&gt; versions
+	{
+		<span class="keyword">get</span>
+		{
+			<span class="keyword">foreach</span> (<span class="keyword">var</span> <span class="keyword">value</span> <span class="keyword">in</span> Enum.GetValues(<span class="keyword">typeof</span>(DatabaseVersion)))
+				<span class="keyword">if</span>((DatabaseVersion)<span class="keyword">value</span> &gt;= DatabaseVersion.SqlServer2008)
+					<span class="keyword">yield</span> <span class="keyword">return</span> <span class="keyword">new</span> TestCaseData(<span class="keyword">value</span>).SetCategory(<span class="keyword">value</span>.ToString());
+		}
+	}
+
+	<span class="keyword">public</span> <span class="title">SqlServer2008PlusTestAttribute</span>()
+		: <span class="title">base</span>(<span class="title">typeof</span>(SqlServer2008PlusTestAttribute), "versions")
+	{ }
+}
+</pre></figure>
+
+<p>Once we have the attributes, it’s as easy as marking the individual tests with the versions they’re supposed to be run on:</p>
+<figure class="highlight csharp"><pre>[SqlServer2008PlusTest]
+<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">ScanAllNullSparse</span>(DatabaseVersion version)
+{
+	RunDatabaseTest(version, db =&gt;
+	{
+		<span class="keyword">var</span> scanner = <span class="keyword">new</span> DataScanner(db);
+		<span class="keyword">var</span> rows = scanner.ScanTable(<span class="string">"ScanAllNullSparse"</span>).ToList();
+
+		Assert.AreEqual(<span class="keyword">null</span>, rows[<span class="number">0</span>].Field&lt;<span class="keyword">int</span>?&gt;(<span class="string">"A"</span>));
+		Assert.AreEqual(<span class="keyword">null</span>, rows[<span class="number">0</span>].Field&lt;<span class="keyword">int</span>?&gt;(<span class="string">"B"</span>));
+	});
+}
+</pre></figure>
+
+<h2 id="ReSharper_test_runner_support">ReSharper test runner support</h2>
+<p>For the tests to run, you’ll need ReSharper 6.0 as ReSharper 5.1 doesn’t support the TestCaseSource attribute. Once you do, you’ll see a result like this once run (having enabled SQL Server 2005 &amp; 2008 R2 testing in this case):</p>
+<div class="imgwrapper" style=""><div><a href="/automated-testing-of-orcamdf-against-multiple-sql-server-versions/image_24.png" class="fancy"><img src="/automated-testing-of-orcamdf-against-multiple-sql-server-versions/image_24.png" style="max-height: 250px"/></a></div></div>
+
+<p>Each test case is automatically multiplied by each DatabaseVersion (the Parse test isn’t, since it doesn’t implement SqlServerSystemTestBase and thus isn’t run on multiple versions). Most of the tests are failing on SQL Server 2005 since I don’t support it yet. All 2008 tests are inconclusive as I’m not running the tests. And finally, all of the 2008R2 tests are green, yay!</p>
+<h2 id="Filtering_the_tests">Filtering the tests</h2>
+<p>Obviously, we don’t want to run the tests for all versions of SQL Server all the time, that’d simply be too time consuming. One way to disable the testing of a specific version would be to remove the connection string. However, that still yields an inconclusive output, and it’s somewhat cumbersome to edit the configuration file all the time.</p>
+<p>Unfortunately, the ReSharper test runner doesn’t support category filtering of parameterized tests created using the TestCaseSourceAttribute. I’ve created a <a href="http://youtrack.jetbrains.net/issue/RSRP-283463" target="_blank">feature request case on YouTRACK</a> as I really hope they’ll consider adding it for 6.1. If you also think it’d be awesome, please consider voting for the request case!</p>
+<p>Fortunately, the NUnit test runner <em>does</em> support this kind of filtering. Opening the OrcaMDF.Core.Tests assembly in the NUnit test runner gives the following result:</p>
+<div class="imgwrapper" style=""><div><a href="/automated-testing-of-orcamdf-against-multiple-sql-server-versions/image_44.png" class="fancy"><img src="/automated-testing-of-orcamdf-against-multiple-sql-server-versions/image_44.png" style="max-height: 250px"/></a></div></div>
+
+<p>Notice how it already knows about the parameterized test parameters, even before we’ve run the test! Also note how it recognizes that the DifferingRecordFormats test is only to be run on SQL Server 2008+ while the FGSpecificClusteredAllocation test is to be run on 2005+.</p>
+<p>What’s even better – if we go to the Categories tab, we get a list of all the test categories:</p>
+<div class="imgwrapper" style=""><div><a href="/automated-testing-of-orcamdf-against-multiple-sql-server-versions/image_64.png" class="fancy"><img src="/automated-testing-of-orcamdf-against-multiple-sql-server-versions/image_64.png" style="max-height: 250px"/></a></div></div>
+
+<p>By explicitly selecting certain categories, we can choose to run just those versions. Once run, the other versions will be clearly greyed out:</p>
+<div class="imgwrapper" style=""><div><a href="/automated-testing-of-orcamdf-against-multiple-sql-server-versions/image_81.png" class="fancy"><img src="/automated-testing-of-orcamdf-against-multiple-sql-server-versions/image_81.png" style="max-height: 250px"/></a></div></div>
+
+<p>Note the horrible runtime of 89 secs – just over 1 second per test. 98% of that time is spent in the LobTypes feature testing. Thanks to the category format, I can also apply categories to the main tests themselves, and thus easily filter out the long running tests and just concentrate on the quick ones. Lob types are especially demanding to test since they involve a lot of disk activity, creating all of the setup tables &amp; rows before hitting the database.</p>
+<h2 id="Going_forward">Going forward</h2>
+<p>Adding new versions is as simple as installing that version of SQL Server, adding a connection string in the configuration settings, and finally, adding the SQL Server name to the DatabaseVersion enumeration. That’s all there is to it.</p>
+<p>On the more advanced side, at some point, I will need to test the many permutations of upgrade paths. Based on some testing I did, a SQL Server 2005 database upgraded to 2008R2 isn’t necessarily identical to a native 2008R2 one, or to a 2008-2008R2 upgraded one. As such, I’d need to test the many distinct upgrade paths to ensure full compatibility. However, that’s not high on my priority list, and it’d take even more time to test.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=Automated%20Testing%20of%20OrcaMDF%20Against%20Multiple%20SQL%20Server%20Versions%20http%3A%2F%2Fimprove.dk%2Fautomated-testing-of-orcamdf-against-multiple-sql-server-versions%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fautomated-testing-of-orcamdf-against-multiple-sql-server-versions%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fautomated-testing-of-orcamdf-against-multiple-sql-server-versions%2F&title=Automated%20Testing%20of%20OrcaMDF%20Against%20Multiple%20SQL%20Server%20Versions" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/automated-testing-of-orcamdf-against-multiple-sql-server-versions/automated-testing-of-orcamdf-against-multiple-sql-server-versions.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'automated-testing-of-orcamdf-against-multiple-sql-server-versions';
+	var disqus_url = 'http://improve.dk/automated-testing-of-orcamdf-against-multiple-sql-server-versions/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Wasted Bytes Add Up, Consider Your Data Types Carefully | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">17</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/wasted-bytes-add-up-consider-your-data-types-carefully/" title="Wasted Bytes Add Up, Consider Your Data Types Carefully" rel="bookmark">Wasted Bytes Add Up, Consider Your Data Types Carefully</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Optimization/">SQL Server - Optimization</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on Wasted Bytes Add Up, Consider Your Data Types Carefully">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>I recently had a look at the statistics storage of a system I designed some time ago. As is usually the case, back when I made it, I neither expected nor planned for a large amount data, and yet somehow that table currently has about 750m rows in it.</p>
+<a id="more"></a>
+
+<p>The basic schema for the table references a given entity and a page number, both represented by ints. Furthermore we register the users Flash version, their IP and the date of the hit.</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> #HitsV1
+(
+	EntityID <span class="keyword">int</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span>,
+	PageNumber <span class="keyword">int</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span>,
+	Created datetime <span class="keyword">NOT</span> <span class="keyword">NULL</span>,
+	FlashVersion <span class="keyword">int</span> <span class="keyword">NULL</span>,
+	IP <span class="keyword">varchar</span>(<span class="number">15</span>) <span class="keyword">NULL</span>
+)</span>
+</pre></figure>
+
+<p>Taking a look at the schema, we can calculate the size of the data in the record (synonymous to a row, indicating the structure on disk) to be 4 + 4 + 8 + 4 + 15 = 35 bytes. However, there’s overhead to a record as well, and the narrower the row, the more overhead, relatively.</p>
+<p>In this case, the overhead consists of:</p>
+<table>
+<thead>
+<tr>
+<th>Bytes</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2</td>
+<td>Status bits A &amp; B</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Length of fixed-length data</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Number of columns</td>
+</tr>
+<tr>
+<td>1</td>
+<td>NULL bitmap</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Number of variable length columns</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Variable length column offset array</td>
+</tr>
+</tbody>
+</table>
+<p>Finally, each record has an accompanying two byte pointer in the row offset array, meaning the total overhead per record amounts to 13 bytes. Thus we’ve got 48 bytes in total per record, and with 8096 bytes of available data space per page, that amounts to a max of about 168 rows per page.</p>
+<p>To test things out, we’ll insert 100k rows into the table:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">BEGIN</span> TRAN
+<span class="keyword">DECLARE</span> @Cnt <span class="keyword">int</span> = <span class="number">0</span>
+WHILE @Cnt &lt; <span class="number">100000</span> <span class="keyword">BEGIN</span>
+
+	<span class="keyword">INSERT</span> <span class="keyword">INTO</span> #HitsV1 <span class="keyword">VALUES</span> (<span class="number">1</span>, <span class="number">1</span>, getdate(), <span class="number">1</span>, <span class="string">'255.255.255.255'</span>)
+
+	<span class="keyword">SET</span> @Cnt = @Cnt + <span class="number">1</span>
+<span class="keyword">END</span>
+<span class="keyword">COMMIT</span></span>
+</pre></figure>
+
+<p>Note that the actual values doesn’t matter as we’re only looking at the storage effects. Given 168 rows per page, 100.000 rows should fit in about 100.000 / 168 ~= 596 pages. Taking a look at the currently used page count, it’s a pretty close estimate:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	AU.*
+<span class="keyword">FROM</span>
+	sys.allocation_units AU
+<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
+	sys.partitions P <span class="keyword">ON</span> AU.container_id = P.partition_id
+<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
+	sys.objects O <span class="keyword">ON</span> O.object_id = P.object_id
+<span class="keyword">WHERE</span>
+	O.name <span class="keyword">LIKE</span> <span class="string">'#HitsV1%'</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/wasted-bytes-add-up-consider-your-data-types-carefully/image_25.png" class="fancy"><img src="/wasted-bytes-add-up-consider-your-data-types-carefully/image_25.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Reconsidering_data_types_by_looking_at_reality_and_business_specs?">Reconsidering data types by looking at reality and business specs?</h2>
+<p>If we start out by looking at the overhead, we’ve got a total of four bytes spent on managing the single variable-length IP field. We could change it into a char(15), but then we’d waste space for IP’s like 127.0.0.1 and there’s the whole spaces-at-the-end issue. If we instead convert the IP into an 8-byte bigint on the application side, we save 7 bytes on the column itself, plus 4 for the overhead!</p>
+<p>Looking at the FlashVersion field, why do we need a 4-byte integer capable of storing values between –2.147.483.468 and 2.147.483.647 when the actual Flash version range between 1 and 11? Changing that field into a tinyint just saved us 3 bytes more per record!</p>
+<p>Reading through our product specs I realize we’ll never need to support more than 1000 pages per entity, and we don’t need to store statistics more precisely than to-the-hour. Converting PageNumber to a smallint just saved 2 extra bytes per record!</p>
+<p>As for the Created field, it currently takes up 8 bytes per record and has the ability to store the time with a precision down to one thee-hundredth of a second – obviously way more precise than what we need. Smalldatetime would be much more fitting, storing the precision down to the minute and taking up only 4 bytes – saving a final 4 bytes per record. I we wanted to push it to the extreme we could split Created into two fields – a 3 byte date field and a 1 byte tinyint field for the hour. Though it’d take up the same space, we just gained the ability to store dates all the way up to year 9999 instead of <em>only </em>2079. As the rapture is coming up shortly, we’ll skip that for now.</p>
+<p>So to sum it up, we just saved:</p>
+<table>
+<thead>
+<tr>
+<th>Bytes</th>
+<th>Cause</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>11</td>
+<td>Converting IP to bigint</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Converting FlashVersion to tinyint</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Converting PageNumber to smallint</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Converting Created to smalldatetime</td>
+</tr>
+</tbody>
+</table>
+<p>In total, 20 bytes per record, resulting in a new total record size of 26 – 28 including the slot offset array pointer. This means we can now fit in 289 rows per page instead of the previous 168.</p>
+<p>Testing the new format reveals we’re down to just 364 pages now:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> #HitsV2
+(
+	EntityID <span class="keyword">int</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span>,
+	CategoryID <span class="keyword">smallint</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span>,
+	Created smalldatetime <span class="keyword">NOT</span> <span class="keyword">NULL</span>,
+	FlashVersion tinyint <span class="keyword">NULL</span>,
+	IP bigint <span class="keyword">NULL</span>
+)
+
+<span class="keyword">BEGIN</span> TRAN
+<span class="keyword">DECLARE</span> @Cnt <span class="keyword">int</span> = <span class="number">0</span>
+WHILE @Cnt &lt; <span class="number">100000</span> <span class="keyword">BEGIN</span>
+
+	<span class="keyword">INSERT</span> <span class="keyword">INTO</span> #HitsV2 <span class="keyword">VALUES</span> (<span class="number">1</span>, <span class="number">1</span>, getdate(), <span class="number">1</span>, <span class="number">1</span>)
+
+	<span class="keyword">SET</span> @Cnt = @Cnt + <span class="number">1</span>
+<span class="keyword">END</span>
+<span class="keyword">COMMIT</span>
+
+<span class="keyword">SELECT</span>
+	AU.*
+<span class="keyword">FROM</span>
+	sys.allocation_units AU
+<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
+	sys.partitions P <span class="keyword">ON</span> AU.container_id = P.partition_id
+<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
+	sys.objects O <span class="keyword">ON</span> O.object_id = P.object_id
+<span class="keyword">WHERE</span>
+	O.name <span class="keyword">LIKE</span> <span class="string">'#HitsV2%'</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/wasted-bytes-add-up-consider-your-data-types-carefully/image_42.png" class="fancy"><img src="/wasted-bytes-add-up-consider-your-data-types-carefully/image_42.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="The_more_rows,_the_more_waste">The more rows, the more waste</h2>
+<p>Looking back at the 750m table, the original format would (assuming an utopian zero fragmentation) take up just about:</p>
+<blockquote>
+<p>750.000.000 / 168 * 8 / 1024 / 1024 ~= 34 gigabytes.</p>
+</blockquote>
+<p>Whereas the new format takes up a somewhat lower:</p>
+<blockquote>
+<p>750.000.000 / 289 * 8 / 1024 / 1024 ~= 20 gigabytes.</p>
+</blockquote>
+<p>And there we have it – spending just a short while longer considering the actual business &amp; data needs when designing your tables can save you some considerable space, resulting in better performance and lower IO subsystem requirements.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=Wasted%20Bytes%20Add%20Up%2C%20Consider%20Your%20Data%20Types%20Carefully%20http%3A%2F%2Fimprove.dk%2Fwasted-bytes-add-up-consider-your-data-types-carefully%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fwasted-bytes-add-up-consider-your-data-types-carefully%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fwasted-bytes-add-up-consider-your-data-types-carefully%2F&title=Wasted%20Bytes%20Add%20Up%2C%20Consider%20Your%20Data%20Types%20Carefully" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/wasted-bytes-add-up-consider-your-data-types-carefully/wasted-bytes-add-up-consider-your-data-types-carefully.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'wasted-bytes-add-up-consider-your-data-types-carefully';
+	var disqus_url = 'http://improve.dk/wasted-bytes-add-up-consider-your-data-types-carefully/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

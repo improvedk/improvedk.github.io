@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>The Anatomy of Vardecimals | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Dec</span>
+			<span class="day">13</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/how-are-vardecimals-stored/" title="The Anatomy of Vardecimals" rel="bookmark">The Anatomy of Vardecimals</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on The Anatomy of Vardecimals">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>In this post I’ll do a deep dive into how vardecimals are stored on disk. For a general introduction to what they are and how/when to use them, <a href="http://msdn.microsoft.com/en-us/library/bb326755.aspx" target="_blank">see this post</a>.</p>
+<a id="more"></a>
+
+<h2 id="Is_vardecimal_storage_enabled?">Is vardecimal storage enabled?</h2>
+<p>First up, we need to determine whether vardecimals are enabled, since it completely changes the way decimals are stored on disk. Vardecimal is not a type itself, so all columns, whether stored as decimals are vardecimals share the same system type (106). Note that in SQL Server, <em>numeric</em> is exactly the same as decimal. Anywhere I mention decimal, you can substitute that with numeric and get the same result.</p>
+<p>Provided SQL Server is running, you can execute the following to determine the vardecimal status of any given table:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span> OBJECTPROPERTY(OBJECT_ID(<span class="string">'MyTable'</span>), <span class="string">'TableHasVarDecimalStorageFormat'</span>)</span>
+</pre></figure>
+
+<p>If you don’t have access to, or do not want to use the OBJECTPROPERTY function, you can query the sys.system_internals_partition_columns DMV to obtain the same information – see <a href="/determining-if-vardecimal-is-enabled-for-a-table-without-using">Determining If vardecimal Is Enabled For a Table Without Using OBJECTPROPERTY</a>.</p>
+<h2 id="Fixed_length_goes_variable_length">Fixed length goes variable length</h2>
+<p>Normal decimal columns are stored in the fixed length portion of a <a href="http://sqlskills.com/blogs/paul/post/Inside-the-Storage-Engine-Anatomy-of-a-record.aspx" target="_blank">record</a>. This means all that’s actually stored is the data itself. There is no need for length information as the number of required storage bytes can be calculated exclusively by the use of metadata. Once you enable vardecimals, all decimals are no longer stored in the fixed length portion of the record, but as a variable length field instead.</p>
+<p>Storing the decimal as a variable length field has a couple of implications:</p>
+<ul>
+<li>We can no longer statically calculate the number of bytes required to store a given value.</li>
+<li>There’s a two byte overhead for storing the record offset value in the variable length offset array.</li>
+<li>If the record previously had no variable length records, that overhead is actually four bytes since we also need to store the number of variable length records in the record offset array.</li>
+<li>The actual value of the decimal has a variable amount of bytes that we need to decipher.</li>
+</ul>
+<h2 id="What_does_the_vardecimal_value_consist_of?">What does the vardecimal value consist of?</h2>
+<p>Once we’ve parsed the record and thereby retrieved the vardecimal value bytes from the variable length portion of the record, we need to parse it. There will <em>always</em> be at least <em>two</em> bytes for the value, though there can be up to 20 at most.</p>
+<p>Where normal decimals are basically stored as one humongous integer (with the scale metadata defining the decimal position), vardecimals are stored using <a href="http://en.wikipedia.org/wiki/Scientific_notation" target="_blank">scientific notation</a>. Using scientific notation, we need to store three different values:</p>
+<ul>
+<li>The sign (positive/negative).</li>
+<li>The exponent.</li>
+<li>The mantissa.</li>
+</ul>
+<p>Using these three components, we can calculate the actual number using the following formula:</p>
+<figure class="highlight"><pre>(sign) * mantissa * 10<span class="tag">&lt;<span class="title">sup</span>&gt;</span>exponent<span class="tag">&lt;/<span class="title">sup</span>&gt;</span>
+</pre></figure>
+
+<h3 id="Example">Example</h3>
+<p>Assume we have a vardecimal(5,2) column and we store the value 123.45. In scientific notation, that would be expressed as 1.2345 * 10<sup>2</sup>. In this case we have positive sign (1), an mantissa of 1.2345 and an exponent of 2. SQL Server knows that the mantissa always has a fixed decimal point after the first digit, and as such it simply stores the integer value 12345 as the mantissa. While the exponent is 2, SQL Server knows we have a scale of 2 defined, and it subtracts that from the exponent and thus stores 0 as the actual exponent.</p>
+<p>Once we read it, we end up with a formula like this for calculating the mantissa (note that at this point we don’t care if the mantissa is positive or negative – we’ll take that into account later):</p>
+<figure class="highlight"><pre>mantissa / 10<span class="tag">&lt;<span class="title">sup</span>&gt;</span>floor(log10(mantissa))<span class="tag">&lt;/<span class="title">sup</span>&gt;</span>
+</pre></figure>
+
+<p>And plotting in our values, we get:</p>
+<figure class="highlight"><pre>12345 / 10<span class="tag">&lt;<span class="title">sup</span>&gt;</span>floor(log10(12345))<span class="tag">&lt;/<span class="title">sup</span>&gt;</span>
+</pre></figure>
+
+<p>Through basic simplification we get:</p>
+<figure class="highlight"><pre>12345 / 10<span class="tag">&lt;<span class="title">sup</span>&gt;</span>4<span class="tag">&lt;/<span class="title">sup</span>&gt;</span>
+</pre></figure>
+
+<p>Which finally ends up in the scientific notation version of the mantissa:</p>
+<figure class="highlight"><pre>1.2345
+</pre></figure>
+
+<p>So far so good – we now have the mantissa value. At this point we need just two things – to apply the sign and to move the decimal into the right position by factoring in the exponent. As SQL Server knows the scale is 2, it stores an exponent value of 2 instead of 4, in effect subtracting the scale from the exponent value – enabling us to ignore the scale and just calculate the number directly.</p>
+<p>And thus we have all we need to calculate the final number:</p>
+<figure class="highlight"><pre>(sign) * mantissa * 10<span class="tag">&lt;<span class="title">sup</span>&gt;</span>exponent<span class="tag">&lt;/<span class="title">sup</span>&gt;</span> =&gt; (1) * 1.2345 * 10<span class="tag">&lt;<span class="title">sup</span>&gt;</span>2<span class="tag">&lt;/<span class="title">sup</span>&gt;</span> =&gt; 1.2345 * 10<span class="tag">&lt;<span class="title">sup</span>&gt;</span>2<span class="tag">&lt;/<span class="title">sup</span>&gt;</span> = 123.45
+</pre></figure>
+
+<h2 id="Reading_the_sign_&amp;_exponent">Reading the sign &amp; exponent</h2>
+<p>The very first byte of the value contains the sign and the exponent. In the previous sample, the value takes up four bytes (plus an additional two for the offset array entry):</p>
+<figure class="highlight"><pre>0xC21EDC20
+</pre></figure>
+
+<p>If we take a look at just the first byte, and convert it to binary, we get the following:</p>
+<pre>
+Hex: C2
+Bin: <span style="background-color: #dfce04;">1</span>1000010
+</pre>
+
+<p>The most significant bit (the leftmost one), or bit 7 (0-indexed) is the sign bit. If it’s set, the value is positive. If it’s not set, it’s negative. Since it has a value of 1, we know that the result is positive.</p>
+<p>Bits 0-6 is a 7-bit value containing the exponent. A normal unsigned 7-bit value can contain values from 0 to 127. As the decimal data type has a range of –10<sup>38</sup>+1 to 10<sup>38</sup>-1, we need to be able to store negative numbers. We could use one of those 7 bits as a sign bit, and then store the value in just 6 bits, allowing a range from –64 to 63. SQL Server however does use all 7 bits for the value itself, but stores the value offset by 64. Thus, an exponent value of 0 will store the value 64. An exponent of –1 will store 63 while an exponent of 1 will store 65, and so forth.</p>
+<p>In our sample, reading bits 0-6 gives the following value:</p>
+<pre>
+<span style="font-family: 'Courier New';"><span style="font-size: medium;">0b1</span><span style="font-family: 'Courier New';"><span style="font-size: medium;"><span style="background-color: #dfce04; color: #444444;">1000010</span></span></span><span style="font-family: 'Courier New';"><span style="font-size: medium;"> = 66</span></span> </span>
+</pre>
+
+<p>Subtracting the offset of 64 leaves us with an exponent value of 2.</p>
+<h2 id="Mantissa_chunk_storage">Mantissa chunk storage</h2>
+<p>The remaining bytes contain the mantissa value. Before we get started, let’s convert them into binary:</p>
+<pre>
+<span style="font-family: 'Courier New'; font-size: medium;">Hex: </span><span style="font-family: 'Courier New'; font-size: medium;">1E       DC       20
+
+Bin: 00011110 11011100 00100000</span>
+</pre>
+
+<p>The mantissa is stored in chunks of 10 bits, each chunk representing three digits in the mantissa (and remember, the mantissa is just one large integer – it’s not until later that we begin to think of it as a decimal pointer number). Splitting the bytes into chunks gives us the following grouping:</p>
+<pre>
+<span style="font-family: 'Courier New'; font-size: medium;">Hex:   1E       DC       20
+Bin:   <span style="background-color: #f3a447;">00011110 11</span><span style="background-color: #dfce04;">011100 0010</span>0000
+
+Chunk: <span style="background-color: #f3a447;">1          </span><span style="background-color: #dfce04;">2          </span></span>
+</pre>
+
+<p>In this case, SQL Server wastes 4 bits by using a chunk size that doesn’t align with the 8-bit byte size. This begs the question, why choose a chunk size of just exactly 10 bits? Those 10 bits are required to represent all possible values of a three-digit integer (0-999). What if we instead wanted to use a chunk size representing just a single digit?</p>
+<p>In that case, we’d need to represent the values 0-9. That requires a total of 4 bits (0b1001 = 9). However, using those 4 bits, we can actually represent a range spanning from 0 to 15 – which means we’re wasting 6 of those values as they’ll never be needed. In percentages, we’re wasting 6/16 = 37.5%!</p>
+<p>Let’s try and plot some different chunk sizes into a graph:</p>
+<div class="imgwrapper" style=""><div><a href="/how-are-vardecimals-stored/image_3.png" class="fancy"><img src="/how-are-vardecimals-stored/image_3.png" style="max-height: 250px"/></a></div></div>
+
+<p>We see that chunk sizes of both 4 and 7 have massive waste compared to a chunk size of 10. At 20 bits, we’re getting closer, but still waste twice as much as at 10.</p>
+<p>Now, waste isn’t everything. For compression, ideally we don’t want to use more digits than absolutely necessary. With a chunk size of 10, representing 3 digits, we’re wasting two digits for values in the range of 0-9. However, for numbers in the range 100-999, we’re spot on. If we were to use a chunk size of 20 bits, representing 6 digits per chunk, we’d be wasting bytes for values 0-99999, while we’d be spot on for values 1000000-999999. Basically it’s a tradeoff – the higher the granularity, with the least amount of waste, the better. The further to the right we go in the graph, the less the granularity. With this, it seems obvious that a chunk size of 10 bits is an excellent choice – it has the lowest amount of waste with a suitable amount of granularity at 3 digits.</p>
+<p>There’s just one more detail before we move on. Imagine we need to store the mantissa value 4.12, effectively resulting in the integer value 412.</p>
+<pre><span style="font-family: 'Courier New'; font-size: medium;">Dec: 412
+Bin: 01100111 00
+Hex: 67       0
+</span></pre>
+
+<p>In this case, we’d waste 8 bits in the second byte, since we only need a single chunk, but we need two bytes to represent those 10 bits. In this case, given that the last two bits aren’t set, SQL Server will simply truncate that last byte. Thus, if you’re reading a chunk and you run out of bits on disk, you can assume that the remaining bits aren’t set.</p>
+<h2 id="Parsing_a_vardecimal_value">Parsing a vardecimal value</h2>
+<p>Finally – we’re ready to actually parse a stored vardecimal (implemented in C#)! We’ll use the previous example, storing the 123.45 value in a decimal(5,2) column. On disk, we read the following into a byte array called <em>value</em>:</p>
+<pre><span style="font-family: 'Courier New'; font-size: medium;">Hex: C2       1E       DC       20
+Bin: 11000010 00011110 11011100 00100000</span></pre>
+
+<h3 id="Reading_the_sign_bit">Reading the sign bit</h3>
+<p>Reading the sign bit is relatively simple. We’ll only be working on the first byte:</p>
+<pre><span style="font-family: 'Courier New'; font-size: medium;">Hex: C2       1E       DC       20
+Bin: <span style="background-color: #dfce04;">1</span>1000010 <span style="color: #a5a5a5;">00011110 11011100 00100000</span></span></pre>
+
+<p>By shifting the bits 7 spots to the right, all we’re left with is the most significant bit, the least significant position. This means we’ll get a value of 1 is the sign is positive, and 0 if it’s negative.</p>
+<figure class="highlight csharp"><pre><span class="keyword">decimal</span> sign = (<span class="keyword">value</span>[<span class="number">0</span>] &gt;&gt; <span class="number">7</span>) == <span class="number">1</span> ? <span class="number">1</span> : -<span class="number">1</span>;
+</pre></figure>
+
+<h3 id="Reading_the_exponent">Reading the exponent</h3>
+<p>The next (technically these bits come before the sign bit) 7 bits contain the exponent value.</p>
+<pre><span style="font-family: 'Courier New'; font-size: medium;">Hex: C2       <span style="color: #a5a5a5;">1E       DC       20</span>
+Bin: 1<span style="background-color: #dfce04;">1000010</span> <span style="color: #a5a5a5;">00011110 11011100 00100000</span></pre>
+
+<p>Converting the value 0b1000010 into decimal yields the decimal result 66. As we know the exponent is always offset by a value of 64, we need to subtract 64 from the stored value to get to the actual exponent value:</p>
+<pre><span style="font-family: 'Courier New'; font-size: medium;">Exponent = 0b1000010 – 0n64 <=> Exponent = 66 – 64 = 2</span></pre>
+
+<h3 id="Reading_the_mantissa">Reading the mantissa</h3>
+<p>Next up is the mantissa value. As mentioned, we need to read it in chunks of 10 bits, while taking care of there potentially being some truncated bits.</p>
+<p>First, we need to know how many bits there are available. Doing this is straightforward – we simply multiply the number of mantissa bytes (which is all of the bytes, except one) by 8:</p>
+<figure class="highlight csharp"><pre><span class="keyword">int</span> totalBits = (<span class="keyword">value</span>.Length - <span class="number">1</span>) * <span class="number">8</span>;
+</pre></figure>
+
+<p>Once we know how many bits are available (3 bytes of 8 bits = 24 in this case), we can calculate the number of chunks:</p>
+<figure class="highlight csharp"><pre><span class="keyword">int</span> mantissaChunks = (<span class="keyword">int</span>)Math.Ceiling(totalBits / <span class="number">10</span>d);
+</pre></figure>
+
+<p>Since each chunk takes up 10 bits, we just need to divide the total number of bits by 10. If there’s padding at the end, to match a byte boundary, it’ll all be 0’s and won’t change the end result. Thus for a 2-byte mantissa we’ll have 8 bits to spare, which will all be non-significant 0’s. For a 3-byte mantissa we’ll have 4 bits to spare – once again adding 0 to the total mantissa value.</p>
+<p>At this point we’re ready to read the chunk values. Before doing so, we’ll allocate two variables:</p>
+<figure class="highlight csharp"><pre><span class="keyword">decimal</span> mantissa = <span class="number">0</span>;
+<span class="keyword">int</span> bitPointer = <span class="number">8</span>;
+</pre></figure>
+
+<p>The mantissa variable contains the cumulative mantissa value, accumulating value each time we read a new 10-bit chunk. The <em>bitPointer</em> is a pointer to the index of the bit currently being. As we’re not going to read the first byte, we’ll start this one off at bit index 8 (0-based, thus bit index 8 = the first bit of the second byte).</p>
+<p>Looking at the bits as one long stream makes it look simple – we just read from left to right, right? Not quite. As you may remember, (visually) the rightmost bit is the least significant, and is thus the first one we should read. However – we need to read one byte at a time. As such, the <em>overall</em> direction is left-to-right, chunkwise. Once we get to any given chunk, we need to read one byte at a time. Bits 1-8 in the first chunk are read from the first byte, while bits 9-10 are read from the second byte, following the orange arrows in the figure (byte read order following the large ones, individual byte bit read order following the smaller ones):</p>
+<div class="imgwrapper" style=""><div><a href="/how-are-vardecimals-stored/image_26.png" class="fancy"><img src="/how-are-vardecimals-stored/image_26.png" style="max-height: 250px"/></a></div></div>
+
+<p>To easily access all of the bits, and to avoid doing a lot of manual bit shifting, I initialize a BitArray that contains all of the data bits:</p>
+<figure class="highlight csharp"><pre><span class="keyword">var</span> mantissaBits = <span class="keyword">new</span> BitArray(<span class="keyword">value</span>);
+</pre></figure>
+
+<p>Using this, you have to know how the bit array maps into the bytes. Visually, it looks like this, the mantissaBits array index being on top:</p>
+<div class="imgwrapper" style=""><div><a href="/how-are-vardecimals-stored/image_28.png" class="fancy"><img src="/how-are-vardecimals-stored/image_28.png" style="max-height: 250px"/></a></div></div>
+
+<p>I know this may seem complex, but it’s all just a matter of knowing which pointers point to which values. Our source is the array of <em>bytes</em>. The way we access the individual bits is through the <em>mantissaBits</em> array, which is just one big array of pointers to the individual bits.</p>
+<p>Looking at just the first 8 bits, the manitssaBits array aligns nicely with the direction we need to read. The first entry (mantissaBits[0]) points to the first/rightmost bit in the first byte. The second entry points to the second bit we need to read, and so forth. Thus, the first 8 bits are straightforward to read. The next two however, they require us to skip 6 entries in the mantissaBits array so we read index 14 and 15, as those point to the last two bits in the next byte.</p>
+<p>Reading the second chunk, we have to go back and read bit index 8-13 and then skip to index 20-23, ignoring entries 16-19 as they’re just irrelevant padding. This is rather tricky to get right. Fortunately we can freely choose to read the bits from the least significant to the most significant, or the other way around.</p>
+<p>Let’s first look at the implementation:</p>
+<figure class="highlight csharp"><pre>for (int chunk = mantissaChunks; chunk &gt; 0; chunk--)
+{
+	// The cumulative value for this 10-bit chunk
+	decimal chunkValue = 0;
+
+	// For each bit in the chunk, shift it into position, provided it's set
+	for (int chunkBit = 9; chunkBit &gt;= 0; chunkBit--)
+	{
+		// Since we're looping bytes left-to-right, but read bits right-to-left, we need
+		// to transform the bit pointer into a relative index within the current byte.
+		int byteAwareBitPointer = bitPointer + 7 - bitPointer % 8 - (7 - (7 - bitPointer % 8));
+
+		// If the bit is set and it's available (SQL Server will truncate 0's), shift it into position
+		if (mantissaBits.Length &gt; bitPointer && mantissaBits[byteAwareBitPointer])
+			chunkValue += (1 &lt;&lt; chunkBit);
+
+		bitPointer++;
+	}
+
+	// Once all bits are in position, we need to raise the significance according to the chunk
+	// position. First chunk is most significant, last is the least significant. Each chunk
+	// defining three digits.
+	mantissa += chunkValue * (decimal)Math.Pow(10, (chunk - 1) * 3);
+}
+</pre></figure>
+
+<p>The outer for loop loops through the chunks, going from the most significant to the least significant chunk. In this case we’ll first iterate over chunk 2, then chunk 1.</p>
+<p>The chunkValue variable holds the total value for the chunk that we’re currently reading. We’ll be shifting bits into the variable until we have parsed all 10 bits.</p>
+<p>Next, we loop from the most significant bit to the least significant bit (that is, going from the <em>chunkBit</em> values 9 through 0). By reading the most significant bit first, basically reading the values backwards, we avoid having to skip inside the individual bytes. We’ll always read the bits going from right to left in the mantissaBits array, following the top arrows like this:</p>
+<div class="imgwrapper" style=""><div><a href="/how-are-vardecimals-stored/image_30.png" class="fancy"><img src="/how-are-vardecimals-stored/image_30.png" style="max-height: 250px"/></a></div></div>
+
+<p>Though we do read each byte backward, everything else just follows a natural path, which makes parsing a lot easier.</p>
+<p>The <em>byteAwareBitPointer</em> variable is the index in our mantissaBits array from where we’ll read the current value. The calculation ensures we read each byte starting from the top mantissaBits index to the lower one. The first chunk is read in the following mantissaBit index order:</p>
+<figure class="highlight"><pre>7, 6, 5, 4, 3, 2, 1, 0, 15, 14
+</pre></figure>
+
+<p>And the second chunk is read in the following mantissaBit order:</p>
+<figure class="highlight"><pre>13, 12, 11, 10, 9, 8, 23, 22, 21, 20
+</pre></figure>
+
+<p>Once we’ve read a specific bit, we shift it into position in the chunkValue variable – though only if it’s set and it’s available (that is, it hasn’t been zero-truncated).</p>
+<p>Once all bits have been shifted into position, we apply the chunk significance to the value. In our case, storing the value 12345, we’re actually storing the value 123450 (since each chunk stores three digits, it’ll always be a multiple of 3 digits). The first read chunk (<em>chunk 2</em>) contains the value 123, which corresponds to the value 123000. The second read chunk (<em>chunk 1</em>) contains the value 450. Multiplying by 10<sup>(chunk–1)&lt;<em>3</sup> ensures we get the right order of magnitude (x1000 for </em>chunk 2<em> and x1 for </em>chunk 1*). For each chunk iteration, we add the finalized chunk value to the total mantissa sum.</p>
+<p>Once we have the integer based mantissa value of 123450, we need to insert the decimal point, using the following formula:</p>
+<figure class="highlight"><pre>mantissa = mantissa / 10<span class="tag">&lt;<span class="title">sup</span>&gt;</span>floor(log10(mantissa))<span class="tag">&lt;/<span class="title">sup</span>&gt;</span>
+</pre></figure>
+
+<p>Implemented like so:</p>
+<figure class="highlight csharp"><pre>mantissa = mantissa / (decimal)<span class="built_in">Math</span>.Pow(<span class="number">10</span>, <span class="built_in">Math</span>.Floor(<span class="built_in">Math</span>.Log10((double)mantissa)));
+</pre></figure>
+
+<p>This results in the mantissa having a value of 1.2345</p>
+<h3 id="Mantissa_parsing_performance">Mantissa parsing performance</h3>
+<p>Before you beat me to it – this implementation is far from fast. To start with, we could easily shift whole groups of bits into position instead of just one at a time. That’d ensure each chunk would take no more than two shifting operations, instead of ~10 in this implementation. However, my goal for this implementation is code clarity first and foremost. I’m nowhere near the point where I want to look at optimizing OrcaMDF for speed.</p>
+<h3 id="Putting_it_all_together">Putting it all together</h3>
+<p>Once we have the sign, the exponent and the mantissa, we simply calculate the final value like so:</p>
+<figure class="highlight csharp"><pre><span class="keyword">return</span> sign * mantissa * (<span class="keyword">decimal</span>)Math.Pow(<span class="number">10</span>, exponent);
+</pre></figure>
+
+<p>In our case it has the following result:</p>
+<figure class="highlight"><pre>1 * 1.2345 * 10<span class="tag">&lt;<span class="title">sup</span>&gt;</span>2<span class="tag">&lt;/<span class="title">sup</span>&gt;</span> = 1.2345 * 100 = 123.45
+</pre></figure>
+
+<h2 id="Conclusion">Conclusion</h2>
+<p>Vardecimal was the only option for built-in compression back in SQL Server 2005 SP2. Since 2008, we’ve had row &amp; page compression available (which both feature a superset of the vardecimal storage format). Ever since the release of row &amp; page compression, Microsoft has made it clear that vardecimal is a deprecated feature, and it will be removed in a future version. Since vardecimal requires enterprise edition, just like row &amp; page compression, there’s really no reason to use it, unless you’re running SQL Server 2005, or unless you have a very specific dataset that would only benefit from compressing the decimals and no other values.</p>
+<p>Knowing how the vardecimal storage format works is a great precursor for looking at compression internals – which I’ll be writing about in a later post – and I’ll be presenting on it at the <a href="/presenting-at-the-2012-spring-sql-server-connections">2012 Spring SQL Server Connections</a>.</p>
+<p>In the meantime you can check out my <a href="https://github.com/improvedk/OrcaMDF/blob/83b7460b07d175f6edb21e094106ec8a52d44bf9/src/OrcaMDF.Core/Engine/SqlTypes/SqlDecimal.cs" target="_blank">SqlDecimal.cs implementation on github</a>. Or you can have a look at the complete <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF source code</a>.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=The%20Anatomy%20of%20Vardecimals%20http%3A%2F%2Fimprove.dk%2Fhow-are-vardecimals-stored%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fhow-are-vardecimals-stored%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fhow-are-vardecimals-stored%2F&title=The%20Anatomy%20of%20Vardecimals" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/how-are-vardecimals-stored/how-are-vardecimals-stored.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'how-are-vardecimals-stored';
+	var disqus_url = 'http://improve.dk/how-are-vardecimals-stored/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Oct</span>
+			<span class="day">16</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/i-dont-like-static-methods/" title="I Don&#39;t Like Static Methods" rel="bookmark">I Don&#39;t Like Static Methods</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Inspired by a recent <a href="http://stackoverflow.com/questions/205689/class-with-single-method-best-approach" target="_blank">question on StackOverflow</a>, I felt like sharing my thoughts on static methods in general.</p>
+<a id="more"></a>
+
+<p>I used to love utility classes filled up with static methods. They made a great consolidation of helper methods that would otherwise lie around causing redundancy and maintenance hell. They’re very easy to use, no instantiation, no disposal, just fire’n’forget. I guess this was my first unwitting attempt at creating a service oriented architecture - lots of stateless services that just did their job and nothing else. As a system grows however, dragons be coming.</p>
+<h2 id="Polymorphism">Polymorphism</h2>
+<p>Say we have the method UtilityClass.SomeMethod that happily buzzes along. Suddenly we need to change the functionality slightly. Most of the functionality is the same, but we have to change a couple of parts nonetheless. Had it not been a static method, we could make a derivate class and change the method contents as needed. As it’s a static method, we can’t. Sure, if we just need to add functionality either before or after the old method, we can create a new class and call the old one inside of it - but that’s just gross.</p>
+<h2 id="Interface_woes">Interface woes</h2>
+<p>Static methods cannot be defined through interfaces for logic reasons. And since we can’t override static methods, static classes are useless when we need to pass them around by their interface. This renders us unable to use static classes as part of a strategy pattern. We might patch some issues up by <a href="http://blogs.msdn.com/kirillosenkov/archive/2008/02/06/how-to-override-static-methods.aspx" target="_blank">passing delegates instead of interfaces</a>.</p>
+<h2 id="Testing">Testing</h2>
+<p>This basically goes hand in hand with the interface woes mentioned above. As our ability of interchanging implementations is very limited, we’ll also have trouble replacing production code with test code. Again, we can wrap them up but it’ll require us to change large parts of our code just to be able to accept wrappers instead of the actual objects.</p>
+<h2 id="Fosters_blobs">Fosters blobs</h2>
+<p>As static methods are usually used as utility methods and utility methods usually will have different purposes, we’ll quickly end up with a large class filled up with non-coherent functionality - ideally, each class should have a single purpose within the system. I’d much rather have a five times the classes as long as their purposes are well defined.</p>
+<h2 id="Parameter_creep">Parameter creep</h2>
+<p>To begin with, that little cute and innocent static method might take a single parameter. As functionality grows, a couple of new parameters are added. Soon further parameters are added that are optional, so we create overloads of the method (or just add default values, in languages that support them). Before long, we have a method that takes 10 parameters. Only the first three are really required, parameters 4-7 are optional. But if parameter 6 is specified, 7-9 are required to be filled in as well… Had we created a class with the single purpose of doing what this static method did, we could solve this by taking in the required parameters in the constructor, and allowing the user to set optional values through properties, or methods to set multiple interdependent values at the same time. Also, if a method has grown to this amount of complexity, it most likely needs to be in its own class anyways.</p>
+<h2 id="Demanding_consumers_to_create_an_instance_of_classes_for_no_reason">Demanding consumers to create an instance of classes for no reason</h2>
+<p>One of the most common arguments is, why demand that consumers of our class create an instance for invoking this single method, while having no use for the instance afterwards? Creating an instance of a class is a very very cheap operation in most languages, so speed is not an issue. Adding an extra line of code to the consumer is a low cost for laying the foundation of a much more maintainable solution in the future. And finally, if you want to avoid creating instances, simply create a singleton wrapper of your class that allows for easy reuse - although this does make the requirement that your class is stateless. If it’s not stateless, you can still create static wrapper methods that handle everything, while still giving you all the benefits in the long run. Finally, you could also make a class that hides the instantiation as if it was a singleton: MyWrapper.Instance is a property that just returns new MyClass();</p>
+<h2 id="Only_a_Sith_deals_in_absolutes">Only a Sith deals in absolutes</h2>
+<p>Of course, there are exceptions to my dislike of static methods. True utility classes that do not pose any risk to bloat are excellent cases for static methods - System.Convert as an example. If your project is a one-off with no requirements for future maintenance, the overall architecture really isn’t very important - static or non static, doesn’t really matter - development speed does, however.</p>
+<h2 id="Standards,_standards,_standards!">Standards, standards, standards!</h2>
+<p>Using instance methods does not inhibit you from also using static methods, and vice versa. As long as there’s reasoning behind the differentiation and it’s standardised. There’s nothing worse than looking over a business layer sprawling with different implementation methods.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Oct</span>
+			<span class="day">05</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/using-squid-as-a-reverse-proxy-with-a-dotnet-url-rewriter/" title="Using Squid as a Reverse Proxy With a .NET Url Rewriter" rel="bookmark">Using Squid as a Reverse Proxy With a .NET Url Rewriter</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Once you start receiving visitors from all over the world, a new kind of scaling issue arise. It’s not a matter of adding more servers to the cluster or optimizing code (we’ll assume these factors are perfect), it’s a simple matter of geography and mathematics. Serving code from one end of the world to the other will take time, no matter how quick your servers are handling the request. The speed of light suddenly seems quite slow.</p>
+<a id="more"></a>
+
+<p>At one of my current projects we serve a lot of image data. Letting US based clients fetch all the data from Denmark results in very slow response times. The obvious solution is to partner up with a <a href="http://en.wikipedia.org/wiki/Content_Delivery_Network" target="_blank">CDN</a> provider, problem solved. While this may solve the problem, it’ll also cost you a bit as CDN providers, rightfully, are not cheap. If you don’t need the amount of PoPs that the CDN provides, you can setup your own service quite easily using <a href="http://www.squid-cache.org/" target="_blank">Squid</a>.</p>
+<h2 id="The_scenario">The scenario</h2>
+<p>We want to setup Squid as a <a href="http://en.wikipedia.org/wiki/Reverse_proxy" target="_blank">reverse proxy</a>. By utilizing a reverse proxy setup, we can use the Squid server with minimal changes to our current configuration. This is very case dependent however - it’ll not be optimal for non-cacheable resources like personalized pages, shortlived data and so forth. In our case we have non-expiring static images with static urls - the perfect case for a reverse proxy setup. Squid will comply completely with the cache properties set by the HTTP headers of your requests, so make sure you’ve got them under control in your solution. In our case, images are served with a lifetime of a year and a static <a href="http://en.wikipedia.org/wiki/HTTP_ETag" target="_blank">etag</a>which’ll ensure Squid won’t purge them unless it’s running short on disk space. So just to summarize this would be the typical scenario for a US based client visiting our website:</p>
+<h3 id="Squid_has_not_cached_data">Squid has not cached data</h3>
+<p>Client: Can I please have image X?<br>Squid: Oh, I don’t have it, please wait while I fetch it from Denmark…<br>Squid: [Fetching image from Denmark, storing it on disk and caching it in memory]<br>Squid: There you go, here’s image x!</p>
+<h3 id="Squid_has_cached_data">Squid has cached data</h3>
+<p>Client: Can I please have image x?<br>Squid: There you go, here’s image x!</p>
+<p>After the very first request, Squid will have cached the data and thus all further requests will be served directly from the Squid server location in the US, instead of the client having to go all the way to Denmark. This is basically what a reverse proxy CDN setup does, except it’ll have a lot more PoPs all around the world, and several in the US alone probably.</p>
+<h2 id="Installing_Squid">Installing Squid</h2>
+<p>So how do we get this working? In this example I’ll be setting up a Squid server on a local VPC that’ll act as a reverse proxy for my website, www.improve.dk. In effect, this will mean that all cacheable resources will be served locally on my computer, while non-cacheable resources will be transparently fetched from improve.dk directly. To avoid overriding the improve.dk domain completely, I’ll set it up to listen on cache.improve.dk and forward the requests to improve.dk instead. To enabled this, I’ve added a line in my hosts file pointing cache.improve.dk to my local VPC running Squid.</p>
+<p>Start by <a href="http://www.acmeconsulting.it/SquidNT/" target="_blank">obtaining a binary release</a> of Squid. I’ll be using the latest stable release, standard 2.7.STABLE4.</p>
+<p>Squid does not require installation as such, simply unzip it where you wish. To make it simple, I’ll install Squid directly in C:squid as the standard Squid configuration expects it to be installed here - it’s easy to change though!.</p>
+<p>We’ll start by installing Squid as a service, before doing the actual configuration. Open a command prompt and go to C:squidsbin. Now run “squid -i -n Squid”. This will install Squid as a service under the name “Squid”.</p>
+<figure class="highlight"><pre>C:\squid\sbin&gt;squid -i -n Squid
+Registry stored HKLMSOFTWAREGNUSquid2<span class="number">.6</span>SquidConfigFile value c:/squid/etc/squid.conf
+Squid Cache <span class="property">version</span> <span class="number">2.7</span>.STABLE4 <span class="keyword">for</span> i686-pc-winnt
+installed successfully <span class="keyword">as</span> Squid Windows System Service.
+To <span class="command">run</span>, start <span class="keyword">it</span> <span class="keyword">from</span> <span class="keyword">the</span> Services Applet <span class="keyword">of</span> Control Panel.
+Don't forget <span class="keyword">to</span> edit squid.conf <span class="keyword">before</span> starting <span class="keyword">it</span>.
+</pre></figure>
+
+<h2 id="Configuring_Squid">Configuring Squid</h2>
+<p>Before we start Squid, we have to configure it. Go to C:squidetc and make a copy of squid.conf.default and call it squid.conf. Do the same for mime.conf.default (we won’t change this one, but it’s needed). There are hundreds of configuration options, all very well documented. Now, I won’t go over all the options, so simply delete the entire contents of the squid.conf file, we’ll add only the configuration options that we need.</p>
+<p>Add the following lines:</p>
+<figure class="highlight"><pre>acl all src all
+acl manager proto cache_object
+acl port80 port <span class="number">80</span>
+acl domains url_regex <span class="preprocessor">.cache</span><span class="preprocessor">.improve</span><span class="preprocessor">.dk</span>/
+</pre></figure>
+
+<p>The above lines define our acl’s which are used to specify what is allowed and what is not allowed. The first line is used as a catch-all that matches everything. The second line matches a special management interface that we will not be used (and thus might as well deny access to). The third line matches port80. The fourth line defines a regular expression that is used to define what addresses are allowed to be requested. It is very important to define the allowed URLs as your proxy might otherwise be used for any service basically.</p>
+<p>Add the following lines:</p>
+<figure class="highlight"><pre><span class="preprocessor"># DENY CACHEMGR</span>
+http_access deny manager
+
+<span class="preprocessor"># Deny requests to unknown ports</span>
+http_access deny !port80
+
+<span class="preprocessor"># ALLOWED DOMAINS</span>
+http_access allow domains
+
+<span class="preprocessor"># And finally deny all other access to this proxy</span>
+http_access deny all
+
+<span class="preprocessor"># DENY ALL ICP</span>
+icp_access deny all
+
+<span class="preprocessor"># HTTP PORT</span>
+http_port <span class="number">80</span> transparent allow-direct
+</pre></figure>
+
+<p>The acl lines simply specify the match cases, not what is actually allowed and denied. Here we start out by denying access to the management interface and denying access to anything but port 80. Then we allow access to only the specified domains in the regex - and afterwards deny access to everything else by saying “http_access deny all”. We also deny ICP traffic as this is only used in a clustered Squid setup for intersquid chat. Finally we allow transparent direct access to the origin server (the actual www.improve.dk server) on port 80.</p>
+<p>Add the following lines:</p>
+<figure class="highlight"><pre><span class="preprocessor"># Memory</span>
+cache_mem <span class="number">64</span> MB
+maximum_object_size_in_memory <span class="number">2048</span> KB
+
+<span class="preprocessor"># Cache directory</span>
+cache_dir ufs c:/SQUID_CACHE <span class="number">204800</span> <span class="number">16</span> <span class="number">256</span>
+</pre></figure>
+
+<p>Here we set the memory limits for Squid. Note that this is not the total memory limit for Squid, only the limit for hot objects in transit (please see the Squid documentation for complete explanation). We also define that any objects over 2MB should not be stored in memory. Our performance really comes from serving small files directly from memory, instead of storing one PDF at 200MBs in memory. Besides storing the files in memory, Squid also stores them on disk. In the cache_dir line we setup the directory for the disk cache, as well as the max disk size in MBs (200GB in my case). The other options should be left at default (see docs).</p>
+<p>Add the following lines:</p>
+<figure class="highlight"><pre><span class="preprocessor"># Logging</span>
+access_log c:/SQUID_LOGS/access<span class="preprocessor">.log</span> squid
+cache_log c:/SQUID_LOGS/cache<span class="preprocessor">.log</span>
+cache_store_log c:/SQUID_LOGS/store<span class="preprocessor">.log</span>
+pid_filename c:/SQUID_LOGS/squid<span class="preprocessor">.pid</span>
+logfile_rotate <span class="number">100</span>
+</pre></figure>
+
+<p>This defines the location of the Squid log files. It’ll log all cache requests as well as all disk storage activity. You can customize the log format as well (see docs). The logfile_rotate setting defines how many rotations of log files we’ll use as a max. Each time we do a rotation, the old logfiles are left behind, while a new set of files are created with the rotation number appended. When the rotation has reached 100, it’ll start over from number 0 and overwrite/recreate old log files.</p>
+<p>Add the following lines:</p>
+<figure class="highlight"><pre><span class="comment"># Url rewriting</span>
+url_rewrite_program <span class="constant">C</span><span class="symbol">:/squid/etc/scripts/SquidRewriter</span>.exe
+url_rewrite_children <span class="number">5</span>
+
+<span class="comment"># Objects without an explicit expiry date will never be considered fresh</span>
+refresh_pattern . <span class="number">0</span> <span class="number">0</span>% <span class="number">0</span>
+
+<span class="comment"># Remove all proxy headers</span>
+header_access <span class="constant">X</span>-<span class="constant">Cache</span> deny all
+header_access <span class="constant">X</span>-<span class="constant">Cache</span>-<span class="constant">Lookup</span> deny all
+header_access <span class="constant">Via</span> deny all
+
+<span class="comment"># ALLOW DIRECT</span>
+always_direct allow all
+</pre></figure>
+
+<p>These are the final configuration lines. Ignore the url_rewrite lines for now, I’ll get back to them in just a sec. The refresh_pattern setting is very scenario dependent, it defines the lifetime of objects that do not have an explicit expiry date sent along. As my cache is only intended for static files, any files not having an expiry time should never be cached, and thus I’ve set the lifetime to 0. The header sections basically remove any extra headers normally appended by Squid / any proxy. The final line simply says that all requests (if needed) should be forwarded directly to the origin server, and not ask other servers in the cluster for the data.</p>
+<h2 id="Creating_a_-NET_url_rewriter">Creating a .NET url rewriter</h2>
+<p>Whenever a request is made for the proxy, it’ll be in the form cache.improve.dk/file. cache.improve.dk doesn’t really exist, and the website doesn’t answer to it, so while Squid receives a request for cache.improve.dk, it should map it back to improve.dk. You could do this by configuration, but that’s no fun (in my case I had to do this for hundreds of domains, so it wasn’t feasibly to do by configuration).</p>
+<p>Luckily Squid provides an easy interface for creating custom rewriters, log &amp; storage daemons and so forth. Each time a request comes in Squid will write the url to stdin for the url rewriting daemon and it’ll expect the rewritten url to be output to stdout. It’ll also include some extra whitespace-separated options, but they can simply be ignored, just as Squid will also ignore anything after the first whitespace of the stdout output.</p>
+<p>To do the job, I’ve made an über simple console application that does the job:</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+
+<span class="class"><span class="keyword">namespace</span> <span class="title">SquidRewriter</span>
+{</span>
+	<span class="class"><span class="keyword">class</span> <span class="title">Program</span>
+	{</span>
+		<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
+		{
+			<span class="keyword">while</span> (<span class="literal">true</span>)
+			{
+				<span class="keyword">string</span> input = Console.ReadLine();
+
+				if (input == <span class="literal">null</span> || input.Length == <span class="number">0</span>)
+					<span class="keyword">return</span>;
+
+				Console.WriteLine(input.Replace(<span class="string">"cache.improve.dk"</span>, <span class="string">"improve.dk"</span>));
+			}
+		}
+	}
+}
+</pre></figure>
+
+<p>We need the null check as when Squid closes the process we’ll get a nullref exception otherwise. Now simply copy the app into C:squidetcscripts and Squid will automatically start it up as a child processes (or several, depending on the configuration - 5 in our case). This simple rewriter can of course be written in any language that can talk to stdin &amp; stdout, that be C[++], Python, F#, you name it.</p>
+<h2 id="Starting_Squid">Starting Squid</h2>
+<p>Before we can start Squid, we need to create the swap directories. These are the directories in which Squid stores the cached data. Creating the swap directories is a one-time procedure that has to be done before Squid is started for the first time. Do this by running C:squidsbinsquid.exe -z. If you encounter any problems when starting squid, refer to the C:SQUID_LOGScache.log file to see what went wrong.</p>
+<p>Once you start Squid (from the Services administration), you’ll notice that it starts the squid.exe process, as well as a number of SquidRewriter.exe processes.</p>
+<div class="imgwrapper" style=""><div><a href="/using-squid-as-a-reverse-proxy-with-a-dotnet-url-rewriter/squid1_2.jpg" class="fancy"><img src="/using-squid-as-a-reverse-proxy-with-a-dotnet-url-rewriter/squid1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>If you open a browser and go to cache.improve.dk, you’ll see the normal improve.dk website. The only difference is that the website is now ported through our locally running Squid. You can confirm this by looking at the C:SQUID_LOGSaccess.log file:</p>
+<figure class="highlight"><pre><span class="number">1223221967.146</span>   <span class="number">4146</span> <span class="number">192.168</span><span class="number">.0</span><span class="number">.11</span> TCP_MISS/<span class="number">200</span> <span class="number">24172</span> GET http://cache<span class="preprocessor">.improve</span><span class="preprocessor">.dk</span>/ - DIRECT/<span class="number">89.221</span><span class="number">.162</span><span class="number">.250</span> text/html
+<span class="number">1223221967.917</span>    <span class="number">861</span> <span class="number">192.168</span><span class="number">.0</span><span class="number">.11</span> TCP_MISS/<span class="number">200</span> <span class="number">476</span> GET http://cache<span class="preprocessor">.improve</span><span class="preprocessor">.dk</span>/styles/print<span class="preprocessor">.css</span> - DIRECT/<span class="number">89.221</span><span class="number">.162</span><span class="number">.250</span> text/css
+<span class="number">1223221967.917</span>    <span class="number">861</span> <span class="number">192.168</span><span class="number">.0</span><span class="number">.11</span> TCP_MISS/<span class="number">200</span> <span class="number">549</span> GET http://cache<span class="preprocessor">.improve</span><span class="preprocessor">.dk</span>/scripts/general<span class="preprocessor">.js</span> - DIRECT/<span class="number">89.221</span><span class="number">.162</span><span class="number">.250</span> application/<span class="built_in">x</span>-javascript
+<span class="number">1223221967.957</span>    <span class="number">901</span> <span class="number">192.168</span><span class="number">.0</span><span class="number">.11</span> TCP_MISS/<span class="number">200</span> <span class="number">6273</span> GET http://cache<span class="preprocessor">.improve</span><span class="preprocessor">.dk</span>/styles/screen<span class="preprocessor">.css</span> - DIRECT/<span class="number">89.221</span><span class="number">.162</span><span class="number">.250</span> text/css
+<span class="number">1223221968.598</span>    <span class="number">621</span> <span class="number">192.168</span><span class="number">.0</span><span class="number">.11</span> TCP_MISS/<span class="number">200</span> <span class="number">695</span> GET http://cache<span class="preprocessor">.improve</span><span class="preprocessor">.dk</span>/images/bg<span class="preprocessor">.gif</span> - DIRECT/<span class="number">89.221</span><span class="number">.162</span><span class="number">.250</span> image/gif
+<span class="number">1223221968.608</span>    <span class="number">631</span> <span class="number">192.168</span><span class="number">.0</span><span class="number">.11</span> TCP_MISS/<span class="number">200</span> <span class="number">4724</span> GET http://cache<span class="preprocessor">.improve</span><span class="preprocessor">.dk</span>/images/logos/top<span class="preprocessor">.gif</span> - DIRECT/<span class="number">89.221</span><span class="number">.162</span><span class="number">.250</span> image/gif
+<span class="number">1223221968.978</span>    <span class="number">961</span> <span class="number">192.168</span><span class="number">.0</span><span class="number">.11</span> TCP_MISS/<span class="number">200</span> <span class="number">586</span> GET http://cache<span class="preprocessor">.improve</span><span class="preprocessor">.dk</span>/images/interface/topmenu/topbg<span class="preprocessor">.gif</span> - DIRECT/<span class="number">89.221</span><span class="number">.162</span><span class="number">.250</span> image/gif
+<span class="number">1223221972.243</span>   <span class="number">1222</span> <span class="number">192.168</span><span class="number">.0</span><span class="number">.11</span> TCP_MISS/<span class="number">200</span> <span class="number">24117</span> GET http://cache<span class="preprocessor">.improve</span><span class="preprocessor">.dk</span>/ - DIRECT/<span class="number">89.221</span><span class="number">.162</span><span class="number">.250</span> text/html
+<span class="number">1223221972.253</span>     <span class="number">50</span> <span class="number">192.168</span><span class="number">.0</span><span class="number">.11</span> TCP_REFRESH_HIT/<span class="number">304</span> <span class="number">292</span> GET http://cache<span class="preprocessor">.improve</span><span class="preprocessor">.dk</span>/styles/screen<span class="preprocessor">.css</span> - DIRECT/<span class="number">89.221</span><span class="number">.162</span><span class="number">.250</span> -
+<span class="number">1223221972.263</span>     <span class="number">50</span> <span class="number">192.168</span><span class="number">.0</span><span class="number">.11</span> TCP_REFRESH_HIT/<span class="number">304</span> <span class="number">289</span> GET http://cache<span class="preprocessor">.improve</span><span class="preprocessor">.dk</span>/styles/print<span class="preprocessor">.css</span> - DIRECT/<span class="number">89.221</span><span class="number">.162</span><span class="number">.250</span> -
+<span class="number">1223221972.263</span>     <span class="number">50</span> <span class="number">192.168</span><span class="number">.0</span><span class="number">.11</span> TCP_REFRESH_HIT/<span class="number">304</span> <span class="number">292</span> GET http://cache<span class="preprocessor">.improve</span><span class="preprocessor">.dk</span>/scripts/general<span class="preprocessor">.js</span> - DIRECT/<span class="number">89.221</span><span class="number">.162</span><span class="number">.250</span> -
+<span class="number">1223221972.283</span>     <span class="number">20</span> <span class="number">192.168</span><span class="number">.0</span><span class="number">.11</span> TCP_REFRESH_HIT/<span class="number">304</span> <span class="number">287</span> GET http://cache<span class="preprocessor">.improve</span><span class="preprocessor">.dk</span>/images/bg<span class="preprocessor">.gif</span> - DIRECT/<span class="number">89.221</span><span class="number">.162</span><span class="number">.250</span> -
+<span class="number">1223221972.293</span>     <span class="number">30</span> <span class="number">192.168</span><span class="number">.0</span><span class="number">.11</span> TCP_REFRESH_HIT/<span class="number">304</span> <span class="number">293</span> GET http://cache<span class="preprocessor">.improve</span><span class="preprocessor">.dk</span>/images/logos/top<span class="preprocessor">.gif</span> - DIRECT/<span class="number">89.221</span><span class="number">.162</span><span class="number">.250</span> -
+<span class="number">1223221972.303</span>     <span class="number">30</span> <span class="number">192.168</span><span class="number">.0</span><span class="number">.11</span> TCP_REFRESH_HIT/<span class="number">304</span> <span class="number">307</span> GET http://cache<span class="preprocessor">.improve</span><span class="preprocessor">.dk</span>/images/interface/topmenu/topbg<span class="preprocessor">.gif</span> - DIRECT/<span class="number">89.221</span><span class="number">.162</span><span class="number">.250</span> -
+</pre></figure>
+
+<p>Now, the above log basically confirms that I suck at setting up caching properties for my blog. Naturally, for the first request we’ll get all TCP_MISS statuses as Squid does not have any of the resources cached. For the next request we get all TCP_REFRESH_HIT’s as Squid does have them cached, but it needs to do a 304 check on the server to see if it’s been modified. Had I set a more liberal refresh_pattern, I could’ve cached these and completely avoided a roundtrip to the improve.dk server (resulting in a TCP_MEM_HIT if it’s cached in-memory). But still, the next user accessing the Squid will have the data served locally, even though Squid has to do a refresh check to the improve.dk server. This issue confirms a very important point - Squid will be best for static data that does not frequently change, and can thus be cached safely. Or at least for dynamic content, you have to consider your usage of expiry policies through the HTTP headers.</p>
+<p>If you add a reference to the local Squid server for google.com, in your hosts line, then you’ll see the error message that pops up due to us filtering away non-improve.dk domains:</p>
+<div class="imgwrapper" style=""><div><a href="/using-squid-as-a-reverse-proxy-with-a-dotnet-url-rewriter/squid2_2.jpg" class="fancy"><img src="/using-squid-as-a-reverse-proxy-with-a-dotnet-url-rewriter/squid2_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Reconfiguration_&amp;_log_rotation">Reconfiguration &amp; log rotation</h2>
+<p>When Squid is running, it’ll ignore any changes you make to the config files until you restart Squid. You can also force Squid to read the config files again without having it restart, simply run the following command:</p>
+<figure class="highlight"><pre>C:<span class="command">\squid</span><span class="command">\sbin</span><span class="command">\squid</span>.exe -k reconfigure -n Squid
+</pre></figure>
+
+<p>To force a log rotation, run:</p>
+<figure class="highlight"><pre>C:<span class="command">\squid</span><span class="command">\sbin</span><span class="command">\squid</span>.exe -k rotate -n Squid
+</pre></figure>
+
+<h2 id="Final_considerations">Final considerations</h2>
+<p>Setting up a Squid server to help speed up your solution for foreign visitors is both cheap &amp; easy. Squid runs in *nix as well as Windows. It has no hardware requirements to speak of and it’s CPU utilization is very limited. Note that it’ll only support a single core, so you won’t get anything from a fancy quad-core setup. Also, it only (there are unofficial builds for x64) runs on x86 so if you want to utilize more than ~3GBs of memory, you’ll have to run multiple instances on different port/ips. As for the setup, I’d recommend to create a special user for Squid that only has access to the Squid directories, otherwise it’ll run with SYSTEM permissions by default.</p>
+<p>Squid can not only be used for improving foreign visitor speed, it can also take a lot of static file traffic off of your normal servers. Simply put a Squid in front of your normal servers and let all static/cacheable traffic go through the Squid instead of through the normal app servers.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Sep</span>
+			<span class="day">02</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/aspnet-regiis-ga-token-reference-error/" title="aspnet_regiis -ga Token Reference Error" rel="bookmark">aspnet_regiis -ga Token Reference Error</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/IIS/">IIS</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Some time ago Peter Loft Jensen wrote about how to easily give a user account the neccessary permissions to access the IIS metabase &amp; required directories, and thus be used for running the IIS process.</p>
+<a id="more"></a>
+
+<p>We’re running all x64 servers, but our IIS is running in 32 bit mode due to some non-x64 compatible 3rd party libraries. Usually this means we have to use the Frameworkversionaspnet_regiis.exe bin instead of the Framework64 version - otherwise it might interfere with our 32 bit IIS settings.</p>
+<p>Doing that resulted in the following error:</p>
+<figure class="highlight bash"><pre>C:\WINDOWS\microsoft.net\Framework\v2.<span class="number">0.50727</span>&gt;aspnet_regiis -ga [domain][user]
+Start granting [domain][user] access to the IIS metabase and other directories used by ASP.NET.
+An error has occurred: <span class="number">0</span>x800703f0 An attempt was made to reference a token that does not exist.
+</pre></figure>
+
+<p>The solution was quite simple, it seems you must use the x64 version on an x64 system to run the -ga command. After using the binary in the Framework64 directory, the command ran perfectly.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Aug</span>
+			<span class="day">20</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/techtalk-material-part-2/" title="TechTalk Material Part 2" rel="bookmark">TechTalk Material Part 2</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/Conferences and Presenting/">Conferences and Presenting</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I continued my TechTalk on security in the .NET framework today, taking off from where we left last time. As promised, here are the demos and slides (in Danish).</p>
+<a id="more"></a>
+
+<p>Regarding the demos, the baseline folders contain the code as it was at the beginning of the presentation, the others contain the code as it ended up after the presentation.</p>
+<p><a href="Net_Security_Part2_Slides.ppt">Net_Security_Part2_Slides.ppt - Slides</a><br><a href="Net_Security_Part2_Demos.zip">Net_Security_Part2_Demos.zip - Demos</a></p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Aug</span>
+			<span class="day">10</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/twitter/" title="Twitter" rel="bookmark">Twitter</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/Life/">Life</a>
+				, 
+			
+				<a href="http://improve.dk/category/Miscellaneous/">Miscellaneous</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I’ve finally succumbed to creating a <a href="http://twitter.com/improvedk" target="_blank">Twitter account</a>. My gut instinct doesn’t like Twitter, but on the other hand, I do see some possibilities. I don’t know. As the ol’ Cain would’ve said: Stay a while, and listen!</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Aug</span>
+			<span class="day">10</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/book-how-i-raised-myself-from-failure-to-success-in-selling/" title="How I Raised Myself from Failure to Success in Selling" rel="bookmark">How I Raised Myself from Failure to Success in Selling</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/Miscellaneous/">Miscellaneous</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Having recently read <a href="http://www.amazon.com/Pragmatic-Programmer-Journeyman-Master/dp/020161622X/ref=pd_bbs_sr_1?ie=UTF8&amp;s=books&amp;qid=1218331941&amp;sr=8-1" target="_blank">The Pragmatic Programmer</a> and <a href="http://www.amazon.com/Working-Effectively-Legacy-Robert-Martin/dp/0131177052" target="_blank">Working Effectively with Legacy Code</a> (both books are amazing - and neither need further review or description as they are globally appreciated as classics), I was feeling ready to read something non-development related, just to get back on my feet again.</p>
+<a id="more"></a>
+
+<div class="imgwrapper" style=""><div><a href="/book-how-i-raised-myself-from-failure-to-success-in-selling/frankbettger_2.jpg" class="fancy"><img src="/book-how-i-raised-myself-from-failure-to-success-in-selling/frankbettger_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>I’d heard our CEO speaking highly of a sales book by <a href="http://en.wikipedia.org/wiki/Frank_Bettger" target="_blank">Frank Bettger</a>, but I’d never really thought more of it. When I found a copy of <a href="http://www.amazon.com/Raised-Myself-Failure-Success-Selling/dp/067179437X/ref=pd_bbs_sr_1?ie=UTF8&amp;s=books&amp;qid=1218331785&amp;sr=1-1" target="_blank">How I Raised Myself from Failure to Success in Selling</a> in a bag I’d borrowed for a trip to Belgium, I thought I might as well give it a try.</p>
+<p>While it’s no programming book, I do feel it was a great read, and I believe it’s got some great tips for anyone dealing with clients - no matter if it’s sales or support related. Some of the chapters may be borderline self-help-ish, but he keeps a sane level of thought all the way through. One of the greatest features of the book is that 70% of the text are war stories of how he either accomplished or failed when speaking with a client. Some of the things he mentions will seem obvious at first, but when you think about it, you realize how you’ve never actually thought about the process behind the technique.</p>
+<p>It’s a quick and quite enjoyable read due to his light style of writing and war stories. I highly recommend it to just about anyone, no matter your field of work.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Aug</span>
+			<span class="day">10</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/updating-xmloutput/" title="Updating XmlOutput" rel="bookmark">Updating XmlOutput</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Since I originally posted my XmlOutput class I’ve received lots of great feedback. I’m happy that many of you have found it useful.</p>
+<a id="more"></a>
+
+<p>I have been using the class myself for most of my xml writing requirements lately (in appropriate scenarios) and I’ve ended up augmenting it a little bit. Nothing major, just a couple of helpful changes.</p>
+<h2 id="Automatic_xml_declaration">Automatic xml declaration</h2>
+<p>Instead of manually declaring our xml declaration each time:</p>
+<figure class="highlight csharp"><pre>XmlOutput xo = new XmlOutput()
+	<span class="preprocessor">.XmlDeclaration</span>()
+	<span class="preprocessor">.Node</span>(<span class="string">"root"</span>)<span class="preprocessor">.Within</span>()
+		<span class="preprocessor">.Node</span>(<span class="string">"result"</span>)<span class="preprocessor">.Attribute</span>(<span class="string">"type"</span>, <span class="string">"boolean"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"true"</span>)<span class="comment">;</span>
+</pre></figure>
+
+<p>XmlOutput will instead add an XmlDeclaration with the default parameters:</p>
+<figure class="highlight csharp"><pre>var xo = new XmlOutput()
+	<span class="preprocessor">.Node</span>(<span class="string">"root"</span>)<span class="preprocessor">.Within</span>()
+		<span class="preprocessor">.Node</span>(<span class="string">"result"</span>)<span class="preprocessor">.Attribute</span>(<span class="string">"type"</span>, <span class="string">"boolean"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"true"</span>)<span class="comment">;</span>
+</pre></figure>
+
+<p>Note that this is a breaking change, meaning it will result in different output than the earlier version did. While you could make an XmlDocument without an XmlDeclaration earlier, you can no longer do this.</p>
+<h2 id="Checking_for_duplicate_XmlDeclaration">Checking for duplicate XmlDeclaration</h2>
+<p>XmlOutput will throw an InvalidOperationException in case an XmlDeclaration has already been added to the document. I do not allow for overwriting the existing XmlDeclaration as XmlOutput really is forward-only writing and since it might often be a flaw that the XmlDeclaration is overwritten.</p>
+<h2 id="IDisposable">IDisposable</h2>
+<p>Just as I <a href="/using-idispoable-to-write-indented-text/">used IDisposable to easily write indented text</a>, I’ve done the same to XmlOutput. For smaller bits of xml, it might cause more bloat than good - but it’s optional when to use it. Using IDisposable will simply call EndWithin() in the Dispose method, making indented xml generation more readable.</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> (xo.Node(<span class="string">"user"</span>).Within())
+{
+	xo.Node(<span class="string">"username"</span>).InnerText(<span class="string">"orca"</span>);
+
+	<span class="comment">// Notice that we're not calling EndWithin() after this block as it's implicitly called in the Dispose method</span>
+	<span class="keyword">using</span> (xo.Node(<span class="string">"numbers"</span>).Within())
+		<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10</span>; i++)
+			xo.Node(<span class="string">"number"</span>).Attribute(<span class="string">"value"</span>, i);
+
+	xo.Node(<span class="string">"realname"</span>).InnerText(<span class="string">"Mark S. Rasmussen"</span>);
+}
+</pre></figure>
+
+<h2 id="InnerText_&amp;_Attribute_object_values">InnerText &amp; Attribute object values</h2>
+<p>Instead of explicitly requiring input values of type string, both InnerText and Attribute will now accept objects for the text values. This allows you to easily pass in integers, StringBuilders and so forth.</p>
+<h2 id="ToString_override">ToString override</h2>
+<p>Another breaking change - ToString will now return the OuterXml value of the XmlOutput object.</p>
+<h2 id="Making_it_easy_to_do_it_right">Making it easy to do it right</h2>
+<p>Jakob Andersen made a <a href="http://intellect.dk/post/Fluent-interfaces-Make-it-easy-to-do-it-right.aspx" target="_blank">great post</a> regarding how we might extend XmlOutput to return different kinds of interfaces after different operations. This would allow us to utilize IntelliSense as that’d only show the methods that were possible at the current state.</p>
+<p>I started implementing it, but I kept running into walls after having thought it through. Let me start out by representing a state machine displaying the different interfaces involved:</p>
+<div class="imgwrapper" style=""><div><a href="/updating-xmloutput/statemachine_2.jpg" class="fancy"><img src="/updating-xmloutput/statemachine_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p><a href="XmlOutput_State_Machine.zip">XmlOutput_State_Machine.zip - Visio diagram</a></p>
+<p>So basically, calling a Create method will return an IXmlOutputStartDocument which only supports creating a Node and creating an XmlDeclaration. If you create an XmlDeclaration, you’ll get an IXmlOutputCanWriteFirstNode which only allows you to create a node as that’s the only valid option (ignoring read-only operations). Continuing on, creating a Node at that point will return you an IXmlOutputInsideRootNode which again supports creating either sibling nodes, attributes or innertext. If you call InnerText at this point, we get to a blind alley at the IXmlOutputInsideRootNodeWithText which only allows creating attributes.</p>
+<p>Now, on paper, this seems great. The problem however becomes apparent when we start using it:</p>
+<figure class="highlight csharp"><pre>// xo <span class="keyword">is</span> now an IXmlOutputCanWriteFirstNode
+var xo = XmlOutput.Create()
+	.XmlDeclaration();
+
+// We<span class="attribute">'ve</span> created a root node <span class="keyword">and</span> ignored the returned IXmlOutputInsideRootNode
+xo.Node(<span class="string">"root"</span>);
+
+// This fails! Since xo <span class="keyword">is</span> an IXmlOutputCanWriteFirstNode, we<span class="attribute">'re</span> <span class="keyword">not</span> allowed <span class="keyword">to</span> create attributes.
+// Creating the root node above should<span class="attribute">'ve</span> changed our <span class="keyword">type</span> <span class="keyword">to</span> IXmlOutputInsideRootNode, but it can<span class="attribute">'t</span> since
+// xo <span class="keyword">is</span> statically typed as an IXmlOutputCanWriteFirstNode
+xo.<span class="keyword">Attribute</span>(<span class="string">"hello"</span>, <span class="string">"world"</span>);
+</pre></figure>
+
+<p>One way to get around this is to create a new variable after each operation, but I don’t really think I’ll have to explain why this is a bad idea:</p>
+<figure class="highlight csharp"><pre><span class="comment">// xo1 is now an IXmlOutputCanWriteFirstNode</span>
+<span class="keyword">var</span> xo1 = XmlOutput.Create()
+	.XmlDeclaration();
+
+<span class="comment">// xo2 is now an IXmlOutputCanWriteFirstNode</span>
+<span class="keyword">var</span> xo2 = xo1.Node(<span class="string">"root"</span>);
+
+<span class="comment">// xo3 is now an IXmlOutputInsideRootNode</span>
+<span class="keyword">var</span> xo3 = xo2.Attribute(<span class="string">"hello"</span>, <span class="string">"world"</span>);
+</pre></figure>
+
+<p>Another issue is that we’ll need to have the types change based on the stack level. Imagine we create an IXmlOutputOutsideNode like this:</p>
+<p>XmlOutput.Create -&gt; Node –&gt; Node</p>
+<p>This will result in us having create a single node inside the root node. We are still within the root node scope (creating another Node will also be a child of the rootnode, but a sibling of the just created node). The problem is, at this point we’re able to call EndWithin() since the IXmlOutputOutsideNode interface allows it, but we can’t move out of the root node scope as we’re on the bottom of the stack. Unless we create interfaces like IXmlOutputOutsideNodeLevel1, Level2, LevelX interfaces, we can’t really support allowing and disallowing EndWithin depending on stack level - and this is a mess I don’t want to get into.</p>
+<p>So what’s the conclusion? While the interface based help in regards to fluent interfaces is a great idea, it’s not really easy to implement, as least not as long as we need some kind of recursive functionality on our interfaces. If we had a simple linear fluent interface, it might be easier for us to support it, though we will still have the variable issue.</p>
+<h3 id="Code">Code</h3>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Collections.Generic;
+<span class="keyword">using</span> System.Xml;
+
+namespace Improve.Framework.Xml
+{
+	<span class="keyword">public</span> <span class="keyword">class</span> XmlOutput : IDisposable
+	{
+		<span class="comment">// The internal XmlDocument that holds the complete structure.</span>
+		XmlDocument xd = <span class="keyword">new</span> XmlDocument();
+
+		<span class="comment">// A stack representing the hierarchy of nodes added. nodeStack.Peek() will always be the current node scope.</span>
+		Stack&lt;XmlNode&gt; nodeStack = <span class="keyword">new</span> Stack&lt;XmlNode&gt;();
+
+		<span class="comment">// Whether the next node should be created in the scope of the current node.</span>
+		<span class="keyword">bool</span> nextNodeWithin;
+
+		<span class="comment">// The current node. If null, the current node is the XmlDocument itself.</span>
+		XmlNode currentNode;
+
+		<span class="comment">// Whether the Xml declaration has been added to the document</span>
+		<span class="keyword">bool</span> xmlDeclarationHasBeenAdded = <span class="keyword">false</span>;
+
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> Overrides ToString to easily return the current outer Xml</span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span><span class="xmlDocTag">&lt;/returns&gt;</span></span>
+		<span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">string</span> <span class="title">ToString</span>()
+		{
+			<span class="keyword">return</span> GetOuterXml();
+		}
+
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> Returns the string representation of the XmlDocument.</span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>A string representation of the XmlDocument.<span class="xmlDocTag">&lt;/returns&gt;</span></span>
+		<span class="keyword">public</span> <span class="keyword">string</span> <span class="title">GetOuterXml</span>()
+		{
+			<span class="keyword">return</span> xd.OuterXml;
+		}
+
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> Returns the XmlDocument</span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span><span class="xmlDocTag">&lt;/returns&gt;</span></span>
+		<span class="keyword">public</span> XmlDocument <span class="title">GetXmlDocument</span>()
+		{
+			<span class="keyword">return</span> xd;
+		}
+
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> Changes the scope to the current node.</span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>this<span class="xmlDocTag">&lt;/returns&gt;</span></span>
+		<span class="keyword">public</span> XmlOutput <span class="title">Within</span>()
+		{
+			nextNodeWithin = <span class="keyword">true</span>;
+
+			<span class="keyword">return</span> <span class="keyword">this</span>;
+		}
+
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> Changes the scope to the parent node.</span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>this<span class="xmlDocTag">&lt;/returns&gt;</span></span>
+		<span class="keyword">public</span> XmlOutput <span class="title">EndWithin</span>()
+		{
+			<span class="keyword">if</span> (nextNodeWithin)
+				nextNodeWithin = <span class="keyword">false</span>;
+			<span class="keyword">else</span>
+				nodeStack.Pop();
+
+			<span class="keyword">return</span> <span class="keyword">this</span>;
+		}
+
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> Adds an XML declaration with the most common values.</span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>this<span class="xmlDocTag">&lt;/returns&gt;</span></span>
+		<span class="keyword">public</span> XmlOutput <span class="title">XmlDeclaration</span>() { <span class="keyword">return</span> XmlDeclaration(<span class="string">"1.0"</span>, <span class="string">"utf-8"</span>, <span class="string">""</span>); }
+
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> Adds an XML declaration to the document.</span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="version"&gt;</span>The version of the XML document.<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="encoding"&gt;</span>The encoding of the XML document.<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="standalone"&gt;</span>Whether the document is standalone or not. Can be yes/no/(null || "").<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>this<span class="xmlDocTag">&lt;/returns&gt;</span></span>
+		<span class="keyword">public</span> XmlOutput <span class="title">XmlDeclaration</span>(<span class="keyword">string</span> version, <span class="keyword">string</span> encoding, <span class="keyword">string</span> standalone)
+		{
+			<span class="comment">// We can't add an XmlDeclaration once nodes have been added, as the standard declaration will already have been added</span>
+			<span class="keyword">if</span> (nodeStack.Count &gt; <span class="number">0</span>)
+				<span class="keyword">throw</span> <span class="keyword">new</span> InvalidOperationException(<span class="string">"Cannot add XmlDeclaration once nodes have been added to the XmlOutput."</span>);
+
+			<span class="comment">// Create & add the XmlDeclaration</span>
+			XmlDeclaration xdec = xd.CreateXmlDeclaration(version, encoding, standalone);
+			xd.AppendChild(xdec);
+
+			xmlDeclarationHasBeenAdded = <span class="keyword">true</span>;
+
+			<span class="keyword">return</span> <span class="keyword">this</span>;
+		}
+
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> Creates a node. If no nodes have been added before, it'll be the root node, otherwise it'll be appended as a child of the current node.</span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="name"&gt;</span>The name of the node to create.<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>this<span class="xmlDocTag">&lt;/returns&gt;</span></span>
+		<span class="keyword">public</span> XmlOutput <span class="title">Node</span>(<span class="keyword">string</span> name)
+		{
+			XmlNode xn = xd.CreateElement(name);
+
+			<span class="comment">// If nodeStack.Count == 0, no nodes have been added, thus the scope is the XmlDocument itself.</span>
+			<span class="keyword">if</span> (nodeStack.Count == <span class="number">0</span>)
+			{
+				<span class="comment">// If an XmlDeclaration has not been added, add the standard declaration</span>
+				<span class="keyword">if</span> (!xmlDeclarationHasBeenAdded)
+					XmlDeclaration();
+
+				<span class="comment">// Add the child element to the XmlDocument directly</span>
+				xd.AppendChild(xn);
+
+				<span class="comment">// Automatically change scope to the root DocumentElement.</span>
+				nodeStack.Push(xn);
+			}
+			<span class="keyword">else</span>
+			{
+				<span class="comment">// If this node should be created within the scope of the current node, change scope to the current node before adding the node to the scope element.</span>
+				<span class="keyword">if</span> (nextNodeWithin)
+				{
+					nodeStack.Push(currentNode);
+
+					nextNodeWithin = <span class="keyword">false</span>;
+				}
+
+				nodeStack.Peek().AppendChild(xn);
+			}
+
+			currentNode = xn;
+
+			<span class="keyword">return</span> <span class="keyword">this</span>;
+		}
+
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> Sets the InnerText of the current node using CData.</span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="text"&gt;</span><span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span><span class="xmlDocTag">&lt;/returns&gt;</span></span>
+		<span class="keyword">public</span> XmlOutput <span class="title">InnerText</span>(<span class="keyword">object</span> text)
+		{
+			<span class="keyword">return</span> InnerText(text.ToString(), <span class="keyword">true</span>);
+		}
+
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> Sets the InnerText of the current node.</span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="text"&gt;</span>The text to set.<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>this<span class="xmlDocTag">&lt;/returns&gt;</span></span>
+		<span class="keyword">public</span> XmlOutput <span class="title">InnerText</span>(<span class="keyword">object</span> text, <span class="keyword">bool</span> useCData)
+		{
+			<span class="keyword">if</span> (useCData)
+				currentNode.AppendChild(xd.CreateCDataSection(text.ToString()));
+			<span class="keyword">else</span>
+				currentNode.AppendChild(xd.CreateTextNode(text.ToString()));
+
+			<span class="keyword">return</span> <span class="keyword">this</span>;
+		}
+
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> Adds an attribute to the current node.</span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="name"&gt;</span>The name of the attribute.<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="value"&gt;</span>The value of the attribute.<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>this<span class="xmlDocTag">&lt;/returns&gt;</span></span>
+		<span class="keyword">public</span> XmlOutput <span class="title">Attribute</span>(<span class="keyword">string</span> name, <span class="keyword">object</span> <span class="keyword">value</span>)
+		{
+			XmlAttribute xa = xd.CreateAttribute(name);
+			xa.Value = <span class="keyword">value</span>.ToString();
+
+			currentNode.Attributes.Append(xa);
+
+			<span class="keyword">return</span> <span class="keyword">this</span>;
+		}
+
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> Same as calling EndWithin directly, allows for using the using statement</span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Dispose</span>()
+		{
+			EndWithin();
+		}
+	}
+}
+</pre></figure>
+
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Aug</span>
+			<span class="day">06</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/techtalk-material-security-2008/" title="TechTalk Material" rel="bookmark">TechTalk Material</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/Conferences and Presenting/">Conferences and Presenting</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I held my TechTalk on CAS security in the .NET framework today. As promised, here are the demos and slides (in Danish). If you’re asked for a key password, it’s “123456”.</p>
+<a id="more"></a>
+
+<p><a href="Net_Security_Introduction_Slides.ppt">Net_Security_Introduction_Slides.ppt</a><br><a href="Net_Security_Introduction_Demos.zip">Net_Security_Introduction_Demos.zip</a></p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jun</span>
+			<span class="day">13</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/providing-custom-assembly-evidence/" title="Providing Custom Assembly Evidence" rel="bookmark">Providing Custom Assembly Evidence</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I recently <a href="/analyzing-assembly-evidence/">mentioned</a> the possibility of having an assembly provide custom evidence alongside the CLR provided evidence. Let’s see how to do it.</p>
+<a id="more"></a>
+
+<h2 id="Creating_the_evidence">Creating the evidence</h2>
+<p>The first step is to actually create the evidence itself. The evidence can be in any form, as long as it’s serializable. That means you can use strings, complex types (provided they’re serializable), or plain old’n’good XML. In lack of a better example, I’ll create a piece of evidence that tells the birthdate and name of the developer behind the assembly. Really useful, I know.</p>
+<figure class="highlight xml"><pre><span class="pi">&lt;?xml version="1.0" encoding="utf-8" ?&gt;</span>
+<span class="tag">&lt;<span class="title">myEvidence</span>&gt;</span>
+	<span class="tag">&lt;<span class="title">birthDay</span>&gt;</span>1985-07-25<span class="tag">&lt;/<span class="title">birthDay</span>&gt;</span>
+	<span class="tag">&lt;<span class="title">name</span>&gt;</span>Mark S. Rasmussen<span class="tag">&lt;/<span class="title">name</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">myEvidence</span>&gt;</span>
+</pre></figure>
+
+<h2 id="Saving_the_evidence_in_binary_form">Saving the evidence in binary form</h2>
+<p>To embed our XML as evidence, we first have to save it in binary form. To save a bit of typing, I use my SaveXmlAsBinaryEvidence function:</p>
+<figure class="highlight csharp"><pre><span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> Saves the input XML in binary format that can be used when linking custom evidence to an assembly</span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="xml"&gt;</span><span class="xmlDocTag">&lt;/param&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="outputFile"&gt;</span><span class="xmlDocTag">&lt;/param&gt;</span></span>
+<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">SaveXmlAsBinaryEvidence</span>(<span class="keyword">string</span> xml, <span class="keyword">string</span> outputFile)
+{
+	Evidence customEvidence = <span class="keyword">new</span> Evidence();
+	customEvidence.AddAssembly(xml);
+
+	<span class="keyword">using</span> (FileStream fs = <span class="keyword">new</span> FileStream(outputFile, FileMode.Create))
+	{
+		BinaryFormatter bf = <span class="keyword">new</span> BinaryFormatter();
+		bf.Serialize(fs, customEvidence);
+	}
+}
+</pre></figure>
+
+<p>This allows us to save out the evidence in binary format using a single line:</p>
+<figure class="highlight csharp"><pre>EvidenceCreator<span class="preprocessor">.SaveXmlAsBinaryEvidence</span>(File<span class="preprocessor">.ReadAllText</span>(<span class="string">"MyEvidence.xml"</span>), <span class="string">"MyEvidence.evidence"</span>)<span class="comment">;</span>
+</pre></figure>
+
+<h2 id="Compiling_the_relevant_assembly_in_netmodule_form">Compiling the relevant assembly in netmodule form</h2>
+<p>I’ve created a simple assembly named TestAssembly that consists of a single file, MyClass:</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+
+namespace TestAssembly
+{
+	<span class="keyword">public</span> <span class="keyword">class</span> MyClass
+	{
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Test</span>()
+		{
+			Console.Write(<span class="string">"Hello world!"</span>);
+		}
+	}
+}
+</pre></figure>
+
+<p>If we compile it directly in Visual Studio, we end up with an assembly called TestAssembly.dll - this is not what we want. We need to compile the code into a .netmodule module file so we can manually link it together with our assembly into a finished assembly. Running the following command (with relevant path variables setup, or from the Visual Studio Command Prompt) will compile MyClass into a netmodule called MyClass.netmodule:</p>
+<figure class="highlight csharp"><pre>csc /<span class="symbol">target:</span><span class="class"><span class="keyword">module</span> <span class="title">MyClass</span>.<span class="title">cs</span></span>
+</pre></figure>
+
+<p>You can actually load the .netmodule file into Reflector to verify the contents. It’ll work nicely, though Reflector will give a warning since our netmodule does not contain an assembly manifest.</p>
+<h2 id="Creating_an_assembly_by_linking_the_netmodule_and_evidence_together">Creating an assembly by linking the netmodule and evidence together</h2>
+<p>The final step is to link our evidence (MyEvidence.evidence) and netmodule (MyClass.netmodule) together. Make sure both files reside in the same directory (they don’t have to, but it’ll be easier). The following command will invoke AL.exe and do the final assembly linking:</p>
+<figure class="highlight csharp"><pre>al /target:library /evidence:MyEvidence<span class="preprocessor">.evidence</span> /<span class="keyword">out</span>:MyClass<span class="preprocessor">.dll</span> MyClass<span class="preprocessor">.netmodule</span>
+</pre></figure>
+
+<p>If you load up the resulting assembly in Reflector, you’ll see the attached evidence under the Resources directory:</p>
+<div class="imgwrapper" style=""><div><a href="/providing-custom-assembly-evidence/reflector_evidence_2.jpg" class="fancy"><img src="/providing-custom-assembly-evidence/reflector_evidence_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Now, if we <a href="/analyzing-assembly-evidence/">analyze the assembly evidence</a> by loading the assembly and enumerating the assembly provided evidence like so:</p>
+<figure class="highlight csharp"><pre>al /target:library /evidence:MyEvidence<span class="preprocessor">.evidence</span> /<span class="keyword">out</span>:MyClass<span class="preprocessor">.dll</span> MyClass<span class="preprocessor">.netmodule</span>
+</pre></figure>
+
+<p>We see our custom evidence:</p>
+<div class="imgwrapper" style=""><div><a href="/providing-custom-assembly-evidence/analyzing_custom_evidence_2.jpg" class="fancy"><img src="/providing-custom-assembly-evidence/analyzing_custom_evidence_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Trustworthiness">Trustworthiness</h2>
+<p><a href="/analyzing-assembly-evidence/">As mentioned earlier</a>, assembly provided evidence is inherently not trustworthy. There are however ways to secure it. We could use a public/private cryptosystem to sign the actual evidence. That way, anyone reading the evidence could verify the evidence providers signature and thus be sure that the entity linking the evidence into the assembly is trustworthy.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jun</span>
+			<span class="day">13</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/dotnet-security-techtalk/" title=".NET Security TechTalk" rel="bookmark">.NET Security TechTalk</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/Conferences and Presenting/">Conferences and Presenting</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I will be hosting two TechTalks on security in .NET, at Microsoft Denmark in August. The TechTalks will be held in DANISH.</p>
+<a id="more"></a>
+
+<p><a href="http://www.intellect.dk/" target="_blank">Jakob Andersen</a> will be co-hosting the TechTalks, hopefully filling in on my weak points and vice versa.</p>
+<p>I urge participants to comment on this post regarding topics you would like us to talk about, problems you’ve had, suggestions and so forth.</p>
+<p>If you’re not attending, please comment anyways - I’ll be blogging a lot on security for the time being and I’m always seeking relevant topics to research further :)</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+
+<div class="paging">
+	<a href="/page/16/"><div class="past">« Past</div></a>
+	<a href="/page/14/"><div class="future">Future »</div></a>
+	<div class="clear"></div>
+</div>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

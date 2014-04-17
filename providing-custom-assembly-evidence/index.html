@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Providing Custom Assembly Evidence | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jun</span>
+			<span class="day">13</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/providing-custom-assembly-evidence/" title="Providing Custom Assembly Evidence" rel="bookmark">Providing Custom Assembly Evidence</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on Providing Custom Assembly Evidence">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>I recently <a href="/analyzing-assembly-evidence/">mentioned</a> the possibility of having an assembly provide custom evidence alongside the CLR provided evidence. Let’s see how to do it.</p>
+<a id="more"></a>
+
+<h2 id="Creating_the_evidence">Creating the evidence</h2>
+<p>The first step is to actually create the evidence itself. The evidence can be in any form, as long as it’s serializable. That means you can use strings, complex types (provided they’re serializable), or plain old’n’good XML. In lack of a better example, I’ll create a piece of evidence that tells the birthdate and name of the developer behind the assembly. Really useful, I know.</p>
+<figure class="highlight xml"><pre><span class="pi">&lt;?xml version="1.0" encoding="utf-8" ?&gt;</span>
+<span class="tag">&lt;<span class="title">myEvidence</span>&gt;</span>
+	<span class="tag">&lt;<span class="title">birthDay</span>&gt;</span>1985-07-25<span class="tag">&lt;/<span class="title">birthDay</span>&gt;</span>
+	<span class="tag">&lt;<span class="title">name</span>&gt;</span>Mark S. Rasmussen<span class="tag">&lt;/<span class="title">name</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">myEvidence</span>&gt;</span>
+</pre></figure>
+
+<h2 id="Saving_the_evidence_in_binary_form">Saving the evidence in binary form</h2>
+<p>To embed our XML as evidence, we first have to save it in binary form. To save a bit of typing, I use my SaveXmlAsBinaryEvidence function:</p>
+<figure class="highlight csharp"><pre><span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> Saves the input XML in binary format that can be used when linking custom evidence to an assembly</span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="xml"&gt;</span><span class="xmlDocTag">&lt;/param&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="outputFile"&gt;</span><span class="xmlDocTag">&lt;/param&gt;</span></span>
+<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">SaveXmlAsBinaryEvidence</span>(<span class="keyword">string</span> xml, <span class="keyword">string</span> outputFile)
+{
+	Evidence customEvidence = <span class="keyword">new</span> Evidence();
+	customEvidence.AddAssembly(xml);
+
+	<span class="keyword">using</span> (FileStream fs = <span class="keyword">new</span> FileStream(outputFile, FileMode.Create))
+	{
+		BinaryFormatter bf = <span class="keyword">new</span> BinaryFormatter();
+		bf.Serialize(fs, customEvidence);
+	}
+}
+</pre></figure>
+
+<p>This allows us to save out the evidence in binary format using a single line:</p>
+<figure class="highlight csharp"><pre>EvidenceCreator<span class="preprocessor">.SaveXmlAsBinaryEvidence</span>(File<span class="preprocessor">.ReadAllText</span>(<span class="string">"MyEvidence.xml"</span>), <span class="string">"MyEvidence.evidence"</span>)<span class="comment">;</span>
+</pre></figure>
+
+<h2 id="Compiling_the_relevant_assembly_in_netmodule_form">Compiling the relevant assembly in netmodule form</h2>
+<p>I’ve created a simple assembly named TestAssembly that consists of a single file, MyClass:</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+
+namespace TestAssembly
+{
+	<span class="keyword">public</span> <span class="keyword">class</span> MyClass
+	{
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Test</span>()
+		{
+			Console.Write(<span class="string">"Hello world!"</span>);
+		}
+	}
+}
+</pre></figure>
+
+<p>If we compile it directly in Visual Studio, we end up with an assembly called TestAssembly.dll - this is not what we want. We need to compile the code into a .netmodule module file so we can manually link it together with our assembly into a finished assembly. Running the following command (with relevant path variables setup, or from the Visual Studio Command Prompt) will compile MyClass into a netmodule called MyClass.netmodule:</p>
+<figure class="highlight csharp"><pre>csc /<span class="symbol">target:</span><span class="class"><span class="keyword">module</span> <span class="title">MyClass</span>.<span class="title">cs</span></span>
+</pre></figure>
+
+<p>You can actually load the .netmodule file into Reflector to verify the contents. It’ll work nicely, though Reflector will give a warning since our netmodule does not contain an assembly manifest.</p>
+<h2 id="Creating_an_assembly_by_linking_the_netmodule_and_evidence_together">Creating an assembly by linking the netmodule and evidence together</h2>
+<p>The final step is to link our evidence (MyEvidence.evidence) and netmodule (MyClass.netmodule) together. Make sure both files reside in the same directory (they don’t have to, but it’ll be easier). The following command will invoke AL.exe and do the final assembly linking:</p>
+<figure class="highlight csharp"><pre>al /target:library /evidence:MyEvidence<span class="preprocessor">.evidence</span> /<span class="keyword">out</span>:MyClass<span class="preprocessor">.dll</span> MyClass<span class="preprocessor">.netmodule</span>
+</pre></figure>
+
+<p>If you load up the resulting assembly in Reflector, you’ll see the attached evidence under the Resources directory:</p>
+<div class="imgwrapper" style=""><div><a href="/providing-custom-assembly-evidence/reflector_evidence_2.jpg" class="fancy"><img src="/providing-custom-assembly-evidence/reflector_evidence_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Now, if we <a href="/analyzing-assembly-evidence/">analyze the assembly evidence</a> by loading the assembly and enumerating the assembly provided evidence like so:</p>
+<figure class="highlight csharp"><pre>al /target:library /evidence:MyEvidence<span class="preprocessor">.evidence</span> /<span class="keyword">out</span>:MyClass<span class="preprocessor">.dll</span> MyClass<span class="preprocessor">.netmodule</span>
+</pre></figure>
+
+<p>We see our custom evidence:</p>
+<div class="imgwrapper" style=""><div><a href="/providing-custom-assembly-evidence/analyzing_custom_evidence_2.jpg" class="fancy"><img src="/providing-custom-assembly-evidence/analyzing_custom_evidence_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Trustworthiness">Trustworthiness</h2>
+<p><a href="/analyzing-assembly-evidence/">As mentioned earlier</a>, assembly provided evidence is inherently not trustworthy. There are however ways to secure it. We could use a public/private cryptosystem to sign the actual evidence. That way, anyone reading the evidence could verify the evidence providers signature and thus be sure that the entity linking the evidence into the assembly is trustworthy.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=Providing%20Custom%20Assembly%20Evidence%20http%3A%2F%2Fimprove.dk%2Fproviding-custom-assembly-evidence%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fproviding-custom-assembly-evidence%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fproviding-custom-assembly-evidence%2F&title=Providing%20Custom%20Assembly%20Evidence" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/providing-custom-assembly-evidence/providing-custom-assembly-evidence.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'providing-custom-assembly-evidence';
+	var disqus_url = 'http://improve.dk/providing-custom-assembly-evidence/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

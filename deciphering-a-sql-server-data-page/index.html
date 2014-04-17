@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Deciphering a SQL Server Data Page | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Mar</span>
+			<span class="day">26</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/deciphering-a-sql-server-data-page/" title="Deciphering a SQL Server Data Page" rel="bookmark">Deciphering a SQL Server Data Page</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on Deciphering a SQL Server Data Page">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>SQL Server stores all of it’s data in what is basically a large array of “pages”. Each page is exactly 8kb and can contain various kinds of data, depending on the page type. In this entry we’ll explore how to decipher a data page.</p>
+<a id="more"></a>
+
+<p>As mentioned, all data in SQL Server is stored in pages, this includes data, index data and various other page types (GAM/SGAM/IAM/PFS etc) to support the operations of SQL Server. Each page type has a unique page content and will thus require separate analysis to understand their content. In this entry I’ll concentrate on a normal data page, that is, the pages that contain the data of either heap tables or clustered indexes.</p>
+<p>A page has a basic structure consisting of a header, the actual page content and finally an array noting the locations of the individual rows in the content section.</p>
+<div class="imgwrapper" style=""><div><a href="/deciphering-a-sql-server-data-page/deciph-page-structure_2.jpg" class="fancy"><img src="/deciphering-a-sql-server-data-page/deciph-page-structure_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>First of all, we need to create a new empty database for this to work:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">DATABASE</span> Test</span>
+</pre></figure>
+
+<p>To make it easier to reset &amp; redo the examples, you should start a new transaction by running “BEGIN TRAN” as the first command (I’m assuming you’re running these queries in SSMS). When you want to reset / start over, just run “ROLLBACK” and nothing will be saved.</p>
+<p>First we will look at the structure of data pages for a <a href="http://www.mssqltips.com/tip.asp?tip=1254" target="_blank">heap table</a>. We’ll create a simple table containing only a single int (identity) field:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> tmp
+(
+	ID <span class="keyword">int</span> <span class="keyword">identity</span>(<span class="number">1</span>,<span class="number">1</span>)
+)</span>
+</pre></figure>
+
+<p>Now, let’s insert 2 rows into the table:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> tmp <span class="keyword">DEFAULT</span> <span class="keyword">VALUES</span>
+<span class="keyword">GO</span> <span class="number">2</span></span>
+</pre></figure>
+
+<p>If you do a SELECT on the tmp table at this point, you should get two rows with values 1-2 in the ID column. At this point we want to retrieve a list of the pages used to store the contents of the tmp table. We can do this by using the undocumented DBCC IND command:</p>
+<figure class="highlight sql"><pre>DBCC IND(Test, tmp, -1)
+</pre></figure>
+
+<p>The first parameter is the database name, Test in our case. The next parameter is the name of the table, while the last parameter is an index ID - using -1 as the ID will return all indexes, which is fine in our case. Running the above command should yield a result like the one below:</p>
+<div class="imgwrapper" style=""><div><a href="/deciphering-a-sql-server-data-page/deciph-dbcc-ind1_2.jpg" class="fancy"><img src="/deciphering-a-sql-server-data-page/deciph-dbcc-ind1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>The only two important columns at this point are the PagePID, IAMPID and PageType columns. PagePID is the unique (within this database file) page ID for a specific page. IAMPID defines a parent/child relationship between pages. PageType defines the type of page that we’re looking at. The most common page types you’ll run into are:</p>
+<ul>
+<li>1 - Data page</li>
+<li>2 - Index page</li>
+<li>3/4 - Text pages</li>
+<li>8 - <a href="http://blogs.msdn.com/sqlserverstorageengine/archive/2006/07/08/under-the-covers-gam-sgam-and-pfs-pages.aspx" target="_blank">GAM</a> page</li>
+<li>9 - <a href="http://blogs.msdn.com/sqlserverstorageengine/archive/2006/07/08/under-the-covers-gam-sgam-and-pfs-pages.aspx" target="_blank">SGAM</a> page</li>
+<li>10 - <a href="https://blogs.msdn.com/sqlserverstorageengine/archive/2006/06/24/645803.aspx" target="_blank">IAM</a> page</li>
+<li>11 - <a href="http://blogs.msdn.com/sqlserverstorageengine/archive/2006/07/08/under-the-covers-gam-sgam-and-pfs-pages.aspx" target="_blank">PFS</a> page</li>
+</ul>
+<p>At this point we’re interested in the root IAM (page type = 10) page with page ID 119. This is the root page of our heap table index. This is the page that currently tracks all of the data pages belonging to the tmp table. Currently there’s only one IAM page, but if necessary, there can be multiple nested IAM pages to support more data pages than can be referenced on a single IAM page.</p>
+<p>The root page has a NULL IAMPID, signaling that it doesn’t have any parent pages. The second page has an IAMPID of 119 - the ID of the root page. Thus the second page is a child page of the root page. We can also see that the second page is a data page since it’s page type is = 1. Notice the page ID of the second page, as both the root and child page ID’s will most likely be different in your test!</p>
+<p>Before we can retrieve the contents of the page, we have to turn on a specific trace flag, otherwise we won’t see any results of the following command, as they’re sent only to the error log by default:</p>
+<figure class="highlight sql"><pre>DBCC TRACEON(3604)
+</pre></figure>
+
+<p>After the trace flag has been turned on, we’re ready to run the undocumented DBCC PAGE command. The DBCC PAGE command takes four parameters, the first one being the database name. The second is the file number in the database - this will be 1 since there’s only a single file per database by default. The third parameter is the page ID we want to analyze - notice that this varies and will most likely be different in your situation. The final parameter defines the level of detail (0-3) to be included in the output. The most common levels are 0 and 1, 0 outputting only the header values while 1 also includes the actual row data.</p>
+<figure class="highlight sql"><pre>DBCC PAGE(Test, 1, 1839, 1)
+</pre></figure>
+
+<p>The result should resemble the following:</p>
+<figure class="highlight"><pre><span class="attribute">PAGE</span>: <span class="string">(1:119)</span>
+
+<span class="mathematica">BUFFER:
+
+BUF @<span class="number">0x0000000080FF0980</span>
+
+bpage = <span class="number">0x0000000080C26000</span>           bhash = <span class="number">0x0000000000000000</span>           bpageno = (<span class="number">1</span>:<span class="number">119</span>)
+bdbid = <span class="number">6</span>                            breferences = <span class="number">0</span>                      bUse1 = <span class="number">13010</span>
+bstat = <span class="number">0xc0000b</span>                     blog = <span class="number">0x32159bb</span>                     bnext = <span class="number">0x0000000000000000</span>
+
+PAGE HEADER:
+
+Page @<span class="number">0x0000000080C26000</span>
+
+m_pageId = (<span class="number">1</span>:<span class="number">119</span>)                   m_headerVersion = <span class="number">1</span>                  m_type = <span class="number">1</span>
+m_typeFlagBits = <span class="number">0x4</span>                 m_level = <span class="number">0</span>                          m_flagBits = <span class="number">0x8000</span>
+m_objId (AllocUnitId.idObj) = <span class="number">232</span>    m_indexId (AllocUnitId.idInd) = <span class="number">256</span>  
+Metadata: AllocUnitId = <span class="number">72057594053132288</span>                                 
+Metadata: PartitionId = <span class="number">72057594044219392</span>                                 Metadata: IndexId = <span class="number">0</span>
+Metadata: ObjectId = <span class="number">1477580302</span>      m_prevPage = (<span class="number">0</span>:<span class="number">0</span>)                   m_nextPage = (<span class="number">0</span>:<span class="number">0</span>)
+pminlen = <span class="number">8</span>                          m_slotCnt = <span class="number">2</span>                        m_freeCnt = <span class="number">8070</span>
+m_freeData = <span class="number">118</span>                     m_reservedCnt = <span class="number">0</span>                    m_lsn = (<span class="number">217</span>:<span class="number">17834</span>:<span class="number">77</span>)
+m_xactReserved = <span class="number">0</span>                   m_xdesId = (<span class="number">0</span>:<span class="number">0</span>)                     m_ghostRecCnt = <span class="number">0</span>
+m_tornBits = <span class="number">0</span>                       
+
+Allocation Status
+
+GAM (<span class="number">1</span>:<span class="number">2</span>) = ALLOCATED                SGAM (<span class="number">1</span>:<span class="number">3</span>) = ALLOCATED               
+PFS (<span class="number">1</span>:<span class="number">1</span>) = <span class="number">0x61</span> MIXED_EXT ALLOCATED  <span class="number">50</span>_PCT_FULL                         DIFF (<span class="number">1</span>:<span class="number">6</span>) = CHANGED
+ML (<span class="number">1</span>:<span class="number">7</span>) = NOT MIN_LOGGED            
+
+DATA:
+
+<span class="keyword">Slot</span> <span class="number">0</span>, <span class="keyword">Offset</span> <span class="number">0x60</span>, <span class="keyword">Length</span> <span class="number">11</span>, DumpStyle BYTE
+
+<span class="keyword">Record</span> Type = PRIMARY_RECORD         <span class="keyword">Record</span> <span class="keyword">Attributes</span> =  NULL_BITMAP     
+Memory Dump @<span class="number">0x000000000B05C060</span>
+
+<span class="number">0000000000000000</span>:   <span class="number">10000800</span> <span class="number">01000000</span> <span class="number">0100</span>fe†††††††††††††...........      
+
+<span class="keyword">Slot</span> <span class="number">1</span>, <span class="keyword">Offset</span> <span class="number">0x6b</span>, <span class="keyword">Length</span> <span class="number">11</span>, DumpStyle BYTE
+
+<span class="keyword">Record</span> Type = PRIMARY_RECORD         <span class="keyword">Record</span> <span class="keyword">Attributes</span> =  NULL_BITMAP     
+Memory Dump @<span class="number">0x000000000B05C06B</span>
+
+<span class="number">0000000000000000</span>:   <span class="number">10000800</span> <span class="number">02000000</span> <span class="number">0100</span>fe†††††††††††††...........      
+
+OFFSET TABLE:
+
+<span class="keyword">Row</span> - <span class="keyword">Offset</span>                         
+<span class="number">1</span> (<span class="number">0x1</span>) - <span class="number">107</span> (<span class="number">0x6b</span>)                 
+<span class="number">0</span> (<span class="number">0x0</span>) - <span class="number">96</span> (<span class="number">0x60</span>)</span>
+</pre></figure>
+
+<p>I’ll elegantly jump over the buffer &amp; header parts as they’re begging for posts on their own, and I can’t realistically show them the respect they need in this post. Instead we’ll concentrate on the DATA &amp; OFFSET TABLE parts.</p>
+<p>Let’s start out from the bottom up and look at the OFFSET TABLE:</p>
+<figure class="highlight"><pre><span class="keyword">Row</span> - <span class="keyword">Offset</span>                         
+<span class="number">1</span> (<span class="number">0x1</span>) - <span class="number">107</span> (<span class="number">0x6b</span>)                 
+<span class="number">0</span> (<span class="number">0x0</span>) - <span class="number">96</span> (<span class="number">0x60</span>)
+</pre></figure>
+
+<p>Notice that it should be read from the bottom up as well, row 0 being the first, 1 being the second. The row offset table is basically an integer array pointing out the to locations in the 8KB page of the individual row locations. As we have two rows in our table, and they both fit on this page, there’s two entries in the offset table. The first row starts at byte index 96 - the first byte after the 96 byte header. The second row starts at index 107, 11 bytes after the first row. Let’s take a look at the first row (the rows are identical):</p>
+<figure class="highlight"><pre><span class="keyword">Slot</span> <span class="number">0</span>, <span class="keyword">Offset</span> <span class="number">0x60</span>, <span class="keyword">Length</span> <span class="number">11</span>, DumpStyle BYTE
+
+<span class="keyword">Record</span> Type = PRIMARY_RECORD         <span class="keyword">Record</span> <span class="keyword">Attributes</span> =  NULL_BITMAP     
+Memory Dump @<span class="number">0x000000000B05C060</span>
+
+<span class="number">0000000000000000</span>:   <span class="number">10000800</span> <span class="number">01000000</span> <span class="number">0100</span>fe†††††††††††††...........
+</pre></figure>
+
+<p>The first row has slot 0, it’s offset is 0x60 (96) and we already know the length is 11 bytes, from the offset table. Let’s take a look at the rows actual content, to understand what is stored.</p>
+<ul>
+<li><strong>10</strong>000800 01000000 0100FE  The first byte is a status byte that contains info on how to parse the row contents. The value 0x10 defines the inclusion of a NULL_BITMAP, as indicated by the record attributes.</li>
+<li>10<strong>00</strong>0800 01000000 0100FE  The next byte is currently (MSSQL2005) unused, but may be used in future versions.</li>
+<li>1000<strong>0800</strong> 01000000 0100FE  The next two bytes store the byte index position of where to find the number of columns in this row, within the rows data. SQL Server stores numbers with the low order byte first, so the bytes must be switched around to get the position. Thus 0x0800 becomes 0x0008 (8 in decimal).</li>
+<li>10000800 <strong>01000000</strong> 0100FE  The next four bytes are the contents of the first column, a four byte integer. This is our identity column, and you’ll notice that the first row has a value of 0x00000001 while the second has a value of 0x00000002.</li>
+<li>10000800 01000000 <strong>0100</strong>FE  The next two bytes store the number of columns. Notice that this is stored at byte index 8, as indicated by the third and fourth bytes in the row.</li>
+<li>10000800 01000000 0100<strong>FE</strong>  Finally the null bitmap is stored in the last byte. 0xFE converted to binary is 1111 1110, indicating that the first column value is not null (the first 0, read backwards). The rest have a default value of 1, actually indicating that it is null. But since there’s only one column, these bits are never read. Note that one byte in the null bitmap can support up to 8 columns. The formula for determining the null bitmap size is (#cols+7)/8, using integer division.</li>
+</ul>
+<p>Let’s do a rollback and create a new table with a slightly changed schema and values:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> tmp
+(
+	ID <span class="keyword">int</span>
+)
+
+<span class="keyword">CREATE</span> CLUSTERED INDEX CI <span class="keyword">ON</span> tmp (ID)
+
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> tmp (ID) <span class="keyword">VALUES</span> (<span class="number">1</span>)
+<span class="keyword">GO</span> <span class="number">2</span></span>
+</pre></figure>
+
+<p>We still have a single ID column, but this time it’s not an identity column, and we’re manually inserting the value “1” into the column. Thus both rows will have the same value. If we runn DBCC IND to get the page id, and then DBCC PAGE on the data page, we’ll get the following two rows:</p>
+<figure class="highlight"><pre><span class="keyword">Slot</span> <span class="number">0</span>, <span class="keyword">Offset</span> <span class="number">0x60</span>, <span class="keyword">Length</span> <span class="number">11</span>, DumpStyle BYTE
+
+<span class="keyword">Record</span> Type = PRIMARY_RECORD         <span class="keyword">Record</span> <span class="keyword">Attributes</span> =  NULL_BITMAP     
+Memory Dump @<span class="number">0x000000000D90C060</span>
+
+<span class="number">0000000000000000</span>:   <span class="number">10000800</span> <span class="number">01000000</span> <span class="number">0200</span>fc†††††††††††††...........      
+
+<span class="keyword">Slot</span> <span class="number">1</span>, <span class="keyword">Offset</span> <span class="number">0x6b</span>, <span class="keyword">Length</span> <span class="number">19</span>, DumpStyle BYTE
+
+<span class="keyword">Record</span> Type = PRIMARY_RECORD         <span class="keyword">Record</span> <span class="keyword">Attributes</span> =  NULL_BITMAP VARIABLE_COLUMNS
+
+Memory Dump @<span class="number">0x000000000D90C06B</span>
+
+<span class="number">0000000000000000</span>:   <span class="number">30000800</span> <span class="number">01000000</span> <span class="number">0200</span>fc01 <span class="number">00130001</span> †<span class="number">0.</span>.............. 
+<span class="number">0000000000000010</span>:   <span class="number">000000</span>†††††††††††††††††††††††††††††††...
+</pre></figure>
+
+<p>The first row is almost identical to the last. It’s still 11 bytes long and its status bits indicate there’s only a null bitmap. One thing has changed however.</p>
+<ul>
+<li>10000800 01000000 <strong>0200</strong>FC  The number of columns indicater now has a value of 0x0002, indicating there is now two columns. How can that be? We only defined one column, and the row length is still 11 bytes.</li>
+</ul>
+<p>If we take a look at the second row, we’ll see that the length is 19 bytes, an extra 8 bytes. Furthermore, the status byte has changed its value to 0x30, indicating there’s both a null bitmap, as well as a “variable columns” section. Take a look at the row data (note that I’ve concatenated the two lines to make it more readable):</p>
+<ul>
+<li>30000800 <strong>01000000</strong> 0200FC01 00130001 000000  Obviously the value in this row is also 1, meaning both rows have the same value in the clustered index.</li>
+<li>30000800 01000000 0200<strong>FC</strong>01 00130001 000000  The null bitmap has changed into the value 0xFC or 1111 1100, indicating that the first two (in other words, all) columns do not have null values.</li>
+<li>30000800 01000000 0200FC01 001300<strong>01 000000</strong>  The last four bytes is a “uniqueifier” value that is added since the clustered key value is identical for multiple rows. Why wasn’t this added before? On the first table we didn’t define a clustered index, and therefore it was a heap table. In heap tables, pages are referenced by their phyiscal location and not their clustered key value. In a clustered table, rows are always referenced by their clustered key value. To uniquely reference a column, it’s important that each clustered key value is unique (which is why the clustered key is usually also the primary key, as is also the default in SSMS). If a clustered key is not unique, SQL Server adds its own uniqueifier value that makes the key unique - note that this only occurs when necessary, thus the lack of a uniqueifier on the first row, since that one is already unique. The uniqueifier is treated as a variable length column as we can potentially have more than 2^31-1 rows with the same value, at which point the uniqueifier will have to utilize eight bytes to ensure unique clustered key values.</li>
+<li>30000800 01000000 0200FC<strong>01 001300</strong>01 000000  The previous four bytes are used to support the variable length column(s) in the row. The first two bytes indicate the number of variable length columns in the row (0x0001 - the single uniqueifier column), while the second pair of bytes indicate the end index of the first variable length column, that is 0x0013 (19 in decimal, which is also the total length of the row).</li>
+</ul>
+<p>To elaborate on the variable length columns, consider the following table and values:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> tmp
+(
+	t1 nvarchar(<span class="number">5</span>),
+	t2 nvarchar(<span class="number">5</span>)
+)
+
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> tmp (t1, t2) <span class="keyword">VALUES</span> (<span class="string">'a'</span>, <span class="string">'b'</span>)</span>
+</pre></figure>
+
+<p>Let’s look at the row contents:</p>
+<ul>
+<li><strong>30000400</strong> 0200FC02 000f0011 00610062 00  The first bytes are used for the status &amp; unused bytes, as well as the “number of columns” index.</li>
+<li>30000400 <strong>0200</strong>FC02 000f0011 00610062 00  The next two bytes at index 0x0004 indicate there’s two columns.</li>
+<li>30000400 0200<strong>FC</strong>02 000f0011 00610062 00  The null bitmap indicates that no columns have null values.</li>
+<li>30000400 0200FC<strong>02 00</strong>0f0011 00610062 00  The next two bytes indicate the number of variable length columns, 0x0002.</li>
+<li>30000400 0200FC02 00<strong>0f00</strong>11 00610062 00  The next two bytes indicate the ending position of the first variable length column, 0x000f (15).</li>
+<li>30000400 0200FC02 000f00<strong>11 00</strong>610062 00  Likewise, the next two bytes indicate the ending position of the second variable length column, 0x0011 (17). If there were more variable length columns, each one of them would have a two-byte length indicator here, before the actual contents.</li>
+<li>30000400 0200FC02 000f0011 00<strong>6100</strong>62 00  After the variable length column end index indicators, the actual content is stored. We know that the first variable length column value ends at index 15, which gives us the value 0x0061 which happens to be a lowercase ‘a’.</li>
+<li>30000400 0200FC02 000f0011 006100<strong>62 00</strong>  Likewise, we know that the second column ends at index 17, giving us the value 0x0062, being a lowercase ‘b’.</li>
+</ul>
+<p>As a final example, let’s look at what happens when we have null values in our columns.</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> tmp
+(
+	t1 nvarchar(<span class="number">5</span>),
+	t2 nvarchar(<span class="number">5</span>)
+)
+
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> tmp (t1, t2) <span class="keyword">VALUES</span> (<span class="string">'a'</span>, <span class="string">'b'</span>)
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> tmp (t1, t2) <span class="keyword">VALUES</span> (<span class="keyword">NULL</span>, <span class="string">'b'</span>)
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> tmp (t1, t2) <span class="keyword">VALUES</span> (<span class="string">'a'</span>, <span class="keyword">NULL</span>)
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> tmp (t1, t2) <span class="keyword">VALUES</span> (<span class="keyword">NULL</span>, <span class="keyword">NULL</span>)</span>
+</pre></figure>
+
+<p>The resulting four rows should look like this:</p>
+<figure class="highlight"><pre><span class="keyword">Slot</span> <span class="number">0</span>, <span class="keyword">Offset</span> <span class="number">0x60</span>, <span class="keyword">Length</span> <span class="number">17</span>, DumpStyle BYTE
+<span class="keyword">Record</span> Type = PRIMARY_RECORD         <span class="keyword">Record</span> <span class="keyword">Attributes</span> =  NULL_BITMAP VARIABLE_COLUMNS
+Memory Dump @<span class="number">0x000000000DB0C060</span>
+<span class="number">0000000000000000</span>:   <span class="number">30000400</span> <span class="number">0200</span>fc02 <span class="number">000</span>f0011 <span class="number">00610062</span> †<span class="number">0.</span>...........a.b 
+<span class="number">0000000000000010</span>:   <span class="number">00</span>†††††††††††††††††††††††††††††††††††.                
+
+<span class="keyword">Slot</span> <span class="number">1</span>, <span class="keyword">Offset</span> <span class="number">0x71</span>, <span class="keyword">Length</span> <span class="number">15</span>, DumpStyle BYTE
+<span class="keyword">Record</span> Type = PRIMARY_RECORD         <span class="keyword">Record</span> <span class="keyword">Attributes</span> =  NULL_BITMAP VARIABLE_COLUMNS
+Memory Dump @<span class="number">0x000000000DB0C071</span>
+<span class="number">0000000000000000</span>:   <span class="number">30000400</span> <span class="number">0200</span>fd02 <span class="number">000</span>d000f <span class="number">006200</span>††††<span class="number">0.</span>...........b.  
+
+<span class="keyword">Slot</span> <span class="number">2</span>, <span class="keyword">Offset</span> <span class="number">0x80</span>, <span class="keyword">Length</span> <span class="number">13</span>, DumpStyle BYTE
+<span class="keyword">Record</span> Type = PRIMARY_RECORD         <span class="keyword">Record</span> <span class="keyword">Attributes</span> =  NULL_BITMAP VARIABLE_COLUMNS
+Memory Dump @<span class="number">0x000000000DB0C080</span>
+<span class="number">0000000000000000</span>:   <span class="number">30000400</span> <span class="number">0200</span>fe01 <span class="number">000</span>d0061 <span class="number">00</span>††††††††<span class="number">0.</span>.........a.    
+
+<span class="keyword">Slot</span> <span class="number">3</span>, <span class="keyword">Offset</span> <span class="number">0x8d</span>, <span class="keyword">Length</span> <span class="number">9</span>, DumpStyle BYTE
+<span class="keyword">Record</span> Type = PRIMARY_RECORD         <span class="keyword">Record</span> <span class="keyword">Attributes</span> =  NULL_BITMAP     
+Memory Dump @<span class="number">0x000000000DB0C08D</span>
+<span class="number">0000000000000000</span>:   <span class="number">10000400</span> <span class="number">0200</span>ff00 <span class="number">00</span>†††††††††††††††††.........
+</pre></figure>
+
+<p>As a proof of SQL Server only adding fields when needed, there are no variable_columns attributes in the fourth row, since both columns are null and we therefore do not need to keep track of the length of the columns.</p>
+<ul>
+<li>30000400 0200FC02 000F0011 00610062 00  The first row is identical to what we saw before.&nbsp;</li>
+<li>30000400 0200FD02 000D000F 006200  In the second row the null bitmap is different: fd (1111 1101), indicating that the first column is null. We can also see that there’s two bytes missing from the row (0x0061) compared to the first row. 0d00 indicates that the first variable length column ends at index 0x000d (13), while the second variable length column ends at index 0f00 / 0x000f / 15. What’s interesting is that the variable column length indicators themselves end at index 13, and thus the first row ends where it starts - that is, it’s not there at all, it’s null. The second column is stored at index 14 + 15, the 6200 / 0x0062 / ‘b’ value.&nbsp;</li>
+<li>30000400 0200FE01 000D0061 00  The third row takes up two bytes less, even though it has only a single null field like the second row. The null bitmap is slightly different (fe / 1111 1110) since it’s now the second column that’s null. What’s interesting is that in this row, only a single variable length column is present, not two. Thus there’s only a single variable length column end index identifier, 0d00 / 0x000d / 13. From that we can conclude that columns are handled in order, and thus one might want to consider the order of columns, if a specific column is usually null, it might be more efficient to have it ordered last.&nbsp;</li>
+<li>10000400 0200FF00 00  The fourth row takes up just 9 bytes, this time sparing the data of both variable length columns since they’re both null according to the null bitmap (ff / 1111 1111).</li>
+</ul>
+<h2 id="Conclusion">Conclusion</h2>
+<ul>
+<li>By using the undocumented DBCC commands IND and PAGE, we can get the actual page data from any page in the database.</li>
+<li>SQL Server uses a fixed and deterministic row layout, depending on the table metadata and column contents.</li>
+<li>By understanding the way SQL Server stores data, we’re able to optimize our storage even further than we would normally be able to.</li>
+<li>Data pages are just one of many page types in SQL Server. Later on, I might introduce other page types.</li>
+</ul>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=Deciphering%20a%20SQL%20Server%20Data%20Page%20http%3A%2F%2Fimprove.dk%2Fdeciphering-a-sql-server-data-page%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fdeciphering-a-sql-server-data-page%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fdeciphering-a-sql-server-data-page%2F&title=Deciphering%20a%20SQL%20Server%20Data%20Page" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/deciphering-a-sql-server-data-page/deciphering-a-sql-server-data-page.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'deciphering-a-sql-server-data-page';
+	var disqus_url = 'http://improve.dk/deciphering-a-sql-server-data-page/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

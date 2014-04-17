@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Making URL Rewriting on IIS 7 Work Like IIS 6 | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Dec</span>
+			<span class="day">11</span>
+		</div>
+		<div class="lower">2006</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/making-url-rewriting-on-iis7-work-like-iis6/" title="Making URL Rewriting on IIS 7 Work Like IIS 6" rel="bookmark">Making URL Rewriting on IIS 7 Work Like IIS 6</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/IIS/">IIS</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on Making URL Rewriting on IIS 7 Work Like IIS 6">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>Upgrading to IIS 7 should be rather transparent, unfortunately that is not the case when it comes to URL rewriting as we knew it from IIS 6. In IIS 6 all we had to do was to add a wildcard mapping making sure that all requests went through the ASPNET ISAPI process. After this was done, one could create a global.asax file that would either pass requests directly through or rewrite the URL based on an internal algorithm.</p>
+<a id="more"></a>
+
+<p><strong>UPDATE: Please see my <a href="/how-to-do-url-rewriting-on-iis-7-properly">updated post</a> on how to do proper URL rewriting using IIS 7.</strong></p>
+<p>I didn’t really expect this to be a problem when I first requested <a href="http://localhost" target="_blank">http://localhost</a> for the first time after setting up my site on IIS 7 (all default settings).</p>
+<div class="imgwrapper" style=""><div><a href="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur1_2.jpg" class="fancy"><img src="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Unfortunately this was what I was presented with. Anyone having worked with wildcard mappings from IIS 6 will recognize this, this is the result you’ll get after adding a wildcard mapping without having created your URL rewriting functionality. After adding a wildcard map the IIS will not automatically find a default file (by design).</p>
+<p>This however, is not the problem cause here. I already have my URL rewriting functionality written in my global.asax BeginRequest method and I’d really like to just reuse my current code. Although the new IIS has a whole new bunch of features - one of them being a new “more correct” way of doing URL rewriting -, I really just wan’t to get my website up and running again so I can continue my work.</p>
+<p>What I present below is a quick’n’dirty hack that will get my old URL rewriting code to work again. It may not be the IIS 7 way of doing it, and it may not work in your case, it depends on the type of URL mapping you’re doing in your project. In short, <a href="http://en.wikipedia.org/wiki/Your_mileage_may_vary" target="_blank">YMMV</a>.</p>
+<h2 id="My_scenario">My scenario</h2>
+<p>For this website, improve.dk, all URL’s except static files are requested as though they were folders. That means you will not see any pages ending in anything but a /. Any static files are requested as usual. That means I can be sure that a regular expression like <em>.</em> will catch all static files, while * will catch all pages - as well as the static files!</p>
+<h2 id="How_I_got_URL_rewriting_to_work_like_IIS_6">How I got URL rewriting to work like IIS 6</h2>
+<p>Start by opening the IIS Manager and selecting your website.</p>
+<div class="imgwrapper" style=""><div><a href="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur2_2.jpg" class="fancy"><img src="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur2_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Now enter the “Handler Mappings” section:</p>
+<div class="imgwrapper" style=""><div><a href="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur3_2.jpg" class="fancy"><img src="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur3_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Notice the “StaticFile” handler. Currently it’s set to match <em> and catch both File and Directory requests. If you look back at the first image, you’ll notice that the error message details that the handler causing the 404 error is the StaticFile handler. As I know that all my static files will have a file extension (also I don’t care for directory browsing), I’ll simply change my StaticFile handler so it only matches </em>.* - and only files.</p>
+<div class="imgwrapper" style=""><div><a href="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur4_2.jpg" class="fancy"><img src="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur4_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur5_2.jpg" class="fancy"><img src="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur5_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Your StaticFile handler should now look like this:</p>
+<div class="imgwrapper" style=""><div><a href="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur6_2.jpg" class="fancy"><img src="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur6_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Now, if you go back and make a request to <a href="http://localhost" target="_blank">http://localhost</a> you’ll still get the 404 error, but this time the request is not handled by the StaticFile handler, actually it doesn’t get handled by any handler at all:</p>
+<div class="imgwrapper" style=""><div><a href="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur7_2.jpg" class="fancy"><img src="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur7_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>What needs to be done now is that we need to map any and all requests to the aspnet_isapi.dll isapi file - just like we would usually do in IIS 6.</p>
+<p>Add a new Script Map to the list of Handler Mappings and set it up like this:</p>
+<div class="imgwrapper" style=""><div><a href="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur8_2.jpg" class="fancy"><img src="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur8_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur9_2.jpg" class="fancy"><img src="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur9_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Click OK and click <em>Yes</em> at the confirmation dialog:</p>
+<div class="imgwrapper" style=""><div><a href="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur10_2.jpg" class="fancy"><img src="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur10_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Now if you make a request to either <a href="http://localhost" target="_blank">http://localhost</a> or any other file you’ll get the following error:</p>
+<div class="imgwrapper" style=""><div><a href="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur11_2.jpg" class="fancy"><img src="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur11_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Looking throug the Event log reveals the cause of the error:</p>
+<div class="imgwrapper" style=""><div><a href="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur12_2.jpg" class="fancy"><img src="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur12_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>The aspnet_isapi.dll file cannot be used as a Handler for websites running in the new IIS 7 Integrated Mode, thus we will need to make our website run in classic .NET mode. Right click your website node in the IIS Manager and select Advanced Settings. Select the “Classic .NET AppPool” and close the dialog boxes:</p>
+<div class="imgwrapper" style=""><div><a href="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur13_2.jpg" class="fancy"><img src="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur13_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Now you should be able to make a request to <a href="http://localhost" target="_blank">http://localhost</a> and see it work. Your URL rewriting should work as a charm aswell:</p>
+<div class="imgwrapper" style=""><div><a href="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur14_2.jpg" class="fancy"><img src="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur14_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>But obviously somethings wrong. Making a request to any static file will reveal the problem:</p>
+<div class="imgwrapper" style=""><div><a href="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur15_2.jpg" class="fancy"><img src="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur15_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>“Failed to Execute URL”, what a great descriptive error. Fortunately you won’t have to spend hours ripping out hair… As I have already done that - at least I’ll save a trip or two to the barber.</p>
+<p>The problem is that the static files are being processed by the aspnet_isapi.dll file instead of simply sending the request along to the StaticFile handler. If you click the “View Ordered List…” link in the IIS Manager from the Handler Mappings view, you’ll see the order in which the handlers are being executed for each request:</p>
+<div class="imgwrapper" style=""><div><a href="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur16_2.jpg" class="fancy"><img src="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur16_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>When you add a new Script Map it’ll automatically get placed at the very top of the line taking precedence over any other handlers, including the StaticFile one.</p>
+<p>What we have to do is to move our Wildcard handler to the very bottom, below the StaticFile handler. By letting the StaticFile handler have precedence over our Wildcard handler we ensure that any static files (matching <em>.</em>) gets processed correctly while any other URL’s gets passed along to our own Wildcard handler that’ll do the URL rewriting and make business work as usual:</p>
+<div class="imgwrapper" style=""><div><a href="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur17_2.jpg" class="fancy"><img src="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur17_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>After doing so, both static files as well as your custom URL’s should execute as they would under IIS 6:</p>
+<div class="imgwrapper" style=""><div><a href="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur18_2.jpg" class="fancy"><img src="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur18_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Disclaimer">Disclaimer</h2>
+<p>Please notice that this is a hack. This is not the way URL rewriting is supposed to be done under IIS 7. But instead of spending hours upon hours investigating how to do it the right way, this is quick fix to make things work like they did before.</p>
+<p>Also please note that this solution is intended to work for my specific situation. Your needs for URL rewriting may not necessarily match mine, so you may have to modify certain settings to suit your specific needs.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=Making%20URL%20Rewriting%20on%20IIS%207%20Work%20Like%20IIS%206%20http%3A%2F%2Fimprove.dk%2Fmaking-url-rewriting-on-iis7-work-like-iis6%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fmaking-url-rewriting-on-iis7-work-like-iis6%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fmaking-url-rewriting-on-iis7-work-like-iis6%2F&title=Making%20URL%20Rewriting%20on%20IIS%207%20Work%20Like%20IIS%206" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/making-url-rewriting-on-iis7-work-like-iis6/making-url-rewriting-on-iis7-work-like-iis6.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'making-url-rewriting-on-iis7-work-like-iis6';
+	var disqus_url = 'http://improve.dk/making-url-rewriting-on-iis7-work-like-iis6/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Solving Deadlocks Through Locking Hints | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">01</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/solving-deadlocks-through-locking-hints/" title="Solving Deadlocks Through Locking Hints" rel="bookmark">Solving Deadlocks Through Locking Hints</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - Optimization/">SQL Server - Optimization</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on Solving Deadlocks Through Locking Hints">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>Deadlocks in any database can be a hard beast to weed out, especially since they may hide latently in your code, awaiting that specific moment when they explode. An API website, exposing a series of webservices, had been working fine for months, until I decided to run my client app with a lot more threads than usual.</p>
+<a id="more"></a>
+
+<div class="imgwrapper" style=""><div><a href="/solving-deadlocks-through-locking-hints/deadlock-hint-1_2.jpg" class="fancy"><img src="/solving-deadlocks-through-locking-hints/deadlock-hint-1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Great. So we have a deadlock, what’s the first step in fixing it? I’ve outlined the code in PaperHandler.cs that caused the issue, though in pseudo code format:</p>
+<figure class="highlight csharp"><pre>using (var ts = new TransactionScope())
+{
+	<span class="keyword">if</span> ((SELECT COUNT(*) FROM tblPapers WHERE Url = <span class="string">'newurl'</span>) &gt; <span class="number">0</span>)
+		throw new UrlNotUniqueException();
+
+	// <span class="keyword">...</span> Further validation checks
+
+	INSERT INTO tblPapers <span class="keyword">...</span> // This is where the deadlock occurred
+}
+</pre></figure>
+
+<p>To see how the above code may result in a deadlock, let’s test it out in SQL Server Management Studio (SSMS). Open a new query and execute the following, to create the test database &amp; schema:</p>
+<figure class="highlight sql"><pre><span class="comment">-- Create new test database - change name if necessary</span>
+<span class="operator"><span class="keyword">CREATE</span> <span class="keyword">DATABASE</span> Test
+<span class="keyword">GO</span>
+
+USE Test
+
+-- <span class="keyword">Create</span> the test <span class="keyword">table</span>
+<span class="keyword">CREATE</span> <span class="keyword">TABLE</span> tblPapers
+(
+	ID <span class="keyword">int</span> <span class="keyword">identity</span>(<span class="number">1</span>,<span class="number">1</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>,
+	Url nvarchar(<span class="number">128</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>
+)
+
+-- Make the ID <span class="keyword">column</span> a <span class="keyword">primary</span> clustered <span class="keyword">key</span>
+<span class="keyword">ALTER</span> <span class="keyword">TABLE</span> dbo.tblPapers <span class="keyword">ADD</span> <span class="keyword">CONSTRAINT</span> PK_tblPapers <span class="keyword">PRIMARY</span> <span class="keyword">KEY</span> CLUSTERED 
+(
+	ID <span class="keyword">ASC</span>
+)
+<span class="keyword">ON</span> [<span class="keyword">PRIMARY</span>]
+
+-- <span class="keyword">Add</span> a nonclustered <span class="keyword">unique</span> index <span class="keyword">on</span> the Url <span class="keyword">column</span> <span class="keyword">to</span> ensure uniqueness
+<span class="keyword">CREATE</span> <span class="keyword">UNIQUE</span> NONCLUSTERED INDEX NC_Url <span class="keyword">ON</span> tblPapers
+(
+	Url <span class="keyword">ASC</span>
+)
+<span class="keyword">ON</span> [<span class="keyword">PRIMARY</span>]</span>
+</pre></figure>
+
+<p>The tblPapers table contains a number of entities, and each of them must have a unique Url value. Therefore, before we insert a new row into tblPapers, we need to ensure that it’s going to be unique.</p>
+<p>Now open two new query windows and insert the following query text into both of them:</p>
+<figure class="highlight sql"><pre>USE Test
+
+<span class="operator"><span class="keyword">SET</span> <span class="keyword">TRANSACTION</span> <span class="keyword">ISOLATION</span> <span class="keyword">LEVEL</span> SERIALIZABLE
+
+<span class="keyword">BEGIN</span> TRAN
+
+-- Ensure <span class="keyword">unique</span> URL
+<span class="keyword">DECLARE</span> @NewUrl <span class="keyword">varchar</span>(<span class="number">128</span>);</span> <span class="operator"><span class="keyword">SET</span> @NewUrl = <span class="string">'newurl'</span>
+<span class="keyword">SELECT</span> <span class="aggregate">COUNT</span>(*) <span class="keyword">FROM</span> tblPapers <span class="keyword">WHERE</span> Url = @NewUrl
+
+-- <span class="keyword">Insert</span> <span class="keyword">row</span> <span class="keyword">if</span> above query returned <span class="number">0</span> &lt;=&gt; URL <span class="keyword">is</span> <span class="keyword">unique</span>
+<span class="keyword">DECLARE</span> @NewUrl <span class="keyword">varchar</span>(<span class="number">128</span>);</span> <span class="operator"><span class="keyword">SET</span> @NewUrl = <span class="string">'newurl'</span>
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> tblPapers (Url) <span class="keyword">VALUES</span> (@NewUrl)</span>
+</pre></figure>
+
+<p>In SQL Server 2005/2008, READ COMMITTED is the default transaction level - we’re being explicit about using the SERIALIZABLE isolation level, however. The reason we’re going to use the SERIALIZABLE isolation mode is that while READ COMMITTED is the default mode in SQL Server, whenever you create an implicit transaction using TransactionScope, it’s <a href="http://msdn.microsoft.com/en-us/library/ms172152.aspx" target="_blank">using the SERIALIZABLE isolation mode by default</a>!</p>
+<p>Now, observe what happens if you run two queries concurrently in the following order:</p>
+<h3 id="Query_A">Query A</h3>
+<figure class="highlight sql"><pre>USE Test
+<span class="operator"><span class="keyword">SET</span> <span class="keyword">TRANSACTION</span> <span class="keyword">ISOLATION</span> <span class="keyword">LEVEL</span> SERIALIZABLE				
+<span class="keyword">BEGIN</span> TRAN</span>
+</pre></figure>
+
+<h3 id="Query_B">Query B</h3>
+<figure class="highlight sql"><pre>USE Test
+<span class="operator"><span class="keyword">SET</span> <span class="keyword">TRANSACTION</span> <span class="keyword">ISOLATION</span> <span class="keyword">LEVEL</span> SERIALIZABLE				
+<span class="keyword">BEGIN</span> TRAN</span>
+</pre></figure>
+
+<h3 id="Query_A-1">Query A</h3>
+<figure class="highlight sql"><pre><span class="comment">-- Ensure unique URL</span>
+DECLARE @NewUrl varchar(128); <span class="operator"><span class="keyword">SET</span> @NewUrl = <span class="string">'newurl'</span>				
+<span class="keyword">SELECT</span> <span class="aggregate">COUNT</span>(*) <span class="keyword">FROM</span> tblPapers <span class="keyword">WHERE</span> Url = @NewUrl</span>
+</pre></figure>
+
+<h3 id="Query_B-1">Query B</h3>
+<figure class="highlight sql"><pre><span class="comment">-- Ensure unique URL</span>
+DECLARE @NewUrl varchar(128); <span class="operator"><span class="keyword">SET</span> @NewUrl = <span class="string">'newurl'</span>				
+<span class="keyword">SELECT</span> <span class="aggregate">COUNT</span>(*) <span class="keyword">FROM</span> tblPapers <span class="keyword">WHERE</span> Url = @NewUrl</span>
+</pre></figure>
+
+<h3 id="Query_A-1">Query A</h3>
+<figure class="highlight sql"><pre><span class="comment">-- Insert row since URL is unique</span>
+DECLARE @NewUrl varchar(128); <span class="operator"><span class="keyword">SET</span> @NewUrl = <span class="string">'newurl'</span>				
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> tblPapers (Url) <span class="keyword">VALUES</span> (@NewUrl)</span>
+</pre></figure>
+
+<h3 id="Query_B-1">Query B</h3>
+<figure class="highlight sql"><pre><span class="comment">-- Insert row since URL is unique</span>
+DECLARE @NewUrl varchar(128); <span class="operator"><span class="keyword">SET</span> @NewUrl = <span class="string">'newurl'</span>				
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> tblPapers (Url) <span class="keyword">VALUES</span> (@NewUrl)</span>
+</pre></figure>
+
+<p>After executing the last query, you should get the following error in one of the windows:</p>
+<figure class="highlight"><pre>Msg <span class="number">1205</span>, Level <span class="number">13</span>, State <span class="number">47</span>, Line <span class="number">4</span>
+Transaction (Process ID <span class="number">53</span>) was deadlocked <span class="function_start"><span class="keyword">on</span></span> lock resources <span class="keyword">with</span> another process <span class="keyword">and</span> has been chosen <span class="keyword">as</span> <span class="keyword">the</span> deadlock victim. Rerun <span class="keyword">the</span> <span class="keyword">transaction</span>.
+</pre></figure>
+
+<p>While in the second window, you’ll notice that the insertion went through:</p>
+<figure class="highlight"><pre><span class="list">(<span class="title">1</span> row<span class="list">(<span class="title">s</span>)</span> affected)</span>
+</pre></figure>
+
+<p>What happened here is that the two transactions get locked up in a deadlock. That is, neither one of them could continue without one of them giving up, as they were both waiting on a resource the other transaction had locked.</p>
+<p>But what happened, how did this go wrong? Isn’t the usual trick to make sure you perform actions in the same order, and you’ll avoid deadlocks? Unfortunately it’s not that simple, your isolation level plays a large part as well. In this case we know which queries caused the deadlock, but we could’ve gotten the same information using the profiler. Perform a rollback of the non-victimized transaction so the tblPapers table remains unaffected.</p>
+<p>Startup the profiler and connect to the database server. Choose the TSQL_Locks template:</p>
+<div class="imgwrapper" style=""><div><a href="/solving-deadlocks-through-locking-hints/deadlock-hint-2_2.jpg" class="fancy"><img src="/solving-deadlocks-through-locking-hints/deadlock-hint-2_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Make sure only the relevant events are chosen, to limit the amount of data we’ll be presented with. If necessary, put extra filters on the database name so we avoid queries from other databases. You can also filter it on the connection ID’s from SSMS if necessary:</p>
+<div class="imgwrapper" style=""><div><a href="/solving-deadlocks-through-locking-hints/deadlock-hint-3_2.jpg" class="fancy"><img src="/solving-deadlocks-through-locking-hints/deadlock-hint-3_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>If we run the profiler in the background while executing all steps in SSMS in the meantime, we’ll notice a an important event in the profiler, the Deadlock graph. If we hover the mouse over either of the circles representing the two individual processes, we’ll get a tooltip showing the exact query that was run when the deadlock occurred - the two insert queries:</p>
+<div class="imgwrapper" style=""><div><a href="/solving-deadlocks-through-locking-hints/deadlock-hint-4_2.jpg" class="fancy"><img src="/solving-deadlocks-through-locking-hints/deadlock-hint-4_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Ok, so now that we know what step caused the deadlock, the question now is, why did it occur? Perform a rollback of the non-victimized transaction. Now run step 1-3 again, and run the following query in window A:</p>
+<figure class="highlight sql"><pre>sp_lock @@SPID
+</pre></figure>
+
+<p>The result should resemble this (ID’s will be different):</p>
+<div class="imgwrapper" style=""><div><a href="/solving-deadlocks-through-locking-hints/deadlock-hint-5_2.jpg" class="fancy"><img src="/solving-deadlocks-through-locking-hints/deadlock-hint-5_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Notice the highlighted object ID. Now right click on the deadlock graph in the profiler results table and select “Extract event data”. Save the file somewhere and open it in Visual Studio (as XML).</p>
+<p>You’ll notice the following two lines:</p>
+<figure class="highlight xml"><pre><span class="tag">&lt;<span class="title">process</span> <span class="attribute">id</span>=<span class="value">"process383a5c8"</span> <span class="attribute">...</span> <span class="attribute">waitresource</span>=<span class="value">"KEY: 7:72057594039238656 (5701f5018387)"</span> <span class="attribute">...</span> /&gt;</span>
+<span class="tag">&lt;<span class="title">process</span> <span class="attribute">id</span>=<span class="value">"process383a868"</span> <span class="attribute">...</span> <span class="attribute">waitresource</span>=<span class="value">"KEY: 7:72057594039238656 (5701f5018387)"</span> <span class="attribute">...</span> /&gt;</span>
+</pre></figure>
+
+<p>What these lines tells us is that both processes are waiting on the same resource, namely 5701f5018387. Looking at our sp_locks result from before, we can see that that particular resource has a shared lock (S) on it.</p>
+<p>And this brings us down to the core issue - the SERIALIZABLE isolation mode. Different isolation modes provide different locking levels, serializable being one of the more pessimistic ones. SERIALIZABLE will:</p>
+<ul>
+<li>Request shared locks on all read data (and keep them until the transaction ends), preventing non-repeatable reads as other transactions can’t modify data we’ve read.</li>
+<li>Prevent phantom reads - that is, a SELECT query will return the same result even if run multiple times - other transactions can’t insert data while we’ve locked it. SQL Server accomplishes this by either locking at the table or key-range level.</li>
+</ul>
+<p>If we look at the <a href="http://msdn.microsoft.com/en-us/library/ms186396(SQL.90" target="_blank">Lock Compatibility chart</a>.aspx), we’ll see that “Shared (S)” locks are compatible with other S &amp; IS (Intent Shared) locks. This means both of the processes are able to perform a shared lock on the initial SELECT COUNT(*) key range. When the INSERT statement is then performed, the database will then attempt to get an exclusive (X) lock on the data - but since the other process has a shared lock, we’ll have to wait for it to be released. When the second process tries to perform an INSERT as well, it’ll try to get an exclusive lock on the same data. At this point we have two processes that both have a shared lock on the same piece of data, and they both want an exclusive lock on the data. The only way to get out of this situation is to dedicate one of the transactions as a victim and perform a rollback. The unaffected process will perform the INSERT and will be able to commit.</p>
+<p>How do we then get rid of the deadlock situation? We <em>could</em> change the isolation mode to the default READ COMMITTED like so:</p>
+<figure class="highlight csharp"><pre>var tsOptions = new TransactionOptions();
+tsOptions.IsolationLevel = IsolationLevel.ReadCommitted;
+
+using (var ts = new TransactionScope(TransactionScopeOption.Required, tsOptions))
+{
+	<span class="keyword">...</span>
+
+	ts.Complete();
+}
+</pre></figure>
+
+<p>However, that will result in another problem if we run the same steps as before:</p>
+<figure class="highlight"><pre>Msg <span class="number">2601</span>, Level <span class="number">14</span>, State <span class="number">1</span>, Line <span class="number">3</span>
+Cannot insert duplicate key row in <span class="class"><span class="keyword">object</span> '<span class="title">dbo</span>.<span class="title">tblPapers</span>' <span class="keyword">with</span> <span class="title">unique</span> <span class="title">index</span> '<span class="title">NC_Url</span>'.</span>
+The statement has been terminated.
+</pre></figure>
+
+<p>As READ COMMITTED does not protect us against phantom reads, it won’t take shared locks on read data. Thus the second process is able to perform the insert without us knowing (we still think COUNT(*) is = 0). As a result, we’ll fail by violating the unique NC_Url index constraint.</p>
+<p>What we’re looking for is an even more pessimistic isolation level - we not only need to protect ourselves against phantom reads, we need to protect against locks on the same data as we’ve read (we don’t care if someone reads our data using READ UNCOMMITTED, that’s their problem - as long as they don’t lock our data). However, SERILIZABLE is the most pessimistic isolation level in SQL Server, so we’re outta luck. That is… Unless we use a locking hint.</p>
+<p>Locking hints tell the database engine what kind of locking we would like to use. Take note that locking hints are purely hints - they’re not orders. In this case however, SQL Server does obey our command. What we need is the UPDLOCK hint. Change the query so it includes an UPDLOCK hint in the first SELECT statement:</p>
+<figure class="highlight sql"><pre><span class="comment">-- Ensure unique URL</span>
+DECLARE @NewUrl varchar(128); <span class="operator"><span class="keyword">SET</span> @NewUrl = <span class="string">'newurl'</span>
+<span class="keyword">SELECT</span> <span class="aggregate">COUNT</span>(*) <span class="keyword">FROM</span> tblPapers (UPDLOCK) <span class="keyword">WHERE</span> Url = @NewUrl</span>
+</pre></figure>
+
+<p>The UPDLOCK hint tells SQL Server to acquire an update lock on the key/range that we’ve selected. Since shared locks and update locks are not compatible, the second process will have to wait until the first transaction either commits or performs a rollback. The second process won’t return the result of the first SELECT COUNT(*) query until the first process is done - or a timeout occurs.</p>
+<p>Note that while this method protects us against the deadlocks &amp; constraint violations, it does so at the cost of decreased concurrency. This will result in other operations being blocked until the insertion procedure is done. In my case, this is a rather rare procedure, so it does not matter. One way to alleviate this problem would be to use the <a href="http://www.databasejournal.com/features/mssql/article.php/3566746/Controlling-Transactions-and-Locks-Part-5-SQL-2005-Snapshots.htm" target="_blank">READ COMMITTED SNAPSHOT isolation level</a> in other parts of the application where it’s applicable. YMMV!</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=Solving%20Deadlocks%20Through%20Locking%20Hints%20http%3A%2F%2Fimprove.dk%2Fsolving-deadlocks-through-locking-hints%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fsolving-deadlocks-through-locking-hints%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fsolving-deadlocks-through-locking-hints%2F&title=Solving%20Deadlocks%20Through%20Locking%20Hints" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/solving-deadlocks-through-locking-hints/solving-deadlocks-through-locking-hints.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'solving-deadlocks-through-locking-hints';
+	var disqus_url = 'http://improve.dk/solving-deadlocks-through-locking-hints/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

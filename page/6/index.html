@@ -1,0 +1,1710 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Nov</span>
+			<span class="day">25</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/orcamdf-studio-release-feature-recap/" title="OrcaMDF Studio Release + Feature Recap" rel="bookmark">OrcaMDF Studio Release + Feature Recap</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Just about two and a half months have passed since I last posted an <a href="/orcamdf-feature-recap">OrcaMDF feature recap</a>. Since then I’ve been busy attending three of the top SQL Server conferences – SQLBits, PASS and SQL Rally. It’s been excellent chatting about <a href="/introducing-orcamdf">OrcaMDF</a> and getting some feedback on where to take it, thanks to all of you!</p>
+<a id="more"></a>
+
+<p>Though I’ve been busy, I’ve also managed to put some work into OrcaMDF in the meantime.</p>
+<h2 id="New_features">New features</h2>
+<p>A non-exhaustive list of additions since my last post:</p>
+<ul>
+<li><a href="/orcamdf-now-supports-databases-with-multiple-data-files">Support for multi-file databases</a>.</li>
+<li><a href="/orcamdf-now-exposes-metadata-through-system-dmvs">Exposing metadata through standard SQL Server DMVs</a>.</li>
+<li>Optimized performance by more light weight usage of byte arrays, as well as sharing a single instance of the table schema between all rows.</li>
+</ul>
+<p>I’ve also added support for the following extra data types:</p>
+<ul>
+<li>money</li>
+<li>smallmoney</li>
+<li>uniqueidentifier</li>
+<li>User defined types</li>
+</ul>
+<p>And just one more minor thing…</p>
+<h2 id="OrcaMDF_Studio">OrcaMDF Studio</h2>
+<p>Common among much of the feedback I got was something along the lines of: Awesome project! I definitely want to try it out, but I haven’t had the time yet.</p>
+<p>To be honest, it’s been somewhat cumbersome to try out OrcaMDF. You had to download the source, compile it yourself and then write your own application to actually invoke OrcaMDF. It’s never been my intention for it to be directly end user usable, as that’s just not my focus. However, to improve upon OrcaMDF, I need more usage feedback. As a result, I decided to create OrcaMDF Studio – an UI on top of OrcaMDF, allowing you to query user tables, dmvs and base tables without looking at any of the code at all. What you’re seeing here is OrcaMDF showing the contents of the Product table in a standard AdventureWorks 2008 database:</p>
+<div class="imgwrapper" style=""><div><a href="/orcamdf-studio-release-feature-recap/image_43.png" class="fancy"><img src="/orcamdf-studio-release-feature-recap/image_43.png" style="max-height: 250px"/></a></div></div>
+
+<h3 id="Base_tables">Base tables</h3>
+<p>OrcaMDF Studio exposes all of the base tables (that it currently supports &amp; parses), just like normal tables:</p>
+<div class="imgwrapper" style=""><div><a href="/orcamdf-studio-release-feature-recap/image_12.png" class="fancy"><img src="/orcamdf-studio-release-feature-recap/image_12.png" style="max-height: 250px"/></a></div></div>
+
+<h3 id="Dynamic_Management_Views">Dynamic Management Views</h3>
+<p>OrcaMDF also exposes all of the currently supported DMVs, just like any other table:</p>
+<div class="imgwrapper" style=""><div><a href="/orcamdf-studio-release-feature-recap/image_14.png" class="fancy"><img src="/orcamdf-studio-release-feature-recap/image_14.png" style="max-height: 250px"/></a></div></div>
+
+<h3 id="User_tables,_indexes_&amp;_schemas">User tables, indexes &amp; schemas</h3>
+<p>Finally, OrcaMDF also exposes all of the user tables, including their schemas, indexes and index schemas:</p>
+<div class="imgwrapper" style=""><div><a href="/orcamdf-studio-release-feature-recap/image_161.png" class="fancy"><img src="/orcamdf-studio-release-feature-recap/image_161.png" style="max-height: 250px"/></a></div></div>
+
+<h3 id="Error_reporting">Error reporting</h3>
+<p>As OrcaMDF, and the Studio, is still far from production ready, you’ll probably run into unsupported scenarios or common bugs. If you do, OrcaMDF Studio will report it to you, as well as save a stack trace in the application directory. Here’s an example of a typical error – trying to open a table with an unsupported column type (xml for example):</p>
+<div class="imgwrapper" style=""><div><a href="/orcamdf-studio-release-feature-recap/image_18.png" class="fancy"><img src="/orcamdf-studio-release-feature-recap/image_18.png" style="max-height: 250px"/></a></div></div>
+
+<p>If you look in the ErrorLog.txt file that’s written to the application directory, you’ll see an exception like this:</p>
+<figure class="highlight"><pre><span class="number">25</span>-<span class="number">11</span>-<span class="number">2011</span> <span class="number">00</span>:<span class="number">41</span>:<span class="number">21</span>
+----------
+<span class="label">System.ArgumentException:</span> Unsupported type: xml(-<span class="number">1</span>)
+   at OrcaMDF<span class="preprocessor">.Core</span><span class="preprocessor">.MetaData</span><span class="preprocessor">.DataColumn</span>.<span class="preprocessor">.ctor</span>(String name, String type, Boolean nullable) <span class="keyword">in</span> D:ProjectsOrcaMDFsrcOrcaMDF<span class="preprocessor">.CoreMetaDataDataColumn</span><span class="preprocessor">.cs</span>:line <span class="number">135</span>
+   at OrcaMDF<span class="preprocessor">.Core</span><span class="preprocessor">.MetaData</span><span class="preprocessor">.DataColumn</span>.<span class="preprocessor">.ctor</span>(String name, String type) <span class="keyword">in</span> D:ProjectsOrcaMDFsrcOrcaMDF<span class="preprocessor">.CoreMetaDataDataColumn</span><span class="preprocessor">.cs</span>:line <span class="number">20</span>
+   at OrcaMDF<span class="preprocessor">.Core</span><span class="preprocessor">.MetaData</span><span class="preprocessor">.DatabaseMetaData</span><span class="preprocessor">.GetEmptyDataRow</span>(String tableName) <span class="keyword">in</span> D:ProjectsOrcaMDFsrcOrcaMDF<span class="preprocessor">.CoreMetaDataDatabaseMetaData</span><span class="preprocessor">.cs</span>:line <span class="number">155</span>
+   at OrcaMDF<span class="preprocessor">.Core</span><span class="preprocessor">.Engine</span><span class="preprocessor">.DataScanner</span><span class="preprocessor">.ScanTable</span>(String tableName) <span class="keyword">in</span> D:ProjectsOrcaMDFsrcOrcaMDF<span class="preprocessor">.CoreEngineDataScanner</span><span class="preprocessor">.cs</span>:line <span class="number">31</span>
+   at OrcaMDF<span class="preprocessor">.OMS</span><span class="preprocessor">.Main</span><span class="preprocessor">.loadTable</span>(String table) <span class="keyword">in</span> D:ProjectsOrcaMDFsrcOrcaMDF<span class="preprocessor">.OMSMain</span><span class="preprocessor">.cs</span>:line <span class="number">158</span>
+</pre></figure>
+
+<p>Completely anonymous data that just gives an indication of where the error occurred. If you run into issues like these, I would appreciate if you would send me the ErrorLog.txt file so I can debug potential issues. All issues, requests, error reports, etc. should be sent to my email.</p>
+<h3 id="Database_version_support">Database version support</h3>
+<p>OrcaMDF has been developed for, and tested with, SQL Server 2008 R2. Some operations will work on SQL Server 2005, but many will fail since some of the base tables have different schemas. OrcaMDF does not differ and will thus throw up once you hit those differences. I’ll add an abstraction layer + support for both at a later time.</p>
+<h3 id="Opening_live_databases">Opening live databases</h3>
+<p>OrcaMDF Studio will have to take a read lock on the database file(s) for now. As SQL Server takes exclusive locks on the files, this means you can’t open a live database. You can either detach the database, take it offline, backup-restore-detach or simply use a non-attached database to begin with. For a later release, I’ll add automatic VSS snapshot functionality.</p>
+<h3 id="System_requirements">System requirements</h3>
+<p>OrcaMDF is built on top of the <a href="http://www.microsoft.com/download/en/details.aspx?id=17851" target="_blank">.NET Framework 4.0</a> – as such, you will need to have it installed for OrcaMDF Studio to run. OrcaMDF Studio will run on both x64 and x86 machines.</p>
+<h3 id="Disclaimer">Disclaimer</h3>
+<p>Once again, OrcaMDF + Studio is experimental software. I give no guarantees whatsoever, and you’re using it at your own risk. OrcaMDF will not write anything to disk and will thus not, in any way, modify your database files. However, I strongly suggest that you <strong>do not</strong> use this on a production database, either way.</p>
+<p>OrcaMDF neither knows nor cares about security. No matter who owns that schema or object, OrcaMDF will parse it just fine – no need for pesky usernames and passwords. However, OrcaMDF does not support <a href="http://msdn.microsoft.com/en-us/library/bb934049.aspx" target="_blank">Transparent Data Encryption</a>, so databases using TDE will not be supported.</p>
+<h3 id="Download">Download</h3>
+<p>You can download the OrcaMDF Studio binary release at the <a href="https://github.com/improvedk/OrcaMDF/downloads" target="_blank">OrcaMDF Github project page</a>. Please don’t ever download OrcaMDF anywhere else, you risk that someone modifies the source and distributes their own version. <strong>Always</strong> get it from the Github project page.</p>
+<p>Once you download it, simply unpack it and run the OrcaMDF.OMS.exe application:</p>
+<div class="imgwrapper" style=""><div><a href="/orcamdf-studio-release-feature-recap/image_221.png" class="fancy"><img src="/orcamdf-studio-release-feature-recap/image_221.png" style="max-height: 250px"/></a></div></div>
+
+<p>Note that this is a debug build – hence the .pdf files. Debug builds will be slightly slower than release builds, but it does enable me to get full stack traces if/when an exception occurs. Once OrcaMDF stabilizes, I’ll provide both debug and release versions.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Nov</span>
+			<span class="day">17</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/optimizing-single-instance-amazon-s3-delete-performance/" title="Optimizing Single Instance Amazon S3 Delete Performance" rel="bookmark">Optimizing Single Instance Amazon S3 Delete Performance</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				, 
+			
+				<a href="http://improve.dk/category/Amazon Web Services/">Amazon Web Services</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Once you’ve <a href="/pushing-the-limits-of-amazon-s3-upload-performance">made a mess</a> and you’ve now got millions of objects you need to delete, how do you do that as fast as possible?</p>
+<a id="more"></a>
+
+<h2 id="Characteristics_of_a_delete_request">Characteristics of a delete request</h2>
+<p>Contrary to a PutObjectRequest, the DeleteObjectRequest carries a rather constant payload. If we look at the actual request, the only things varying is the object name (MyObject.txt in this case) and the x-amz-date header field, as set by the .NET AWS SDK:</p>
+<figure class="highlight"><pre><span class="request">DELETE <span class="string">http://improve-eu.dk.s3-eu-west-1.amazonaws.com/MyObject.txt</span> HTTP/1.1</span>
+<span class="attribute">User-Agent</span>: <span class="string">aws-sdk-dotnet/1.3.16.0 .NET Runtime/4.0 .NET Framework/4.0 OS/6.1.7601.65536</span>
+<span class="attribute">Authorization</span>: <span class="string">AWS XYZ</span>
+<span class="attribute">x-amz-date</span>: <span class="string">Tue, 15 Nov 2011 21:09:38 GMT</span>
+<span class="attribute">Host</span>: <span class="string">improve-eu.dk.s3-eu-west-1.amazonaws.com</span>
+<span class="attribute">Content-Length</span>: <span class="string">0</span>
+<span class="attribute">Connection</span>: <span class="string">Close</span>
+</pre></figure>
+
+<p>The result is equally static:</p>
+<figure class="highlight"><pre><span class="status">HTTP/1.1 <span class="number">204</span> No Content</span>
+<span class="attribute">x-amz-id-2</span>: <span class="string">k5r8aSZ3lpcWe4V255z7v8yqbMSPQQ7COEAGwsnRwzLeXpaJkSgRXNMoOf9ATdH0</span>
+<span class="attribute">x-amz-request-id</span>: <span class="string">DABA77DD2B542C43</span>
+<span class="attribute">Date</span>: <span class="string">Tue, 15 Nov 2011 21:09:37 GMT</span>
+<span class="attribute">Server</span>: <span class="string">AmazonS3</span>
+</pre></figure>
+
+<p>Looking at this particular request, it takes up 322 bytes, with the only really variable part, the object name, taking up 13 of those bytes. As such, a delete request takes up roughly 309 bytes + the object name. This means pipe width probably won’t be an issue – even with massive parallelization we won’t be able to saturate even a smaller line. Again, we’re forced to look into reducing latency and increasing parallelization to improve our mass delete performance.</p>
+<h2 id="Does_object_size_&amp;_existence_matter?">Does object size &amp; existence matter?</h2>
+<p>When uploading, the size of the object obviously matters, as shown in <a href="/pushing-the-limits-of-amazon-s3-upload-performance">post on upload performance</a>. For deletes, I’d assume object size wouldn’t matter. Just to be sure though, I made a test. Through four iterations, I created 1024 objects of 1KB, 1MB and 16MB size. I then, single-threaded, deleted each of those objects, one by one and recorded the total runtime. Once all the objects were deleted, I performed all of the delete requests again, even though the objects didn’t exist. I wanted to know whether the existence of an object had an impact on the request latency.</p>
+<p>The tests were performed using an m1.large (100Mbps bandwidth reported by instance, usually more available) instance in the EU region, accessing a bucket also in the EU region. Once run, I discarded the best and worst results and took the average of the remaining two.</p>
+<div class="imgwrapper" style=""><div><a href="/optimizing-single-instance-amazon-s3-delete-performance/image_62.png" class="fancy"><img src="/optimizing-single-instance-amazon-s3-delete-performance/image_62.png" style="max-height: 250px"/></a></div></div>
+
+<p>The first graphs shows some variance, which is to be expected. Key, however, is that neither the object size nor the existence of an object seems to have any general say in the performance. If we put this in a logarithmic scale, it’s a bit more apparent:</p>
+<div class="imgwrapper" style=""><div><a href="/optimizing-single-instance-amazon-s3-delete-performance/image_8.png" class="fancy"><img src="/optimizing-single-instance-amazon-s3-delete-performance/image_8.png" style="max-height: 250px"/></a></div></div>
+
+<p>My guess is that Amazons S3 service is most likely handling a request by just marking the object, if it exists, as deleted, returning, and the asynchronously deleting the object from disk at a later time. As is usual database practice, the marking of an object as deleted and the existence check is probably done in the same query to the database, returning the number of rows affected. As such, performance is identical, no matter if an object exists or not, just as the size doesn’t matter as it’s physically deleted asynchronously.</p>
+<p>I’ll use this fact in my testing as that means I can simply performance test deleting non-existing objects, sparing myself the need to upload deterministically named objects beforehand.</p>
+<h2 id="Multi-threaded_deletes">Multi-threaded deletes</h2>
+<p>The key to performance, as previously shown, is without doubt achieved by scaling out the number of threads.</p>
+<p>The following test code spins up a given number of threads and lets them run for 30 seconds, before they’re all aborted. Each thread is continually looping, firing off as many DeleteObjectRequest’s as it can. After 30 seconds, the average request/sec is calculated and output. I ran four repetitions of each, discarded the top and bottom result and calculated the average of the remaining two.</p>
+<figure class="highlight csharp"><pre>private <span class="reserved">const</span> string bucketName = <span class="string">"improve-eu.dk"</span>;
+private <span class="reserved">const</span> string serviceUrl = <span class="string">"s3-eu-west-1.amazonaws.com"</span>;
+
+static <span class="reserved">void</span> Main(string[] args)
+{
+	<span class="reserved">var</span> config = <span class="keyword">new</span> AmazonS3Config().WithServiceURL(serviceUrl).WithCommunicationProtocol(Protocol.HTTP);
+	int numThreads = Convert.ToInt32(args[<span class="number">0</span>]);
+	int count = <span class="number">0</span>;
+	<span class="reserved">var</span> sw = <span class="keyword">new</span> Stopwatch();
+
+	<span class="regexp">//</span> Ensuring all connections have network connectivity
+	ServicePointManager.DefaultConnectionLimit = numThreads;
+
+	<span class="regexp">//</span> The actual job each thread will be performing
+	<span class="reserved">var</span> work = <span class="keyword">new</span> ThreadStart<span class="function"><span class="params">(() =&gt;
+	{
+		using (<span class="reserved">var</span> s3Client = AWSClientFactory.CreateAmazonS3Client(ConfigurationManager.AppSettings[<span class="string">"AccessKeyID"</span>], ConfigurationManager.AppSettings[<span class="string">"SecretAccessKey"</span>], config))
+		{
+			<span class="reserved">var</span> request = <span class="keyword">new</span> DeleteObjectRequest()
+				.WithBucketName(bucketName)
+				.WithKey(<span class="string">"xyz"</span>);
+
+			<span class="keyword">while</span> (sw.ElapsedMilliseconds &lt;= <span class="number">30000</span>)
+			{
+				s3Client.DeleteObject(request);
+
+				<span class="regexp">//</span> Avoid extra counts <span class="keyword">while</span> threads are spinning down
+				<span class="keyword">if</span>(sw.ElapsedMilliseconds &lt;= <span class="number">30000</span>)
+					count++;
+			}
+		}
+	})</span>;
+
+	// <span class="title">Warmup</span>
+	<span class="title">using</span> <span class="params">(<span class="reserved">var</span> s3Client = AWSClientFactory.CreateAmazonS3Client(ConfigurationManager.AppSettings[<span class="string">"AccessKeyID"</span>], ConfigurationManager.AppSettings[<span class="string">"SecretAccessKey"</span>], config))</span>
+	{
+		<span class="title">var</span> <span class="title">request</span> = <span class="title">new</span> <span class="title">DeleteObjectRequest</span><span class="params">()</span>
+			.<span class="title">WithBucketName</span><span class="params">(bucketName)</span>
+			.<span class="title">WithKey</span><span class="params">(<span class="string">"xyz"</span>)</span>;
+		<span class="title">s3Client</span>.<span class="title">DeleteObject</span><span class="params">(request)</span>;
+	}
+
+	// <span class="title">Start</span> <span class="title">X</span> <span class="title">number</span> <span class="title">of</span> <span class="title">threads</span> <span class="title">and</span> <span class="title">let</span> <span class="title">them</span> <span class="title">upload</span> <span class="title">as</span> <span class="title">much</span> <span class="title">as</span> <span class="title">they</span> <span class="title">can</span>
+	<span class="title">var</span> <span class="title">threads</span> = <span class="title">new</span> <span class="title">List</span>&lt;<span class="title">Thread</span>&gt;<span class="params">()</span>;
+	<span class="title">for</span> <span class="params">(int j = <span class="number">0</span>; j &lt; numThreads; j++)</span>
+		<span class="title">threads</span>.<span class="title">Add</span><span class="params">(<span class="keyword">new</span> Thread(work))</span>;
+
+	<span class="title">sw</span>.<span class="title">Start</span><span class="params">()</span>;
+	<span class="title">threads</span>.<span class="title">ForEach</span><span class="params">(x =&gt; x.Start())</span>;
+
+	// <span class="title">Wait</span> 30 <span class="title">secs</span>, <span class="title">stop</span> <span class="title">all</span> <span class="title">threads</span>, <span class="title">output</span> <span class="title">reqs</span>/<span class="title">sec</span> <span class="title">result</span>
+	<span class="title">Thread</span>.<span class="title">Sleep</span><span class="params">(<span class="number">30000</span>)</span>;
+	<span class="title">threads</span>.<span class="title">ForEach</span><span class="params">(x =&gt; x.Abort())</span>;
+
+	<span class="title">Console</span>.<span class="title">WriteLine</span><span class="params">((double)count / <span class="number">30</span>)</span>;
+}</span>
+</pre></figure>
+
+<p>The following graph shows the results, testing with thread counts of 8, 16, 32, 64, 128, 256, being run on an m1.large instance, the more CPU-beefy c1.xlarge instance and finally the Danish Server 2003 Colo instance that I used in my last post:</p>
+<div class="imgwrapper" style=""><div><a href="/optimizing-single-instance-amazon-s3-delete-performance/image_16.png" class="fancy"><img src="/optimizing-single-instance-amazon-s3-delete-performance/image_16.png" style="max-height: 250px"/></a></div></div>
+
+<p>Results clearly show similar performance characteristics – both EC2 servers max out at 32 threads. The m1.large instance managed 1428 requests/sec while the c1.xlarge instance managed 1591 requests/sec. I could probably go higher using a compute cluster instance, but that’s not what I’m trying to show in this post. The colo instance went further and didn’t max out until I was running 64 threads – most likely due to the larger latency, and thus added benefit of more outstanding requests.</p>
+<h2 id="Disabling_the_Nagle_algorithm">Disabling the Nagle algorithm</h2>
+<p>I considered, and tested, whether disabling the <a href="http://en.wikipedia.org/wiki/Nagle&#39;s_algorithm" target="_blank">Nagle algorithm</a> might have an impact. However – since each of these requests are fired on a single connection that’s closed, and hence flushed, immediately afterwards – disabling the Nagle algorithm has no measureable effect.</p>
+<h2 id="Can_we_lower_the_CPU_usage?">Can we lower the CPU usage?</h2>
+<p>While the EC2 CPU isn’t maxed at 32 threads, it’s way higher than I’d like it to be, even just at 64 threads:</p>
+<div class="imgwrapper" style=""><div><a href="/optimizing-single-instance-amazon-s3-delete-performance/image_42.png" class="fancy"><img src="/optimizing-single-instance-amazon-s3-delete-performance/image_42.png" style="max-height: 250px"/></a></div></div>
+
+<p>However, the code we’re running is already in a rather tight loop without much to optimize:</p>
+<figure class="highlight csharp"><pre><span class="keyword">while</span> (sw.<span class="constant">ElapsedMilliseconds</span> &lt;= <span class="number">30000</span>)
+{
+	s3Client.<span class="constant">DeleteObject</span>(request);
+
+	<span class="regexp">//</span> <span class="constant">Avoid</span> extra counts <span class="keyword">while</span> threads are spinning down
+	<span class="keyword">if</span>(sw.<span class="constant">ElapsedMilliseconds</span> &lt;= <span class="number">30000</span>)
+		count++;
+}
+</pre></figure>
+
+<p>It’s basically just a loop, reusing the same request and letting the AmazonS3Client do its part to send off the object. Internally, AmazonS3Client.DeleteObject() is firing off the asynchronous BeginPutObject and then immediately waiting for EndPutObject afterwards. If we dig further in, there’s a lot of generic AWS SDK framework overhead in constructing the requests, checking for all sorts of conditions that may arise, but are not particularly relevant to our case. How about we ditch the SDK and create our own requests?</p>
+<p>Following this guide on <a href="http://docs.amazonwebservices.com/AmazonS3/2006-03-01/dev/index.html?RESTAuthentication.html" target="_blank">signing and authenticating REST requests</a>, I constructed a method like this (minus the measuring and reformatting, this just shows the basic form):</p>
+<figure class="highlight csharp"><pre>var accessKeyID = "XYZ";
+var secretAccessKey = "SecretXYZ";
+
+using (var sha1 = new HMACSHA1())
+{
+	while(true)
+	{
+		var webrequest = (HttpWebRequest)WebRequest.Create(<span class="string">"http://improve-eu.dk.s3-eu-west-1.amazonaws.com/xyz"</span>);
+		webrequest.Method = <span class="string">"DELETE"</span>;
+		webrequest.ContentLength = 0;
+		webrequest.KeepAlive = false;
+		webrequest.AllowWriteStreamBuffering = false;
+		webrequest.AllowAutoRedirect = false;
+
+		var date = DateTime.UtcNow.ToString(<span class="string">"R"</span>);
+
+		string stringToSign = 
+			<span class="string">"DELETE"</span> + <span class="string">"n"</span> +
+			<span class="string">"n"</span> +
+			<span class="string">"n"</span> +
+			<span class="string">"n"</span> +
+			<span class="string">"x-amz-date:"</span> + date + <span class="string">"n"</span> +
+			<span class="string">"/improve-eu.dk/xyz"</span>;
+
+		string signature = AWSSDKUtils.HMACSign(stringToSign, secretAccessKey, sha1);
+
+		webrequest.Headers.Add(<span class="string">"x-amz-date"</span>, date);
+		webrequest.Headers.Add(<span class="string">"Authorization"</span>, <span class="string">"AWS "</span> + accessKeyID + <span class="string">":"</span> + signature);
+
+		webrequest.GetResponse().Close();
+	}
+}
+</pre></figure>
+
+<p>This tries to push through as many requests as possible in as little time as possible, with as little framework overhead as possible. Alas, I saw no noteworthy improvements in performance so I’m glad to report that the AWS SDK seems well optimized, even with it’s generic looks. A side result was that I shaved off the user-agent and thereby ended up with slightly smaller requests:</p>
+<figure class="highlight"><pre><span class="request">DELETE <span class="string">http://improve-eu.dk.s3-eu-west-1.amazonaws.com/xyz</span> HTTP/1.1</span>
+<span class="attribute">x-amz-date</span>: <span class="string">Wed, 16 Nov 2011 18:58:11 GMT</span>
+<span class="attribute">Authorization</span>: <span class="string">AWS XYZ</span>
+<span class="attribute">Host</span>: <span class="string">improve-eu.dk.s3-eu-west-1.amazonaws.com</span>
+<span class="attribute">Content-Length</span>: <span class="string">0</span>
+<span class="attribute">Connection</span>: <span class="string">Close</span>
+</pre></figure>
+
+<p>This took me from a request size of 322 bytes down to 223 bytes on average. Sadly, this too had no noteworthy impact on performance.</p>
+<h2 id="Conclusion">Conclusion</h2>
+<p>Deletes carry a constant cost, both in payload size as well as execution time. We can’t batch them up and there’s no data to compress. As such, we’re left with just multi-threading and possibly optimizing the TCP/IP stack depending on the latency characteristics of the environment. The lower the latency, the fewer threads you should use. In my testing, a typical low-latency (e.g. EC2) environment seems to max out at 32 threads, where as a medium/high latency environment seems to max out at 64 concurrent threads.</p>
+<p>Obviously there are steps between 32 and 64 threads and you may get better results at running just 50 threads – these are just ballpark test numbers. As always, your mileage may vary.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Nov</span>
+			<span class="day">10</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/orcamdf-now-exposes-metadata-through-system-dmvs/" title="OrcaMDF Now Exposes Metadata Through System DMVs" rel="bookmark">OrcaMDF Now Exposes Metadata Through System DMVs</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I’m sitting here on the train in Denmark, on the final leg home from <a href="http://www.sqlpass.org/sqlrally/2011/" target="_blank">SQLRally Nordic</a>. During my presentation based on my OrcaMDF work, I implicitly announced that OrcaMDF now exposes metadata – thougt I might as well share here as well. Other than expanding the core engine support in OrcaMDF, one of the main features I’ve wanted to implement was a way for OrcaMDF to expose metadata about your database. How do you list the tables, indexes, columns, etc. from your database?</p>
+<a id="more"></a>
+
+<h2 id="Avoiding_false_abstractions">Avoiding false abstractions</h2>
+<p>My initial thought was to create my own abstraction layer on top of the objects. You could get the list of user tables by accessing the database.GetMetadata().UserTables enumeration, you’d get a list of tables, including columns, etc. This has a very clean interface from the development side, everything being normal .NET objects. However, it would also require me to come up with said abstraction – and where do I draw the line on what to expose and what to keep internal? What if my abstraction didn’t feel natural to DBAs, being used to the sys.* DMVs from SQL Server?</p>
+<h2 id="Exposing_the_built-in_DMVs_from_SQL_Server">Exposing the built-in DMVs from SQL Server</h2>
+<p>I spent some time considering who might end up using OrcaMDF – and concluded there might be just about four persons in the world, and those four would be split evenly between DBA and SQL Server dev. Common for those is that they’re already used to navigating the metadata of SQL Server databses through system DMVs like sys.tables, sys.columns, sys.indexes etc. What then struck me was that I’m already able to parse all of the base tables in SQL Server, and using OBJECT_DEFINITION, I can get the source code of the built-in system DMVs. As such, it was a simple matter of creating my own replicas of the built-in DMVs.</p>
+<h2 id="How_to_use_the_DMVs_in_OrcaMDF">How to use the DMVs in OrcaMDF</h2>
+<p>Say we wanted to retrieve all the columns for a given data in SQL Server, we create a query like this:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	c.*
+<span class="keyword">FROM</span>
+	sys.columns c
+<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
+	sys.tables t <span class="keyword">ON</span> c.object_id = t.object_id
+<span class="keyword">WHERE</span>
+	t.name = <span class="string">'Persons'</span></span>
+</pre></figure>
+
+<p>Doing the same in OrcaMDF could look like this:</p>
+<figure class="highlight csharp"><pre>using (var db = new Database(new[] { @<span class="string">"C:Test.mdf"</span> }))
+{
+	var sys = db<span class="preprocessor">.Dmvs</span><span class="comment">;</span>
+
+	var table = sys<span class="preprocessor">.Tables</span><span class="preprocessor">.Where</span>(t =&gt; t<span class="preprocessor">.Name</span> == <span class="string">"Persons"</span>)<span class="preprocessor">.Single</span>()<span class="comment">;</span>
+	var columns = sys<span class="preprocessor">.Columns</span><span class="preprocessor">.Where</span>(c =&gt; c<span class="preprocessor">.ObjectID</span> == table<span class="preprocessor">.ObjectID</span>)<span class="comment">;</span>
+
+	foreach (var col <span class="keyword">in</span> columns)
+		Console<span class="preprocessor">.WriteLine</span>(col<span class="preprocessor">.Name</span>)<span class="comment">;</span>
+}
+</pre></figure>
+
+<p>And if you prefer the more SQL-esque syntax of LINQ, you can of course do it like this as well:</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> (<span class="keyword">var</span> db = <span class="keyword">new</span> Database(<span class="keyword">new</span>[] { <span class="string">@"C:Test.mdf"</span> }))
+{
+	<span class="keyword">var</span> sys = db.Dmvs;
+
+	<span class="keyword">var</span> columns =	<span class="keyword">from</span> c <span class="keyword">in</span> sys.Columns
+			<span class="keyword">join</span> t <span class="keyword">in</span> sys.Tables on c.ObjectID equals t.ObjectID
+			<span class="keyword">where</span> t.Name == <span class="string">"Persons"</span>
+			<span class="keyword">select</span> c;
+
+	<span class="keyword">foreach</span> (<span class="keyword">var</span> col <span class="keyword">in</span> columns)
+		Console.WriteLine(col.Name);
+}
+</pre></figure>
+
+<p>No matter how you choose to do it, this is the result:</p>
+<div class="imgwrapper" style=""><div><a href="/orcamdf-now-exposes-metadata-through-system-dmvs/image_22.png" class="fancy"><img src="/orcamdf-now-exposes-metadata-through-system-dmvs/image_22.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="What’s_available_at_this_point">What’s available at this point</h2>
+<p>If you grab the <a href="https://github.com/improvedk/OrcaMDF" target="_blank">latest commit of OrcaMDF</a>, you’ll have access to the following DMVs, just as they’re exposed through SQL Server:</p>
+<ul>
+<li>sys.columns</li>
+<li>sys.indexes</li>
+<li>sys.index_columns</li>
+<li>sys.objects</li>
+<li>sys.objects$</li>
+<li>sys.system_internals_allocation_units</li>
+<li>sys.system_internals_partitions</li>
+<li>sys.system_internals_partition_columns</li>
+<li>sys.tables</li>
+<li>sys.types</li>
+</ul>
+<p>More is definitely on their way. Let me know if you have a special wish for a DMV – I might just be able to make your wish come true!</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Nov</span>
+			<span class="day">07</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/pushing-the-limits-of-amazon-s3-upload-performance/" title="Pushing the Limits of Amazon S3 Upload Performance" rel="bookmark">Pushing the Limits of Amazon S3 Upload Performance</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				, 
+			
+				<a href="http://improve.dk/category/Amazon Web Services/">Amazon Web Services</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Recently I’ve been working on a project where I’ve got millions of relatively small objects, sized between 5kb and 500kb, and they all have to be uploaded to S3. Naturally, doing a synchronous upload of each object, one by one, just doesn’t cut it. We need to upload the objects in parallel to achieve acceptable performance. But what are the optimal parameters when it comes to the number of simultaneous upload threads? Does it depend on the object size? How much of a difference does HTTPS over HTTP make? Let me share what I discovered during my testing.</p>
+<a id="more"></a>
+
+<p>Note that some of these graphs are much larger than what I can show in-page. All can be opened in full size by clicking them.</p>
+<h2 id="Test_code">Test code</h2>
+<p>To reduce variance in the outcome, I’ve run all test cases four times and reported the average runtime. Each test case tries to upload 512 objects of a given size. In total, 2048 objects are uploaded across the four repetitions, before the average runtime is reported back. Even though I ran four repetitions, I still saw some fluctuations in the results that I’ll have to attest to variance.</p>
+<p>I started out by using the thread pool and the asynchronous Begin/EndPutObject methods. However, even when setting the thread pool max/min thread/IO settings explicitly, I found the thread pool usage caused too much variance. Instead I went with manual thread control.</p>
+<p>One major player is the ServicePointManager.DefaultConnectionLimit – this limits the number of active connections to any given host at the same time. By default, this has a low value of 2 and thus limits you to just two concurrent uploads to S3, before others are queued at the network level. If this limit is set below the number of active threads, you will invariably have threads waiting to open network connections. To avoid this, I set the connection limit equal to the number of threads I was running.</p>
+<p>I tried running the tests both with and without MD5 checksum generation &amp; verification, but I saw no measurable difference in the outcome.</p>
+<p>At no point, in any of the test environments, were the CPUs stressed to the point where they were close to becoming bottlenecks. As the test object is all in-memory and no disk is involved, I’ve ruled out disks as a bottleneck factor as well. Thus, the number one of piece of hardware affecting the results is the network interface card (NIC).</p>
+<p>Before starting the four repetitions of the test, I fire off a single PutObject request to warm up the stack. The test code is relatively simple, it runs in an infinite loop, checking whether we need to upload more objects, or whether we’re done. If done, it breaks the loop and ends the thread. When launching I start up X amount of threads and immediately after join with them to wait for them all to complete. The runtime includes the amount of time required to instantiate the threads, though it should have no measurable impact on the result. The runtime calculation is done using integer math for output simplicity, but the impact should be minimal in the big picture.</p>
+<figure class="highlight csharp"><pre>using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Diagnostics;
+using System.Net;
+using System.Threading;
+using Amazon;
+using Amazon.S3;
+using Amazon.S3.Model;
+
+namespace S3Optimization
+{
+	<span class="class"><span class="keyword">class</span> <span class="title">Program</span></span>
+	{
+		private <span class="reserved">const</span> string bucketName = <span class="string">"improve.dk"</span>;
+		private <span class="reserved">const</span> string serviceUrl = <span class="string">"s3-eu-west-1.amazonaws.com"</span>;
+
+		<span class="regexp">//</span> ConnectionLimit ObjSizeInKB
+		static <span class="reserved">void</span> Main(string[] args)
+		{
+			int repetitions = <span class="number">4</span>;
+			int uploadCount = <span class="number">512</span>;
+			int objSize = Convert.ToInt32(args[<span class="number">1</span>]) * <span class="number">1024</span>;
+			int numThreads = Convert.ToInt32(args[<span class="number">0</span>]);
+			string dir = <span class="string">"Optimization/"</span> + Guid.NewGuid();
+			<span class="reserved">var</span> config = <span class="keyword">new</span> AmazonS3Config().WithServiceURL(serviceUrl).WithCommunicationProtocol(Protocol.HTTPS);
+			<span class="reserved">var</span> sw = <span class="keyword">new</span> Stopwatch();
+			object locker = <span class="keyword">new</span> object();
+			string obj = randomString(objSize);
+
+			<span class="regexp">//</span> Ensuring all connections have network connectivity
+			ServicePointManager.DefaultConnectionLimit = numThreads;
+
+			<span class="regexp">//</span> The actual job each thread will be performing
+			<span class="reserved">var</span> work = <span class="keyword">new</span> ThreadStart<span class="function"><span class="params">(() =&gt;
+				{
+					using (<span class="reserved">var</span> s3Client = AWSClientFactory.CreateAmazonS3Client(ConfigurationManager.AppSettings[<span class="string">"AccessKeyID"</span>], ConfigurationManager.AppSettings[<span class="string">"SecretAccessKey"</span>], config))
+					{
+						<span class="keyword">while</span> (<span class="literal">true</span>)
+						{
+							lock (locker)
+							{
+								<span class="keyword">if</span> (uploadCount &lt;= <span class="number">0</span>)
+									<span class="keyword">break</span>;
+								uploadCount--;
+							}
+
+							<span class="reserved">var</span> request = <span class="keyword">new</span> PutObjectRequest()
+								.WithBucketName(bucketName)
+								.WithKey(dir + <span class="string">"/"</span> + Guid.NewGuid())
+								.WithContentBody(obj);
+							s3Client.PutObject(request);
+						}
+					}
+				})</span>;
+
+			// <span class="title">Warmup</span>
+			<span class="title">using</span> <span class="params">(<span class="reserved">var</span> s3Client = AWSClientFactory.CreateAmazonS3Client(ConfigurationManager.AppSettings[<span class="string">"AccessKeyID"</span>], ConfigurationManager.AppSettings[<span class="string">"SecretAccessKey"</span>], config))</span>
+			{
+				<span class="title">var</span> <span class="title">request</span> = <span class="title">new</span> <span class="title">PutObjectRequest</span><span class="params">()</span>
+					.<span class="title">WithBucketName</span><span class="params">(bucketName)</span>
+					.<span class="title">WithKey</span><span class="params">(dir + <span class="string">"/"</span> + Guid.NewGuid())</span>
+					.<span class="title">WithContentBody</span><span class="params">(obj)</span>;
+				<span class="title">s3Client</span>.<span class="title">PutObject</span><span class="params">(request)</span>;
+			}
+
+			// <span class="title">Actual</span> <span class="title">timing</span>
+			<span class="title">sw</span>.<span class="title">Start</span><span class="params">()</span>;
+			<span class="title">for</span><span class="params">(int i=<span class="number">0</span>; i&lt;repetitions; i++)</span>
+			{
+				<span class="title">int</span> <span class="title">originalUploadCount</span> = <span class="title">uploadCount</span>;
+
+				<span class="title">var</span> <span class="title">threads</span> = <span class="title">new</span> <span class="title">List</span><span class="params">()</span>;
+				<span class="title">for</span><span class="params">(int j=<span class="number">0</span>; j&lt;numthreads; j++)</span>="" <span class="title">threads</span>.<span class="title">add</span><span class="params">(<span class="keyword">new</span>=<span class="string">""</span> thread(work))</span>;="" <span class="title">threads</span>.<span class="title">foreach</span><span class="params">(x=<span class="string">""</span>&gt; x.Start())</span>;
+				<span class="title">threads</span>.<span class="title">ForEach</span><span class="params">(x =&gt; x.Join())</span>;
+
+				<span class="title">uploadCount</span> = <span class="title">originalUploadCount</span>;
+			}
+			<span class="title">sw</span>.<span class="title">Stop</span><span class="params">()</span>;
+
+			<span class="title">Console</span>.<span class="title">WriteLine</span><span class="params">(sw.ElapsedMilliseconds / repetitions)</span>;
+		}
+
+		<span class="title">static</span> <span class="title">string</span> <span class="title">randomString</span><span class="params">(int size)</span>
+		{
+			<span class="title">var</span> <span class="title">rnd</span> = <span class="title">new</span> <span class="title">Random</span><span class="params">()</span>;
+			<span class="title">var</span> <span class="title">chars</span> = "<span class="title">ABCDEFGHIJKLMNOPQRSTUVWXYZ</span>";
+
+			<span class="title">char</span>[] <span class="title">buffer</span> = <span class="title">new</span> <span class="title">char</span>[<span class="title">size</span>];
+
+			<span class="title">for</span> <span class="params">(int i = <span class="number">0</span>; i &lt; size; i++)</span>
+				<span class="title">buffer</span>[<span class="title">i</span>] = <span class="title">chars</span>[<span class="title">rnd</span>.<span class="title">Next</span><span class="params">(chars.Length)</span>];
+
+			<span class="title">return</span> <span class="title">new</span> <span class="title">string</span><span class="params">(buffer)</span>;
+		}
+	}
+}</span>
+</pre></figure>
+
+<p>For running the tests, I’m using the following test runner application, testing all combinations of thread count and object size between 1 and 256/2048 respectively (in powers of 2):</p>
+<figure class="highlight csharp"><pre><span class="keyword">var</span> psi = <span class="keyword">new</span> ProcessStartInfo(<span class="string">"S3Optimization.exe"</span>)
+    {
+        UseShellExecute = <span class="keyword">false</span>,
+		RedirectStandardOutput = <span class="keyword">true</span>
+    };
+
+<span class="keyword">var</span> connectionLimits = <span class="keyword">new</span>[] { <span class="number">1</span>, <span class="number">2</span>, <span class="number">4</span>, <span class="number">8</span>, <span class="number">16</span>, <span class="number">32</span>, <span class="number">64</span>, <span class="number">128</span>, <span class="number">256</span> };
+<span class="keyword">var</span> objSizes = <span class="keyword">new</span>[] { <span class="number">1</span>, <span class="number">2</span>, <span class="number">4</span>, <span class="number">8</span>, <span class="number">16</span>, <span class="number">32</span>, <span class="number">64</span>, <span class="number">128</span>, <span class="number">256</span>, <span class="number">512</span>, <span class="number">1024</span>, <span class="number">2048</span> };
+
+<span class="keyword">foreach</span>(<span class="keyword">int</span> connectionLimit <span class="keyword">in</span> connectionLimits)
+{
+	<span class="keyword">foreach</span> (<span class="keyword">int</span> objSize <span class="keyword">in</span> objSizes)
+	{
+		psi.Arguments = connectionLimit + <span class="string">" "</span> + objSize;
+
+		<span class="keyword">var</span> p = Process.Start(psi);
+		<span class="keyword">string</span> output = connectionLimit + <span class="string">"t"</span> + objSize + <span class="string">"t"</span> + p.StandardOutput.ReadToEnd();
+		p.WaitForExit();
+
+		Console.Write(output);
+		File.AppendAllText(<span class="string">"Output.txt"</span>, output);
+	}
+}
+</pre></figure>
+
+<h2 id="Initial_results">Initial results</h2>
+<p>The first test is done using a colocation (colo) Dell PowerEdge 1950 placed at a Danish ISP in Aarhus, Denmark. The server is running Windows Server 2003 x64 and has a single gigabit NIC with gigabit support throughout the network stack. Note that I won’t be mentioning neither CPU, memory nor disk for any of the machines. Neither of those were ever close to being the bottleneck and are thus irrelevant. Suffice to say – they all had plenty of CPU, memory and disk capabilities. A tracert from the server to the S3 EU endpoint in Dublin looks like this:</p>
+<figure class="highlight"><pre>Tracing route to s3-eu-west-<span class="number">1.</span>amazonaws<span class="preprocessor">.com</span> [<span class="number">178.236</span><span class="number">.6</span><span class="number">.31</span>]
+over a maximum of <span class="number">30</span> hops:
+
+<span class="number">1</span>	<span class="number">1</span> ms	<span class="number">4</span> ms	<span class="number">13</span> ms	<span class="number">89.221</span><span class="number">.162</span><span class="number">.249</span>
+<span class="number">2</span>	<span class="number">1</span> ms	<span class="number">1</span> ms	<span class="number">3</span> ms	<span class="number">10.1</span><span class="number">.2</span><span class="number">.1</span>
+<span class="number">3</span>	<span class="number">3</span> ms	<span class="number">2</span> ms	<span class="number">2</span> ms	<span class="number">89.221</span><span class="number">.161</span><span class="number">.105</span>
+<span class="number">4</span>	&lt;<span class="number">1</span> ms	&lt;<span class="number">1</span> ms	&lt;<span class="number">1</span> ms	<span class="number">92</span>-<span class="number">62</span>-<span class="number">199</span>-<span class="number">177.</span>customer<span class="preprocessor">.fuzion</span><span class="preprocessor">.dk</span> [<span class="number">92.62</span><span class="number">.199</span><span class="number">.177</span>]
+<span class="number">5</span>	&lt;<span class="number">1</span> ms	&lt;<span class="number">1</span> ms	&lt;<span class="number">1</span> ms	<span class="number">87.116</span><span class="number">.1</span><span class="number">.157</span>
+<span class="number">6</span>	<span class="number">5</span> ms	<span class="number">4</span> ms	<span class="number">4</span> ms	<span class="number">93.176</span><span class="number">.94</span><span class="number">.175</span>
+<span class="number">7</span>	<span class="number">4</span> ms	<span class="number">4</span> ms	<span class="number">4</span> ms	xe-<span class="number">3</span>-<span class="number">3</span>-<span class="number">0.</span>cph10<span class="preprocessor">.ip</span>4<span class="preprocessor">.tinet</span><span class="preprocessor">.net</span> [<span class="number">77.67</span><span class="number">.74</span><span class="number">.37</span>]
+<span class="number">8</span>	<span class="number">47</span> ms	<span class="number">47</span> ms	<span class="number">47</span> ms	xe-<span class="number">2</span>-<span class="number">2</span>-<span class="number">0.</span>dub40<span class="preprocessor">.ip</span>4<span class="preprocessor">.tinet</span><span class="preprocessor">.net</span> [<span class="number">89.149</span><span class="number">.181</span><span class="number">.37</span>]
+<span class="number">9</span>	*	*	*	Request timed <span class="keyword">out</span>.
+</pre></figure>
+
+<p>The following graph has the number of threads (that is, simultaneous uploads) on the X-axis and the MiB/s on the Y-axis. The MiB/s was calculated using the formula (UploadCount x ObjectSizeInKB / 1024 / AvgTimePerRepetitionInSeconds). Each color bar represents a given object size in KB as noted on the legend on the right. Note also that these results were made using the standard HTTPS protocol. You might ask yourself why I’m measuring MiB/s and not requests/s. Thing is – they’re exactly the same. MiB/s and requests/s are just calculations based on the time it took to run a fixed number of requests. The absolute values are less interesting than they are in relation to each other. If you want to take a look at the requests/sec, you can download my raw data at the end of the post.</p>
+<div class="imgwrapper" style=""><div><a href="/pushing-the-limits-of-amazon-s3-upload-performance/image_2.png" class="fancy"><img src="/pushing-the-limits-of-amazon-s3-upload-performance/image_2.png" style="max-height: 250px"/></a></div></div>
+
+<p>There is an overwhelming amount of information in this graph alone. We can see how the general throughput seems to increase relatively linearly along the amount of threads, though they seem to reach their max potential at <strong>128 threads</strong>.</p>
+<h3 id="Small_object_characteristics">Small object characteristics</h3>
+<p>Let me zoom in on the 1KB object size:</p>
+<div class="imgwrapper" style=""><div><a href="/pushing-the-limits-of-amazon-s3-upload-performance/image_4.png" class="fancy"><img src="/pushing-the-limits-of-amazon-s3-upload-performance/image_4.png" style="max-height: 250px"/></a></div></div>
+
+<p>For the 1KB object size we see clear improvements all the way up to <strong>64 threads</strong>, after which it seems to stabilize. The 1KB object size is the one that incurs the most overhead due to S3 not utilizing persistent connections. Each request we make needs to create a new TCP connection and perform an SSL handshake. Compared to a 2MB object, we spend a lot more time and resources on overhead compared to actually transferring data. What if we disabled SSL and used unencrypted HTTP instead?</p>
+<div class="imgwrapper" style=""><div><a href="/pushing-the-limits-of-amazon-s3-upload-performance/image_6.png" class="fancy"><img src="/pushing-the-limits-of-amazon-s3-upload-performance/image_6.png" style="max-height: 250px"/></a></div></div>
+
+<p>Now we get increased performance all the way up <strong>128 threads</strong> – and we actually end up pushing 200% as much data as we did using HTTPS! For small objects, HTTPS has an extremely high cost – you should avoid it if you can.</p>
+<h3 id="Number_of_threads_–_finding_the_sweet_spot">Number of threads – finding the sweet spot</h3>
+<p>Take a look at this graph, showing the results for object sizes 1KB – 128KB:</p>
+<div class="imgwrapper" style=""><div><a href="/pushing-the-limits-of-amazon-s3-upload-performance/image_13.png" class="fancy"><img src="/pushing-the-limits-of-amazon-s3-upload-performance/image_13.png" style="max-height: 250px"/></a></div></div>
+
+<p>Ignoring minor deviances, all of the objects seem to <strong>peak at 64 connections</strong>. Any more than that either causes a significant drop off, or just minor variance. For objects less than 128KB, 64 threads definitely seem to be the cut-off point. Compare it with the following graph, showing object sizes 256KB – 2048KB:</p>
+<div class="imgwrapper" style=""><div><a href="/pushing-the-limits-of-amazon-s3-upload-performance/image_17.png" class="fancy"><img src="/pushing-the-limits-of-amazon-s3-upload-performance/image_17.png" style="max-height: 250px"/></a></div></div>
+
+<p>For these objects, we clearly see that going up to <strong>128 connections actually provide a boost in throughput</strong>, leading me to conclude that for objects of size 256KB+, you can use somewhat more threads successfully.</p>
+<p>For all object sizes, using  HTTP over HTTPS seems to increase the maximum throughput thread limit – this increasing it from 64 to 128 for smaller objects and from 128 to 256 threads for larger objects. If you’re uploading objects of varying sizes, this means you’ll have to do some testing with your specific workload to find out the optimal amount of threads.</p>
+<h3 id="Object_size_vs-_HTTPS_performance_impact">Object size vs. HTTPS performance impact</h3>
+<p>In the following graph I’ve calculated the average gain HTTP had over HTTPS for each object size, across all thread counts. As there is quite some variance, the trend line is the most interesting part of the graph. It clearly shows that as object size grows, the HTTP over HTTPS advantage decreases.</p>
+<div class="imgwrapper" style=""><div><a href="/pushing-the-limits-of-amazon-s3-upload-performance/image_19.png" class="fancy"><img src="/pushing-the-limits-of-amazon-s3-upload-performance/image_19.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Server_2008_R2_vs-_Server_2003">Server 2008 R2 vs. Server 2003</h2>
+<p>You’ve probably heard about Server 2008 bringing along a <a href="http://technet.microsoft.com/en-us/network/bb545475" target="_blank">bunch of updates to the TCP/IP stack</a>. I thought it would be interesting to run the same tests on an identical server, just running Windows Server 2008 R2 x64. Luckily, I have just that. A server with identical hardware, on the same subnet at the same ISP, just running Server 2008 R2 x64 instead. Question is, how big of a difference does the OS alone make?</p>
+<p>For this graph, I calculated the maximum attainable transfer speed, using HTTPS, for a given object, across any number of threads. I’ve then mapped those values into the graph for both Server 2003 and Server 2008 R2 (note the log(2) scale!).</p>
+<div class="imgwrapper" style=""><div><a href="/pushing-the-limits-of-amazon-s3-upload-performance/image_21.png" class="fancy"><img src="/pushing-the-limits-of-amazon-s3-upload-performance/image_21.png" style="max-height: 250px"/></a></div></div>
+
+<p>It clearly shows that Server 2008 R2 consistently wins out over 2003 - and this is using the exact same hardware, same switches, connection, etc. - only the OS is different. What about HTTP?</p>
+<div class="imgwrapper" style=""><div><a href="/pushing-the-limits-of-amazon-s3-upload-performance/image_23.png" class="fancy"><img src="/pushing-the-limits-of-amazon-s3-upload-performance/image_23.png" style="max-height: 250px"/></a></div></div>
+
+<p>Ignoring some minor variance, HTTP is still clearly the winner.</p>
+<p>On average, I found Server 2008 R2 to be <strong>16.8% faster</strong> than Server 2003 when testing HTTPS, and <strong>18.7% faster</strong> when using HTTP. That is a major gain just by changing the OS!</p>
+<h2 id="The_impact_of_locality_–_EC2_meets_S3">The impact of locality – EC2 meets S3</h2>
+<p>At this point I’ve demonstrated that you get rather crappy performance if you perform your uploads single threaded. By just scaling out the number of threads, we can actually end up saturating a gigabit NIC, provided the object size is large enough. However, we do spend a large amount of time waiting for network latency. What difference would it make if we were to run this in the cloud… Say in EC2 for example?</p>
+<p>I spawned an m1.xlarge instance in the EU EC2 region, providing me with a stable instance with plenty of CPU and memory. A tracert confirms that we are indeed <strong>very close to the S3 servers</strong>:</p>
+<figure class="highlight"><pre><span class="title">Tracing</span> route to s3-eu-west-<span class="number">1</span>.amazonaws.com [<span class="number">178.236.5.31</span>]
+over a maximum of <span class="number">30</span> hops:
+
+<span class="number">1</span>	&lt;<span class="number">1</span> ms	&lt;<span class="number">1</span> ms	&lt;<span class="number">1</span> ms	ip-<span class="number">10</span>-<span class="number">48</span>-<span class="number">248</span>-<span class="number">2</span>.eu-west-<span class="number">1</span>.compute.internal [<span class="number">10.48.248.2</span>]
+<span class="number">2</span>	&lt;<span class="number">1</span> ms	&lt;<span class="number">1</span> ms	&lt;<span class="number">1</span> ms	ec2-<span class="number">79</span>-<span class="number">125</span>-<span class="number">0</span>-<span class="number">242</span>.eu-west-<span class="number">1</span>.compute.amazonaws.com [<span class="number">79.125.0.242</span>]
+<span class="number">3</span>	&lt;<span class="number">1</span> ms	&lt;<span class="number">1</span> ms	&lt;<span class="number">1</span> ms	ip-<span class="number">10</span>-<span class="number">1</span>-<span class="number">44</span>-<span class="number">253</span>.eu-west-<span class="number">1</span>.compute.internal [<span class="number">10.1.44.253</span>]
+<span class="number">4</span>	<span class="number">1</span> ms	<span class="number">2</span> ms	<span class="number">1</span> ms	ip-<span class="number">10</span>-<span class="number">1</span>-<span class="number">0</span>-<span class="number">5</span>.eu-west-<span class="number">1</span>.compute.internal [<span class="number">10.1.0.5</span>]
+<span class="number">5</span>	&lt;<span class="number">1</span> ms	&lt;<span class="number">1</span> ms	&lt;<span class="number">1</span> ms	ec2-<span class="number">79</span>-<span class="number">125</span>-<span class="number">1</span>-<span class="number">97</span>.eu-west-<span class="number">1</span>.compute.amazonaws.com [<span class="number">79.125.1.97</span>]
+<span class="number">6</span>	<span class="number">2</span> ms	<span class="number">2</span> ms	<span class="number">2</span> ms	<span class="number">178.236.0.138</span>
+<span class="number">7</span>	<span class="number">2</span> ms	<span class="number">20</span> ms	<span class="number">2</span> ms	<span class="number">178.236.0.123</span>
+<span class="number">8</span>	<span class="number">2</span> ms	<span class="number">2</span> ms	<span class="number">2</span> ms	<span class="number">178.236.0.155</span>
+<span class="number">9</span>	<span class="number">2</span> ms	<span class="number">2</span> ms	<span class="number">2</span> ms	<span class="number">178.236.5.31</span>
+</pre></figure>
+
+<h3 id="HTTP_still_wins_out_over_HTTPS">HTTP still wins out over HTTPS</h3>
+<p>Just to make sure, I compared the average performance of HTTP over HTTPS again. For now, I’m hiding the actual units, and instead I’m just showing the percentage difference. Note that the blue HTTPS line is a baseline performance of 100%.</p>
+<div class="imgwrapper" style=""><div><a href="/pushing-the-limits-of-amazon-s3-upload-performance/image_48.png" class="fancy"><img src="/pushing-the-limits-of-amazon-s3-upload-performance/image_48.png" style="max-height: 250px"/></a></div></div>
+
+<p>Ignoring variation, we see an <strong>average performance improvement of almost 150% compared to HTTPS</strong>. From this we can conclude that locality doesn’t change the performance characteristics of HTTP vs. HTTPS – HTTP still wins any day. As a result of this, numbers from now on will be based on HTTP tests, unless explicitly stated otherwise.</p>
+<h3 id="Now_we’re_talking_throughput!">Now we’re talking throughput!</h3>
+<p>Let’s look at a quick graph detailing the maximum attainable transfer speeds for any given object, comparing my colo Server 2008 R2 server with the m1.xlarge instance run in the AWS EC2 cloud (note the log(10) scale):</p>
+<div class="imgwrapper" style=""><div><a href="/pushing-the-limits-of-amazon-s3-upload-performance/image_25.png" class="fancy"><img src="/pushing-the-limits-of-amazon-s3-upload-performance/image_25.png" style="max-height: 250px"/></a></div></div>
+
+<p>Wow. I redid this test several times as I just couldn’t believe the results. Where my 2008 R2 instance pushed about 1 meg/sec, I was getting <strong>5.2 megs/sec</strong> through the EC2 instance. Okay, I guess that’s reasonable since the smaller objects are punished so severely by connection overhead - and that’s the primary advantage of having close locality to the S3 servers, right?</p>
+<p>However - once we get to object size 32, we’re now pushing <strong>120 megs/sec</strong> from EC2 - at the very border of the 100Mbps NIC that the server reports. But it doesn’t stop there - oh no. I ended up hitting the ceiling at a stable transfer speed of <strong>460 megs/sec</strong>, pushing 1024KB objects using 64 threads. But how in the world am I able to push <strong>3,680Mbps</strong> through a<strong> 100Mbps NIC</strong>?</p>
+<p>The thing is, these are all just virtual machines sharing physical hardware. The server itself reports 100Mbps, but Amazon will scale your NIC depending on the instance type - typically telling you to expect a worst case of 250Mbps on a large instance. My guess is that these machines are running 10gige internally, and you’ll get whatever is available, though QoS’ed so you’ll get your 250Mbps at a minimum. If that is the case, I can easily pull 3,680Mbps of the theoretically available 10,000Mbps, the rest being used by other VPCs on the same physical network. To all my neighbors during these tests, sorry!</p>
+<p>This begs the question though - what if I had that 10gige connection all by myself? What if I didn’t have to share it?</p>
+<h2 id="Pushing_the_limits_using_compute_clusters">Pushing the limits using compute clusters</h2>
+<p>If we take a look at the <strong>Cluster Compute Quadruple Extra Large Instance</strong> (let’s just call it CC from now on) specs, we’re told to expect <strong>10gige network connectivity</strong>:</p>
+<div class="imgwrapper" style=""><div><a href="/pushing-the-limits-of-amazon-s3-upload-performance/image_27.png" class="fancy"><img src="/pushing-the-limits-of-amazon-s3-upload-performance/image_27.png" style="max-height: 250px"/></a></div></div>
+
+<p>Aha! Just what we need. Unfortunately the CC instances are only available in the US regions, so I had to setup a new bucket in the US, and change my test code to connect to said bucket, from the US. As such, it shouldn’t change anything, though it should be noted that the tests so far have been run in the Dublin DC, whereas this test is run in the North Virginia DC.</p>
+<p>Let’s start out by looking at object sizes 1-16KB, comparing the m1.xlarge instance with the cc1.4xlarge instance:</p>
+<div class="imgwrapper" style=""><div><a href="/pushing-the-limits-of-amazon-s3-upload-performance/image_39.png" class="fancy"><img src="/pushing-the-limits-of-amazon-s3-upload-performance/image_39.png" style="max-height: 250px"/></a></div></div>
+
+<p>Huh, that’s kinda disappointing. It seems that the CC instance consistently performs worse than the m1.xlarge instance. Let’s try and take a look at object sizes 32-2048KB:</p>
+<div class="imgwrapper" style=""><div><a href="/pushing-the-limits-of-amazon-s3-upload-performance/image_41.png" class="fancy"><img src="/pushing-the-limits-of-amazon-s3-upload-performance/image_41.png" style="max-height: 250px"/></a></div></div>
+
+<p>Now we’re talking! As soon as we cross 256KB in object size, we start to saturate the available fabric speed of the m1.xlarge instance - the CC instance on the other hand, it just keeps going up! In this test I reached a max speed of <strong>1091,7 megs/sec</strong> using 128 threads pushing objects of 2048KB. That’s <strong>8,733.6Mbps</strong> out of a theoretical max of <strong>10,000Mbps</strong> - on a single virtualized instance, mind you.</p>
+<h3 id="To_infinity_and_beyond">To infinity and beyond</h3>
+<p>Still not satisfied? Well, neither was I. I tried to tweak the settings a bit more to see if I could push it even further. Given that an object size of 2048KB seemed to improve the result over 1024KB, would an even larger object help? How about more than 128 threads?</p>
+<div class="imgwrapper" style=""><div><a href="/pushing-the-limits-of-amazon-s3-upload-performance/image_49.png" class="fancy"><img src="/pushing-the-limits-of-amazon-s3-upload-performance/image_49.png" style="max-height: 250px"/></a></div></div>
+
+<p>It’s evident that more than 256 threads does not yield any benefit, quite the contrary. However, using 256 threads and an object size of 4096KB, I was able to push <strong>1117,9 megs/sec to S3</strong>. I am extremely satisfied with that result. I honestly did not expect to even get 25% of that from a single machine, whether physical or virtual. That’s <strong>8,943,2Mbps of pure data</strong> - that is, not including the inevitable network overhead.</p>
+<h2 id="Expanding_on_the_results">Expanding on the results</h2>
+<p>You can download an Excel sheet of all my raw data, including the various graphs and calculations that I’ve made. Note that all raw numbers are repeated, first sorted by the number of threads, then sorted by the object size. Note also that there are some extra data here and there where I had to do some adhoc tests.</p>
+<p>If you want me to create some graphs of a specific scenario, compare two different result sets, environments, etc. - just let me know in the comments. I’ve probably overlooked something interesting as there is just so much data to pull out. Optimally I’d want to run each of these tests for 100 repetitions at different times of the day, just to weed out all of the variance completely. Unfortunately, that would cost me way too much, and it would take ages. I may do some high-rep tests for specific scenarios like the HTTP vs. HTTPS tests as I feel there were too many fluctuations there.</p>
+<p>Download: <a href="/S3Optimization.xlsx">S3Optimization.xlsx</a></p>
+<h2 id="Conclusions">Conclusions</h2>
+<p>There are a lot of factors to consider when optimizing for upload speed. However, there are just a few rules that you need to follow to reach near-optimal speed with limited effort.</p>
+<h3 id="Parallelization">Parallelization</h3>
+<p><strong>The easiest way to scale is to just parallelize your workload</strong>. Each S3 connection doesn’t get that much bandwidth through, but as long as you run many of them at the same time, the aggregate throughput is excellent. Most workloads showed 64, 128 or 256 to be the optimal number of threads.</p>
+<div class="imgwrapper" style=""><div><a href="/pushing-the-limits-of-amazon-s3-upload-performance/image_57.png" class="fancy"><img src="/pushing-the-limits-of-amazon-s3-upload-performance/image_57.png" style="max-height: 250px"/></a></div></div>
+
+<h3 id="Locality_&amp;_bandwidth">Locality &amp; bandwidth</h3>
+<p>Being close to the S3 bucket servers is of utmost importance. As can be seen from the graph, I almost exhausted my 1gige NIC on my colo servers, but I doubt I’d be able to exhaust a 10gige connection (anyone got a server I can borrow for testing?). The graph is slightly misleading though as the EC2 servers had anywhere from 4gige to 10gige of connectivity, so it’s not all just latency - bandwidth certainly matters too, especially once you reach high amounts of thread with large object sizes.</p>
+<div class="imgwrapper" style=""><div><a href="/pushing-the-limits-of-amazon-s3-upload-performance/image_61.png" class="fancy"><img src="/pushing-the-limits-of-amazon-s3-upload-performance/image_61.png" style="max-height: 250px"/></a></div></div>
+
+<h3 id="Operating_system">Operating system</h3>
+<p>Now, you shouldn’t go out and format all of your Server 2003 servers just to get 2008 R2. However, 2008 R2 does consistently perform better than 2003. Though I haven’t tested it, I expect 2008 and 2008 R2 to be about the same. Generally you’ll get about <strong>15% better performance on a 2008 R2 server over a 2003 server</strong>.</p>
+<div class="imgwrapper" style=""><div><a href="/pushing-the-limits-of-amazon-s3-upload-performance/image_63.png" class="fancy"><img src="/pushing-the-limits-of-amazon-s3-upload-performance/image_63.png" style="max-height: 250px"/></a></div></div>
+
+<h3 id="Saturating_the_S3_service">Saturating the S3 service</h3>
+<p>Not going to happen, simple as that. I’m utterly amazed at the throughput I managed to gain from just a single machine. At the top, I was pushing more than one gigabyte of data to S3 every second - 1117,9 megs/sec to be precise. That is an awful lot of data, all coming from a single machine. Now imagine you scale this out over multiple machines, and you have the network infrastructure to support it - you can really send a lot of data.</p>
+<div class="imgwrapper" style=""><div><a href="/pushing-the-limits-of-amazon-s3-upload-performance/image_67.png" class="fancy"><img src="/pushing-the-limits-of-amazon-s3-upload-performance/image_67.png" style="max-height: 250px"/></a></div></div>
+
+<h3 id="Variance">Variance</h3>
+<p>As can be seen in some of my results, you can’t avoid running into variance when using a cloud service. However, it’s important to look at the baseline numbers - what is the worst case performance you can expect? Not only did my best-case numbers blow my mind, so did the worst-case numbers! Even though performance does fluctuate, the median performance is what matters, and it’s nothing short of impressive.</p>
+<h3 id="Optimizing_the_network_stack">Optimizing the network stack</h3>
+<p>I’m certain I’ve left out some percentages by not looking at the NIC drivers and settings. However, generally that’ll be your very last resort, and it’ll only help you get those last few percentages. In most cases there’s no reason to mess around with the remaining 1%, I’ll easily settle for the 99%.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Oct</span>
+			<span class="day">26</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/how-to-set-up-and-serve-private-content-using-s3/" title="How to Set Up and Serve Private Content Using S3 and Amazon CloudFront" rel="bookmark">How to Set Up and Serve Private Content Using S3 and Amazon CloudFront</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				, 
+			
+				<a href="http://improve.dk/category/Amazon Web Services/">Amazon Web Services</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Imagine the scenario – you’ve got customers all over the world all requesting binary files from you. To speed up your delivery, you want to utilize a CDN. Furthermore, all of the files needs to be protected on a specific user session level. Basically, you need to grant access to the specific file when a given user logs in – it’s not enough just to have a “hidden” URL or a URL with an infinitely sharable policy in the query string.</p>
+<a id="more"></a>
+
+<p>To do this, we’ll need to set up a private S3 bucket, a private CloudFront distribution, a bucket policy on said bucket so CloudFront is able to access the data, and finally we need to generate signed policies for the users on the fly, so they may retrieve the files using CloudFront.</p>
+<p>To keep this post simple (relatively speaking), I’ll assume you’ve got a completely empty AWS account with access to S3 and CloudFront. Don’t worry if you’ve got existing content, you’ll just need to modify the scripts slightly to access the right objects (as I’m assuming an empty account, I’ll just access the <em>first</em> element here and there, instead of the specific one).</p>
+<h3 id="Why_you_don’t_want_to_rely_on_third_party_GUIs">Why you don’t want to rely on third party GUIs</h3>
+<p>Admittedly, I used <a href="http://www.bucketexplorer.com/" target="_blank">Bucket Explorer</a> to begin with, to help me set up access identities and private distributions. However, as soon as I had a need that Bucket Explorer couldn’t help me with, or I had hiccups, I was totally lost. If you rely on third party GUIs to do the setup for you, you have very limited understanding of what’s actually being set up beneath the covers, and as such, you’ll be in a pickle when (no, not if!) something goes awry. Once you’ve done the setup by hand, you may later start using tools, but only if you understand what they’re doing.</p>
+<p>Note that this is not a bash on Bucket Explorer, just my opinion never to use tooling before you understand what they do, just as I wouldn’t recommend you use TortoiseGit before you know the command line by heart.</p>
+<h2 id="The_AWS_console_only_takes_you_so_far">The AWS console only takes you so far</h2>
+<p>While the AWS console is great in itself, it’s really only meant for the simplest of tasks. Very quickly you’ll find yourself limited by what you can do. For what we’re about to do, all you’d be able to do through the console GUI is to create a bucket, the rest would have to be done through code. To keep things consistent, I’m sticking to code for all tasks.</p>
+<p>Before we start, <a href="http://aws.amazon.com/sdkfornet/" target="_blank">download the Amazon AWS .NET SDK</a> and create a template console application like this:</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> Amazon;
+<span class="keyword">using</span> Amazon.CloudFront.Model;
+<span class="keyword">using</span> Amazon.S3;
+<span class="keyword">using</span> Amazon.S3.Model;
+
+<span class="class"><span class="keyword">namespace</span> <span class="title">AWSTest</span> 
+{</span> 
+    <span class="class"><span class="keyword">class</span> <span class="title">Program</span> 
+    {</span> 
+        <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">string</span> accessKeyID = <span class="string">"AKI..."</span>; 
+        <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">string</span> secretAccessKey = <span class="string">"w49..."</span>;
+
+        <span class="keyword">static</span> <span class="keyword">void</span> Main() 
+        { 
+
+        } 
+    } 
+}
+</pre></figure>
+
+<p>Make sure to insert your own access key ID and secret access key values. All code samples posted from now on should go into the Main() method body.</p>
+<h2 id="Creating_the_private_bucket">Creating the private bucket</h2>
+<p>Run the following code to set up a bucket, which will be private by default. Make sure you define a unique bucket name, I’m using the name <em>improve.dk</em> for this sample. Note that if your bucket is not in the EU region, you’ll need to substitute my ServiceURL with the one for your region. You can find all the service URLs here: <a href="http://docs.amazonwebservices.com/general/latest/gr/index.html?rande.html" target="_blank">http://docs.amazonwebservices.com/general/latest/gr/index.html?rande.html</a></p>
+<figure class="highlight csharp"><pre><span class="keyword">var</span> config = <span class="keyword">new</span> AmazonS3Config()
+	.WithServiceURL(<span class="string">"s3-eu-west-1.amazonaws.com"</span>);
+
+<span class="keyword">using</span> (<span class="keyword">var</span> s3Client = AWSClientFactory.CreateAmazonS3Client(accessKeyID, secretAccessKey, config))
+{
+	<span class="keyword">var</span> request = <span class="keyword">new</span> PutBucketRequest()
+		.WithBucketName(<span class="string">"improve.dk"</span>)
+		.WithBucketRegion(S3Region.EU);
+
+	<span class="keyword">var</span> response = s3Client.PutBucket(request);
+}
+</pre></figure>
+
+<p>If all goes well, you should see your bucket in the AWS console immediately hereafter:</p>
+<div class="imgwrapper" style=""><div><a href="/how-to-set-up-and-serve-private-content-using-s3/image_16.png" class="fancy"><img src="/how-to-set-up-and-serve-private-content-using-s3/image_16.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Creating_a_CloudFront_Origin_Access_Identity">Creating a CloudFront Origin Access Identity</h2>
+<p>Now that we’ve got our bucket, we need to create the private CloudFront distribution. However, we also need to concoct a way for the private distribution to gain access to our private bucket. We can do so by utilizing a special type of CloudFront identities called Origin Access Identities, which I’ll be referring to as OAI’s.</p>
+<p>Creating an OAI allows us to tell CloudFront to access the S3 bucket using that OAI. On the bucket side, we can then create a policy granting access to that specific OAI, and thus enabling our private distribution access to our private bucket.</p>
+<p>Run the following code:</p>
+<figure class="highlight csharp"><pre>using (var cfClient = AWSClientFactory<span class="preprocessor">.CreateAmazonCloudFrontClient</span>(accessKeyID, secretAccessKey))
+{
+	var oaiConfig = new CloudFrontOriginAccessIdentityConfig()
+		<span class="preprocessor">.WithComment</span>(<span class="string">"OAI used for private distribution access to improve.dk bucket."</span>)<span class="comment">;</span>
+
+	var request = new CreateOriginAccessIdentityRequest()<span class="comment">;</span>
+	request<span class="preprocessor">.OriginAccessIdentityConfig</span> = oaiConfig<span class="comment">;</span>
+
+	var response = cfClient<span class="preprocessor">.CreateOriginAccessIdentity</span>(request)<span class="comment">;</span>
+	Console<span class="preprocessor">.WriteLine</span>(response<span class="preprocessor">.OriginAccessIdentity</span><span class="preprocessor">.Id</span>)<span class="comment">;</span>
+	Console<span class="preprocessor">.WriteLine</span>(response<span class="preprocessor">.OriginAccessIdentity</span><span class="preprocessor">.S</span>3CanonicalUserId)<span class="comment">;</span>
+}
+</pre></figure>
+
+<p>This creates a new OAI with a comment. Furthermore it prints out two bits of information that we’ll need shortly – the OAI ID and the OAI S3 canonical user ID. These are two different ways of identifying the OAI, and we’ll need both, so make sure to jot them down.</p>
+<h2 id="Creating_the_private_CloudFront_distribution">Creating the private CloudFront distribution</h2>
+<p>Now that we have our bucket and OAI, we can set up a private CloudFront distribution and point it at the S3 bucket.</p>
+<p>Run the following code:</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> (<span class="keyword">var</span> cfClient = AWSClientFactory.CreateAmazonCloudFrontClient(accessKeyID, secretAccessKey))
+{
+	<span class="keyword">var</span> oaiIdentity = cfClient.ListOriginAccessIdentities().OriginAccessIdentities[<span class="number">0</span>];
+
+	<span class="keyword">var</span> distributionConfig = <span class="keyword">new</span> CloudFrontDistributionConfig();
+	distributionConfig.S3Origin = <span class="keyword">new</span> S3Origin(<span class="string">"improve.dk.s3.amazonaws.com"</span>, oaiIdentity);
+	distributionConfig.Comment = <span class="string">"Private distribution for accessing the improve.dk bucket."</span>;
+	distributionConfig.Enabled = <span class="keyword">true</span>;
+	distributionConfig.TrustedSigners = <span class="keyword">new</span> UrlTrustedSigners().WithEnableSelf(<span class="keyword">true</span>);
+
+	<span class="keyword">var</span> request = <span class="keyword">new</span> CreateDistributionRequest();
+	request.DistributionConfig = distributionConfig;
+
+	<span class="keyword">var</span> response = cfClient.CreateDistribution(request);
+}
+</pre></figure>
+
+<p>This starts out by fetching the OAI we created just before. It then creates a new distribution configuration, specifying the improve.dk S3 bucket as the source, using the OAI for authentication. The TrustedSigners parameter determines who will be able to sign (and thereby grant access) to the distribution later on. For this demo, we’ll just grant access to our own AWS account. You may grant access to up to 5 other AWS accounts, should you so wish.</p>
+<p>Once run, you should immediately see your distribution being in the InProgress state in the AWS console. This picture is taken approximately 10 minutes later, when the distribution enters the Deployed state:</p>
+<div class="imgwrapper" style=""><div><a href="/how-to-set-up-and-serve-private-content-using-s3/image_14.png" class="fancy"><img src="/how-to-set-up-and-serve-private-content-using-s3/image_14.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Setting_up_a_bucket_policy_to_grant_our_OAI_access_to_the_S3_bucket">Setting up a bucket policy to grant our OAI access to the S3 bucket</h2>
+<p>When we upload objects to our bucket, we <em>could</em> grant access to the OAI on each specific object. That will require an extra request for each upload though, as we can’t assign ACL’s at the same time as we create objects. It would also be a major hassle if we ever were to change our OAI/distribution. To make it easier, we can create a bucket wide policy that grants access to all the objects in the bucket, for one specific OAI.</p>
+<p>Open up the <a href="http://awspolicygen.s3.amazonaws.com/policygen.html" target="_blank">AWS Policy Generator tool</a> in a new window. Make sure to select the S3 Bucket Policy type. In the Principal field, enter the S3 canonical user ID of the OAI we created earlier. For actions, only select the GetObject action – this allows the distribution to retrieve an object and nothing more. For the ARN, use this, though with your own bucket name:</p>
+<figure class="highlight"><pre><span class="tag">arn</span><span class="pseudo">:aws</span><span class="pseudo">:s3</span>:<span class="pseudo">::improve</span><span class="class">.dk</span><span class="comment">/*</span>
+</pre></figure>
+
+<p>That ARN will ensure the policy covers all objects in the bucket, no matter their name. Now click the Add Statement button, followed by the Generate Policy button. What you’ll end up with is a JSON based policy like this:</p>
+<figure class="highlight json"><pre>{
+  "<span class="attribute">Id</span>": <span class="value"><span class="string">"Policy1319566876317"</span></span>,
+  "<span class="attribute">Statement</span>": <span class="value">[
+    {
+      "<span class="attribute">Sid</span>": <span class="value"><span class="string">"Stmt1319566860498"</span></span>,
+      "<span class="attribute">Action</span>": <span class="value">[
+        <span class="string">"s3:GetObject"</span>
+      ]</span>,
+      "<span class="attribute">Effect</span>": <span class="value"><span class="string">"Allow"</span></span>,
+      "<span class="attribute">Resource</span>": <span class="value"><span class="string">"arn:aws:s3:::improve.dk/*"</span></span>,
+      "<span class="attribute">Principal</span>": <span class="value">{
+        "<span class="attribute">AWS</span>": <span class="value">[
+          <span class="string">"7d76be60a0acc160399f6d6750bdc9d4d78d16a58a30987844d4df010f2ded483a9e73b8b0877089fab75f5d0b591dee"</span>
+        ]
+      </span>}
+    </span>}
+  ]
+</span>}
+</pre></figure>
+
+<p>However, this won’t work yet! You need to change the “AWS” principal value into “CanonicalUser”, like so:</p>
+<figure class="highlight json"><pre>{
+  "<span class="attribute">Id</span>": <span class="value"><span class="string">"Policy1319566876317"</span></span>,
+  "<span class="attribute">Statement</span>": <span class="value">[
+    {
+      "<span class="attribute">Sid</span>": <span class="value"><span class="string">"Stmt1319566860498"</span></span>,
+      "<span class="attribute">Action</span>": <span class="value">[
+        <span class="string">"s3:GetObject"</span>
+      ]</span>,
+      "<span class="attribute">Effect</span>": <span class="value"><span class="string">"Allow"</span></span>,
+      "<span class="attribute">Resource</span>": <span class="value"><span class="string">"arn:aws:s3:::improve.dk/*"</span></span>,
+      "<span class="attribute">Principal</span>": <span class="value">{
+        "<span class="attribute">CanonicalUser</span>": <span class="value">[
+          <span class="string">"7d76be60a0acc160399f6d6750bdc9d4d78d16a58a30987844d4df010f2ded483a9e73b8b0877089fab75f5d0b591dee"</span>
+        ]
+      </span>}
+    </span>}
+  ]
+</span>}
+</pre></figure>
+
+<p>Now that we have the policy ready, we need to add it to our bucket. Run the following code:</p>
+<figure class="highlight csharp"><pre>var config = new AmazonS3Config()
+	.WithServiceURL(<span class="string">"s3-eu-west-1.amazonaws.com"</span>);
+
+using (var s3Client = AWSClientFactory.CreateAmazonS3Client(accessKeyID, secretAccessKey, config))
+{
+	var request = new PutBucketPolicyRequest();
+	request.BucketName = <span class="string">"improve.dk"</span>;
+	request.Policy = <span class="string">"{ "</span>Id<span class="string">": "</span>Policy1319566876317<span class="string">", "</span>Statement<span class="string">": [ { "</span>Sid<span class="string">": "</span>Stmt1319566860498<span class="string">", "</span> +
+		<span class="string">""</span>Action<span class="string">": [ "</span>s3:GetObject<span class="string">" ], "</span>Effect<span class="string">": "</span>Allow<span class="string">", "</span>Resource<span class="string">": "</span>arn:aws:s3:::improve.dk/*<span class="string">", "</span> +
+		<span class="string">""</span>Principal<span class="string">": { "</span>CanonicalUse<span class="string">r": [ "</span><span class="number">7</span>d76be60a0acc160399f6d6750bdc9d4d78d16a58a30987844d4df010f2ded483a9e73b8b0877089fab75f5d0b591dee<span class="string">" ] } } ] }"</span>;
+
+	var response = s3Client.PutBucketPolicy(request);
+}
+</pre></figure>
+
+<p>Make sure you escape your policy properly. There’s no need to concatenate it over multiple lines, I just did so only to avoid too much website distortion when displayed here.</p>
+<h2 id="Uploading_a_test_object">Uploading a test object</h2>
+<p>To test everything out, we need to have a test object in our bucket. It can be anything, though an image is probably the easiest to test with. I used this little dapper AWS logo:</p>
+<div class="imgwrapper" style=""><div><a href="/how-to-set-up-and-serve-private-content-using-s3/logo_aws_thumb.gif" class="fancy"><img src="/how-to-set-up-and-serve-private-content-using-s3/logo_aws_thumb.gif" style="max-height: 250px"/></a></div></div>
+
+<p>Run the following code to upload the object:</p>
+<figure class="highlight csharp"><pre><span class="keyword">var</span> config = <span class="keyword">new</span> AmazonS3Config()
+	.WithServiceURL(<span class="string">"s3-eu-west-1.amazonaws.com"</span>);
+
+<span class="keyword">using</span> (<span class="keyword">var</span> s3Client = AWSClientFactory.CreateAmazonS3Client(accessKeyID, secretAccessKey, config))
+{
+	<span class="keyword">var</span> request = <span class="keyword">new</span> PutObjectRequest()
+		.WithFilePath(<span class="string">@"C:logo_aws.gif"</span>)
+		.WithBucketName(<span class="string">"improve.dk"</span>);
+
+	<span class="keyword">var</span> response = s3Client.PutObject(request);
+}
+</pre></figure>
+
+<p>Make sure to substitute with your own bucket name as well as the correct path for whatever test file you’re using. Immediately after running this you should see the file in your bucket:</p>
+<div class="imgwrapper" style=""><div><a href="/how-to-set-up-and-serve-private-content-using-s3/image_12.png" class="fancy"><img src="/how-to-set-up-and-serve-private-content-using-s3/image_12.png" style="max-height: 250px"/></a></div></div>
+
+<p>If you enter the properties of the object, you’ll see a link like this:</p>
+<p><a href="https://s3-eu-west-1.amazonaws.com/improve.dk/logo_aws.gif" target="_blank">https://s3-eu-west-1.amazonaws.com/improve.dk/logo_aws.gif</a></p>
+<p>If you try to access the URL directly, you should get an error like this:</p>
+<div class="imgwrapper" style=""><div><a href="/how-to-set-up-and-serve-private-content-using-s3/image_18.png" class="fancy"><img src="/how-to-set-up-and-serve-private-content-using-s3/image_18.png" style="max-height: 250px"/></a></div></div>
+
+<p>This is expected, given that our bucket is private and we’re currently accessing the object directly from the bucket. If you go back to your distribution, you’ll see a domain name like d2ya0f2cfwcopc.cloudfront.net. Try substituting the S3 domain name with the one of your distribution, like so:</p>
+<p><a href="https://s3-eu-west-1.amazonaws.com/improve.dk/logo_aws.gif" target="_blank">https://s3-eu-west-1.amazonaws.com/improve.dk/logo_aws.gif</a> =&gt; <a href="https://d2ya0f2cfwcopc.cloudfront.net/logo_aws.gif" target="_blank">https://d2ya0f2cfwcopc.cloudfront.net/logo_aws.gif</a></p>
+<p>Accessing the distribution URL doesn’t help however:</p>
+<div class="imgwrapper" style=""><div><a href="/how-to-set-up-and-serve-private-content-using-s3/image_20.png" class="fancy"><img src="/how-to-set-up-and-serve-private-content-using-s3/image_20.png" style="max-height: 250px"/></a></div></div>
+
+<p>Once again we’re not allowed access. This time not due to S3 policies, but due to the distribution being private and thus requiring signed URLs.</p>
+<h2 id="Creating_a_time_limited_signed_URL_for_a_given_object">Creating a time limited signed URL for a given object</h2>
+<p>Now that we have the URL of our distribution object, we need to sign it with a policy granting access to it for a given time period. To do the signing, I’ve create a class based on <a href="http://stackoverflow.com/questions/2284206/how-to-encrypt-amazon-cloudfront-signature-for-private-content-access-using-cann/2545017#2545017" target="_blank">Gael Fraiteurs post on Stack Overflow</a>. His class deals with canned policies, whereas this one deals with custom policies as they’re a bit more dynamic, configurable and thereby powerful.</p>
+<p>Add the following class to your project:</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Security.Cryptography;
+<span class="keyword">using</span> System.Text;
+
+namespace AWSTest
+{
+	<span class="keyword">public</span> <span class="keyword">class</span> CloudFrontSecurityProvider
+	{
+		<span class="keyword">private</span> <span class="keyword">readonly</span> RSACryptoServiceProvider privateKey;
+		<span class="keyword">private</span> <span class="keyword">readonly</span> <span class="keyword">string</span> privateKeyId;
+		<span class="keyword">private</span> <span class="keyword">readonly</span> SHA1Managed sha1 = <span class="keyword">new</span> SHA1Managed();
+
+		<span class="keyword">public</span> <span class="title">CloudFrontSecurityProvider</span>(<span class="keyword">string</span> privateKeyId, <span class="keyword">string</span> privateKey)
+		{
+			<span class="keyword">this</span>.privateKey = <span class="keyword">new</span> RSACryptoServiceProvider();
+			RSACryptoServiceProvider.UseMachineKeyStore = <span class="keyword">false</span>;
+
+			<span class="keyword">this</span>.privateKey.FromXmlString(privateKey);
+			<span class="keyword">this</span>.privateKeyId = privateKeyId;
+		}
+
+		<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">getUnixTime</span>(DateTime time)
+		{
+			<span class="keyword">var</span> referenceTime = <span class="keyword">new</span> DateTime(<span class="number">1970</span>, <span class="number">1</span>, <span class="number">1</span>);
+			<span class="keyword">return</span> (<span class="keyword">int</span>)(time - referenceTime).TotalSeconds;
+		}
+
+		<span class="keyword">public</span> <span class="keyword">string</span> <span class="title">GetCustomUrl</span>(<span class="keyword">string</span> url, DateTime expiration)
+		{
+			<span class="keyword">string</span> expirationEpoch = getUnixTime(expiration).ToString();
+
+			<span class="keyword">string</span> policy =
+				<span class="string">@"{""Statement"":[{""Resource"":""&lt;url&gt;"",""Condition"":{""DateLessThan"":{""AWS:EpochTime"":&lt;expiration&gt;}}}]}"</span>.
+					Replace(<span class="string">"&lt;url&gt;"</span>, url).
+					Replace(<span class="string">"&lt;expiration&gt;"</span>, expirationEpoch);
+
+			<span class="keyword">string</span> signature = getUrlSafeString(sign(policy));
+
+			<span class="keyword">return</span> url + <span class="keyword">string</span>.Format(<span class="string">"?Policy={0}&Signature={1}&Key-Pair-Id={2}"</span>, getUrlSafeString(Encoding.ASCII.GetBytes(policy)), signature, privateKeyId);
+		}
+
+		<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">string</span> <span class="title">getUrlSafeString</span>(<span class="keyword">byte</span>[] data)
+		{
+			<span class="keyword">return</span> Convert.ToBase64String(data).Replace(<span class="string">'+'</span>, <span class="string">'-'</span>).Replace(<span class="string">'='</span>, <span class="string">'_'</span>).Replace(<span class="string">'/'</span>, <span class="string">'~'</span>);
+		}
+
+		<span class="keyword">private</span> <span class="keyword">byte</span>[] <span class="title">sign</span>(<span class="keyword">string</span> data)
+		{
+			<span class="keyword">byte</span>[] plainbytes = Encoding.UTF8.GetBytes(data);
+
+			<span class="keyword">byte</span>[] hash = sha1.ComputeHash(plainbytes);
+
+			<span class="keyword">return</span> privateKey.SignHash(hash, <span class="string">"SHA1"</span>);
+		}
+	}
+}
+</pre></figure>
+
+<h3 id="Creating_CloudFront_key_pairs">Creating CloudFront key pairs</h3>
+<p>Before we can use it though, we need a CloudFront key pair. Go to the Access Credentials section of the Security Credentials section of the AWS console, click on the Key Pairs pane, and then click “Create a New Key Pair”. If successful, a key pair should have been created, and the private part of the key should have been downloaded as a .pem file automatically:</p>
+<div class="imgwrapper" style=""><div><a href="/how-to-set-up-and-serve-private-content-using-s3/image_24.png" class="fancy"><img src="/how-to-set-up-and-serve-private-content-using-s3/image_24.png" style="max-height: 250px"/></a></div></div>
+
+<p>Make sure to save the .pem file as it cannot be recreated. If you loose it, you’ll have to create a new key pair. Note that these credentials have nothing to do with your access key ID &amp; secret key – those are a completely separate set of keys. Before we can use the .pem secret key, we need to transform it into an XML format that RSACryptoServiceProvider can parse. Go to <a href="http://www.jensign.com/opensslkey/" target="_blank">http://www.jensign.com/opensslkey/</a> and download the opensslkey.exe application – save it in the same directory as your .pem file. If you don’t like running the .exe, the source code is available for you to compile and run yourself.</p>
+<p>Run opensslkey.exe and give it the name of your .pem file like so:</p>
+<div class="imgwrapper" style=""><div><a href="/how-to-set-up-and-serve-private-content-using-s3/image_26.png" class="fancy"><img src="/how-to-set-up-and-serve-private-content-using-s3/image_26.png" style="max-height: 250px"/></a></div></div>
+
+<h3 id="Creating_the_actual_signed_URL">Creating the actual signed URL</h3>
+<p>One way or the other, copy that <RSAKeyValue> bit of XML. Now run the following code, substituting my CloudFront key pair and object URL with your own:</p>
+<figure class="highlight csharp"><pre>[STAThread]
+static void Main()
+{
+	string keyPairID = "APKAILAOYMDETYTM7NYQ";
+	string secretKey = @"
+		<span class="tag">&lt;<span class="title">RSAKeyValue</span>&gt;</span>
+			<span class="tag">&lt;<span class="title">Modulus</span>&gt;</span>kp2udNofRGbbiMtFLWMFMGB1U67JWq2EYqLR0qbfFnOd2kMnY7UUMLLf/uPdf9RsEZxA3wnbIS6fH2vesHYkk=<span class="tag">&lt;/<span class="title">Modulus</span>&gt;</span>
+			<span class="tag">&lt;<span class="title">Exponent</span>&gt;</span>AQAB<span class="tag">&lt;/<span class="title">Exponent</span>&gt;</span>
+			<span class="tag">&lt;<span class="title">P</span>&gt;</span>6GhWFDM89x69lp3b93RACdm9yQBjbrP9+ySIiaiy8htXxxKYF5fEn0TRQEzo3FLFG/cf17ozrFAtHV6rqMaRFQ==<span class="tag">&lt;/<span class="title">P</span>&gt;</span>
+			<span class="tag">&lt;<span class="title">Q</span>&gt;</span>oX/Yg4huItINr9SfLmOdZ0y/ysPykmvcESwuXjJiLNB+V5My5AWDSgucE8ZuqT5wvMQJ93DZPpLX0+P6esbRZQ==<span class="tag">&lt;/<span class="title">Q</span>&gt;</span>
+			<span class="tag">&lt;<span class="title">DP</span>&gt;</span>BepB5pm3P4LkyGSUKKQozRdhoTAFV9f06uNvJjHI/Ch9/28Vt+QA+RzDRqOueY0Rvzh28wKmNgiEXW7/Z3hGUQ==<span class="tag">&lt;/<span class="title">DP</span>&gt;</span>
+			<span class="tag">&lt;<span class="title">DQ</span>&gt;</span>F8y5YZjnciY2ciUJWFLBzYlX8k+yHbXbdoRmSOdv5F7NX6aHp2bQlEblt1xUzogvIQJa3aY5vajyOX2tWg6WqQ==<span class="tag">&lt;/<span class="title">DQ</span>&gt;</span>
+			<span class="tag">&lt;<span class="title">InverseQ</span>&gt;</span>cMc+6NMLU1A6LbOeNikuVRbGu43HoG+hECnEzhk6VtQQO3HiUCUdCuZ1lBZegm5YecURbSZ+pWnGok5tqo//gA==<span class="tag">&lt;/<span class="title">InverseQ</span>&gt;</span>
+			<span class="tag">&lt;<span class="title">D</span>&gt;</span>HBgW69E4GJVVD9tTgCTvQ5vYH5bognWpXnUwm5raOKUitBsxABDFISmOfYjwwx2cE4lTR18r4Fgqt0jxOXVBzWE=<span class="tag">&lt;/<span class="title">D</span>&gt;</span>
+		<span class="tag">&lt;/<span class="title">RSAKeyValue</span>&gt;</span>";
+
+	var provider = new CloudFrontSecurityProvider(keyPairID, secretKey);
+	var signedUrl = provider.GetCustomUrl("https://d2ya0f2cfwcopc.cloudfront.net/logo_aws.gif", DateTime.Now.AddMinutes(5));
+
+	Clipboard.SetText(signedUrl);
+	Console.WriteLine(signedUrl);
+	Console.Read();
+}
+</pre></figure>
+
+<p>Note how we instantiate the CloudFrontSecurityProvider, passing in the CloudFront key pair ID and secret key. We then give it the complete URL of the file we want, including a time limit for when it should no longer be available – 5 minutes in this case. For the sake of simplicity, I’m automatically copying the URL to the clipboard so I can easily paste it into my browser and test it. In my case, my complete URL looks like this:</p>
+<figure class="highlight"><pre><span class="label">https:</span>//d2ya0f2cfwcopc<span class="preprocessor">.cloudfront</span><span class="preprocessor">.net</span>/logo_aws<span class="preprocessor">.gif</span>?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9kMnlhMGYyY2Z3Y29wYy5jbG91ZGZyb250Lm5ldC9sb2dvX2F3cy5naWYiLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjEzMTk1NzkzNzd9fX1dfQ__&Signature=CBnOaq5mO~RHhHo9fmK~hIxYSG4RC4IuZHJtH8Yk00p97Ihhy-yYYdggqbkdY68L1Vf7POVCjbf7gpdC5hJ9AHl5bTeWZyHLQXzXstHlOF~BgAyxNUPWQvSZPcwY6qpkKzMwrq2OU4tut7749TAgYfXt3BiGPmQF-<span class="number">8</span>GFIEXB8iI_&Key-Pair-Id=APKAILAOYMDETYTM7NYQ
+</pre></figure>
+
+<p>By the time you read this, hopefully, the link should no longer be working. If you upload another file (IMAG0655.jpg in my case) and just substitute the filename, using the same policy, you’ll get the following error:</p>
+<div class="imgwrapper" style=""><div><a href="/how-to-set-up-and-serve-private-content-using-s3/image_28.png" class="fancy"><img src="/how-to-set-up-and-serve-private-content-using-s3/image_28.png" style="max-height: 250px"/></a></div></div>
+
+<h3 id="Using_wildcards_when_signing_URLs">Using wildcards when signing URLs</h3>
+<p>So what if you want to grant access to many files at once, do we have to create a policy for each single one? Thankfully, no, we don’t! Say you want to grant access to all files in the folder “Test” (and remember, there is no such thing as folders in S3 – just objects named e.g. /Test/FileName.jpg). What we’d do is to create a policy like this:</p>
+<figure class="highlight csharp"><pre>var signedUrl = provider<span class="preprocessor">.GetCustomUrl</span>(<span class="string">"https://d2ya0f2cfwcopc.cloudfront.net/Test/*"</span>, DateTime<span class="preprocessor">.Now</span><span class="preprocessor">.AddMinutes</span>(<span class="number">5</span>))<span class="comment">;</span>
+</pre></figure>
+
+<p>That’s right, we can create custom policies for wildcard URLs too! Once you’ve got this URL, just substitute the asterisk for whatever file you want to request:</p>
+<figure class="highlight"><pre><span class="label">https:</span>//d2ya0f2cfwcopc<span class="preprocessor">.cloudfront</span><span class="preprocessor">.net</span>/Test/A<span class="preprocessor">.jpg</span>?Policy=eyJTdGF0ZW1lbnQiOlt7I...  https://d2ya0f2cfwcopc<span class="preprocessor">.cloudfront</span><span class="preprocessor">.net</span>/Test/B<span class="preprocessor">.jpg</span>?Policy=eyJTdGF0ZW1lbnQiOlt7I...  https://d2ya0f2cfwcopc<span class="preprocessor">.cloudfront</span><span class="preprocessor">.net</span>/Test/C<span class="preprocessor">.jpg</span>?Policy=eyJTdGF0ZW1lbnQiOlt7I...
+</pre></figure>
+
+<p>All using the same policy, just with a different file paths.</p>
+<h3 id="Limiting_the_users_IP_address">Limiting the users IP address</h3>
+<p>At this point we’ve created a URL with a custom signed policy that grants access to a given resource (or wildcard) within a limited time period. However, within this period, the user may distribute the URL to anyone else, who will then also be able to access the resource. To hinder this, we can add the source IP address as an additional condition to the policy!</p>
+<p>Add an overload to the GetCustomUrl function in the CloudFrontSecurityProvider class like so:</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">string</span> <span class="title">GetCustomUrl</span>(<span class="keyword">string</span> url, DateTime expiration, <span class="keyword">string</span> allowedCidr)
+{
+	<span class="keyword">string</span> expirationEpoch = GetUnixTime(expiration).ToString();
+
+	<span class="keyword">string</span> policy =
+		<span class="string">@"{""Statement"":[{""Resource"":""&lt;url&gt;"",""Condition"":{""IpAddress"":{""AWS:SourceIp"":""&lt;cidr&gt;""}, ""DateLessThan"":{""AWS:EpochTime"":&lt;expiration&gt;}}}]}"</span>
+			.Replace(<span class="string">"&lt;url&gt;"</span>, url)
+			.Replace(<span class="string">"&lt;expiration&gt;"</span>, expirationEpoch)
+			.Replace(<span class="string">"&lt;cidr&gt;"</span>, allowedCidr);
+
+	<span class="keyword">string</span> signature = getUrlSafeString(sign(policy));
+
+	<span class="keyword">return</span> url + <span class="keyword">string</span>.Format(<span class="string">"?Policy={0}&Signature={1}&Key-Pair-Id={2}"</span>, getUrlSafeString(Encoding.ASCII.GetBytes(policy)), signature, privateKeyId);
+}
+</pre></figure>
+
+<p>To use it, we just pass in an IP address in the <a href="http://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing" target="_blank">CIDR</a> format:</p>
+<figure class="highlight csharp"><pre>var signedUrl = provider<span class="preprocessor">.GetCustomUrl</span>(<span class="string">"https://d2ya0f2cfwcopc.cloudfront.net/D.jpg"</span>, DateTime<span class="preprocessor">.Now</span><span class="preprocessor">.AddMinutes</span>(<span class="number">5</span>), <span class="string">"212.242.193.110/32"</span>)<span class="comment">;</span>
+</pre></figure>
+
+<p>The above example would provide access to the D.jpg object for 5 minutes, but only for the 212.242.193.110 IP address specifically. We could grant access to a whole subnet by passing in the IP/CIDR 212.242.193.0/24, etc.</p>
+<p>You can only use the date and source IP address for conditions, contrary to other AWS policies that allow a plethora of conditions. For a full description, see page 80+ in this document: <a href="http://awsdocs.s3.amazonaws.com/CF/latest/cf_dg.pdf" target="_blank">http://awsdocs.s3.amazonaws.com/CF/latest/cf_dg.pdf</a></p>
+<h2 id="Conclusion">Conclusion</h2>
+<p>This seems way more complex than it… Who am I kidding? This IS complex to set up! However, at this point, you can upload any number of objects to your bucket, and you never have to consider object-level ACLs as it’s all handled by the bucket policy. You can also create any number of custom policies for your URLs using your private distribution, limiting both the time period in which the link is valid, as well as the source IP address. Once all of this is setup, it’s rather easy to use.</p>
+<p>Utilizing private S3 buckets and private CloudFront distributions, we can now secure our content completely while having very fine grained control over who gets access. All this while we still utilize the CloudFront CDN to deliver the content from the destination nearest to the end user.</p>
+<p>PS – before you remind me the remove them – all keys, user identities etc. have all been inactivated/removed.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Oct</span>
+			<span class="day">24</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/orcamdf-now-supports-databases-with-multiple-data-files/" title="OrcaMDF Now Supports Databases With Multiple Data Files" rel="bookmark">OrcaMDF Now Supports Databases With Multiple Data Files</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>One of the latest features I’ve added to <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a> is support of databases with multiple data files. This required relatively little parsing changes, actually it was mostly bug fixing code that wasn’t hit previously, due to only working with single file databases. It did however require some major refactoring to move away from MdfFile being the primary entrypoint, to now using the Database class, encapsulating a variable number of DataFiles.</p>
+<a id="more"></a>
+
+<h2 id="Proportional_fill_allocation">Proportional fill allocation</h2>
+<p>OrcaMDF supports the standard proportional fill allocation scheme where a table is created in the database, being bound to the default PRIMARY filegroup containing all the data files. As an example, you might create the following database &amp; schema:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">DATABASE</span>
+	[SampleDatabase]
+<span class="keyword">ON</span>  <span class="keyword">PRIMARY</span> 
+	(
+		NAME = N<span class="string">'SampleDatabase_Data1'</span>,
+		FILENAME = N<span class="string">'C:SampleDatabase_Data1.mdf'</span>,
+		<span class="keyword">SIZE</span> = <span class="number">3072</span>KB,
+		FILEGROWTH = <span class="number">1024</span>KB
+	), 
+	(
+		NAME = N<span class="string">'SampleDatabase_Data2'</span>,
+		FILENAME = N<span class="string">'C:SampleDatabase_Data2.ndf'</span>,
+		<span class="keyword">SIZE</span> = <span class="number">3072</span>KB,
+		FILEGROWTH = <span class="number">1024</span>KB
+	), 
+	(
+		NAME = N<span class="string">'SampleDatabase_Data3'</span>,
+		FILENAME = N<span class="string">'C:SampleDatabase_Data3.ndf'</span>,
+		<span class="keyword">SIZE</span> = <span class="number">3072</span>KB,
+		FILEGROWTH = <span class="number">1024</span>KB
+	)
+LOG <span class="keyword">ON</span>
+	(
+		NAME = N<span class="string">'SampleDatabase_log'</span>,
+		FILENAME = N<span class="string">'C:SampleDatabase_log.ldf'</span>,
+		<span class="keyword">SIZE</span> = <span class="number">3072</span>KB,
+		FILEGROWTH = <span class="number">10</span>%
+	)
+<span class="keyword">GO</span>
+
+USE SampleDatabase
+<span class="keyword">GO</span>
+
+<span class="keyword">CREATE</span> <span class="keyword">TABLE</span> MyTable
+(
+	A <span class="keyword">int</span> <span class="keyword">identity</span>,
+	B uniqueidentifier <span class="keyword">default</span>(newid()),
+	C <span class="keyword">char</span>(<span class="number">6000</span>)
+)
+<span class="keyword">GO</span>
+
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> MyTable <span class="keyword">DEFAULT</span> <span class="keyword">VALUES</span>
+<span class="keyword">GO</span> <span class="number">100</span></span>
+</pre></figure>
+
+<p>This would cause MyTable to be proportionally allocated between the three data files (the C column being used for the fill to require 100 pages of storage – to ensure we hit all three data files). And to parse it, all you’d do is the following:</p>
+<figure class="highlight csharp"><pre><span class="keyword">var</span> files = <span class="keyword">new</span>[]
+    {
+		<span class="string">@"C:SampleDatabase_Data1.mdf"</span>,
+		<span class="string">@"C:SampleDatabase_Data2.ndf"</span>,
+		<span class="string">@"C:SampleDatabase_Data3.ndf"</span>
+    };
+
+<span class="keyword">using</span> (<span class="keyword">var</span> db = <span class="keyword">new</span> Database(files))
+{
+	<span class="keyword">var</span> scanner = <span class="keyword">new</span> DataScanner(db);
+	<span class="keyword">var</span> result = scanner.ScanTable(<span class="string">"MyTable"</span>);
+
+	EntityPrinter.Print(result);
+}
+</pre></figure>
+
+<p>And when run, you’ll see this:</p>
+<div class="imgwrapper" style=""><div><a href="/orcamdf-now-supports-databases-with-multiple-data-files/image_6.png" class="fancy"><img src="/orcamdf-now-supports-databases-with-multiple-data-files/image_6.png" style="max-height: 250px"/></a></div></div>
+
+<p>All the way down to 100. Notice how the A column identity value is jumping – this is due to the fact that we’re allocating one extent per data file in round robin fashion. ID’s 1-8 in the first data file, 9-16 in the second data file and finally 17-24 in the third data file. At this point pages 25-32 are allocated in the first data file again, and so on. Since it’s a heap, we’re scanning these in allocation order – by file. That causes us to get results 1-8, 25-32, 49-56, 73-80 and finally 97-100 all from the first file first, and then 9-16, 33-40, etc. from the second and finally the remaining pages from the third data file. Think that looks weird? Well, it’s exactly the same for SQL Server:</p>
+<div class="imgwrapper" style=""><div><a href="/orcamdf-now-supports-databases-with-multiple-data-files/image_8.png" class="fancy"><img src="/orcamdf-now-supports-databases-with-multiple-data-files/image_8.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Filegroup_support">Filegroup support</h2>
+<p>OrcaMDF also supports the use of filegroups, including proportional fill allocation within a specific filegroup. As an example, you might create the following database &amp; schema:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">DATABASE</span>
+	[SampleDatabase]
+<span class="keyword">ON</span>  <span class="keyword">PRIMARY</span> 
+	(
+		NAME = N<span class="string">'SampleDatabase_Data1'</span>,
+		FILENAME = N<span class="string">'C:SampleDatabase_Data1.mdf'</span>,
+		<span class="keyword">SIZE</span> = <span class="number">3072</span>KB,
+		FILEGROWTH = <span class="number">1024</span>KB
+	)
+LOG <span class="keyword">ON</span>
+	(
+		NAME = N<span class="string">'SampleDatabase_log'</span>,
+		FILENAME = N<span class="string">'C:SampleDatabase_log.ldf'</span>,
+		<span class="keyword">SIZE</span> = <span class="number">3072</span>KB,
+		FILEGROWTH = <span class="number">10</span>%
+	)
+<span class="keyword">GO</span>
+
+<span class="keyword">ALTER</span> <span class="keyword">DATABASE</span>
+	[SampleDatabase]
+<span class="keyword">ADD</span> FILEGROUP
+	[SecondFilegroup]
+<span class="keyword">GO</span>
+
+<span class="keyword">ALTER</span> <span class="keyword">DATABASE</span>
+	[SampleDatabase]
+<span class="keyword">ADD</span> FILE
+	(
+		NAME = N<span class="string">'SampleDatabase_Data2'</span>,
+		FILENAME = N<span class="string">'C:SampleDatabase_Data2.ndf'</span>,
+		<span class="keyword">SIZE</span> = <span class="number">3072</span>KB,
+		FILEGROWTH = <span class="number">1024</span>KB
+	),
+	(
+		NAME = N<span class="string">'SampleDatabase_Data3'</span>,
+		FILENAME = N<span class="string">'C:SampleDatabase_Data3.ndf'</span>,
+		<span class="keyword">SIZE</span> = <span class="number">3072</span>KB,
+		FILEGROWTH = <span class="number">1024</span>KB
+	)
+<span class="keyword">TO</span> FILEGROUP
+	[SecondFilegroup]
+<span class="keyword">GO</span>
+
+USE SampleDatabase
+<span class="keyword">GO</span>
+
+<span class="keyword">CREATE</span> <span class="keyword">TABLE</span> MyTable
+(
+	A <span class="keyword">float</span> <span class="keyword">default</span>(rand()),
+	B datetime <span class="keyword">default</span>(getdate()),
+	C uniqueidentifier <span class="keyword">default</span>(newid()),
+	D <span class="keyword">char</span>(<span class="number">5000</span>)
+) <span class="keyword">ON</span> [SecondFilegroup]
+<span class="keyword">GO</span>
+
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> MyTable <span class="keyword">DEFAULT</span> <span class="keyword">VALUES</span>
+<span class="keyword">GO</span> <span class="number">100</span></span>
+</pre></figure>
+
+<p>This would cause MyTable to be proportionally allocated in the second and third datafile (the D column being used for fill to require 100 pages of storage – to ensure we hit both data files in the filegroup), while the primary data file is left untouched. To parse it, you’d do the exact same as in the previous example, and the result would be:</p>
+<div class="imgwrapper" style=""><div><a href="/orcamdf-now-supports-databases-with-multiple-data-files/image_4.png" class="fancy"><img src="/orcamdf-now-supports-databases-with-multiple-data-files/image_4.png" style="max-height: 250px"/></a></div></div>
+
+<p>… All the way down to 100.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Oct</span>
+			<span class="day">20</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/what-do-airlines-use-for-primary-keys/" title="What Do Airlines Use for Primary Keys?" rel="bookmark">What Do Airlines Use for Primary Keys?</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server/">SQL Server</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>On my way home from the PASS Summit in Seattle, I had a layover in Amsterdam before continuing onto Copenhagen. For various reasons, we were about one and a half hours delayed, and I arrived in AMS at 9:30, my CPH flight departing at 9:35. As you’d probably guessed, I missed my flight.</p>
+<a id="more"></a>
+
+<p>To fix it, I was told to do a check-in at one of the self-service counters at the transfer desk. Apparently these both do normal check-ins, as well as (supposedly), get you a replacement flight in case you missed the normal one. I stuck my passport into the scanner and it gladly popped up with a new flight to Copenhagen about 4 hours later. Great! Well, except my name wasn’t on the check-in list, two other (unknown to me) Danish names were. However, I did share a surname with one of them.</p>
+<div class="imgwrapper" style=""><div><a href="/what-do-airlines-use-for-primary-keys/delta-air-france-klm_2.jpg" class="fancy"><img src="/what-do-airlines-use-for-primary-keys/delta-air-france-klm_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>After asking one of the attendants I was told, “Oh, that’s because your flight has already departed, it’ll try to find the nearest match”. Áha, so if there’s no 1:1 match, it’ll just try to find the best match of an existing booking to a non-departed flight – and apparently the best it could find was a two-person ticket for a flight 4 hours later. Now, it was for the same destination, and I did share my surname with one of the passengers, but it surely wasn’t my ticket. Still, I was able to check-in as them and confirm “my” ticket.</p>
+<p>So this leaves me the question, what in the world do they (Delta/KLM/AF) use as the primary key for their ticketing system? Once my passport is scanned, and they’ve got my passport number, how can there be <em>any</em> doubt as to who I am? How in the world can I get to check-in two completely, to me, unrelated passengers on a flight I’m not going on myself?</p>
+<p>I ended up getting booked for another flight to another (closer to my home) destination in Denmark, but it did require manual intervention from the service desk.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Oct</span>
+			<span class="day">13</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/live-blogging-from-the-2011-pass-summit-day-2-keynote/" title="Live Blogging From the 2011 PASS Summit Day 2 Keynote" rel="bookmark">Live Blogging From the 2011 PASS Summit Day 2 Keynote</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/Conferences and Presenting/">Conferences and Presenting</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>It’s 8:15 AM and I’m back at the bloggers table, ready for the day 2 keynote. The format will be the same as <a href="/live-blogging-from-the-2011-pass-summit-day-1-keynote">yesterday</a>.</p>
+<a id="more"></a>
+
+<p>On a side note – I’m surprised at how comfortable wearing a kilt is.</p>
+<p><strong>[8:18]  </strong>Bill Graziano is on stage, cheering at all those of us wearing #sqlkilts. Next up applauding all the volunteers, speakers, chapter leaders, etc. Thank you!</p>
+<p><strong>[8:23]  </strong>Lori Edwards is awarded the 2011 PASSion award, well deserved!</p>
+<p><strong>[8:27]  </strong>Video on stage praising new SQL Server 2012 through personal testimonials. Looking forward to hear about the new features, hopefully non-BI today.</p>
+<p><strong>[8:30]  </strong>Quentin Clark (Corporate VP, SQL Server, Microsoft) on stage. Using the same lovely Metro based slidedeck that we saw yesterday.</p>
+<p><strong>[8:31]  </strong>Urges us to stop using the word Denali and instead use SQL Server 2012. Lots of hardware &amp; appliances on stage with Quentin – appliances will probably be a big topic, just as it was at SQLBits.</p>
+<p><strong>[8:32]  </strong>SQL Azure powered by SQL Server 2012 at this point. 180+ new features, can’t showcase all, we’ll see top 12.</p>
+<p><strong>[8:35]  </strong>Required 9s &amp; Protection: SSIS as a server, HA for StreamInsight, SQL Server AlwaysON – HA/DR being the main keyword.</p>
+<p><strong>[8:36]  </strong>Bob Erickson (Executive VP of Interlink Transport Technologies) on stage telling about their experiences with SQL Server 2012 Mission Critical deployment. Lots of fancy buzz words, no technical details or practical details.</p>
+<p><strong>[8:41]</strong>  AlwaysON being demoed live on stage. Unfortunately fonts and UI is so small, even with scarse zoomit usage, that noone can see what actually goes on.</p>
+<p><strong>[8:44]  </strong>Zoomiit used on stage, bloggers table goes wild in applause.</p>
+<p><strong>[8:45]  </strong>AlwaysON demo is cool and all, but this is the same stuff we’ve seen at multiple presentations already.</p>
+<p><strong>[8:47]  </strong>Quentin has moved onto the next topic – Blazing Fast Performance.</p>
+<p><strong>[8:49]  </strong>Performance enhancements in RDBMs engine, SSAS, SSIS, ColumnStore indexes (previously known as Apollo). ColumnStore indexes are seriously interesting. Any kind of demo would’ve been cool.</p>
+<p><strong>[8:50]  </strong>Quentin moving onto next two topics – Rapid Data Exploration &amp; Managed Self-Service BI. In other words, a rehash of what we saw yesterday. It looks cool, most DBA’s I’ve talked with are somewhat reluctant to letting their users get access to self-service BI.</p>
+<p><strong>[8:51]  </strong>Credible Consistent Data. Lots of buzz words, hard to extract any practical details.</p>
+<p><strong>[8:53]  </strong>Quentin welcoming Lara Rubbelke on stage – taking a jab at the Excel demos done yesterday. Demo starts out with Sharepoint interface with miniscule fonts – as usual, noone can see what’s happening. Sounds like this is going into ColumnStore demo.</p>
+<p><strong>[8:56]  </strong>Lara creating a ColumnStore index live on stage, using Zoomit too. Stil needs to run at way lower resolution for everybody to be able to see what’s happening. Lara ditching the GUI and writing the index in T-SQL instead, lots of cheers from bloggers table.</p>
+<p><strong>[9:00]  </strong>Lara demoing cloud based DQS, Azure marketplace, ColumnStore indexes.</p>
+<p><strong>[9:02]  </strong>Quentin onto next topic – Organization Compliance. Added audit options as well as user - defined server roles.</p>
+<p><strong>[9:04]  </strong>Next topic – Peace of Mind. Production simulated application testing – distributed replay hint. SCOM advisor &amp; management packs. Expanded support – Premier mission critical, no direct details yet.</p>
+<p><strong>[9:05]  </strong>Next topic – Scalable Data Warehousing + Fast Time to Solution. Hardware vendors delivering hardware applications. HW+SW+Support – turn on the faucet, buy appliances, preoptimized. This is the SQLBits keynote. Choice of hardware – semi-appliance option as well?</p>
+<p><strong>[9:10]  </strong>Going through hardware on stage, introducing the Dell &amp; HP appliances.for PDW, DW in general. Plug’n’play appliances. Appliances sound great, but aren’t they just overpriced versions of what you can do yourself? Add virtualization and you’ve got a complete appliance in just a VMDK. From boot to data loading / production usage – 20 minutes. If you have the money, this is a great &amp; quick way to get started.</p>
+<p><strong>[9:14]  </strong>HP appliance can be ordered a month from now. Can start small and scale up – “Don’t know how big you can built it, haven’t reached limit yet”.</p>
+<p><strong>[9:19]  </strong>Next topic – Extent Any Data, Anywhere – ODBC drivers for Linux – unreadable white on light orange background slide text.</p>
+<p><strong>[9:21]  </strong>Beyond relational – adding new support for FileTable – FileStream evolved. 2D spatial, semantic search.</p>
+<p><strong>[9:25]  </strong>Semantic search being demoed on stage by Michael Rys. Semantic search is basically an addition on top of FTS adding more language specific semantic improvements.</p>
+<p><strong>[9:28]  </strong>Next topic – Optimized Productivity – Juneau / SQL Server Data Tools reference. Shipped with SQL Server 2012. Unified across DB &amp; BI, meaning no more SSMS/BI, just one “studio”. Deployment &amp; targeting freedom – just like .NET dev, we can target a certain platform and be limited to just hte options available. Talking contained databases.</p>
+<p><strong>[9:29]  </strong>Last topic – Scale on Demand. AlwaysON, deployment across public &amp; private – hybrid cloud/private reference? Elastic scale = cloud reference, spin up many instances. It’s not vertical scaling, this is sharding through SQL Azure.</p>
+<p><strong>[9:31]  </strong>Nicholas Dritsas on stage demoing deployment through SSMS 2012 / SQL Server Data Tools. “And I know how to get a big applause – Zoomit” – keynote speakers seem to be catching up on the zoomit hype. Thank god!</p>
+<p><strong>[9:33]  </strong>Speakers referencing zoomit means they’re checking the tweets realtime – excellent.</p>
+<p><strong>[9:34]  </strong>This is cool – SSMS being used to manage both local and Azure databases. You can now manage Azure without defaulting to the online web based management portal. This will make it much easier to achieve the “hybrid” approach of having both on-premise and cloud based databases.</p>
+<p><strong>[9:35]  </strong>Now demoing how to do SQL Azure backups to Windows Azure. Lovely, and about time. Why wasn’t this here from the start?</p>
+<p><strong>[9:39]  </strong>Cihan Biyikoglu entering the stage to talk about Elastic Scale – also known as SQL Azure Federations.</p>
+<p><strong>[9:43]  </strong>New Azure management portal uses Metro UI, Looks slick, but does it scale?</p>
+<p><strong>[9:45]  </strong>SQL Azure will now scale up to 150GB. But if only way to do “elastic scaling” is federation, whether it’s 50GB or 150GB doesn’t really change much other than your shard size. Since we’re still limited by unknown hardware, we may not be able to even utilize a 150GB database before having to federate.</p>
+<p><strong>[9:47]  </strong>Execution plans in the Azure web interface based on Metro, looks slick.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Oct</span>
+			<span class="day">12</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/live-blogging-from-the-2011-pass-summit-day-1-keynote/" title="Live Blogging From the 2011 PASS Summit Day 1 Keynote" rel="bookmark">Live Blogging From the 2011 PASS Summit Day 1 Keynote</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/Conferences and Presenting/">Conferences and Presenting</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I’ve found my seat at the Bloggers Table, ready for the beginning of the keynote in just 12 minutes. I’ll be doing my best keeping up with all of the exciting news about to be spilled out.</p>
+<a id="more"></a>
+
+<p>Todays keynote will be delivered by Ted Kummert (Senior VP, Business Platform Division, Microsoft) and Rushabh Mehta (PASS president).</p>
+<p>If you follow this post, I’ll add new comments at the end of the post, ordered by time. Note that my blog aggresively caches content so you may have to clear your session to see the newest version of the post.</p>
+<div class="imgwrapper" style=""><div><a href="/live-blogging-from-the-2011-pass-summit-day-1-keynote/DSC01634.jpg" class="fancy"><img src="/live-blogging-from-the-2011-pass-summit-day-1-keynote/DSC01634.jpg" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Live_content">Live content</h2>
+<p><strong>[8:15]</strong>  Room’s starting to fill up, there’s a LOT of people – looks like way more than last year. Hoping Rushabh will reveal some number porn for us during the keynote!</p>
+<p><strong>[8:20]</strong>  Light dimming down, PASS love testimonials blasting off on the 4 giant screens next to the stage.</p>
+<p><strong>[8:23]</strong>  If you’re not here, remember you can tune in to the live streaming feed here: <a href="http://www.sqlpass.org/summit/2011/Live/LiveStreaming.aspx" target="_blank">http://www.sqlpass.org/summit/2011/Live/LiveStreaming.aspx</a></p>
+<p><strong>[8:25]</strong>  Rushabh Mehta on stage. Welcome all – THIS is community!</p>
+<p><strong>[8:29]</strong>  Rushabh talking about goals – 430k technical hours out of 1000k goal. 80k members out of 250k goal. 1 global region out of goal of 5. 20k new members alone this year, impressive!</p>
+<p><strong>[8:31]</strong>  The community has grown – 24HOP, SQLSaturday, SQLRally, PASS Chapters, Virtual Chapters &amp; of course the summit. Also actively collaborating with SQLBits &amp; SQLServerFAQ.</p>
+<p><strong>[8:32]</strong>  PASS – largest single event in the world dedicated to SQL Server &amp; technical BI content.</p>
+<p><strong>[8:34]</strong>  189 sesions, 5 tracks, 204 speakers (93 MVPs, 11 MCMs). Biggest SQL Server event.</p>
+<p><strong>[8:39]</strong>  SQL Server MVP Deep Dives vol II available. Profits going to charity. Get it! Book signing will be happening at the summit.</p>
+<p><strong>[8:41]</strong>  Rushabh welcoming Ted Kummert on stage.</p>
+<p><strong>[8:44]</strong>  “Some database vendors just decided to get into the cloud last week. You know who I’m talking about right?”</p>
+<p><strong>[8:46]</strong>  Over 4,000 registered attendees at the PASS Summit. Largest Summit conference ever!</p>
+<p><strong>[8:48]</strong>  Cloud is not either or, it’s a hybrid world. Some will be in cloud, some will be in your own datacenter. We want to provide choices.</p>
+<p><strong>[8:49]</strong>  Want to offer all the cloud capabilities, SSAS cloud version hinted at.</p>
+<p><strong>[8:50]</strong>  Denali – one of the most significant releases in our history.</p>
+<p><strong>[8:51]</strong>  Crescent will end up as Power View on release.</p>
+<p><strong>[8:53]</strong>  Denali is just around the corner. Official name – SQL Server 2012.</p>
+<p><strong>[8:54]</strong>  Denali / SQL Server 2012 being released in first half of 2012.</p>
+<p><strong>[8:55]</strong>  “Believe in the platform as more than just relational data.”</p>
+<p><strong>[8:57]</strong>  “No one size fits all.” Ted Kummert talking on Big Data.</p>
+<p><strong>[8:59]</strong>  Microsoft supporting the Apache Hadoop project. Make sure it’ll run great on Windows. Is this the belief in “more than just relational data”?</p>
+<p><strong>[9:00]</strong>  Connect Hadoop and Microsoft and offer them together. Microsoft submitting to the Hadoop project to ensure it runs great. “We’re going to connect the dots in our environment.”</p>
+<p><strong>[9:01]</strong>  Ted Kummert welcoming Eric Baldeschwieler (Hortonworks CEO) on stage.</p>
+<p><strong>[9:02]</strong>  Eric looks like he’s about to fall asleep. Should’ve had a Red Bull before going on stage before 4,000 people.</p>
+<p><strong>[9:04]</strong>  “Hadoop could be storing half of the worlds data in five years.”</p>
+<p><strong>[9:06]</strong>  Ted Kummert welcoming Denny Lee on stage (Principal Program Manager, Microsoft). Demo time!</p>
+<p><strong>[9:07]</strong>  “Hadoop for Windows Cluster”.</p>
+<p><strong>[9:09]</strong>  Denny Lee demoing HiveQL querying against Hadoop. Hadoop console 100% compatible with classic Hadoop.</p>
+<p><strong>[9:10]</strong>  Denny Lee showing Excel. Why oh why, I’m here for SQL Server, not Excel. Accessing Hadoop cluster through “Hive/Hadoop ODBC driver” from Excel.</p>
+<p><strong>[9:13]</strong>  CTP of Hadoop on Azure by the end of the year.</p>
+<p><strong>[9:14]</strong>  Always nice with a demo, but really, noone could read console (please use Zoomit next time, don’t use white on black). Rest was just pie charts and Excel with a story of where the data came from.</p>
+<p><strong>[9:16]</strong>  Demo of Data Explorer coming up in just a sec.</p>
+<p><strong>[9:17]</strong>  “Who’s excited to be at PASS today?”. Talking about self service BI – one (yes, ONE) person in the room clapped. That’s a 1:4000 ratio.</p>
+<p><strong>[9:19]</strong>  Ignoring content, it’s obvious that the Metro UI team had a say in the slide &amp; UI design of slide decks and products being demoed. Beautiful.</p>
+<p><strong>[9:21]</strong>  More pie charts. I made my first pie chart back in the 90’s, and I was way late to the game.</p>
+<p><strong>[9:22]</strong>  Oh, Excel just reappeared. What is this, PAE – Professional Association of Excel?</p>
+<p><strong>[9:23]</strong>  Talking about Excel &amp; pie charts. Noone can see the screen, even in front row. Resolution way too high, no usage of Zoomit. You’d think they’d get presenting 101 right for a keynote demo.</p>
+<p><strong>[9:29]</strong>  Not much to update. Demoing at unwatchable resoluition, talking Excel, BI, PowerPivot. It looks cool, but I just don’t believe in production drag’n’drop development/BI.</p>
+<p><strong>[9:32]</strong>  If you ever wondered what a golf clap sounded like, make sure to watch the PASS Summit live stream recordings later today.</p>
+<p><strong>[9:36]</strong>  Amir Netz welcomed on stage. This should be better, hoping for some tech demos. Amir is an excellent demoer, based on previous keynotes.</p>
+<p><strong>[9:40]</strong>  More sales, BI, graphs. At least Amir Netz utilizes Zoomit.</p>
+<p><strong>[9:50]</strong>  Amir showing lots of graphs, doing data mining on movies, actors, etc. Most of todays demos seem to be in building on top of what we saw last year. Hadoop announcement was awesome, rest just seems like slow evolution.</p>
+<p><strong>[9:56]</strong>  Keynote about to end. Lots and lots of Excel, BI and graphs. I saw two interesting announcements:</p>
+<ul>
+<li>Denali will be released in first half of 2012 as SQL Server 2012.</li>
+<li>Microsoft actively supporting the Apache Hadoop project and bringing it to the Windows platform.</li>
+</ul>
+<p><strong>[10:00]</strong>  Now on to the coffee to wake up from the keynote. Looking forward to live blogging the day 2 keynote tomorrow – it can only be better than what we just saw today.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Oct</span>
+			<span class="day">09</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/live-blogging-from-the-pass-keynotes/" title="Live Blogging From the PASS Keynotes" rel="bookmark">Live Blogging From the PASS Keynotes</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/Conferences and Presenting/">Conferences and Presenting</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I’m glad to announce that I’m one of the lucky few who’ve been appointed a seat at the coveted bloggers table during the PASS Summit keynotes. This means I’ll have an excellent view of the leynotes, and I’ll be live blogging and tweeting from both.</p>
+<a id="more"></a>
+
+<p>Wednesday 8:15-10:00 AM, PST:<br>Ted Kummert, Senior VP, Business Platform Division, Microsoft<br>Rushabh Mehta, President, PASS</p>
+<p>Thursday 8:15-10:00 AM, PST:<br>Quentin Clark, Corporate VP, SQL Server Database Systems Group, Microsoft<br>Bill Graziano, Executive VP of Finance, PASS</p>
+<p>For both days, 8:15 AM PST will be 4:15 PM in Denmark. The live blogging will be in English, as usual. Once the PASS Summit is over, I’ll be following up with a full summary in Danish.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+
+<div class="paging">
+	<a href="/page/7/"><div class="past">« Past</div></a>
+	<a href="/page/5/"><div class="future">Future »</div></a>
+	<div class="clear"></div>
+</div>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

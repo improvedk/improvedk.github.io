@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Using Squid as a Reverse Proxy With a .NET Url Rewriter | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Oct</span>
+			<span class="day">05</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/using-squid-as-a-reverse-proxy-with-a-dotnet-url-rewriter/" title="Using Squid as a Reverse Proxy With a .NET Url Rewriter" rel="bookmark">Using Squid as a Reverse Proxy With a .NET Url Rewriter</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on Using Squid as a Reverse Proxy With a .NET Url Rewriter">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>Once you start receiving visitors from all over the world, a new kind of scaling issue arise. It’s not a matter of adding more servers to the cluster or optimizing code (we’ll assume these factors are perfect), it’s a simple matter of geography and mathematics. Serving code from one end of the world to the other will take time, no matter how quick your servers are handling the request. The speed of light suddenly seems quite slow.</p>
+<a id="more"></a>
+
+<p>At one of my current projects we serve a lot of image data. Letting US based clients fetch all the data from Denmark results in very slow response times. The obvious solution is to partner up with a <a href="http://en.wikipedia.org/wiki/Content_Delivery_Network" target="_blank">CDN</a> provider, problem solved. While this may solve the problem, it’ll also cost you a bit as CDN providers, rightfully, are not cheap. If you don’t need the amount of PoPs that the CDN provides, you can setup your own service quite easily using <a href="http://www.squid-cache.org/" target="_blank">Squid</a>.</p>
+<h2 id="The_scenario">The scenario</h2>
+<p>We want to setup Squid as a <a href="http://en.wikipedia.org/wiki/Reverse_proxy" target="_blank">reverse proxy</a>. By utilizing a reverse proxy setup, we can use the Squid server with minimal changes to our current configuration. This is very case dependent however - it’ll not be optimal for non-cacheable resources like personalized pages, shortlived data and so forth. In our case we have non-expiring static images with static urls - the perfect case for a reverse proxy setup. Squid will comply completely with the cache properties set by the HTTP headers of your requests, so make sure you’ve got them under control in your solution. In our case, images are served with a lifetime of a year and a static <a href="http://en.wikipedia.org/wiki/HTTP_ETag" target="_blank">etag</a>which’ll ensure Squid won’t purge them unless it’s running short on disk space. So just to summarize this would be the typical scenario for a US based client visiting our website:</p>
+<h3 id="Squid_has_not_cached_data">Squid has not cached data</h3>
+<p>Client: Can I please have image X?<br>Squid: Oh, I don’t have it, please wait while I fetch it from Denmark…<br>Squid: [Fetching image from Denmark, storing it on disk and caching it in memory]<br>Squid: There you go, here’s image x!</p>
+<h3 id="Squid_has_cached_data">Squid has cached data</h3>
+<p>Client: Can I please have image x?<br>Squid: There you go, here’s image x!</p>
+<p>After the very first request, Squid will have cached the data and thus all further requests will be served directly from the Squid server location in the US, instead of the client having to go all the way to Denmark. This is basically what a reverse proxy CDN setup does, except it’ll have a lot more PoPs all around the world, and several in the US alone probably.</p>
+<h2 id="Installing_Squid">Installing Squid</h2>
+<p>So how do we get this working? In this example I’ll be setting up a Squid server on a local VPC that’ll act as a reverse proxy for my website, www.improve.dk. In effect, this will mean that all cacheable resources will be served locally on my computer, while non-cacheable resources will be transparently fetched from improve.dk directly. To avoid overriding the improve.dk domain completely, I’ll set it up to listen on cache.improve.dk and forward the requests to improve.dk instead. To enabled this, I’ve added a line in my hosts file pointing cache.improve.dk to my local VPC running Squid.</p>
+<p>Start by <a href="http://www.acmeconsulting.it/SquidNT/" target="_blank">obtaining a binary release</a> of Squid. I’ll be using the latest stable release, standard 2.7.STABLE4.</p>
+<p>Squid does not require installation as such, simply unzip it where you wish. To make it simple, I’ll install Squid directly in C:squid as the standard Squid configuration expects it to be installed here - it’s easy to change though!.</p>
+<p>We’ll start by installing Squid as a service, before doing the actual configuration. Open a command prompt and go to C:squidsbin. Now run “squid -i -n Squid”. This will install Squid as a service under the name “Squid”.</p>
+<figure class="highlight"><pre>C:\squid\sbin&gt;squid -i -n Squid
+Registry stored HKLMSOFTWAREGNUSquid2<span class="number">.6</span>SquidConfigFile value c:/squid/etc/squid.conf
+Squid Cache <span class="property">version</span> <span class="number">2.7</span>.STABLE4 <span class="keyword">for</span> i686-pc-winnt
+installed successfully <span class="keyword">as</span> Squid Windows System Service.
+To <span class="command">run</span>, start <span class="keyword">it</span> <span class="keyword">from</span> <span class="keyword">the</span> Services Applet <span class="keyword">of</span> Control Panel.
+Don't forget <span class="keyword">to</span> edit squid.conf <span class="keyword">before</span> starting <span class="keyword">it</span>.
+</pre></figure>
+
+<h2 id="Configuring_Squid">Configuring Squid</h2>
+<p>Before we start Squid, we have to configure it. Go to C:squidetc and make a copy of squid.conf.default and call it squid.conf. Do the same for mime.conf.default (we won’t change this one, but it’s needed). There are hundreds of configuration options, all very well documented. Now, I won’t go over all the options, so simply delete the entire contents of the squid.conf file, we’ll add only the configuration options that we need.</p>
+<p>Add the following lines:</p>
+<figure class="highlight"><pre>acl all src all
+acl manager proto cache_object
+acl port80 port <span class="number">80</span>
+acl domains url_regex <span class="preprocessor">.cache</span><span class="preprocessor">.improve</span><span class="preprocessor">.dk</span>/
+</pre></figure>
+
+<p>The above lines define our acl’s which are used to specify what is allowed and what is not allowed. The first line is used as a catch-all that matches everything. The second line matches a special management interface that we will not be used (and thus might as well deny access to). The third line matches port80. The fourth line defines a regular expression that is used to define what addresses are allowed to be requested. It is very important to define the allowed URLs as your proxy might otherwise be used for any service basically.</p>
+<p>Add the following lines:</p>
+<figure class="highlight"><pre><span class="preprocessor"># DENY CACHEMGR</span>
+http_access deny manager
+
+<span class="preprocessor"># Deny requests to unknown ports</span>
+http_access deny !port80
+
+<span class="preprocessor"># ALLOWED DOMAINS</span>
+http_access allow domains
+
+<span class="preprocessor"># And finally deny all other access to this proxy</span>
+http_access deny all
+
+<span class="preprocessor"># DENY ALL ICP</span>
+icp_access deny all
+
+<span class="preprocessor"># HTTP PORT</span>
+http_port <span class="number">80</span> transparent allow-direct
+</pre></figure>
+
+<p>The acl lines simply specify the match cases, not what is actually allowed and denied. Here we start out by denying access to the management interface and denying access to anything but port 80. Then we allow access to only the specified domains in the regex - and afterwards deny access to everything else by saying “http_access deny all”. We also deny ICP traffic as this is only used in a clustered Squid setup for intersquid chat. Finally we allow transparent direct access to the origin server (the actual www.improve.dk server) on port 80.</p>
+<p>Add the following lines:</p>
+<figure class="highlight"><pre><span class="preprocessor"># Memory</span>
+cache_mem <span class="number">64</span> MB
+maximum_object_size_in_memory <span class="number">2048</span> KB
+
+<span class="preprocessor"># Cache directory</span>
+cache_dir ufs c:/SQUID_CACHE <span class="number">204800</span> <span class="number">16</span> <span class="number">256</span>
+</pre></figure>
+
+<p>Here we set the memory limits for Squid. Note that this is not the total memory limit for Squid, only the limit for hot objects in transit (please see the Squid documentation for complete explanation). We also define that any objects over 2MB should not be stored in memory. Our performance really comes from serving small files directly from memory, instead of storing one PDF at 200MBs in memory. Besides storing the files in memory, Squid also stores them on disk. In the cache_dir line we setup the directory for the disk cache, as well as the max disk size in MBs (200GB in my case). The other options should be left at default (see docs).</p>
+<p>Add the following lines:</p>
+<figure class="highlight"><pre><span class="preprocessor"># Logging</span>
+access_log c:/SQUID_LOGS/access<span class="preprocessor">.log</span> squid
+cache_log c:/SQUID_LOGS/cache<span class="preprocessor">.log</span>
+cache_store_log c:/SQUID_LOGS/store<span class="preprocessor">.log</span>
+pid_filename c:/SQUID_LOGS/squid<span class="preprocessor">.pid</span>
+logfile_rotate <span class="number">100</span>
+</pre></figure>
+
+<p>This defines the location of the Squid log files. It’ll log all cache requests as well as all disk storage activity. You can customize the log format as well (see docs). The logfile_rotate setting defines how many rotations of log files we’ll use as a max. Each time we do a rotation, the old logfiles are left behind, while a new set of files are created with the rotation number appended. When the rotation has reached 100, it’ll start over from number 0 and overwrite/recreate old log files.</p>
+<p>Add the following lines:</p>
+<figure class="highlight"><pre><span class="comment"># Url rewriting</span>
+url_rewrite_program <span class="constant">C</span><span class="symbol">:/squid/etc/scripts/SquidRewriter</span>.exe
+url_rewrite_children <span class="number">5</span>
+
+<span class="comment"># Objects without an explicit expiry date will never be considered fresh</span>
+refresh_pattern . <span class="number">0</span> <span class="number">0</span>% <span class="number">0</span>
+
+<span class="comment"># Remove all proxy headers</span>
+header_access <span class="constant">X</span>-<span class="constant">Cache</span> deny all
+header_access <span class="constant">X</span>-<span class="constant">Cache</span>-<span class="constant">Lookup</span> deny all
+header_access <span class="constant">Via</span> deny all
+
+<span class="comment"># ALLOW DIRECT</span>
+always_direct allow all
+</pre></figure>
+
+<p>These are the final configuration lines. Ignore the url_rewrite lines for now, I’ll get back to them in just a sec. The refresh_pattern setting is very scenario dependent, it defines the lifetime of objects that do not have an explicit expiry date sent along. As my cache is only intended for static files, any files not having an expiry time should never be cached, and thus I’ve set the lifetime to 0. The header sections basically remove any extra headers normally appended by Squid / any proxy. The final line simply says that all requests (if needed) should be forwarded directly to the origin server, and not ask other servers in the cluster for the data.</p>
+<h2 id="Creating_a_-NET_url_rewriter">Creating a .NET url rewriter</h2>
+<p>Whenever a request is made for the proxy, it’ll be in the form cache.improve.dk/file. cache.improve.dk doesn’t really exist, and the website doesn’t answer to it, so while Squid receives a request for cache.improve.dk, it should map it back to improve.dk. You could do this by configuration, but that’s no fun (in my case I had to do this for hundreds of domains, so it wasn’t feasibly to do by configuration).</p>
+<p>Luckily Squid provides an easy interface for creating custom rewriters, log &amp; storage daemons and so forth. Each time a request comes in Squid will write the url to stdin for the url rewriting daemon and it’ll expect the rewritten url to be output to stdout. It’ll also include some extra whitespace-separated options, but they can simply be ignored, just as Squid will also ignore anything after the first whitespace of the stdout output.</p>
+<p>To do the job, I’ve made an über simple console application that does the job:</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+
+<span class="class"><span class="keyword">namespace</span> <span class="title">SquidRewriter</span>
+{</span>
+	<span class="class"><span class="keyword">class</span> <span class="title">Program</span>
+	{</span>
+		<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
+		{
+			<span class="keyword">while</span> (<span class="literal">true</span>)
+			{
+				<span class="keyword">string</span> input = Console.ReadLine();
+
+				if (input == <span class="literal">null</span> || input.Length == <span class="number">0</span>)
+					<span class="keyword">return</span>;
+
+				Console.WriteLine(input.Replace(<span class="string">"cache.improve.dk"</span>, <span class="string">"improve.dk"</span>));
+			}
+		}
+	}
+}
+</pre></figure>
+
+<p>We need the null check as when Squid closes the process we’ll get a nullref exception otherwise. Now simply copy the app into C:squidetcscripts and Squid will automatically start it up as a child processes (or several, depending on the configuration - 5 in our case). This simple rewriter can of course be written in any language that can talk to stdin &amp; stdout, that be C[++], Python, F#, you name it.</p>
+<h2 id="Starting_Squid">Starting Squid</h2>
+<p>Before we can start Squid, we need to create the swap directories. These are the directories in which Squid stores the cached data. Creating the swap directories is a one-time procedure that has to be done before Squid is started for the first time. Do this by running C:squidsbinsquid.exe -z. If you encounter any problems when starting squid, refer to the C:SQUID_LOGScache.log file to see what went wrong.</p>
+<p>Once you start Squid (from the Services administration), you’ll notice that it starts the squid.exe process, as well as a number of SquidRewriter.exe processes.</p>
+<div class="imgwrapper" style=""><div><a href="/using-squid-as-a-reverse-proxy-with-a-dotnet-url-rewriter/squid1_2.jpg" class="fancy"><img src="/using-squid-as-a-reverse-proxy-with-a-dotnet-url-rewriter/squid1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>If you open a browser and go to cache.improve.dk, you’ll see the normal improve.dk website. The only difference is that the website is now ported through our locally running Squid. You can confirm this by looking at the C:SQUID_LOGSaccess.log file:</p>
+<figure class="highlight"><pre><span class="number">1223221967.146</span>   <span class="number">4146</span> <span class="number">192.168</span><span class="number">.0</span><span class="number">.11</span> TCP_MISS/<span class="number">200</span> <span class="number">24172</span> GET http://cache<span class="preprocessor">.improve</span><span class="preprocessor">.dk</span>/ - DIRECT/<span class="number">89.221</span><span class="number">.162</span><span class="number">.250</span> text/html
+<span class="number">1223221967.917</span>    <span class="number">861</span> <span class="number">192.168</span><span class="number">.0</span><span class="number">.11</span> TCP_MISS/<span class="number">200</span> <span class="number">476</span> GET http://cache<span class="preprocessor">.improve</span><span class="preprocessor">.dk</span>/styles/print<span class="preprocessor">.css</span> - DIRECT/<span class="number">89.221</span><span class="number">.162</span><span class="number">.250</span> text/css
+<span class="number">1223221967.917</span>    <span class="number">861</span> <span class="number">192.168</span><span class="number">.0</span><span class="number">.11</span> TCP_MISS/<span class="number">200</span> <span class="number">549</span> GET http://cache<span class="preprocessor">.improve</span><span class="preprocessor">.dk</span>/scripts/general<span class="preprocessor">.js</span> - DIRECT/<span class="number">89.221</span><span class="number">.162</span><span class="number">.250</span> application/<span class="built_in">x</span>-javascript
+<span class="number">1223221967.957</span>    <span class="number">901</span> <span class="number">192.168</span><span class="number">.0</span><span class="number">.11</span> TCP_MISS/<span class="number">200</span> <span class="number">6273</span> GET http://cache<span class="preprocessor">.improve</span><span class="preprocessor">.dk</span>/styles/screen<span class="preprocessor">.css</span> - DIRECT/<span class="number">89.221</span><span class="number">.162</span><span class="number">.250</span> text/css
+<span class="number">1223221968.598</span>    <span class="number">621</span> <span class="number">192.168</span><span class="number">.0</span><span class="number">.11</span> TCP_MISS/<span class="number">200</span> <span class="number">695</span> GET http://cache<span class="preprocessor">.improve</span><span class="preprocessor">.dk</span>/images/bg<span class="preprocessor">.gif</span> - DIRECT/<span class="number">89.221</span><span class="number">.162</span><span class="number">.250</span> image/gif
+<span class="number">1223221968.608</span>    <span class="number">631</span> <span class="number">192.168</span><span class="number">.0</span><span class="number">.11</span> TCP_MISS/<span class="number">200</span> <span class="number">4724</span> GET http://cache<span class="preprocessor">.improve</span><span class="preprocessor">.dk</span>/images/logos/top<span class="preprocessor">.gif</span> - DIRECT/<span class="number">89.221</span><span class="number">.162</span><span class="number">.250</span> image/gif
+<span class="number">1223221968.978</span>    <span class="number">961</span> <span class="number">192.168</span><span class="number">.0</span><span class="number">.11</span> TCP_MISS/<span class="number">200</span> <span class="number">586</span> GET http://cache<span class="preprocessor">.improve</span><span class="preprocessor">.dk</span>/images/interface/topmenu/topbg<span class="preprocessor">.gif</span> - DIRECT/<span class="number">89.221</span><span class="number">.162</span><span class="number">.250</span> image/gif
+<span class="number">1223221972.243</span>   <span class="number">1222</span> <span class="number">192.168</span><span class="number">.0</span><span class="number">.11</span> TCP_MISS/<span class="number">200</span> <span class="number">24117</span> GET http://cache<span class="preprocessor">.improve</span><span class="preprocessor">.dk</span>/ - DIRECT/<span class="number">89.221</span><span class="number">.162</span><span class="number">.250</span> text/html
+<span class="number">1223221972.253</span>     <span class="number">50</span> <span class="number">192.168</span><span class="number">.0</span><span class="number">.11</span> TCP_REFRESH_HIT/<span class="number">304</span> <span class="number">292</span> GET http://cache<span class="preprocessor">.improve</span><span class="preprocessor">.dk</span>/styles/screen<span class="preprocessor">.css</span> - DIRECT/<span class="number">89.221</span><span class="number">.162</span><span class="number">.250</span> -
+<span class="number">1223221972.263</span>     <span class="number">50</span> <span class="number">192.168</span><span class="number">.0</span><span class="number">.11</span> TCP_REFRESH_HIT/<span class="number">304</span> <span class="number">289</span> GET http://cache<span class="preprocessor">.improve</span><span class="preprocessor">.dk</span>/styles/print<span class="preprocessor">.css</span> - DIRECT/<span class="number">89.221</span><span class="number">.162</span><span class="number">.250</span> -
+<span class="number">1223221972.263</span>     <span class="number">50</span> <span class="number">192.168</span><span class="number">.0</span><span class="number">.11</span> TCP_REFRESH_HIT/<span class="number">304</span> <span class="number">292</span> GET http://cache<span class="preprocessor">.improve</span><span class="preprocessor">.dk</span>/scripts/general<span class="preprocessor">.js</span> - DIRECT/<span class="number">89.221</span><span class="number">.162</span><span class="number">.250</span> -
+<span class="number">1223221972.283</span>     <span class="number">20</span> <span class="number">192.168</span><span class="number">.0</span><span class="number">.11</span> TCP_REFRESH_HIT/<span class="number">304</span> <span class="number">287</span> GET http://cache<span class="preprocessor">.improve</span><span class="preprocessor">.dk</span>/images/bg<span class="preprocessor">.gif</span> - DIRECT/<span class="number">89.221</span><span class="number">.162</span><span class="number">.250</span> -
+<span class="number">1223221972.293</span>     <span class="number">30</span> <span class="number">192.168</span><span class="number">.0</span><span class="number">.11</span> TCP_REFRESH_HIT/<span class="number">304</span> <span class="number">293</span> GET http://cache<span class="preprocessor">.improve</span><span class="preprocessor">.dk</span>/images/logos/top<span class="preprocessor">.gif</span> - DIRECT/<span class="number">89.221</span><span class="number">.162</span><span class="number">.250</span> -
+<span class="number">1223221972.303</span>     <span class="number">30</span> <span class="number">192.168</span><span class="number">.0</span><span class="number">.11</span> TCP_REFRESH_HIT/<span class="number">304</span> <span class="number">307</span> GET http://cache<span class="preprocessor">.improve</span><span class="preprocessor">.dk</span>/images/interface/topmenu/topbg<span class="preprocessor">.gif</span> - DIRECT/<span class="number">89.221</span><span class="number">.162</span><span class="number">.250</span> -
+</pre></figure>
+
+<p>Now, the above log basically confirms that I suck at setting up caching properties for my blog. Naturally, for the first request we’ll get all TCP_MISS statuses as Squid does not have any of the resources cached. For the next request we get all TCP_REFRESH_HIT’s as Squid does have them cached, but it needs to do a 304 check on the server to see if it’s been modified. Had I set a more liberal refresh_pattern, I could’ve cached these and completely avoided a roundtrip to the improve.dk server (resulting in a TCP_MEM_HIT if it’s cached in-memory). But still, the next user accessing the Squid will have the data served locally, even though Squid has to do a refresh check to the improve.dk server. This issue confirms a very important point - Squid will be best for static data that does not frequently change, and can thus be cached safely. Or at least for dynamic content, you have to consider your usage of expiry policies through the HTTP headers.</p>
+<p>If you add a reference to the local Squid server for google.com, in your hosts line, then you’ll see the error message that pops up due to us filtering away non-improve.dk domains:</p>
+<div class="imgwrapper" style=""><div><a href="/using-squid-as-a-reverse-proxy-with-a-dotnet-url-rewriter/squid2_2.jpg" class="fancy"><img src="/using-squid-as-a-reverse-proxy-with-a-dotnet-url-rewriter/squid2_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Reconfiguration_&amp;_log_rotation">Reconfiguration &amp; log rotation</h2>
+<p>When Squid is running, it’ll ignore any changes you make to the config files until you restart Squid. You can also force Squid to read the config files again without having it restart, simply run the following command:</p>
+<figure class="highlight"><pre>C:<span class="command">\squid</span><span class="command">\sbin</span><span class="command">\squid</span>.exe -k reconfigure -n Squid
+</pre></figure>
+
+<p>To force a log rotation, run:</p>
+<figure class="highlight"><pre>C:<span class="command">\squid</span><span class="command">\sbin</span><span class="command">\squid</span>.exe -k rotate -n Squid
+</pre></figure>
+
+<h2 id="Final_considerations">Final considerations</h2>
+<p>Setting up a Squid server to help speed up your solution for foreign visitors is both cheap &amp; easy. Squid runs in *nix as well as Windows. It has no hardware requirements to speak of and it’s CPU utilization is very limited. Note that it’ll only support a single core, so you won’t get anything from a fancy quad-core setup. Also, it only (there are unofficial builds for x64) runs on x86 so if you want to utilize more than ~3GBs of memory, you’ll have to run multiple instances on different port/ips. As for the setup, I’d recommend to create a special user for Squid that only has access to the Squid directories, otherwise it’ll run with SYSTEM permissions by default.</p>
+<p>Squid can not only be used for improving foreign visitor speed, it can also take a lot of static file traffic off of your normal servers. Simply put a Squid in front of your normal servers and let all static/cacheable traffic go through the Squid instead of through the normal app servers.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=Using%20Squid%20as%20a%20Reverse%20Proxy%20With%20a%20.NET%20Url%20Rewriter%20http%3A%2F%2Fimprove.dk%2Fusing-squid-as-a-reverse-proxy-with-a-dotnet-url-rewriter%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fusing-squid-as-a-reverse-proxy-with-a-dotnet-url-rewriter%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fusing-squid-as-a-reverse-proxy-with-a-dotnet-url-rewriter%2F&title=Using%20Squid%20as%20a%20Reverse%20Proxy%20With%20a%20.NET%20Url%20Rewriter" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/using-squid-as-a-reverse-proxy-with-a-dotnet-url-rewriter/using-squid-as-a-reverse-proxy-with-a-dotnet-url-rewriter.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'using-squid-as-a-reverse-proxy-with-a-dotnet-url-rewriter';
+	var disqus_url = 'http://improve.dk/using-squid-as-a-reverse-proxy-with-a-dotnet-url-rewriter/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

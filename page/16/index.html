@@ -1,0 +1,1831 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jun</span>
+			<span class="day">12</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/as3-numbers-get-real/" title="AS3 Numbers - Get Real" rel="bookmark">AS3 Numbers - Get Real</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/AS/Flex/Flash/">AS/Flex/Flash</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Skilled developers are hard to come by these days, that includes Flash/AS3/Flex developers. As the product I’m working on is very much dependent on a Flash based frontend, I’ve been forced to learn &amp; work with AS3 &amp; Flex recently.</p>
+<a id="more"></a>
+
+<p>It’s a great experience, learning a new language - especially now that Silverlight is marching forward. As the old saying goes, know your enemy. Anyways, enough with the chit chatting, on with the problems.</p>
+<p>Today I tried making a very simple functionality, I wanted to be able to select a number of images by making them highlight when selected, and dim out when deselected:</p>
+<figure class="highlight mxml"><pre><span class="pi">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="tag">&lt;<span class="title">mx:Application
+	xmlns:mx="http:</span>//<span class="attribute">www.adobe.com</span>/<span class="attribute">2006</span>/<span class="attribute">mxml</span>"
+	<span class="attribute">layout</span>=<span class="value">"absolute"</span>&gt;</span>
+
+	<span class="tag">&lt;<span class="title">mx:Script</span>&gt;</span>
+		<span class="cdata">&lt;![CDATA[
+			private function onClick():void
+			{
+				if(btnTest.alpha == 0.5)
+					btnTest.alpha = 1;
+				else
+					btnTest.alpha = 0.5;
+			}
+		]]&gt;</span>
+	<span class="tag">&lt;/<span class="title">mx:Script</span>&gt;</span>
+
+	<span class="tag">&lt;<span class="title">mx:Button</span> <span class="attribute">id</span>=<span class="value">"btnTest"</span> <span class="attribute">click</span>=<span class="value">"onClick()"</span> <span class="attribute">label</span>=<span class="value">"Click me!"</span>/&gt;</span>
+
+<span class="tag">&lt;/<span class="title">mx:Application</span>&gt;</span>
+</pre></figure>
+
+<p><a href="120.swf">A.swf - Demo</a></p>
+<p>In this case the button is “selected” from the start (alpha = 1). When clicked, the alpha changes to half opaque (0.5), switches back to 1 when reclicked, and so forth. All working good.</p>
+<p>But it’s a bit hard to differentiate between selected and non selected, so let’s change the alpha setting to 0.4 instead of 0.5:</p>
+<figure class="highlight mxml"><pre><span class="pi">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="tag">&lt;<span class="title">mx:Application
+	xmlns:mx="http:</span>//<span class="attribute">www.adobe.com</span>/<span class="attribute">2006</span>/<span class="attribute">mxml</span>"
+	<span class="attribute">layout</span>=<span class="value">"absolute"</span>&gt;</span>
+
+	<span class="tag">&lt;<span class="title">mx:Script</span>&gt;</span>
+		<span class="cdata">&lt;![CDATA[
+			private function onClick():void
+			{
+				if(btnTest.alpha == 0.4)
+					btnTest.alpha = 1;
+				else
+					btnTest.alpha = 0.4;
+			}
+		]]&gt;</span>
+	<span class="tag">&lt;/<span class="title">mx:Script</span>&gt;</span>
+
+	<span class="tag">&lt;<span class="title">mx:Button</span> <span class="attribute">id</span>=<span class="value">"btnTest"</span> <span class="attribute">click</span>=<span class="value">"onClick()"</span> <span class="attribute">label</span>=<span class="value">"Click me!"</span>/&gt;</span>
+
+<span class="tag">&lt;/<span class="title">mx:Application</span>&gt;</span>
+</pre></figure>
+
+<p><a href="121.swf">B.swf - Demo</a></p>
+<p>But what’s this, now we’re only able to dim it, not reselect it. Why’s that? Nothing’s changed other than the alpha value. The problem becomes apparent if we trace out the buttons alpha value like so:</p>
+<figure class="highlight mxml"><pre><span class="pi">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="tag">&lt;<span class="title">mx:Application
+	xmlns:mx="http:</span>//<span class="attribute">www.adobe.com</span>/<span class="attribute">2006</span>/<span class="attribute">mxml</span>"
+	<span class="attribute">layout</span>=<span class="value">"absolute"</span>&gt;</span>
+
+	<span class="tag">&lt;<span class="title">mx:Script</span>&gt;</span>
+		<span class="cdata">&lt;![CDATA[
+			private function onClick():void
+			{
+				if(btnTest.alpha == 0.4)
+					btnTest.alpha = 1;
+				else
+					btnTest.alpha = 0.4;
+
+				mx.controls.Alert.show(btnTest.alpha.toString());
+			}
+		]]&gt;</span>
+	<span class="tag">&lt;/<span class="title">mx:Script</span>&gt;</span>
+
+	<span class="tag">&lt;<span class="title">mx:Button</span> <span class="attribute">id</span>=<span class="value">"btnTest"</span> <span class="attribute">click</span>=<span class="value">"onClick()"</span> <span class="attribute">label</span>=<span class="value">"Click me!"</span>/&gt;</span>
+
+<span class="tag">&lt;/<span class="title">mx:Application</span>&gt;</span>
+</pre></figure>
+
+<p><a href="122.swf">C.swf - Demo</a></p>
+<p>In case you don’t have Flash 9 installed, or are just too lazy to click the button, the resulting Alert box shows the following value: 0.3984375 - obviously not quite the 0.4 we specified.</p>
+<p>Ok, let’s dumb it down a bit and do some quick testing:</p>
+<figure class="highlight mxml"><pre>&lt;?xml version=<span class="string">"1.0"</span> encoding=<span class="string">"utf-8"</span>?&gt;
+&lt;mx:Application
+	xmlns:mx=<span class="string">"http://www.adobe.com/2006/mxml"</span>
+	layout=<span class="string">"absolute"</span>
+	initialize=<span class="string">"onInitialize()"</span>&gt;
+
+	&lt;mx:Script&gt;
+		&lt;![CDATA[
+
+			<span class="keyword">private</span> <span class="function"><span class="keyword">function</span> <span class="title">onInitialize</span><span class="params">()</span><span class="type">:void</span>
+			{</span>
+				<span class="comment">// true</span>
+				trace(<span class="number">0.4</span> == <span class="number">0.4</span>);
+
+				<span class="comment">// true</span>
+				<span class="keyword">var</span> zeroPointFour:Number = <span class="number">0.4</span>;
+				trace(zeroPointFour == <span class="number">0.4</span>);
+
+				<span class="comment">// true</span>
+				<span class="keyword">var</span> secondZeroPointFour:Number = <span class="number">0.4</span>;
+				trace(zeroPointFour == secondZeroPointFour);
+
+				<span class="comment">// false</span>
+				<span class="keyword">var</span> testSprite:Sprite = <span class="keyword">new</span> Sprite();
+				testSprite.alpha = <span class="number">0.4</span>;
+				trace(testSprite.alpha == <span class="number">0.4</span>);
+
+				<span class="comment">// 0.3984375</span>
+				trace(testSprite.alpha);
+
+				<span class="comment">// false - duh</span>
+				trace(<span class="number">0.3984375</span> == <span class="number">0.4</span>)
+			}
+
+		]]&gt;
+	&lt;/mx:Script&gt;
+
+&lt;/mx:Application&gt;
+</pre></figure>
+
+<p>Now this is where things start getting weird. We can obviously store the value 0.4 in a number (which is a 64 bit double-precision format according to the <a href="http://en.wikipedia.org/wiki/IEEE_754" target="_blank">IEEE-754 spec</a>). Furthermore, we’re also able to compare two instances of Number with the value 0.4 and get the expected equality comparison result, true. Now, it would seem that as soon we set the alpha value on our Sprite, it’s corrupted. Sprite inherits the alpha property from <a href="http://livedocs.adobe.com/flex/2/langref/flash/display/DisplayObject.html" target="_blank">DisplayObject</a> - which obviously lists alpha as a value of type Number.</p>
+<p>Why does this happen? It’s no problem storing the value 0.4 in a 64 bit double precision number:</p>
+<figure class="highlight"><pre><span class="attribute">Sign</span>: <span class="string">+1</span>
+<span class="attribute">Exponent</span>: <span class="string">-2</span>
+<span class="attribute">Mantissa</span>: <span class="string">1.6</span>
+<span class="attribute">Result</span>: <span class="string">sign x 2&lt;sup&gt;exponent&lt;/sup&gt; x mantissa =&gt; +1 x 2&lt;sup&gt;-2&lt;/sup&gt; x 1.6 = 0.4</span>
+</pre></figure>
+
+<p>It might be (and probably is) me not understanding something right. Can somebody explain to me how the Flash VM handles Numbers, and thereby, explain why this is happening? Is it perhaps not due to the VM’s handling of Numbers, but instead just a simple matter of an odd implementation of the alpha property on DisplayObject?</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jun</span>
+			<span class="day">11</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/analyzing-assembly-evidence/" title="Analyzing Assembly Evidence" rel="bookmark">Analyzing Assembly Evidence</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>When the CLR loads an assembly and needs to determine the appropriate permission set to apply, it’s based on various evidence. Assembly evidence tells the CLR about the origins of the assembly, the zone it’s loaded from and the file hash of the actual assembly file - these are just some of the more common evidence types the CLR uses, there are a lot more that are rarely used. Any object can be a piece of evidence, the CLR will only react on well known evidence types though.</p>
+<a id="more"></a>
+
+<p>There are two different overall origins of evidence, assembly provided and CLR provided. When the CLR loads an assembly, it recognizes the evidence based on the location the assembly is loaded from, file hash and so forth - this is the CLR provided evidence. The other type of evidence is custom evidence provided by the assembly itself. Although useful, we have to be careful not to blindly trust this evidence as it’s provided by the assembly manufacturer. Thus an assembly manufacturer might provide a piece of evidence claiming that the assembly is provided by Microsoft / Google / some other trustworthy corporation - even though that might not be the case.</p>
+<p>Any loaded assembly has an evidence property of type <a href="http://msdn.microsoft.com/en-us/library/system.security.policy.evidence.aspx" target="_blank">System.Security.Policy.Evidence</a>. The Evidence class has three relevant functions for obtaining the actual evidence, namely GetHostEnumerator, GetAssemblyEnumerator and GetEnumerator. GetHostEnumerator returns an IEnumerator containing the evidence policies, likewise the GetAssemblyEnumerator returns the assembly provided (and inherently untrustworthy) policies, while the GetEnumerator returns the union of the two.</p>
+<p>Just a quick tip. I hate using enumerators, I much prefer foreach loops. The following method will take an IEnumerator and yield an IEnumerable, enabling you to foreach the collection:</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">static</span> IEnumerable <span class="title">GetEnumerable</span>(IEnumerator enumerator)
+{
+	<span class="keyword">while</span> (enumerator.MoveNext())
+		<span class="keyword">yield</span> <span class="keyword">return</span> enumerator.Current;
+}
+</pre></figure>
+
+<p>I’ve created a simple assembly containing an empty class (the contents of the assembly is not relevant in regards to evidence) called TestAssembly. The following code will load in the TestAssembly from the application directory and enumerate the CLR provided evidence. Note that I’ve got a special case for the<a href="http://msdn.microsoft.com/en-us/library/system.security.policy.hash(VS.80" target="_blank">System.Security.Policy.Hash</a>.aspx) type as it includes a rather lengthy hash of the file. The hash evidence can be used to validate the assembly contents against a pre-known hash of the assembly as a simple way of tamper protecting your applications assemblies.</p>
+<figure class="highlight csharp"><pre>Assembly asm = Assembly<span class="preprocessor">.LoadFile</span>(Path<span class="preprocessor">.Combine</span>(Path<span class="preprocessor">.GetDirectoryName</span>(Assembly<span class="preprocessor">.GetExecutingAssembly</span>()<span class="preprocessor">.Location</span>), <span class="string">"TestAssembly.dll"</span>))<span class="comment">;</span>
+
+foreach (object obj <span class="keyword">in</span> EnumeratorHelper<span class="preprocessor">.GetEnumerable</span>(asm<span class="preprocessor">.Evidence</span><span class="preprocessor">.GetHostEnumerator</span>()))
+	if (obj is Hash)
+		Console<span class="preprocessor">.WriteLine</span>(@<span class="string">"&lt;System.Security.Policy.Hash version="</span><span class="string">"1"</span><span class="string">"&gt;&lt;RawData&gt;4D5A900003...00000&lt;/RawData&gt;&lt;/System.Security.Policy.Hash&gt;"</span>)<span class="comment">;</span>
+	else
+		Console<span class="preprocessor">.WriteLine</span>(obj<span class="preprocessor">.ToString</span>())<span class="comment">;</span>
+</pre></figure>
+
+<p>This is the resulting output:</p>
+<figure class="highlight xml"><pre><span class="tag">&lt;<span class="title">System.Security.Policy.Zone</span> <span class="attribute">version</span>=<span class="value">"1"</span>&gt;</span>
+	<span class="tag">&lt;<span class="title">Zone</span>&gt;</span>MyComputer<span class="tag">&lt;/<span class="title">Zone</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">System.Security.Policy.Zone</span>&gt;</span>
+
+<span class="tag">&lt;<span class="title">System.Security.Policy.Url</span> <span class="attribute">version</span>=<span class="value">"1"</span>&gt;</span>
+	<span class="tag">&lt;<span class="title">Url</span>&gt;</span>file:///D:/Webmentor Projekter/Security/AnalyzeEvidence2/bin/Debug/TestAssembly.DLL<span class="tag">&lt;/<span class="title">Url</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">System.Security.Policy.Url</span>&gt;</span>
+
+<span class="tag">&lt;<span class="title">System.Security.Policy.Hash</span> <span class="attribute">version</span>=<span class="value">"1"</span>&gt;</span>
+	<span class="tag">&lt;<span class="title">RawData</span>&gt;</span>4D5A900003...00000<span class="tag">&lt;/<span class="title">RawData</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">System.Security.Policy.Hash</span>&gt;</span>
+</pre></figure>
+
+<p>As we can see, it gives us the URL from where the assembly was loaded, our security zone (MyComputer since it was loaded locally), and finally the dummy hash.</p>
+<p>I’ve got a test server running called Mirage. Mirage is part of the Active Directory domain ipaper.lan and I’ve set a website up on it answering to the default address <a href="http://mirage.ipaper.lan" target="_blank">http://mirage.ipaper.lan</a>. When loading the TestAssembly from this website, the evidence changes a bit:</p>
+<figure class="highlight csharp"><pre><span class="keyword">Assembly</span> asm = <span class="keyword">Assembly</span>.LoadFrom(<span class="string">"http://mirage.ipaper.lan/TestAssembly.dll"</span>);
+</pre></figure>
+
+
+<figure class="highlight xml"><pre><span class="tag">&lt;<span class="title">System.Security.Policy.Zone</span> <span class="attribute">version</span>=<span class="value">"1"</span>&gt;</span>
+	<span class="tag">&lt;<span class="title">Zone</span>&gt;</span>Internet<span class="tag">&lt;/<span class="title">Zone</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">System.Security.Policy.Zone</span>&gt;</span>
+
+<span class="tag">&lt;<span class="title">System.Security.Policy.Url</span> <span class="attribute">version</span>=<span class="value">"1"</span>&gt;</span>
+	<span class="tag">&lt;<span class="title">Url</span>&gt;</span>http://mirage.ipaper.lan/TestAssembly.dll<span class="tag">&lt;/<span class="title">Url</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">System.Security.Policy.Url</span>&gt;</span>
+
+<span class="tag">&lt;<span class="title">System.Security.Policy.Site</span> <span class="attribute">version</span>=<span class="value">"1"</span>&gt;</span>
+	<span class="tag">&lt;<span class="title">Name</span>&gt;</span>mirage.ipaper.lan<span class="tag">&lt;/<span class="title">Name</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">System.Security.Policy.Site</span>&gt;</span>
+
+<span class="tag">&lt;<span class="title">System.Security.Policy.Hash</span> <span class="attribute">version</span>=<span class="value">"1"</span>&gt;</span>
+	<span class="tag">&lt;<span class="title">RawData</span>&gt;</span>4D5A900003...00000<span class="tag">&lt;/<span class="title">RawData</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">System.Security.Policy.Hash</span>&gt;</span>
+</pre></figure>
+
+<p>This time the SecurityZone is defined as Internet. Although my server is placed on my local network, it’s known as the internet by my computer. This time we also get the Site policy since the assembly is loaded from a website, namely mirage.ipaper.lan. The security zone is actually provided by Windows (using the<a href="http://msdn.microsoft.com/en-us/library/ms537133(VS.85" target="_blank">IInternetSecurityManager::MapUrlToZone method</a>.aspx)) and not by the CLR itself, except in the case of locally loaded assemblies - in which it’ll automatically set the zone to MyComputer. Thus, if I add mirage.ipaper.lan to my Internet Options control panel Intranet sites list, my SecurityZone changes to Intranet instead of Internet. Likewise I can add it to my trusted &amp; untrusted sites list and modify the resulting SecurityZone.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jun</span>
+			<span class="day">02</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/using-idispoable-to-write-indented-text/" title="Using IDisposable to Write Indented Text" rel="bookmark">Using IDisposable to Write Indented Text</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I often need to output indented text in one way of the other, it could be HTML, XML, source code etc (please look beyond the actual problem domain - I’d enver write XML this way, it’s just an example). Usually that involved me writing tab characters manually (or by calling a function that returned the current indentation string), cluttering the actual output. An example might look like this:</p>
+<a id="more"></a>
+
+
+<figure class="highlight csharp"><pre>StringBuilder sb = new StringBuilder()<span class="comment">;</span>
+sb<span class="preprocessor">.AppendLine</span>(<span class="string">"public static void Hello()"</span>)<span class="comment">;</span>
+sb<span class="preprocessor">.AppendLine</span>(<span class="string">"{"</span>)<span class="comment">;</span>
+sb<span class="preprocessor">.AppendLine</span>(<span class="string">"\tif(true)"</span>)<span class="comment">;</span>
+sb<span class="preprocessor">.AppendLine</span>(<span class="string">"\t\tConsole.WriteLine("</span>World!<span class="string">");"</span>)<span class="comment">;</span>
+sb<span class="preprocessor">.AppendLine</span>(<span class="string">"}"</span>)<span class="comment">;</span>
+
+Console<span class="preprocessor">.Write</span>(sb<span class="preprocessor">.ToString</span>())<span class="comment">;</span>
+Console<span class="preprocessor">.Read</span>()<span class="comment">;</span>
+</pre></figure>
+
+<p>This ought to result in the following snippet:</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">Hello</span>()
+{
+	<span class="keyword">if</span>(<span class="keyword">true</span>)
+		Console.WriteLine(<span class="string">"World!"</span>);
+}
+</pre></figure>
+
+<p>Pretty simple code, but it’s a bit hard for the eyes, especially if there’s a lot of it.</p>
+<p>By utilizing the IDisposable interface, we can create a StringBuilder-esque class that handles the indentation for us. Here’s an example of how we might write the previous snippet using the IndentedStringBuilder (note that it’s not really a StringBuilder since StringBuilder’s a sealed class):</p>
+<figure class="highlight csharp"><pre>using (IndentedStringBuilder sb = new IndentedStringBuilder())
+{
+	sb.AppendLine(<span class="string">"public static void Hello()"</span>);
+	sb.AppendLine(<span class="string">"{"</span>);
+
+	using (sb.IncreaseIndent())
+	{
+		sb.AppendLine(<span class="string">"if(true)"</span>);
+
+		using (sb.IncreaseIndent())
+			sb.AppendLine(<span class="string">"Console.WriteLine("</span>World!<span class="string">");"</span>);
+	}
+
+	sb.AppendLine(<span class="string">"}"</span>);
+
+	Console.Write(sb.ToString());
+	Console.Read();
+}
+</pre></figure>
+
+<p>Each time Dispose() is called on the instance, the indentation level is decreased. Calling IncreaseIndent() increases the indentation level, as well as returning a reference to the IndentedStringBuilder instance itself. The using construct will make sure Dispose is called on the reference each time we exit the using block - and calling Dispose does not do anything to the object other than calling the Dispose method - which’ll decrease the indentation level.</p>
+<p>Here’s the IndentedStringBuilder class:</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Text;
+
+namespace Improve.Framework.Text
+{
+	<span class="keyword">public</span> <span class="keyword">class</span> IndentedStringBuilder : IDisposable
+	{
+		<span class="keyword">private</span> StringBuilder sb;
+		<span class="keyword">private</span> <span class="keyword">string</span> indentationString = <span class="string">"\t"</span>;
+		<span class="keyword">private</span> <span class="keyword">string</span> completeIndentationString = <span class="string">""</span>;
+		<span class="keyword">private</span> <span class="keyword">int</span> indent = <span class="number">0</span>;
+
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span>  Creates an IndentedStringBuilder</span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+		<span class="keyword">public</span> <span class="title">IndentedStringBuilder</span>()
+		{
+			sb = <span class="keyword">new</span> StringBuilder();
+		}
+
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> Appends a string</span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="value"&gt;</span><span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Append</span>(<span class="keyword">string</span> <span class="keyword">value</span>)
+		{
+			sb.Append(completeIndentationString + <span class="keyword">value</span>);
+		}
+
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> Appends a line</span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="value"&gt;</span><span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">AppendLine</span>(<span class="keyword">string</span> <span class="keyword">value</span>)
+		{
+			Append(<span class="keyword">value</span> + Environment.NewLine);
+		}
+
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> The string/chars to use for indentation, t by default</span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+		<span class="keyword">public</span> <span class="keyword">string</span> IndentationString
+		{
+			<span class="keyword">get</span> { <span class="keyword">return</span> indentationString; }
+			<span class="keyword">set</span>
+			{
+				indentationString = <span class="keyword">value</span>;
+
+				updateCompleteIndentationString();
+			}
+		}
+
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> Creates the actual indentation string</span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+		<span class="keyword">private</span> <span class="keyword">void</span> <span class="title">updateCompleteIndentationString</span>()
+		{
+			completeIndentationString = <span class="string">""</span>;
+
+			<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; indent; i++)
+				completeIndentationString += indentationString;
+		}
+
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> Increases indentation, returns a reference to an IndentedStringBuilder instance which is only to be used for disposal</span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span><span class="xmlDocTag">&lt;/returns&gt;</span></span>
+		<span class="keyword">public</span> IndentedStringBuilder <span class="title">IncreaseIndent</span>()
+		{
+			indent++;
+
+			updateCompleteIndentationString();
+
+			<span class="keyword">return</span> <span class="keyword">this</span>;
+		}
+
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> Decreases indentation, may only be called if indentation &gt; 1</span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">DecreaseIndent</span>()
+		{
+			<span class="keyword">if</span> (indent &gt; <span class="number">0</span>)
+			{
+				indent--;
+
+				updateCompleteIndentationString();
+			}
+		}
+
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> Decreases indentation</span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Dispose</span>()
+		{
+			DecreaseIndent();
+		}
+
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> Returns the text of the internal StringBuilder</span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span><span class="xmlDocTag">&lt;/returns&gt;</span></span>
+		<span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">string</span> <span class="title">ToString</span>()
+		{
+			<span class="keyword">return</span> sb.ToString();
+		}
+	}
+}
+</pre></figure>
+
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">13</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/generic-dijkstras-algorithm/" title="Generic Dijkstra&#39;s Algorithm" rel="bookmark">Generic Dijkstra&#39;s Algorithm</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Through various projects, I’ve had to do some shortest-path finding in a connected graph. An efficient and straight-forward way to do this is using <a href="http://en.wikipedia.org/wiki/Dijkstra&#39;s_algorithm" target="_blank">Dijkstra’s Algorithm</a>. Notice that it’ll only work for graphs with non negative path weights, like 2D maps for instance. While I’ve used the algorithm on several occasions, it’s only now that I’ve rewritten it in generic form</p>
+<a id="more"></a>
+
+<p>The code is pretty much self explanatory if you keep the <a href="http://en.wikipedia.org/wiki/Dijkstra&#39;s_algorithm#Pseudocode" target="_blank">pseudo code implementation</a> next to it.</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Collections.Generic;
+<span class="keyword">using</span> System.Linq;
+
+namespace Improve.Framework.Algorithms
+{
+	<span class="keyword">public</span> <span class="keyword">class</span> Dijkstra&lt;TNode&gt;
+	{
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> Calculates the shortest route from a source node to a target node given a set of nodes and connections. Will only work for graphs with non-negative path weights.</span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="connections"&gt;</span>All the nodes, as well as the list of their connections.<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="sourceNode"&gt;</span>The node to start from.<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="targetNode"&gt;</span>The node we should seek.<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="fnEquals"&gt;</span>A function used for testing if two nodes are equal.<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="fnDistance"&gt;</span>A function used for calculating the distance/weight between two nodes.<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>An ordered list of nodes from source-&gt;target giving the shortest path from the source to the target node. Returns null if no path is possible.<span class="xmlDocTag">&lt;/returns&gt;</span></span>
+		<span class="keyword">public</span> <span class="keyword">static</span> List&lt;TNode&gt; <span class="title">ShortestPath</span>(IDictionary&lt;TNode, List&lt;TNode&gt;&gt; connections, TNode sourceNode, TNode targetNode, Func&lt;TNode, TNode, <span class="keyword">bool</span>&gt; fnEquals, Func&lt;TNode, TNode, <span class="keyword">double</span>&gt; fnDistance)
+		{
+			<span class="comment">// Initialize values</span>
+			Dictionary&lt;TNode, <span class="keyword">double</span>&gt; distance = <span class="keyword">new</span> Dictionary&lt;TNode, <span class="keyword">double</span>&gt;(); ;
+			Dictionary&lt;TNode, TNode&gt; previous = <span class="keyword">new</span> Dictionary&lt;TNode, TNode&gt;(); ;
+			List&lt;TNode&gt; localNodes = <span class="keyword">new</span> List&lt;TNode&gt;();
+
+			<span class="comment">// For all nodes, copy it to our local list as well as set it's distance to null as it's unknown</span>
+			<span class="keyword">foreach</span> (TNode node <span class="keyword">in</span> connections.Keys)
+			{
+				localNodes.Add(node);
+				distance.Add(node, <span class="keyword">double</span>.PositiveInfinity);
+			}
+
+			<span class="comment">// We know the distance from source-&gt;source is 0 by definition</span>
+			distance[sourceNode] = <span class="number">0</span>;
+
+			<span class="keyword">while</span> (localNodes.Count &gt; <span class="number">0</span>)
+			{
+				<span class="comment">// Return and remove best vertex (that is, connection with minimum distance</span>
+				TNode minNode = localNodes.OrderBy(n =&gt; distance[n]).First();
+				localNodes.Remove(minNode);
+
+				<span class="comment">// Loop all connected nodes</span>
+				<span class="keyword">foreach</span> (TNode neighbor <span class="keyword">in</span> connections[minNode])
+				{
+					<span class="comment">// The positive distance between node and it's neighbor, added to the distance of the current node</span>
+					<span class="keyword">double</span> dist = distance[minNode] + fnDistance(minNode, neighbor);
+
+					<span class="keyword">if</span> (dist &lt; distance[neighbor])
+					{
+						distance[neighbor] = dist;
+						previous[neighbor] = minNode;
+					}
+				}
+
+				<span class="comment">// If we're at the target node, break</span>
+				<span class="keyword">if</span> (fnEquals(minNode, targetNode))
+					<span class="keyword">break</span>;
+			}
+
+			<span class="comment">// Construct a list containing the complete path. We'll start by looking at the previous node of the target and then making our way to the beginning.</span>
+			<span class="comment">// We'll reverse it to get a source-&gt;target list instead of the other way around. The source node is manually added.</span>
+			List&lt;TNode&gt; result = <span class="keyword">new</span> List&lt;TNode&gt;();
+			TNode target = targetNode;
+			<span class="keyword">while</span> (previous.ContainsKey(target))
+			{
+				result.Add(target);
+				target = previous[target];
+			}
+			result.Add(sourceNode);
+			result.Reverse();
+
+			<span class="keyword">if</span> (result.Count &gt; <span class="number">1</span>)
+				<span class="keyword">return</span> result;
+			<span class="keyword">else</span>
+				<span class="keyword">return</span> <span class="keyword">null</span>;
+		}
+	}
+}
+</pre></figure>
+
+<p>Once we’ve made the list of nodes &amp; connections, invoking the algorithm is rather simple. We just need to provide an equality function as well as a distance function:</p>
+<figure class="highlight csharp"><pre><span class="comment">// Run Dijkstra's algorithm</span>
+<span class="keyword">List</span>&lt;Point2D&gt; result = Dijkstra&lt;Point2D&gt;.ShortestPath(connections, mouse, target, (p1, p2) =&gt; p1 == p2, (p1, p2) =&gt; p1.DistanceTo(p2));
+</pre></figure>
+
+<div class="video-container"><iframe src="//www.youtube.com/embed/ctEXUmZ5TDY" frameborder="0" allowfullscreen></iframe></div>
+
+
+
+<h2 id="Downloads">Downloads</h2>
+<p><a href="Shortest_Path.zip">Shortest_Path.zip - Sample code</a></p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">08</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/book-programmers-at-work/" title="Programmers at Work" rel="bookmark">Programmers at Work</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/Miscellaneous/">Miscellaneous</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I just finished reading the book <a href="http://www.amazon.com/Programmers-Work-Interviews-Computer-Industry/dp/1556152116" target="_blank">Programmers at Work</a> by Susan Lammers.</p>
+<a id="more"></a>
+
+<div class="imgwrapper" style=""><div><a href="/book-programmers-at-work/programmersatwork_2.jpg" class="fancy"><img src="/book-programmers-at-work/programmersatwork_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>It’s a unique book unlike most others I’ve read. Most of the books I read are practically oriented, how to do this, how to do that (in an abstract way, but still practical).</p>
+<p>Programmers at Work contains interviews with 19 of the most influential computer programmers, written in the early 80’s. It’s an eye opener how similar the though processes, scenarios and development ideas where back then to what we’re used to today. They didn’t have nearly the same facilities at hand, neither hardware nor codewise, but the goals were the same. It’s fun to read some fundamental discussions about whether OS’s have a place at all, or whether they should simply be discarded (I guess that’d be the embedded devices of today).</p>
+<p>While all interviewees are techy guys in one way or the other, there’s great diversity among them. Some are downright developers/architects while others work on the UI, graphics and even audio design.</p>
+<p>There are lots of great war stories in most interviews, 40% of them about Apple - it really becomes clear how big a part Apple played back then, and how small they became for a period which seems to be nearing an end.</p>
+<p>Leonard Richardson has a great writeup on <a href="http://www.crummy.com/2008/02/17/0" target="_blank">where the original interviewees are at today</a>.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">02</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/mapping-datareader-to-objects-using-reflection-emit/" title="Mapping Datareader to Objects Using Reflection.Emit" rel="bookmark">Mapping Datareader to Objects Using Reflection.Emit</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I’ve previously written of how to automatically <a href="/automatically-mapping-datatable-to-objects/">map a DataTable into a strongly typed collection of objects</a>. There’s a problem though, <a href="/performance-comparison-reading-data-from-the-database-strongly-typed/">it’s not fast</a>… I wanted to improve on it, and this is what I ended up with.</p>
+<a id="more"></a>
+
+<p>The original method relied heavily on reflection to set the values directly. Reflection’s bad in regards of speed, mkay? But reflection is not necessarily evil, you can do great good with it. Now, the problem with the original method is that each field is set using reflection for each row, that’s [number of fields] * [number of rows] fields being set using reflection, resulting in pretty poor performance. If we compare it to the <a href="/performance-comparison-reading-data-from-the-database-strongly-typed/">manual way</a>, there’s obviously some kind of a gap. If we could just somehow, in a generic way, create mapper methods like we do manually…</p>
+<p>We’ll have to create a DynamicMethod that takes in a DbDataReader, converts the current row to a generic type T. We’ll call it MapDR, although it doesn’t really matter what it’s called.</p>
+<figure class="highlight csharp"><pre><span class="comment">// Our method will take in a single parameter, a DbDataReader</span>
+Type[] methodArgs = { <span class="keyword">typeof</span>(DbDataReader) };
+
+<span class="comment">// The MapDR method will map a DbDataReader row to an instance of type T</span>
+DynamicMethod dm = <span class="keyword">new</span> DynamicMethod(<span class="string">"MapDR"</span>, <span class="keyword">typeof</span>(T), methodArgs, Assembly.GetExecutingAssembly().GetType().Module);
+ILGenerator il = dm.GetILGenerator();
+</pre></figure>
+
+<p>In this method, we’ll create an instance of the generic type T and store it as a variable.</p>
+<figure class="highlight csharp"><pre>// We<span class="attribute">'ll</span> have a single local <span class="keyword">variable</span>, the instance <span class="keyword">of</span> T we<span class="attribute">'re</span> mapping
+il.DeclareLocal(typeof(T));
+
+// Create a <span class="keyword">new</span> instance <span class="keyword">of</span> T <span class="keyword">and</span> save it as <span class="keyword">variable</span> <span class="number">0</span>
+il.Emit(OpCodes.Newobj, typeof(T).GetConstructor(<span class="keyword">Type</span>.EmptyTypes));
+il.Emit(OpCodes.Stloc_0);
+</pre></figure>
+
+<p>Then we’ll look each property of the type.</p>
+<figure class="highlight csharp"><pre><span class="keyword">foreach</span> (PropertyInfo pi <span class="keyword">in</span> <span class="keyword">typeof</span>(T).GetProperties())
+</pre></figure>
+
+<p>Now we’ll read the column value from the DbDataReader using the properties name. By reading it, we’re pushing it onto the stack.</p>
+<figure class="highlight csharp"><pre>// Load the T instance, SqlDataReader parameter <span class="keyword">and</span> the field name onto the stack
+il<span class="preprocessor">.Emit</span>(OpCodes<span class="preprocessor">.Ldloc</span>_0)<span class="comment">;</span>
+il<span class="preprocessor">.Emit</span>(OpCodes<span class="preprocessor">.Ldarg</span>_0)<span class="comment">;</span>
+il<span class="preprocessor">.Emit</span>(OpCodes<span class="preprocessor">.Ldstr</span>, pi<span class="preprocessor">.Name</span>)<span class="comment">;</span>
+
+// <span class="keyword">Push</span> the column value onto the stack
+il<span class="preprocessor">.Emit</span>(OpCodes<span class="preprocessor">.Callvirt</span>, typeof(DbDataReader)<span class="preprocessor">.GetMethod</span>(<span class="string">"get_Item"</span>, new Type[] { typeof(string) }))<span class="comment">;</span>
+</pre></figure>
+
+<p>Now’s the ugly part. Depending on the type, there are different ways to convert it into the corresponding .NET type, i’ve made a switch statement handling most common types, although it does lack support for nullable types, guids and various other numeric formats. It should show to idea though. Converting the value will push the resulting correctly typed value onto the stack, and pop the original value in the process.</p>
+<figure class="highlight csharp"><pre><span class="comment">// Depending on the type of the property, convert the datareader column value to the type</span>
+<span class="keyword">switch</span> (pi.PropertyType.Name)
+{
+	<span class="keyword">case</span> <span class="string">"Int16"</span>:
+		il.Emit(OpCodes.Call, <span class="keyword">typeof</span>(Convert).GetMethod(<span class="string">"ToInt16"</span>, <span class="keyword">new</span> Type[] { <span class="keyword">typeof</span>(<span class="keyword">object</span>) }));
+		<span class="keyword">break</span>;
+	<span class="keyword">case</span> <span class="string">"Int32"</span>:
+		il.Emit(OpCodes.Call, <span class="keyword">typeof</span>(Convert).GetMethod(<span class="string">"ToInt32"</span>, <span class="keyword">new</span> Type[] { <span class="keyword">typeof</span>(<span class="keyword">object</span>) }));
+		<span class="keyword">break</span>;
+	<span class="keyword">case</span> <span class="string">"Int64"</span>:
+		il.Emit(OpCodes.Call, <span class="keyword">typeof</span>(Convert).GetMethod(<span class="string">"ToInt64"</span>, <span class="keyword">new</span> Type[] { <span class="keyword">typeof</span>(<span class="keyword">object</span>) }));
+		<span class="keyword">break</span>;
+	<span class="keyword">case</span> <span class="string">"Boolean"</span>:
+		il.Emit(OpCodes.Call, <span class="keyword">typeof</span>(Convert).GetMethod(<span class="string">"ToBoolean"</span>, <span class="keyword">new</span> Type[] { <span class="keyword">typeof</span>(<span class="keyword">object</span>) }));
+		<span class="keyword">break</span>;
+	<span class="keyword">case</span> <span class="string">"String"</span>:
+		il.Emit(OpCodes.Callvirt, <span class="keyword">typeof</span>(<span class="keyword">string</span>).GetMethod(<span class="string">"ToString"</span>, <span class="keyword">new</span> Type[] { }));
+		<span class="keyword">break</span>;
+	<span class="keyword">case</span> <span class="string">"DateTime"</span>:
+		il.Emit(OpCodes.Call, <span class="keyword">typeof</span>(Convert).GetMethod(<span class="string">"ToDateTime"</span>, <span class="keyword">new</span> Type[] { <span class="keyword">typeof</span>(<span class="keyword">object</span>) }));
+		<span class="keyword">break</span>;
+	<span class="keyword">case</span> <span class="string">"Decimal"</span>:
+		il.Emit(OpCodes.Call, <span class="keyword">typeof</span>(Convert).GetMethod(<span class="string">"ToDecimal"</span>, <span class="keyword">new</span> Type[] { <span class="keyword">typeof</span>(<span class="keyword">object</span>) }));
+		<span class="keyword">break</span>;
+	<span class="keyword">default</span>:
+		<span class="comment">// Don't set the field value as it's an unsupported type</span>
+		<span class="keyword">continue</span>;
+}
+</pre></figure>
+
+<p>And finally we set the properties value, thereby popping the value from the stack.</p>
+<figure class="highlight csharp"><pre>// <span class="keyword">Set</span> the T instances property value
+il<span class="preprocessor">.Emit</span>(OpCodes<span class="preprocessor">.Callvirt</span>, typeof(T)<span class="preprocessor">.GetMethod</span>(<span class="string">"set_"</span> + pi<span class="preprocessor">.Name</span>, new Type[] { pi<span class="preprocessor">.PropertyType</span> }))<span class="comment">;</span>
+</pre></figure>
+
+<p>After we’ve mapped all the properties, we’ll load the T instance onto the stack and return it.</p>
+<figure class="highlight csharp"><pre>// Load the T instance onto the stack
+il<span class="preprocessor">.Emit</span>(OpCodes<span class="preprocessor">.Ldloc</span>_0)<span class="comment">;</span>
+
+// Return
+il<span class="preprocessor">.Emit</span>(OpCodes<span class="preprocessor">.Ret</span>)<span class="comment">;</span>
+</pre></figure>
+
+<p>To improve performance, let’s cache this mapper method as it’ll work for the type T the next time we need it. Notice that what we’re caching is not the method itself, but a delegate to the method - enabling us to actually call the method.</p>
+<figure class="highlight csharp"><pre><span class="keyword">private</span> <span class="keyword">delegate</span> T mapEntity&lt;T&gt;(DbDataReader dr);
+<span class="keyword">private</span> <span class="keyword">static</span> Dictionary&lt;Type, Delegate&gt; cachedMappers = <span class="keyword">new</span> Dictionary&lt;Type, Delegate&gt;();
+
+<span class="comment">// Cache the method so we won't have to create it again for the type T</span>
+cachedMappers.Add(<span class="keyword">typeof</span>(T), dm.CreateDelegate(<span class="keyword">typeof</span>(mapEntity&lt;T&gt;)));
+
+<span class="comment">// Get a delegate reference to the dynamic method</span>
+mapEntity&lt;T&gt; invokeMapEntity = (mapEntity&lt;T&gt;)cachedMappers[<span class="keyword">typeof</span>(T)];
+</pre></figure>
+
+<p>Now all we gotta do is loop the DbDataReader rows and return the mapped entities.</p>
+<figure class="highlight csharp"><pre>// <span class="keyword">For</span> each row, <span class="keyword">map</span> the row <span class="keyword">to</span> an instance <span class="keyword">of</span> T <span class="keyword">and</span> yield <span class="keyword">return</span> it
+<span class="keyword">while</span> (dr.Read())
+	yield <span class="keyword">return</span> invokeMapEntity(dr);
+</pre></figure>
+
+<p>And of course, here’s the final method/class. Remember that this is more a proof of concept than a complete class. It ought to handle all necessary types. Also, it might be relevant to consider whether one should map public as well as private properties. Whether it should handle type validation errors, missing columns or not, I’m not sure. As it is now, it’ll throw a normal ArgumentOutOfRangeException in cases of missing columns, and relevant type conversion errors - all those can be handled by the callee using try/catch blocks.</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Collections.Generic;
+<span class="keyword">using</span> System.Data.Common;
+<span class="keyword">using</span> System.Reflection;
+<span class="keyword">using</span> System.Reflection.Emit;
+
+namespace Improve.Framework.Data
+{
+	<span class="keyword">public</span> <span class="keyword">class</span> EntityMapper
+	{
+		<span class="keyword">private</span> <span class="keyword">delegate</span> T mapEntity&lt;T&gt;(DbDataReader dr);
+		<span class="keyword">private</span> <span class="keyword">static</span> Dictionary&lt;Type, Delegate&gt; cachedMappers = <span class="keyword">new</span> Dictionary&lt;Type, Delegate&gt;();
+
+		<span class="keyword">public</span> <span class="keyword">static</span> IEnumerable&lt;T&gt; MapToEntities&lt;T&gt;(DbDataReader dr)
+		{
+			<span class="comment">// If a mapping function from dr -&gt; T does not exist, create and cache one</span>
+			<span class="keyword">if</span> (!cachedMappers.ContainsKey(<span class="keyword">typeof</span>(T)))
+			{
+				<span class="comment">// Our method will take in a single parameter, a DbDataReader</span>
+				Type[] methodArgs = { <span class="keyword">typeof</span>(DbDataReader) };
+
+				<span class="comment">// The MapDR method will map a DbDataReader row to an instance of type T</span>
+				DynamicMethod dm = <span class="keyword">new</span> DynamicMethod(<span class="string">"MapDR"</span>, <span class="keyword">typeof</span>(T), methodArgs, Assembly.GetExecutingAssembly().GetType().Module);
+				ILGenerator il = dm.GetILGenerator();
+				
+				<span class="comment">// We'll have a single local variable, the instance of T we're mapping</span>
+				il.DeclareLocal(<span class="keyword">typeof</span>(T));
+
+				<span class="comment">// Create a new instance of T and save it as variable 0</span>
+				il.Emit(OpCodes.Newobj, <span class="keyword">typeof</span>(T).GetConstructor(Type.EmptyTypes));
+				il.Emit(OpCodes.Stloc_0);
+
+				<span class="keyword">foreach</span> (PropertyInfo pi <span class="keyword">in</span> <span class="keyword">typeof</span>(T).GetProperties())
+				{
+					<span class="comment">// Load the T instance, SqlDataReader parameter and the field name onto the stack</span>
+					il.Emit(OpCodes.Ldloc_0);
+					il.Emit(OpCodes.Ldarg_0);
+					il.Emit(OpCodes.Ldstr, pi.Name);
+
+					<span class="comment">// Push the column value onto the stack</span>
+					il.Emit(OpCodes.Callvirt, <span class="keyword">typeof</span>(DbDataReader).GetMethod(<span class="string">"get_Item"</span>, <span class="keyword">new</span> Type[] { <span class="keyword">typeof</span>(<span class="keyword">string</span>) }));
+
+					<span class="comment">// Depending on the type of the property, convert the datareader column value to the type</span>
+					<span class="keyword">switch</span> (pi.PropertyType.Name)
+					{
+						<span class="keyword">case</span> <span class="string">"Int16"</span>:
+							il.Emit(OpCodes.Call, <span class="keyword">typeof</span>(Convert).GetMethod(<span class="string">"ToInt16"</span>, <span class="keyword">new</span> Type[] { <span class="keyword">typeof</span>(<span class="keyword">object</span>) }));
+							<span class="keyword">break</span>;
+						<span class="keyword">case</span> <span class="string">"Int32"</span>:
+							il.Emit(OpCodes.Call, <span class="keyword">typeof</span>(Convert).GetMethod(<span class="string">"ToInt32"</span>, <span class="keyword">new</span> Type[] { <span class="keyword">typeof</span>(<span class="keyword">object</span>) }));
+							<span class="keyword">break</span>;
+						<span class="keyword">case</span> <span class="string">"Int64"</span>:
+							il.Emit(OpCodes.Call, <span class="keyword">typeof</span>(Convert).GetMethod(<span class="string">"ToInt64"</span>, <span class="keyword">new</span> Type[] { <span class="keyword">typeof</span>(<span class="keyword">object</span>) }));
+							<span class="keyword">break</span>;
+						<span class="keyword">case</span> <span class="string">"Boolean"</span>:
+							il.Emit(OpCodes.Call, <span class="keyword">typeof</span>(Convert).GetMethod(<span class="string">"ToBoolean"</span>, <span class="keyword">new</span> Type[] { <span class="keyword">typeof</span>(<span class="keyword">object</span>) }));
+							<span class="keyword">break</span>;
+						<span class="keyword">case</span> <span class="string">"String"</span>:
+							il.Emit(OpCodes.Callvirt, <span class="keyword">typeof</span>(<span class="keyword">string</span>).GetMethod(<span class="string">"ToString"</span>, <span class="keyword">new</span> Type[] { }));
+							<span class="keyword">break</span>;
+						<span class="keyword">case</span> <span class="string">"DateTime"</span>:
+							il.Emit(OpCodes.Call, <span class="keyword">typeof</span>(Convert).GetMethod(<span class="string">"ToDateTime"</span>, <span class="keyword">new</span> Type[] { <span class="keyword">typeof</span>(<span class="keyword">object</span>) }));
+							<span class="keyword">break</span>;
+						<span class="keyword">case</span> <span class="string">"Decimal"</span>:
+							il.Emit(OpCodes.Call, <span class="keyword">typeof</span>(Convert).GetMethod(<span class="string">"ToDecimal"</span>, <span class="keyword">new</span> Type[] { <span class="keyword">typeof</span>(<span class="keyword">object</span>) }));
+							<span class="keyword">break</span>;
+						<span class="keyword">default</span>:
+							<span class="comment">// Don't set the field value as it's an unsupported type</span>
+							<span class="keyword">continue</span>;
+					}
+
+					<span class="comment">// Set the T instances property value</span>
+					il.Emit(OpCodes.Callvirt, <span class="keyword">typeof</span>(T).GetMethod(<span class="string">"set_"</span> + pi.Name, <span class="keyword">new</span> Type[] { pi.PropertyType }));
+				}
+
+				<span class="comment">// Load the T instance onto the stack</span>
+				il.Emit(OpCodes.Ldloc_0);
+
+				<span class="comment">// Return</span>
+				il.Emit(OpCodes.Ret);
+				
+				<span class="comment">// Cache the method so we won't have to create it again for the type T</span>
+				cachedMappers.Add(<span class="keyword">typeof</span>(T), dm.CreateDelegate(<span class="keyword">typeof</span>(mapEntity&lt;T&gt;)));
+			}
+
+			<span class="comment">// Get a delegate reference to the dynamic method</span>
+			mapEntity&lt;T&gt; invokeMapEntity = (mapEntity&lt;T&gt;)cachedMappers[<span class="keyword">typeof</span>(T)];
+			
+			<span class="comment">// For each row, map the row to an instance of T and yield return it</span>
+			<span class="keyword">while</span> (dr.Read())
+				<span class="keyword">yield</span> <span class="keyword">return</span> invokeMapEntity(dr);
+		}
+
+		<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">ClearCachedMapperMethods</span>()
+		{
+			cachedMappers.Clear();
+		}
+	}
+}
+</pre></figure>
+
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">30</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/performance-comparison-reading-data-from-the-database-strongly-typed/" title="Performance Comparison - Reading Data From the Database Strongly Typed" rel="bookmark">Performance Comparison - Reading Data From the Database Strongly Typed</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I’m a big fan of strongly typed database querying as well as returning strong typed results. Due to the nature of static languages, you’ll get compile time checking of all our tables and columns. You can easily rename columns as you can be sure all your (internal) references are accounted for.</p>
+<a id="more"></a>
+
+<p>Returning strongly typed lists of objects instead of DataReaders/DataTables / any other object based containers will also make it easier to transfer through data layers as you’re always certain of what’s available for you to read and what’s not.</p>
+<p>But it comes at a cost. Performance.</p>
+<p>I set out to test various different ways we could query our database and generate a strongly typed List with the results in it. I’m using the <a href="http://codeplex.com/SqlServerSamples" target="_blank">standard AdventureWorks 2005 database</a> for my testing. For the actual profiling, I’ll be using <a href="/profiling-code-the-easy-way/">my CodeProfiler class</a> from a previous blogpost.</p>
+<p>I’ll be using two different entities, Product and CompleteProduct:</p>
+<figure class="highlight csharp"><pre>[Table(Name = <span class="string">"Production.Product"</span>)]
+<span class="keyword">public</span> <span class="keyword">class</span> Product
+{
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">virtual</span> <span class="keyword">int</span> ProductID { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">virtual</span> <span class="keyword">string</span> Name { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">virtual</span> <span class="keyword">string</span> ProductNumber { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">virtual</span> <span class="keyword">bool</span> MakeFlag { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">virtual</span> <span class="keyword">short</span> SafetyStockLevel { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">virtual</span> <span class="keyword">decimal</span> ListPrice { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">virtual</span> DateTime SellStartDate { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+}
+
+[Table(Name = <span class="string">"Production.Product"</span>)]
+<span class="keyword">public</span> <span class="keyword">class</span> CompleteProduct
+{
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">int</span> ProductID { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">string</span> Name { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">string</span> ProductNumber { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">bool</span> MakeFlag { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">bool</span> FinishedGoodsFlag { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">string</span> Color { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">short</span> SafetyStockLevel { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">short</span> ReorderPoint { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">decimal</span> StandardCost { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">decimal</span> ListPrice { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">string</span> Size { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">string</span> SizeUnitMeasureCode { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">string</span> WeightUnitMeasureCode { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">decimal</span>? Weight { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">int</span> DaysToManufacture { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">string</span> ProductLine { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">string</span> Class { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">string</span> Style { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">int</span>? ProductSubcategoryID { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">int</span>? ProductModelID { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> DateTime SellStartDate { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> DateTime? SellEndDate { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> DateTime? DiscontinuedDate { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> Guid rowguid { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> DateTime ModifiedDate { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+}
+</pre></figure>
+
+<p>They both map to the same table, Production.Product. CompleteProduct covers all columns, Product just covers the ones I’m interested in.</p>
+<h2 id="Method_#1_-_Manually_mapping_from_DataReader">Method #1 - Manually mapping from DataReader</h2>
+<figure class="highlight csharp"><pre>private static void performDataReader()
+{
+	var result = new List&lt;Product&gt;();
+
+	using (SqlConnection conn = new SqlConnection(CONNECTION_STRING))
+	{
+		using (SqlCommand cmd = conn.CreateCommand())
+		{
+			cmd.CommandText = COMMAND_TEXT;
+
+			conn.Open();
+			using (SqlDataReader sqldr = cmd.ExecuteReader())
+			{
+				while (sqldr.Read())
+				{
+					Product p = new Product();
+					p.ProductID = Convert.ToInt32(sqldr[<span class="string">"ProductID"</span>]);
+					p.Name = sqldr[<span class="string">"Name"</span>].ToString();
+					p.ProductNumber = sqldr[<span class="string">"ProductNumber"</span>].ToString();
+					p.MakeFlag = Convert.ToBoolean(sqldr[<span class="string">"MakeFlag"</span>]);
+					p.SafetyStockLevel = Convert.ToInt16(sqldr[<span class="string">"SafetyStockLevel"</span>]);
+					p.ListPrice = Convert.ToDecimal(sqldr[<span class="string">"ListPrice"</span>]);
+					p.SellStartDate = Convert.ToDateTime(sqldr[<span class="string">"SellStartDate"</span>]);
+
+					result.Add(p);
+				}
+			}
+		}
+	}
+}
+</pre></figure>
+
+<p>Pros: <em>Fast</em></p>
+<p>Cons: <em>Has to be written for each object model</em></p>
+<h2 id="Method_#2_-_Manully_mapping_from_DataTable">Method #2 - Manully mapping from DataTable</h2>
+<figure class="highlight csharp"><pre>private static DataTable getDT()
+{
+	DataTable result = new DataTable();
+
+	using (SqlConnection conn = new SqlConnection(CONNECTION_STRING))
+	{
+		using (SqlCommand cmd = conn.CreateCommand())
+		{
+			cmd.CommandText = COMMAND_TEXT;
+
+			using (SqlDataAdapter sqlda = new SqlDataAdapter(cmd))
+				sqlda.Fill(result);
+		}
+	}
+
+	return result;
+}
+
+private static void performDataTable()
+{
+	var result = new List&lt;Product&gt;();
+
+	foreach (DataRow dr in getDT().Rows)
+	{
+		Product p = new Product();
+		p.ProductID = Convert.ToInt32(dr[<span class="string">"ProductID"</span>]);
+		p.Name = dr[<span class="string">"Name"</span>].ToString();
+		p.ProductNumber = dr[<span class="string">"ProductNumber"</span>].ToString();
+		p.MakeFlag = Convert.ToBoolean(dr[<span class="string">"MakeFlag"</span>]);
+		p.SafetyStockLevel = Convert.ToInt16(dr[<span class="string">"SafetyStockLevel"</span>]);
+		p.ListPrice = Convert.ToDecimal(dr[<span class="string">"ListPrice"</span>]);
+		p.SellStartDate = Convert.ToDateTime(dr[<span class="string">"SellStartDate"</span>]);
+
+		result.Add(p);
+	}
+}
+</pre></figure>
+
+<p>Pros: <em>Pretty fast, easy row access, disconnected from database</em></p>
+<p>Cons: <em>Has to be written for each object model</em></p>
+<p>Comment: <em>I often use a getDT()’ish way of accessing my tables. It’s easier than using DataReaders as they’re disconnected, you can traverse them back and forth multiple times.</em></p>
+<h2 id="Method_#3_-_Automatic_mapping_using_DataContext-Translate">Method #3 - Automatic mapping using DataContext.Translate</h2>
+<figure class="highlight csharp"><pre>private static void performEntityQuery()
+{
+	List&lt;Product&gt; result;
+
+	using (SqlConnection conn = new SqlConnection(CONNECTION_STRING))
+	{
+		using (DataContext dc = new DataContext(conn))
+		{
+			using (SqlCommand cmd = conn.CreateCommand())
+			{
+				cmd.CommandText = COMMAND_TEXT;
+
+				conn.Open();
+				using(SqlDataReader sqldr = cmd.ExecuteReader())
+				{
+					result = dc.Translate&lt;Product&gt;(sqldr).ToList();
+				}
+			}
+		}
+	}
+}
+</pre></figure>
+
+<p>Pros: <em>Works for all object models, easy to use</em></p>
+<p>Cons: <em>Slow</em></p>
+<h2 id="Method_#4_-_Linq_to_SQL_query_for_complete_entity">Method #4 - Linq to SQL query for complete entity</h2>
+<figure class="highlight csharp"><pre><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">performLinqQuery</span>()
+{
+	List&lt;Product&gt; result;
+
+	<span class="keyword">using</span>(DataContext dc = <span class="keyword">new</span> DataContext(CONNECTION_STRING))
+	{
+		result = dc.GetTable&lt;Product&gt;().OrderBy(p =&gt; p.ProductID).Take(rowcount).ToList();
+	}
+}
+</pre></figure>
+
+<p>Pros: <em>Could it be easier? Works for all object models</em></p>
+<p>Cons: <em>Slow</em></p>
+<h2 id="Method_#5_-_Linq_to_SQL_query_for_partial_entity">Method #5 - Linq to SQL query for partial entity</h2>
+<figure class="highlight csharp"><pre>private static void performSubsetLinqQuery()
+{
+	List&lt;Product&gt; result<span class="comment">;</span>
+
+	using (DataContext dc = new DataContext(CONNECTION_STRING))
+	{
+		result = dc<span class="preprocessor">.GetTable</span>&lt;CompleteProduct&gt;()<span class="preprocessor">.OrderBy</span>(p =&gt; p<span class="preprocessor">.ProductID</span>)<span class="preprocessor">.Take</span>(rowcount)<span class="preprocessor">.Select</span>(p =&gt; new Product() {
+			ListPrice = p<span class="preprocessor">.ListPrice</span>,
+			ProductID = p<span class="preprocessor">.ProductID</span>,
+			MakeFlag = p<span class="preprocessor">.MakeFlag</span>,
+			Name = p<span class="preprocessor">.Name</span>,
+			ProductNumber = p<span class="preprocessor">.ProductNumber</span>,
+			SafetyStockLevel = p<span class="preprocessor">.SafetyStockLevel</span>,
+			SellStartDate = p<span class="preprocessor">.SellStartDate</span> })<span class="preprocessor">.ToList</span>()<span class="comment">;</span>
+	}
+}
+</pre></figure>
+
+<p>Pros: <em>Easy, works for all object models</em></p>
+<p>Cons: <em>Slow</em></p>
+<p>Comments: <em>In the previous method I retrieved complete Product entities. This time I’m retrieving only some columns of the CompleteProduct entity, mapping them over into a new Product. I’ve included this to see if there’s any performance difference in comparison to loading complete entities.</em></p>
+<h2 id="Method_#6_-_Automatically_mapping_from_DataReader">Method #6 - Automatically mapping from DataReader</h2>
+<figure class="highlight csharp"><pre>private static List&lt;T&gt; mapList&lt;T&gt;(SqlDataReader dr)
+{
+	List&lt;T&gt; list = new List&lt;T&gt;();
+
+	PropertyInfo[] properties = typeof(T).GetProperties();
+	T t = Activator.CreateInstance&lt;T&gt;();
+
+	while(dr.Read())
+	{
+		foreach (PropertyInfo pi in properties)
+			pi.SetValue(t, dr[pi.Name], null);
+
+		list.Add(t);
+	}
+
+	return list;
+}
+
+private static void performAutomappedDataReader()
+{
+	List&lt;Product&gt; result;
+
+	using (SqlConnection conn = new SqlConnection(CONNECTION_STRING))
+	{
+		using (SqlCommand cmd = conn.CreateCommand())
+		{
+			cmd.CommandText = COMMAND_TEXT;
+
+			conn.Open();
+			using (SqlDataReader sqldr = cmd.ExecuteReader())
+			{
+				result = mapList&lt;Product&gt;(sqldr);
+			}
+		}
+	}
+}
+</pre></figure>
+
+<p>Pros: <em>Simple to use, works for all object models</em></p>
+<p>Cons: <em>Slow, reflection based</em></p>
+<h2 id="Method_#7_-_Enhanced_automatic_mapping_from_DataReader">Method #7 - Enhanced automatic mapping from DataReader</h2>
+<figure class="highlight csharp"><pre>private static void performEnhancedAutomappedDataReader()
+{
+	List&lt;Product&gt; result;
+
+	using (SqlConnection conn = new SqlConnection(CONNECTION_STRING))
+	{
+		using (SqlCommand cmd = conn.CreateCommand())
+		{
+			cmd.CommandText = COMMAND_TEXT;
+
+			conn.Open();
+			using (SqlDataReader sqldr = cmd.ExecuteReader())
+			{
+				result = EntityMapper.MapToEntities&lt;Product&gt;(sqldr).ToList();
+			}
+		}
+	}
+}
+</pre></figure>
+
+<p>Pros: <em>???</em></p>
+<p>Cons: <em>???</em></p>
+<p>Comments: <em>This is an enhanced version of the previous method that I’ve made. Explaining the inner workings is outside the scope of this particular topic so I’ll have to explain it in my next post. For now, just imagine something very cool and sexy. UPDATE: <a href="/mapping-datareader-to-objects-using-reflection-emit/">you can read about the method here</a>.</em></p>
+<h2 id="Method_#8_-_SubSonic_SqlQuery">Method #8 - SubSonic SqlQuery</h2>
+<figure class="highlight csharp"><pre>private static void performSubSonicQuery()
+{
+	List&lt;Product&gt; result =
+		new Select
+			(
+				Subsonic<span class="preprocessor">.Product</span><span class="preprocessor">.ProductIDColumn</span><span class="preprocessor">.QualifiedName</span>,
+				Subsonic<span class="preprocessor">.Product</span><span class="preprocessor">.NameColumn</span><span class="preprocessor">.QualifiedName</span>,
+				Subsonic<span class="preprocessor">.Product</span><span class="preprocessor">.ProductNumberColumn</span><span class="preprocessor">.QualifiedName</span>,
+				Subsonic<span class="preprocessor">.Product</span><span class="preprocessor">.MakeFlagColumn</span><span class="preprocessor">.QualifiedName</span>,
+				Subsonic<span class="preprocessor">.Product</span><span class="preprocessor">.SafetyStockLevelColumn</span><span class="preprocessor">.QualifiedName</span>,
+				Subsonic<span class="preprocessor">.Product</span><span class="preprocessor">.ListPriceColumn</span><span class="preprocessor">.QualifiedName</span>,
+				Subsonic<span class="preprocessor">.Product</span><span class="preprocessor">.SellStartDateColumn</span><span class="preprocessor">.QualifiedName</span>
+			)
+			<span class="preprocessor">.Top</span>(rowcount<span class="preprocessor">.ToString</span>())
+			<span class="preprocessor">.From</span>(Subsonic<span class="preprocessor">.Product</span><span class="preprocessor">.Schema</span>)
+			<span class="preprocessor">.OrderAsc</span>(Subsonic<span class="preprocessor">.Product</span><span class="preprocessor">.ProductIDColumn</span><span class="preprocessor">.QualifiedName</span>)
+			<span class="preprocessor">.ExecuteTypedList</span>&lt;Product&gt;()<span class="comment">;</span>
+}
+</pre></figure>
+
+<p>Pros: <em>Works for all object models</em></p>
+<p>Cons: <em>Slow</em></p>
+<p>Comments: <em>I’ve never used SubSonic before, so I may have overlooked some obvious performance enhancements, thus, take my numbers with a grain of salt.</em></p>
+<h2 id="Method_#9_-_NHibernate_CreateCriteria">Method #9 - NHibernate CreateCriteria</h2>
+<figure class="highlight csharp"><pre><span class="keyword">private</span> <span class="keyword">static</span> Configuration nhCfg;
+<span class="keyword">private</span> <span class="keyword">static</span> ISessionFactory nhFactory;
+
+<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">performNHibernateQuery</span>()
+{
+	List&lt;Product&gt; result;
+
+	<span class="keyword">using</span> (ISession session = nhFactory.OpenSession())
+	{
+		result = (List&lt;Product&gt;)session.CreateCriteria(<span class="keyword">typeof</span>(Product)).AddOrder(Order.Asc(<span class="string">"ProductID"</span>)).SetMaxResults(rowcount).List&lt;Product&gt;();
+	}
+}
+</pre></figure>
+
+<p>Pros: <em>Easy, works for all object models, concise querying</em></p>
+<p>Cons: <em>Slow</em></p>
+<p>Comments: <em>I’ve never used NHibernate before, so I may have overlooked some obvious performance enhancements, thus, take my numbers with a grain of salt.</em></p>
+<h2 id="Method_#10_-_Compiled_LinqQuery">Method #10 - Compiled LinqQuery</h2>
+<figure class="highlight csharp"><pre><span class="keyword">private</span> <span class="keyword">static</span> Func&lt;DataContext, <span class="keyword">int</span>, IEnumerable&lt;Product&gt;&gt; compiledQuery;
+<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">performCompiledLinqQuery</span>()
+{
+	List&lt;Product&gt; result;
+
+	<span class="keyword">using</span> (DataContext dc = <span class="keyword">new</span> DataContext(CONNECTION_STRING))
+	{
+		result = compiledQuery(dc, rowcount).ToList();
+	}
+}
+</pre></figure>
+
+<p>Pros: <em>Among the fastest, no matter the rowcount, works for all object models</em></p>
+<p>Cons: <em>Requires a bit more setting up and helper functionality to store the compiled queries</em></p>
+<h2 id="The_profiling">The profiling</h2>
+<p>I profiled each of the test cases by returning 1, 10, 100, 1.000, 10.000 and 100.000 rows. The numbers are the total execution time of 50 iterations of each method. I’m on a quad core machine so I set the max parallelization degree to three, thus saving myself a core for running SQL Server and Windows.</p>
+<figure class="highlight csharp"><pre>static <span class="reserved">void</span> Main(string[] args)
+{
+	<span class="regexp">//</span> Make sure we don<span class="string">'t get disturbed by other processes
+	Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.High;
+
+	// We'</span>ll <span class="reserved">let</span> NHibernate cache it<span class="string">'s Configuration and SessionFactory as we'</span>d probably <span class="keyword">do</span> <span class="keyword">this</span> <span class="keyword">in</span> most live applications
+	nhCfg = <span class="keyword">new</span> Configuration();
+	nhCfg.AddAssembly(Assembly.GetExecutingAssembly());
+	nhFactory = nhCfg.BuildSessionFactory();
+
+	foreach(int rc <span class="keyword">in</span> <span class="keyword">new</span> int[] { <span class="number">1</span>, <span class="number">10</span>, <span class="number">100</span>, <span class="number">1000</span>, <span class="number">10000</span>, <span class="number">100000</span> })<span class="regexp">//</span>, <span class="number">100</span>, <span class="number">1000</span>, <span class="number">10000</span>, <span class="number">100000</span> })
+	{
+		Console.WriteLine(<span class="string">"Rowcount: "</span> + rc);
+		rowcount = rc;
+
+		<span class="regexp">//</span> Set the rowcount
+		COMMAND_TEXT = ORIGINAL_COMMAND_TEXT.Replace(<span class="string">"{rowcount}"</span>, rowcount.ToString());
+
+		<span class="regexp">//</span> Make sure the enhanced automapped datareader does <span class="keyword">not</span> use cached resources from previous run
+		EntityMapper.ClearCachedMapperMethods();
+
+		<span class="regexp">//</span> Compile the query <span class="keyword">for</span> the compiled linq query test
+		compiledQuery = CompiledQuery.Compile&lt;DataContext, int, IEnumerable&lt;Product&gt;&gt;<span class="function"><span class="params">((DataContext dc, int takeCount) =&gt; dc.GetTable&lt;Product&gt;().OrderBy(p =&gt; p.ProductID).Take(takeCount))</span>;
+
+		<span class="title">Console</span>.<span class="title">WriteLine</span><span class="params">(<span class="string">"performDataReader: "</span> + CodeProfiler.ProfileAction(performDataReader, iterations, <span class="number">3</span>))</span>;
+		<span class="title">Console</span>.<span class="title">WriteLine</span><span class="params">(<span class="string">"performDataTable: "</span> + CodeProfiler.ProfileAction(performDataTable, iterations, <span class="number">3</span>))</span>;
+		<span class="title">Console</span>.<span class="title">WriteLine</span><span class="params">(<span class="string">"performEntityQuery: "</span> + CodeProfiler.ProfileAction(performEntityQuery, iterations, <span class="number">3</span>))</span>;
+		<span class="title">Console</span>.<span class="title">WriteLine</span><span class="params">(<span class="string">"performLinqQuery: "</span> + CodeProfiler.ProfileAction(performLinqQuery, iterations, <span class="number">3</span>))</span>;
+		<span class="title">Console</span>.<span class="title">WriteLine</span><span class="params">(<span class="string">"performCompiledLinqQuery: "</span> + CodeProfiler.ProfileAction(performCompiledLinqQuery, iterations, <span class="number">3</span>))</span>;
+		<span class="title">Console</span>.<span class="title">WriteLine</span><span class="params">(<span class="string">"performSubsetLinqQuery: "</span> + CodeProfiler.ProfileAction(performSubsetLinqQuery, iterations, <span class="number">3</span>))</span>;
+		<span class="title">Console</span>.<span class="title">WriteLine</span><span class="params">(<span class="string">"performAutomappedDataReader: "</span> + CodeProfiler.ProfileAction(performAutomappedDataReader, iterations, <span class="number">3</span>))</span>;
+		<span class="title">Console</span>.<span class="title">WriteLine</span><span class="params">(<span class="string">"performEnhancedAutomappedDataReader: "</span> + CodeProfiler.ProfileAction(performEnhancedAutomappedDataReader, iterations, <span class="number">3</span>))</span>;
+		<span class="title">Console</span>.<span class="title">WriteLine</span><span class="params">(<span class="string">"performSubSonicQuery: "</span> + CodeProfiler.ProfileAction(performSubSonicQuery, iterations, <span class="number">3</span>))</span>;
+		<span class="title">Console</span>.<span class="title">WriteLine</span><span class="params">(<span class="string">"performNHibernateQuery: "</span> + CodeProfiler.ProfileAction(performNHibernateQuery, iterations, <span class="number">3</span>))</span>;
+	}
+
+	<span class="title">Console</span>.<span class="title">Write</span><span class="params">(<span class="string">"Done"</span>)</span>;
+	<span class="title">Console</span>.<span class="title">Read</span><span class="params">()</span>;
+}</span>
+</pre></figure>
+
+<h2 id="The_results">The results</h2>
+<p>The following two graphs shows the total runtime of 50 iterations for each different method, as well as the total runtime divided by number of rows. Runtime in seconds along the Y-axis, number of rows along the X-axis. It basically shows that all LINQ to SQL flavors suffer from initial setup, but they scale extremely well, ending up outperforming all other contestants by a fair margin. One could argue that it’s rarely relevant in cases of more than a thousand rows as we’ll rarely pull out that much data at once. Never the less, I find it interesting - it’s something I’ll have to look under the hood to find an explanation of. Ignoring some variance due to the low row number, DataReader, DataTable and my Enhanced Automapped DataReader functions outperform most contestants.</p>
+<p>UPDATE:</p>
+<p>It seems the reason the LINQ flavors are so speedy is because their object mapper methods are being cached in the local thread cache. And since the CodeProfiler will execute all iterations on the same thread, each iteration (except the first) will simply reuse the mapper methods. See System.Data.Linq.SqlClient.ObjectReaderCompiler.Compile() for reference.</p>
+<p>UPDATE 2:</p>
+<p>As <a href="http://www.u2u.info/Blogs/Kris" target="_blank">Kris Vandermotten</a> duly commented, I should have tested a compiled LINQ query as well as that really is a separate scenario. I’ve added a tenth method as well as a new line in the graphs. The compiled LINQ query, although requiring a bit more plumbing code, really blows the competition away. It’s fast for even single row queries since we no longer suffer from the compilation time. For larger rowsets the advantage diminishes as the saved compilation time is spread out over a large amount of rows.</p>
+<p>UPDATE 3:</p>
+<p>As a friend of mine, <a href="http://intellect.dk/" target="_blank">Jakob Andersen</a> points out, I really should be a bit more specific in regards to the purpose of these comparisons.</p>
+<p>I am in no way trying to make the claim that it’s unreasonable that an OR/M framework hurts performance. Neither am I claiming that my comparisons between LINQ to SQL, Subsonic and nHibernate are fair. Really, to make a fair comparison, one should compare the very specific features of the frameworks, not a feature set as general as what I’m doing in these tests.</p>
+<p>The thing is, some of these frameworks (nHibernate, I’m looking at you especially) just offer so much more functionality that it’s a burden they have to live with. While this extra functionality might cost a bit when we’re just trying to test the actual object translation performance, it might gain you a whole lot more in real life scenarios. Take for instance, if you utilize nHibernates caching, you might save the time that goes towards the database lookups - saving you much more than the actual translation process in most cases.</p>
+<p>So, as mentioned in a couple of tests - take these results with a grain of salt. They’re rather out-of-the-box simple tests of direct querying &amp; result translation performance. We’re ignoring all of the extra OR/M features that we have available, and we’re ignoring that these different frameworks offer very different functionality.</p>
+<h3 id="Total_runtime">Total runtime</h3>
+<div class="imgwrapper" style=""><div><a href="/performance-comparison-reading-data-from-the-database-strongly-typed/totalgraph1_2.jpg" class="fancy"><img src="/performance-comparison-reading-data-from-the-database-strongly-typed/totalgraph1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<h3 id="Runtime_per_row">Runtime per row</h3>
+<div class="imgwrapper" style=""><div><a href="/performance-comparison-reading-data-from-the-database-strongly-typed/totalgraph2_2.jpg" class="fancy"><img src="/performance-comparison-reading-data-from-the-database-strongly-typed/totalgraph2_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Remember, even though there seems to be somewhat of a speed difference, the fastest method takes only 0,000074 seconds, while the slowest takes 0,00085 seconds. No matter what, you should’nt consider refactoring your solutions in regards to performance unless you really have a high hit count, or unless it’s for valid architectural reasons. Otherwise you might just risk having Ted Dziuba <a href="http://teddziuba.com/2008/04/im-going-to-scale-my-foot-up-y.html" target="_blank">shove his foot up your ass</a>.</p>
+<h2 id="Downloads">Downloads</h2>
+<p><a href="PerformanceComparison_ReadingStronglyTyped.zip">PerformanceComparison_ReadingStronglyTyped.zip - Sample code</a><br><a href="Reading_Data_From_Database_Profiling.xlsx">Reading_Data_From_Database_Profiling.xslx - Profiling results</a></p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">16</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/securing-dotnet-code/" title="Securing .NET Code" rel="bookmark">Securing .NET Code</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				, 
+			
+				<a href="http://improve.dk/category/Conferences and Presenting/">Conferences and Presenting</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Time flies fast. Back in 2006, during my time as an <a href="http://en.wikipedia.org/wiki/Microsoft_Student_Partners" target="_blank">MSP</a>, I made a series of presentations on securing intellectual property in .NET code, resulting in my <a href="/securing-dotnet-code-article/">Securing .NET Code</a> article. Although it’s about two years old, most points are still valid today, unfortunately.</p>
+<a id="more"></a>
+
+<p>I recorded a screencast of this article sometime in 2007, but I never really got it published, except for a link on the Microsoft Denmark site. It was my first screencast and unfortunately I made some mistakes, the biggest one being the click sounds from the mouse. An even bigger mistake was me deleting the original Camtasia recording files so I can’t create a new version without them.</p>
+<p>Never the less, if you prefer watching to reading, it might be interesting to look through.</p>
+<div class="video-container"><iframe src="//www.youtube.com/embed/Dc9EE4YRGy8" frameborder="0" allowfullscreen></iframe></div>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">16</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/profiling-code-the-easy-way/" title="Profiling Code the Easy Way" rel="bookmark">Profiling Code the Easy Way</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I often do code profiling, usually involving a stopwatch and some boilerplate code. I decided to make a quick’n’simple class that’ll help me get rid of some of that code and concentrate on the actual code being profiled.</p>
+<a id="more"></a>
+
+<p>There are just four functions in the class, all overload variations. In a nutshell, they’ll allow you to profile a single action with &amp; without warmup, multiple iterations and multiple iterations run i parallel. The code is more or less self explanable so I’ll just throw it out there:</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Collections.Generic;
+<span class="keyword">using</span> System.Diagnostics;
+<span class="keyword">using</span> System.Threading;
+
+namespace CodeProfiler
+{
+	<span class="keyword">public</span> <span class="keyword">class</span> CodeProfiler
+	{
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> Measures the runtime of an action once</span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="action"&gt;</span>The action to profile<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="warmup"&gt;</span>Whether the action should be run once before the actual measurement<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>The total runtime<span class="xmlDocTag">&lt;/returns&gt;</span></span>
+		<span class="keyword">public</span> <span class="keyword">static</span> TimeSpan <span class="title">ProfileAction</span>(Action action, <span class="keyword">bool</span> warmup)
+		{
+			<span class="keyword">if</span> (warmup)
+				action();
+
+			Stopwatch sw = <span class="keyword">new</span> Stopwatch();
+			sw.Start();
+			action();
+			sw.Stop();
+			<span class="keyword">return</span> sw.Elapsed;
+		}
+
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> Measures the runtime of an action once, will run the action before to warm up</span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="action"&gt;</span>The action to profile<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>The total runtime<span class="xmlDocTag">&lt;/returns&gt;</span></span>
+		<span class="keyword">public</span> <span class="keyword">static</span> TimeSpan <span class="title">ProfileAction</span>(Action action)
+		{
+			<span class="keyword">return</span> ProfileAction(action, <span class="keyword">true</span>);
+		}
+
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> Measures the total runtime of performing the specified action multiple times</span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="action"&gt;</span>The action to profile<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="iterations"&gt;</span>The number of iterations the action should be performed<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>The total runtime<span class="xmlDocTag">&lt;/returns&gt;</span></span>
+		<span class="keyword">public</span> <span class="keyword">static</span> TimeSpan <span class="title">ProfileAction</span>(Action action, <span class="keyword">int</span> iterations)
+		{
+			TimeSpan total = <span class="keyword">new</span> TimeSpan();
+
+			<span class="comment">// Perform single warmup</span>
+			action();
+
+			<span class="comment">// Profile iterations</span>
+			<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; iterations; i++)
+				total = total.Add(ProfileAction(action, <span class="keyword">false</span>));
+
+			<span class="keyword">return</span> total;
+		}
+
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> Measures the total runtime of performing the specified action using multiple threads</span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="action"&gt;</span>The action to profile<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="iterations"&gt;</span>The total number of iterations that should be profiled<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="dop"&gt;</span>The number of simultaneous threads that should be used<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>The total runtime<span class="xmlDocTag">&lt;/returns&gt;</span></span>
+		<span class="keyword">public</span> <span class="keyword">static</span> TimeSpan <span class="title">ProfileAction</span>(Action action, <span class="keyword">int</span> iterations, <span class="keyword">int</span> dop)
+		{
+			<span class="keyword">object</span> locker = <span class="keyword">new</span> <span class="keyword">object</span>();
+			List&lt;Thread&gt; threads = <span class="keyword">new</span> List&lt;Thread&gt;(iterations);
+
+			<span class="comment">// Warmup</span>
+			action();
+
+			<span class="comment">// Create profiling threads</span>
+			<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; dop; i++)
+			{
+				Thread t = <span class="keyword">new</span> Thread(<span class="keyword">delegate</span>()
+				{
+					<span class="keyword">while</span> (<span class="keyword">true</span>)
+					{
+						<span class="keyword">lock</span> (locker)
+						{
+							<span class="keyword">if</span> (iterations &gt; <span class="number">0</span>)
+								iterations--;
+							<span class="keyword">else</span>
+								<span class="keyword">break</span>;
+						}
+
+						action();
+					}
+				});
+				threads.Add(t);
+			}
+
+			Stopwatch sw = <span class="keyword">new</span> Stopwatch();
+			sw.Start();
+
+			<span class="comment">// Start profiling threads</span>
+			threads.ForEach(t =&gt; t.Start());
+
+			<span class="comment">// Wait for all threads to stop</span>
+			threads.ForEach(t =&gt; t.Join());
+
+			sw.Stop();
+
+			<span class="keyword">return</span> sw.Elapsed;
+		}
+	}
+}
+</pre></figure>
+
+<p>Using the CodeProfiler class, it’s easy for us to do code profiling, including measuring the effects of parallelization. Here’s an example of calculating the square root of the numbers 1 through 10 million 100 times, using 1-16 simultaneous threads. FYI I’m runing on a quad core machine.</p>
+<figure class="highlight csharp"><pre>using System;
+
+namespace CodeProfiler
+{
+	class Program
+	{
+		static void Main(string[] args)
+		{
+			Action action = () =&gt;
+			{
+				for (int i = 0; i &lt; 10000000; i++)
+					Math.Sqrt(i);
+			};
+
+			for(int i=1; i&lt;=16; i++)
+				Console.WriteLine(i + <span class="string">" thread(s):t"</span> + CodeProfiler.ProfileAction(action, 100, i));
+
+			Console.Read();
+		}
+	}
+}
+</pre></figure>
+
+<p>And the result as expected, the performance panning out when threads &gt;= cores. Using more threads than there is cores will usually not result in added performance, just increased context switching which is not desirable. Here’s the resulting execution times with seconds on the Y axis and number of threads on the X axis.</p>
+<div class="imgwrapper" style=""><div><a href="/profiling-code-the-easy-way/codeprofilergraph_2.jpg" class="fancy"><img src="/profiling-code-the-easy-way/codeprofilergraph_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/profiling-code-the-easy-way/codeprofilercmd_2.jpg" class="fancy"><img src="/profiling-code-the-easy-way/codeprofilercmd_2.jpg" style="max-height: 250px"/></a></div></div>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">07</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/spawning-threads-in-aspnet-can-be-dangerous/" title="Spawning Threads in ASP.NET Can Be Dangerous" rel="bookmark">Spawning Threads in ASP.NET Can Be Dangerous</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>In my <a href="/response-transmitfile-close-will-kill-your-application/">earlier blog post</a> about the dangers of using Response.TransmitFile, I gave an example of a workaround involving spawning a new thread in the ASP.NET page. While this does solve the issue at hand, it presents us with a new way to kill our application even quicker than last.</p>
+<a id="more"></a>
+
+<p>Usually when an uncaught exception occurs in an ASP.NET application, we will be presented with a “friendly” error message like the one below:</p>
+<div class="imgwrapper" style=""><div><a href="/spawning-threads-in-aspnet-can-be-dangerous/caughtexception.jpg" class="fancy"><img src="/spawning-threads-in-aspnet-can-be-dangerous/caughtexception.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>While there is an overhead of exceptions being thrown, they’re not directly dangerous and will at worst affect scalability (ignoring the actual reason of the exception being thrown). The problem is that ASP.NET will <em>only catch exceptions on the processing thread</em>. That means, if you spawn a new thread and an exception is thrown (and is not caught inside the thread itself), it will propagate and eventually <em>crash the w3wp.exe process</em>.</p>
+<h3 id="Safe">Safe</h3>
+<figure class="highlight csharp"><pre><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">Page_Load</span>(<span class="keyword">object</span> sender, EventArgs e)
+{
+	Response.Write(<span class="string">"CAN HAZ W3WP.EXE?"</span>);
+
+	<span class="keyword">throw</span> <span class="keyword">new</span> Exception(<span class="string">"I'll will be caught by ASP.NET :D"</span>);
+}
+</pre></figure>
+
+<h3 id="Unsafe,_will_crash_w3wp-exe">Unsafe, will crash w3wp.exe</h3>
+<figure class="highlight csharp"><pre><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">Page_Load</span>(<span class="keyword">object</span> sender, EventArgs e)
+{
+	Response.Write(<span class="string">"CAN HAZ W3WP.EXE?"</span>);
+
+	<span class="keyword">new</span> Thread(<span class="keyword">delegate</span>()
+	{
+		<span class="keyword">throw</span> <span class="keyword">new</span> Exception(<span class="string">"I'll not be caught by ASP.NET :("</span>);
+	}).Start();
+}
+</pre></figure>
+
+<p>There are several repercussions of the w3wp.exe crashing. There’s a major overhead in spawning a new w3wp.exe process on the next request, you will loose all session (if you’re using inprocess session storage), application and cache state. If you have error reporting turned on, you furthermore also see the “DW20.exe” process running and taking up 100% CPU for a significant amount of time (depending on w3wp.exe memory usage, etc) - if this happens often, you might have a large amount of DW20.exe error reporting processes running, effectively crashing your server.</p>
+<p>So how do we avoid this? Simple, make sure <em>all code</em> in spawned threads is handling exceptions:</p>
+<figure class="highlight csharp"><pre>protected void Page_Load(object sender, EventArgs e)
+{
+	Response.Write(<span class="string">"CAN HAZ W3WP.EXE?"</span>);
+
+	new Thread(delegate()
+	{
+		try
+		{
+			throw new Exception(<span class="string">"I'll be caught by our own exception handler :)"</span>);
+		}
+		catch
+		{
+			Response.Write(<span class="string">"What doesn't kill me will make me stronger!"</span>);
+		}
+	}).Start();
+}
+</pre></figure>
+
+<p>If you’re experiencing this issue, you will see errors in the System event log like this one:</p>
+<blockquote>
+<p>A process serving application pool ‘DefaultAppPool’ terminated unexpectedly. The process id was ‘708’. THe process exit code was ‘0xe0434f4d’.</p>
+</blockquote>
+<p>And like this one in the Application log:</p>
+<blockquote>
+<p>EventType clr20r3, P1 w3wp.exe, P2 6.0.3790.3959, P3 45d6968e, P4 crashw3wp, P5 1.0.0.0, P6 47f94ca4, P7 3, P8 b, P9 system.exception, P10 NIL.</p>
+</blockquote>
+<p><a href="http://blogs.msdn.com/tess" target="_blank">Tess</a> has a really great post on <a href="http://blogs.msdn.com/tess/archive/2006/04/27/584927.aspx" target="_blank">how to debug an unknown cause of the crash</a>.</p>
+<p>This issue is relevant to all flavors of Windows and all versions of IIS &amp; .NET.</p>
+<h2 id="Downloads">Downloads</h2>
+<p><a href="CrashW3WP.zip">CrashW3WP.zip - Sample code</a></p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+
+<div class="paging">
+	<a href="/page/17/"><div class="past">« Past</div></a>
+	<a href="/page/15/"><div class="future">Future »</div></a>
+	<div class="clear"></div>
+</div>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

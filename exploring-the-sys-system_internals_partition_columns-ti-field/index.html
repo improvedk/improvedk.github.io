@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Exploring the sys.system_internals_partition_columns.ti Field | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">13</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/exploring-the-sys-system_internals_partition_columns-ti-field/" title="Exploring the sys.system_internals_partition_columns.ti Field" rel="bookmark">Exploring the sys.system_internals_partition_columns.ti Field</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on Exploring the sys.system_internals_partition_columns.ti Field">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>Running sp_helptext on the sys.system_internals_partition_columns system view reveals the following internal query:</p>
+<a id="more"></a>
+
+
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	c.rsid <span class="keyword">AS</span> partition_id,  
+	c.rscolid <span class="keyword">AS</span> partition_column_id,  
+	c.rcmodified <span class="keyword">AS</span> modified_count,  
+	<span class="keyword">CASE</span> c.maxinrowlen
+		<span class="keyword">WHEN</span> <span class="number">0</span> <span class="keyword">THEN</span> p.length  
+		<span class="keyword">ELSE</span> c.maxinrowlen
+	<span class="keyword">END</span> <span class="keyword">AS</span> max_inrow_length,
+	CONVERT(<span class="keyword">BIT</span>, c.status & <span class="number">1</span>) <span class="keyword">AS</span> is_replicated,    --RSC_REPLICATED  
+	CONVERT(<span class="keyword">BIT</span>, c.status & <span class="number">4</span>) <span class="keyword">AS</span> is_logged_for_replication, --RSC_LOG_FOR_REPL  
+	CONVERT(<span class="keyword">BIT</span>, c.status & <span class="number">2</span>) <span class="keyword">AS</span> is_dropped,    --RSC_DROPPED  
+	p.xtype <span class="keyword">AS</span> system_type_id,  
+	p.length <span class="keyword">AS</span> max_length,  
+	p.prec <span class="keyword">AS</span> <span class="keyword">PRECISION</span>,  
+	p.scale <span class="keyword">AS</span> scale,  
+	CONVERT(sysname, CollationPropertyFromId(c.cid, <span class="string">'name'</span>)) <span class="keyword">AS</span> collation_name,  
+	CONVERT(<span class="keyword">BIT</span>, c.status & <span class="number">32</span>) <span class="keyword">AS</span> is_filestream,   --RSC_FILESTREAM  
+	c.ordkey <span class="keyword">AS</span> key_ordinal,  
+	CONVERT(<span class="keyword">BIT</span>, <span class="number">1</span> - (c.status & <span class="number">128</span>)/<span class="number">128</span>) <span class="keyword">AS</span> is_nullable,  -- RSC_NOTNULL    
+	CONVERT(<span class="keyword">BIT</span>, c.status & <span class="number">8</span>) <span class="keyword">AS</span> is_descending_key,  --RSC_DESC_KEY  
+	CONVERT(<span class="keyword">BIT</span>, c.status & <span class="number">16</span>) <span class="keyword">AS</span> is_uniqueifier,   --RSC_UNIQUIFIER  
+	CONVERT(<span class="keyword">SMALLINT</span>, CONVERT(BINARY(<span class="number">2</span>), c.offset & <span class="number">0xffff</span>)) <span class="keyword">AS</span> leaf_offset,  
+	CONVERT(<span class="keyword">SMALLINT</span>, SUBSTRING(CONVERT(BINARY(<span class="number">4</span>), c.offset), <span class="number">1</span>, <span class="number">2</span>)) <span class="keyword">AS</span> internal_offset,  
+	CONVERT(TINYINT, c.bitpos & <span class="number">0xff</span>) <span class="keyword">AS</span> leaf_bit_position,  
+	CONVERT(TINYINT, c.bitpos/<span class="number">0x100</span>) <span class="keyword">AS</span> internal_bit_position,  
+	CONVERT(<span class="keyword">SMALLINT</span>, CONVERT(BINARY(<span class="number">2</span>), c.nullbit & <span class="number">0xffff</span>)) <span class="keyword">AS</span> leaf_null_bit,  
+	CONVERT(<span class="keyword">SMALLINT</span>, SUBSTRING(CONVERT(BINARY(<span class="number">4</span>), c.nullbit), <span class="number">1</span>, <span class="number">2</span>)) <span class="keyword">AS</span> internal_null_bit,  
+	CONVERT(<span class="keyword">BIT</span>, c.status & <span class="number">64</span>) <span class="keyword">AS</span> is_anti_matter,   --RSC_ANTIMATTER  
+	CONVERT(UNIQUEIDENTIFIER, c.colguid) <span class="keyword">AS</span> partition_column_guid,  
+	sysconv(<span class="keyword">BIT</span>, c.status & <span class="number">0x00000100</span>) <span class="keyword">AS</span> is_sparse --RSC_SPARSE  
+<span class="keyword">FROM</span>
+	sys.sysrscols c
+<span class="keyword">OUTER</span> APPLY
+	OPENROWSET(<span class="keyword">TABLE</span> RSCPROP, c.ti) p</span>
+</pre></figure>
+
+<p>Nothing too out of the ordinary if you’ve looked at other internal queries. There’s a lot of bitmasking / shifting going on to extract multiple values from the same internal base table fields. One thing that is somewhat convoluted is the OPENROWSET(TABLE RSCPROP, c.ti) p OUTER APPLY being made.</p>
+<p>A Google query for “sql server +rscprop” yields absolutely zilch results:</p>
+<div class="imgwrapper" style=""><div><a href="/exploring-the-sys-system_internals_partition_columns-ti-field/image_27.png" class="fancy"><img src="/exploring-the-sys-system_internals_partition_columns-ti-field/image_27.png" style="max-height: 250px"/></a></div></div>
+
+<p>Simplifying the query to only show the fields using the fields referring the OPENROWSET (p) results, shows that the scale, precision, max_length, system_type_id and max_inrow_length are either extracted from the ti field value directly or indirectly:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	<span class="keyword">CASE</span> c.maxinrowlen
+		<span class="keyword">WHEN</span> <span class="number">0</span> <span class="keyword">THEN</span> p.length  
+		<span class="keyword">ELSE</span> c.maxinrowlen
+	<span class="keyword">END</span> <span class="keyword">AS</span> max_inrow_length,
+	p.xtype <span class="keyword">AS</span> system_type_id,  
+	p.length <span class="keyword">AS</span> max_length,  
+	p.prec <span class="keyword">AS</span> <span class="keyword">PRECISION</span>,  
+	p.scale <span class="keyword">AS</span> scale,
+<span class="keyword">FROM</span>
+	sys.sysrscols c
+<span class="keyword">OUTER</span> APPLY
+	OPENROWSET(<span class="keyword">TABLE</span> RSCPROP, c.ti) p</span>
+</pre></figure>
+
+<p>To help me identifying the ti field structure, I’ve made a test table using a number of different column types:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> TITest
+(
+	A binary(<span class="number">50</span>),
+	B <span class="keyword">char</span>(<span class="number">10</span>),
+	C datetime2(<span class="number">5</span>),
+	D <span class="keyword">decimal</span>(<span class="number">12</span>, <span class="number">5</span>),
+	E <span class="keyword">float</span>,
+	F <span class="keyword">int</span>,
+	G <span class="keyword">numeric</span>(<span class="number">11</span>, <span class="number">4</span>),
+	H nvarchar(<span class="number">50</span>),
+	I nvarchar(<span class="aggregate">max</span>),
+	J <span class="keyword">time</span>(<span class="number">3</span>),
+	K tinyint,
+	L varbinary(<span class="aggregate">max</span>),
+	M <span class="keyword">varchar</span>(<span class="number">75</span>),
+	N text
+)</span>
+</pre></figure>
+
+<p>I’m not going to insert any data as that’s irrelevant for this purpose. For this next part, make sure you’re connected to the SQL Server using the <a href="http://msdn.microsoft.com/en-us/library/ms178068.aspx" target="_blank">Dedicated Administrator Connection</a>. Now let’s query the sysrscols base table to see what values are stored in the ti field for the sample fields we’ve just created:</p>
+<figure class="highlight sql"><pre><span class="comment">-- Get object id of TITest table</span>
+<span class="operator"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> sys.sysschobjs <span class="keyword">WHERE</span> name = <span class="string">'TITest'</span>
+
+-- <span class="keyword">Get</span> rowset id <span class="keyword">for</span> TITest
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> sys.sysrowsets <span class="keyword">WHERE</span> idmajor = <span class="number">213575799</span>
+
+-- <span class="keyword">Get</span> <span class="keyword">all</span> columns <span class="keyword">for</span> rowset
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> sys.sysrscols <span class="keyword">WHERE</span> rsid = <span class="number">72057594040614912</span></span>
+</pre></figure>
+
+<p>Besides the fact I’ve cut away some irrelevant columns, this is the result:</p>
+<div class="imgwrapper" style=""><div><a href="/exploring-the-sys-system_internals_partition_columns-ti-field/image_64.png" class="fancy"><img src="/exploring-the-sys-system_internals_partition_columns-ti-field/image_64.png" style="max-height: 250px"/></a></div></div>
+
+<p>Note how we first get the object ID by querying sysschobjs, then the partition ID by querying sysrowsets and finally the partition columns by querying sysrscols. The marked ti column are the values from which we shall extract the scale, precision, max_length, system_type_id and max_inrow_length values.</p>
+<p>The following query will give a better row-by-row comparison between the ti value and the expected end result field values:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	t.name,
+	r.ti,
+	p.scale,
+	p.<span class="keyword">precision</span>,
+	p.max_length,
+	p.system_type_id,
+	p.max_inrow_length
+<span class="keyword">FROM</span>
+	sys.system_internals_partition_columns p
+<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
+	sys.sysrscols r <span class="keyword">ON</span>
+		r.rscolid = p.partition_column_id <span class="keyword">AND</span>
+		r.rsid = p.partition_id
+<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
+	sys.types t <span class="keyword">ON</span>
+		t.system_type_id = p.system_type_id <span class="keyword">AND</span>
+		t.user_type_id = p.system_type_id
+<span class="keyword">WHERE</span>
+	partition_id = <span class="number">72057594040614912</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/exploring-the-sys-system_internals_partition_columns-ti-field/image_103.png" class="fancy"><img src="/exploring-the-sys-system_internals_partition_columns-ti-field/image_103.png" style="max-height: 250px"/></a></div></div>
+
+<h3 id="binary">binary</h3>
+<p>Converting the first system_type_id into hex yields 0n173 = 0xAD. Converting the ti value yields 0n12973 = 0x32AD. An empirical test for all columns shows this to be true for them all. Thus we can conclude that the first byte (printed as the rightmost due to <a href="http://en.wikipedia.org/wiki/Endianness" target="_blank">little endianness</a>) stores the type. Extracting the value requires a simple bitmask operation:</p>
+<figure class="highlight csharp"><pre><span class="attribute">12973 & 0x000000FF =</span>=<span class="string"> 173</span>
+</pre></figure>
+
+<p>As for the length, the second byte stores the value 0x32 = 0n50. As the length is a smallint (we know it can be up to 8000, thus requiring at least a smallint), we can assume the next two bytes cover that. To extract that value, we’ll need a bitmask, as well as a shift operation to shift the two middlemost bytes one step to the right:</p>
+<figure class="highlight csharp"><pre><span class="attribute">(12973 & 0x00FFFF00) &gt;&gt; 8 =</span>=<span class="string"> 50</span>
+</pre></figure>
+
+<h3 id="datetime2">datetime2</h3>
+<p>This is the same for the char field. The datetime2 field is different as it stores the scale and precision values. 0n1322 in hex yields a value of 0x52A. 0x2A being the type (42). All that remains is the 0x5/0n5 which can only be the scale. A quick with a datetime(7) field yields the same result, though the precision is then 27. Thus I’ll conclude that for the datetime2 type, precision = 20 + scale. Extracting the scale from the second byte requires almost the same operation as before, just with a different bitmask:</p>
+<figure class="highlight csharp"><pre><span class="attribute">(1322 & 0x0000FF00) &gt;&gt; 8 =</span>=<span class="string"> 5</span>
+</pre></figure>
+
+<h3 id="decimal">decimal</h3>
+<p>Moving onto decimal, we now have both a scale and a precision to take care of. Converting 0n330858 to hex yields a value of 0x50C6A. 0x6A being the type (106). 0x0C being the precision and finally 0x5 being the scale. Note that this is different from datetime2 – now the scale is stored as the third byte and not the second!</p>
+<p>Extracting the third byte as the scale requires a similar bitmask &amp; shift operation as previously:</p>
+<figure class="highlight csharp"><pre><span class="attribute">(330858 & 0x00FF0000) &gt;&gt; 16 =</span>=<span class="string"> 5</span>
+</pre></figure>
+
+<h3 id="float">float</h3>
+<p>0n62 = 0x3E =&gt; the system_type_id value of 62. Thus the only value stored for the float is the type ID, the rest are a given. The same goes for the int, tinyint and similar fixed length field types.</p>
+<h3 id="numeric">numeric</h3>
+<p>0n265068 = 0x40B6C. 0x6C = the type ID of 108. 0xB = the precision value of 11. 0x4 = the scale value of 4.</p>
+<h3 id="nvarchar_&amp;_nvarchar(max)">nvarchar &amp; nvarchar(max)</h3>
+<p>These are a bit special too. Looking at the first nvarchar(100) field we can convert 0n25832 to 0x64E7. 0xE7 being the type ID of 231. 0x64 being the length of 100, stored as a two byte smallint. This shows that the parsing of non-max (n)varchar fields is pretty much in line with the rest so far.</p>
+<p>The nvarchar(max) differs in that it only stores the type ID, there’s no length. Given the lack of a length (technically the invalid length of 0 is stored), we read it as being –1, telling us that it’s a LOB/MAX field being stored with a max_length of –1 and a maximum in_row length of 8000, provided it’s not stored off-row.</p>
+<p>Varbinary seems to follow the exact same format.</p>
+<h3 id="time">time</h3>
+<p>0n809 = 0x329. 0x29 = the type ID of 41. 0x3 being the scale of 3. As with the datetime2 field, the precision scales with the scale (pun only slightly intended) – precision = 9 + scale.</p>
+<h3 id="text">text</h3>
+<p>0n4131 = 0x1023. 0x23 = the type ID of 35. 0x10 being the max_length of 16. The reason the text type has a max_length of 16 is that text is a LOB type that will always be stored off row, leaving just a 16 byte pointer in the record where it’s logically stored.</p>
+<h2 id="Conclusion">Conclusion</h2>
+<p>The OPENROWSET(TABLE RSCPROP, x) obviously performs some dark magic. The ti field is an integer that’s used to store multiple values &amp; formats, depending on the row type. Thus, to parse this properly, a switch would have to be made. Certain types also take values for a given – the precision fields based on the scale value, float having a fixed precision of 53 etc. It shouldn’t be long before I have a commit ready for <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a> that’ll contain this parsing logic :)</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=Exploring%20the%20sys.system_internals_partition_columns.ti%20Field%20http%3A%2F%2Fimprove.dk%2Fexploring-the-sys-system_internals_partition_columns-ti-field%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fexploring-the-sys-system_internals_partition_columns-ti-field%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fexploring-the-sys-system_internals_partition_columns-ti-field%2F&title=Exploring%20the%20sys.system_internals_partition_columns.ti%20Field" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/exploring-the-sys-system_internals_partition_columns-ti-field/exploring-the-sys-system_internals_partition_columns-ti-field.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'exploring-the-sys-system_internals_partition_columns-ti-field';
+	var disqus_url = 'http://improve.dk/exploring-the-sys-system_internals_partition_columns-ti-field/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

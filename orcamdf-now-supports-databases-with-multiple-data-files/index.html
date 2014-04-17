@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>OrcaMDF Now Supports Databases With Multiple Data Files | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Oct</span>
+			<span class="day">24</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/orcamdf-now-supports-databases-with-multiple-data-files/" title="OrcaMDF Now Supports Databases With Multiple Data Files" rel="bookmark">OrcaMDF Now Supports Databases With Multiple Data Files</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on OrcaMDF Now Supports Databases With Multiple Data Files">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>One of the latest features I’ve added to <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a> is support of databases with multiple data files. This required relatively little parsing changes, actually it was mostly bug fixing code that wasn’t hit previously, due to only working with single file databases. It did however require some major refactoring to move away from MdfFile being the primary entrypoint, to now using the Database class, encapsulating a variable number of DataFiles.</p>
+<a id="more"></a>
+
+<h2 id="Proportional_fill_allocation">Proportional fill allocation</h2>
+<p>OrcaMDF supports the standard proportional fill allocation scheme where a table is created in the database, being bound to the default PRIMARY filegroup containing all the data files. As an example, you might create the following database &amp; schema:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">DATABASE</span>
+	[SampleDatabase]
+<span class="keyword">ON</span>  <span class="keyword">PRIMARY</span> 
+	(
+		NAME = N<span class="string">'SampleDatabase_Data1'</span>,
+		FILENAME = N<span class="string">'C:SampleDatabase_Data1.mdf'</span>,
+		<span class="keyword">SIZE</span> = <span class="number">3072</span>KB,
+		FILEGROWTH = <span class="number">1024</span>KB
+	), 
+	(
+		NAME = N<span class="string">'SampleDatabase_Data2'</span>,
+		FILENAME = N<span class="string">'C:SampleDatabase_Data2.ndf'</span>,
+		<span class="keyword">SIZE</span> = <span class="number">3072</span>KB,
+		FILEGROWTH = <span class="number">1024</span>KB
+	), 
+	(
+		NAME = N<span class="string">'SampleDatabase_Data3'</span>,
+		FILENAME = N<span class="string">'C:SampleDatabase_Data3.ndf'</span>,
+		<span class="keyword">SIZE</span> = <span class="number">3072</span>KB,
+		FILEGROWTH = <span class="number">1024</span>KB
+	)
+LOG <span class="keyword">ON</span>
+	(
+		NAME = N<span class="string">'SampleDatabase_log'</span>,
+		FILENAME = N<span class="string">'C:SampleDatabase_log.ldf'</span>,
+		<span class="keyword">SIZE</span> = <span class="number">3072</span>KB,
+		FILEGROWTH = <span class="number">10</span>%
+	)
+<span class="keyword">GO</span>
+
+USE SampleDatabase
+<span class="keyword">GO</span>
+
+<span class="keyword">CREATE</span> <span class="keyword">TABLE</span> MyTable
+(
+	A <span class="keyword">int</span> <span class="keyword">identity</span>,
+	B uniqueidentifier <span class="keyword">default</span>(newid()),
+	C <span class="keyword">char</span>(<span class="number">6000</span>)
+)
+<span class="keyword">GO</span>
+
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> MyTable <span class="keyword">DEFAULT</span> <span class="keyword">VALUES</span>
+<span class="keyword">GO</span> <span class="number">100</span></span>
+</pre></figure>
+
+<p>This would cause MyTable to be proportionally allocated between the three data files (the C column being used for the fill to require 100 pages of storage – to ensure we hit all three data files). And to parse it, all you’d do is the following:</p>
+<figure class="highlight csharp"><pre><span class="keyword">var</span> files = <span class="keyword">new</span>[]
+    {
+		<span class="string">@"C:SampleDatabase_Data1.mdf"</span>,
+		<span class="string">@"C:SampleDatabase_Data2.ndf"</span>,
+		<span class="string">@"C:SampleDatabase_Data3.ndf"</span>
+    };
+
+<span class="keyword">using</span> (<span class="keyword">var</span> db = <span class="keyword">new</span> Database(files))
+{
+	<span class="keyword">var</span> scanner = <span class="keyword">new</span> DataScanner(db);
+	<span class="keyword">var</span> result = scanner.ScanTable(<span class="string">"MyTable"</span>);
+
+	EntityPrinter.Print(result);
+}
+</pre></figure>
+
+<p>And when run, you’ll see this:</p>
+<div class="imgwrapper" style=""><div><a href="/orcamdf-now-supports-databases-with-multiple-data-files/image_6.png" class="fancy"><img src="/orcamdf-now-supports-databases-with-multiple-data-files/image_6.png" style="max-height: 250px"/></a></div></div>
+
+<p>All the way down to 100. Notice how the A column identity value is jumping – this is due to the fact that we’re allocating one extent per data file in round robin fashion. ID’s 1-8 in the first data file, 9-16 in the second data file and finally 17-24 in the third data file. At this point pages 25-32 are allocated in the first data file again, and so on. Since it’s a heap, we’re scanning these in allocation order – by file. That causes us to get results 1-8, 25-32, 49-56, 73-80 and finally 97-100 all from the first file first, and then 9-16, 33-40, etc. from the second and finally the remaining pages from the third data file. Think that looks weird? Well, it’s exactly the same for SQL Server:</p>
+<div class="imgwrapper" style=""><div><a href="/orcamdf-now-supports-databases-with-multiple-data-files/image_8.png" class="fancy"><img src="/orcamdf-now-supports-databases-with-multiple-data-files/image_8.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Filegroup_support">Filegroup support</h2>
+<p>OrcaMDF also supports the use of filegroups, including proportional fill allocation within a specific filegroup. As an example, you might create the following database &amp; schema:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">DATABASE</span>
+	[SampleDatabase]
+<span class="keyword">ON</span>  <span class="keyword">PRIMARY</span> 
+	(
+		NAME = N<span class="string">'SampleDatabase_Data1'</span>,
+		FILENAME = N<span class="string">'C:SampleDatabase_Data1.mdf'</span>,
+		<span class="keyword">SIZE</span> = <span class="number">3072</span>KB,
+		FILEGROWTH = <span class="number">1024</span>KB
+	)
+LOG <span class="keyword">ON</span>
+	(
+		NAME = N<span class="string">'SampleDatabase_log'</span>,
+		FILENAME = N<span class="string">'C:SampleDatabase_log.ldf'</span>,
+		<span class="keyword">SIZE</span> = <span class="number">3072</span>KB,
+		FILEGROWTH = <span class="number">10</span>%
+	)
+<span class="keyword">GO</span>
+
+<span class="keyword">ALTER</span> <span class="keyword">DATABASE</span>
+	[SampleDatabase]
+<span class="keyword">ADD</span> FILEGROUP
+	[SecondFilegroup]
+<span class="keyword">GO</span>
+
+<span class="keyword">ALTER</span> <span class="keyword">DATABASE</span>
+	[SampleDatabase]
+<span class="keyword">ADD</span> FILE
+	(
+		NAME = N<span class="string">'SampleDatabase_Data2'</span>,
+		FILENAME = N<span class="string">'C:SampleDatabase_Data2.ndf'</span>,
+		<span class="keyword">SIZE</span> = <span class="number">3072</span>KB,
+		FILEGROWTH = <span class="number">1024</span>KB
+	),
+	(
+		NAME = N<span class="string">'SampleDatabase_Data3'</span>,
+		FILENAME = N<span class="string">'C:SampleDatabase_Data3.ndf'</span>,
+		<span class="keyword">SIZE</span> = <span class="number">3072</span>KB,
+		FILEGROWTH = <span class="number">1024</span>KB
+	)
+<span class="keyword">TO</span> FILEGROUP
+	[SecondFilegroup]
+<span class="keyword">GO</span>
+
+USE SampleDatabase
+<span class="keyword">GO</span>
+
+<span class="keyword">CREATE</span> <span class="keyword">TABLE</span> MyTable
+(
+	A <span class="keyword">float</span> <span class="keyword">default</span>(rand()),
+	B datetime <span class="keyword">default</span>(getdate()),
+	C uniqueidentifier <span class="keyword">default</span>(newid()),
+	D <span class="keyword">char</span>(<span class="number">5000</span>)
+) <span class="keyword">ON</span> [SecondFilegroup]
+<span class="keyword">GO</span>
+
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> MyTable <span class="keyword">DEFAULT</span> <span class="keyword">VALUES</span>
+<span class="keyword">GO</span> <span class="number">100</span></span>
+</pre></figure>
+
+<p>This would cause MyTable to be proportionally allocated in the second and third datafile (the D column being used for fill to require 100 pages of storage – to ensure we hit both data files in the filegroup), while the primary data file is left untouched. To parse it, you’d do the exact same as in the previous example, and the result would be:</p>
+<div class="imgwrapper" style=""><div><a href="/orcamdf-now-supports-databases-with-multiple-data-files/image_4.png" class="fancy"><img src="/orcamdf-now-supports-databases-with-multiple-data-files/image_4.png" style="max-height: 250px"/></a></div></div>
+
+<p>… All the way down to 100.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=OrcaMDF%20Now%20Supports%20Databases%20With%20Multiple%20Data%20Files%20http%3A%2F%2Fimprove.dk%2Forcamdf-now-supports-databases-with-multiple-data-files%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Forcamdf-now-supports-databases-with-multiple-data-files%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Forcamdf-now-supports-databases-with-multiple-data-files%2F&title=OrcaMDF%20Now%20Supports%20Databases%20With%20Multiple%20Data%20Files" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/orcamdf-now-supports-databases-with-multiple-data-files/orcamdf-now-supports-databases-with-multiple-data-files.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'orcamdf-now-supports-databases-with-multiple-data-files';
+	var disqus_url = 'http://improve.dk/orcamdf-now-supports-databases-with-multiple-data-files/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Setting Up and Testing Active Directory Failover | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Mar</span>
+			<span class="day">02</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/setting-up-and-testing-active-directory-failover/" title="Setting Up and Testing Active Directory Failover" rel="bookmark">Setting Up and Testing Active Directory Failover</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				, 
+			
+				<a href="http://improve.dk/category/Windows/">Windows</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on Setting Up and Testing Active Directory Failover">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>I spend a lot of time architecting for scalability, availability and security during my daily work. Currently I’ve got a distributed system consisting of several windows services communicating across machines using WCF and authenticating through Active Directory.</p>
+<a id="more"></a>
+
+<p>In such a situation, if the Active Directory Domain Controller (let’s just call it DC from now on) dies, everything more or less dies as no clients/servers are able to authenticate incoming requests anymore. Security is paramount, so the services are not allowed to simply cache the domain logon, thus the logon has the occur at each service call - requiring a fully working DC.</p>
+<p>In this post I’ll attempt to implement a secondary failover DC and investigate how it affects a downtime situation. I’ll be using a couple of simple WCF based applications to test the DC. I will be using three virtual machines. Luxor is the primary DC. MGM is part of the domain, and this is the machine hosting the WCF server. Later on I’ll add the third virtual machine, Excalibur, being the failover DC. The WCF client will be running from my own machine. Note that I will not show how to install the primary DC, <a href="http://www.petri.co.il/how_to_install_active_directory_on_windows_2003.htm" target="_blank">there are plenty other great guides on how to setup the primary DC</a>. I also won’t be going into <a href="http://support.microsoft.com/kb/814591" target="_blank">how to install the primary DNS server</a>.</p>
+<p>This is the WCF server interface:</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Security.Principal;
+<span class="keyword">using</span> System.ServiceModel;
+<span class="keyword">using</span> System.ServiceModel.Channels;
+<span class="keyword">using</span> System.ServiceModel.Description;
+
+namespace Contracts
+{
+	<span class="keyword">public</span> <span class="keyword">class</span> WCFHelper
+	{
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> Creates an instance of the specified interface type by channeling to the service host.</span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;typeparam name="T"&gt;</span>The interface type to create.<span class="xmlDocTag">&lt;/typeparam&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="binding"&gt;</span>The binding protocol to use.<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="endpointAddress"&gt;</span>The complete address for the endpoint.<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>An instance of type T.<span class="xmlDocTag">&lt;/returns&gt;</span></span>
+		<span class="keyword">public</span> <span class="keyword">static</span> T CreateChannel&lt;T&gt;(Binding binding, <span class="keyword">string</span> endpointAddress)
+		{
+			<span class="comment">// Create an endpoint for the specified binding & address</span>
+			ServiceEndpoint endpoint = <span class="keyword">new</span> ServiceEndpoint(ContractDescription.GetContract(<span class="keyword">typeof</span>(T)), binding, <span class="keyword">new</span> EndpointAddress(endpointAddress));
+			binding.SendTimeout = <span class="keyword">new</span> TimeSpan(<span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>);
+			binding.ReceiveTimeout = <span class="keyword">new</span> TimeSpan(<span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>);
+			binding.OpenTimeout = <span class="keyword">new</span> TimeSpan(<span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>);
+			binding.CloseTimeout = <span class="keyword">new</span> TimeSpan(<span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>);
+
+			<span class="comment">// Create a channel factory of type T</span>
+			ChannelFactory&lt;T&gt; factory = <span class="keyword">new</span> ChannelFactory&lt;T&gt;(endpoint);
+			factory.Credentials.Windows.ClientCredential.UserName = <span class="string">"RedundancyCheck"</span>;
+			factory.Credentials.Windows.ClientCredential.Password = <span class="string">"RedundancyCheck"</span>;
+			factory.Credentials.Windows.ClientCredential.Domain = <span class="string">"IPAPER"</span>;
+			factory.Credentials.Windows.AllowedImpersonationLevel = TokenImpersonationLevel.Impersonation;
+
+			<span class="comment">// Return the created channel</span>
+			<span class="keyword">return</span> factory.CreateChannel();
+		}
+
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> Creates a ServiceHost hosting the specific implementation TImplementationType of interface TInterfaceType at the specified endpointAddress.</span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;typeparam name="TInterfaceType"&gt;</span>The interface type to host.<span class="xmlDocTag">&lt;/typeparam&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;typeparam name="TImplentationType"&gt;</span>The implementation type to host.<span class="xmlDocTag">&lt;/typeparam&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="binding"&gt;</span>The binding protocol to use.<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="endpointAddress"&gt;</span>The endpoint where the service should be hosted at.<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="mexEndpointAddress"&gt;</span>The endpoint where the service metadata should be hosted at.<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>An instance of ServiceHost.<span class="xmlDocTag">&lt;/returns&gt;</span></span>
+		<span class="keyword">public</span> <span class="keyword">static</span> ServiceHost CreateServiceHost&lt;TInterfaceType, TImplentationType&gt;(Binding binding, <span class="keyword">string</span> endpointAddress, <span class="keyword">string</span> mexEndpointAddress)
+		{
+			<span class="comment">// Create new service host</span>
+			ServiceHost host = <span class="keyword">new</span> ServiceHost(<span class="keyword">typeof</span>(TImplentationType));
+
+			<span class="comment">// Create endpoints</span>
+			host.AddServiceEndpoint(<span class="keyword">typeof</span>(TInterfaceType), binding, endpointAddress);
+
+			<span class="comment">// Create metadata endpoint if it doesn't exist</span>
+			ServiceMetadataBehavior smb = host.Description.Behaviors.Find&lt;ServiceMetadataBehavior&gt;();
+			<span class="keyword">if</span> (smb == <span class="keyword">null</span>)
+			{
+				smb = <span class="keyword">new</span> ServiceMetadataBehavior();
+				smb.MetadataExporter.PolicyVersion = PolicyVersion.Policy15;
+				host.Description.Behaviors.Add(smb);
+			}
+			<span class="keyword">if</span> (binding <span class="keyword">is</span> NetTcpBinding)
+				host.AddServiceEndpoint(ServiceMetadataBehavior.MexContractName, MetadataExchangeBindings.CreateMexTcpBinding(), mexEndpointAddress);
+			<span class="keyword">else</span> <span class="keyword">if</span> (binding <span class="keyword">is</span> BasicHttpBinding)
+				host.AddServiceEndpoint(ServiceMetadataBehavior.MexContractName, MetadataExchangeBindings.CreateMexHttpBinding(), mexEndpointAddress);
+			<span class="keyword">else</span>
+				<span class="keyword">throw</span> <span class="keyword">new</span> ArgumentOutOfRangeException(<span class="string">"Invalid binding: "</span> + binding);
+
+			<span class="keyword">return</span> host;
+		}
+	}
+}
+</pre></figure>
+
+<p>Notice that I’ve hardcoded the user “IPAPERRedundancyCheck” with a password of “RedundancyCheck” - this is for test purposes only, don’t even bother commenting on password security :) Also notice that I’ve set a timeout of 1 second - when the DC fails, I don’t want to spend 30 seconds before knowing if it’s down, I want to know about it right away. And since all machines are running locally, 1 second is plenty.</p>
+<p>This is the server that’ll be running on the MGM machine on port 8000:</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Security;
+<span class="keyword">using</span> System.Security.Permissions;
+<span class="keyword">using</span> System.ServiceModel;
+<span class="keyword">using</span> Contracts;
+
+namespace WcfServer
+{
+	class Program
+	{
+		<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
+		{
+			<span class="comment">// Create service host</span>
+			ServiceHost host = WCFHelper.CreateServiceHost&lt;IServer, Server&gt;(<span class="keyword">new</span> NetTcpBinding(SecurityMode.Transport), <span class="string">"net.tcp://localhost:8000"</span>, <span class="string">"net.tcp://localhost:8000/mex"</span>);
+
+			<span class="comment">// Open host</span>
+			host.Open();
+
+			Console.Read();
+		}
+	}
+
+	[ServiceBehavior(IncludeExceptionDetailInFaults = <span class="keyword">true</span>)]
+	<span class="keyword">public</span> <span class="keyword">class</span> Server : IServer
+	{
+		<span class="keyword">public</span> <span class="keyword">string</span> <span class="title">Ping</span>()
+		{
+			<span class="comment">// Security check</span>
+			<span class="keyword">try</span>
+			{
+				<span class="keyword">new</span> PrincipalPermission(<span class="keyword">null</span>, <span class="string">"ADTest"</span>).Demand();
+			}
+			<span class="keyword">catch</span>
+			{
+				<span class="keyword">throw</span> <span class="keyword">new</span> SecurityException();
+			}
+
+			<span class="comment">// Let caller know that we're alive</span>
+			<span class="keyword">return</span> <span class="string">"Pong!"</span>;
+		}
+	}
+}
+</pre></figure>
+
+<p>We’ve got an implementation of the IServer interface with the single method “Ping”. We test that the user is part of the “ADTest” role by demanding it on the current principal. If something fails we throw a SecurityException which will let the client now authentication failed. If the client is authenticated, we return a pong.</p>
+<p>And finally we have the client that’ll be running on my own machine:</p>
+<figure class="highlight csharp"><pre>using System;
+using System.ServiceModel;
+using System.Threading;
+using Contracts;
+
+namespace WcfClient
+{
+	class Program
+	{
+		static void Main(string[] args)
+		{
+			while (true)
+			{
+				try
+				{
+					IServer server = WCFHelper.CreateChannel(new NetTcpBinding(SecurityMode.Transport), <span class="string">"net.tcp://192.168.0.35:8000"</span>);
+
+					using (server as IDisposable)
+					{
+						try
+						{
+							Console.WriteLine(server.Ping());
+						}
+						catch (Exception ex)
+						{
+							Console.WriteLine(ex.Message);
+						}
+					}
+				}
+				catch (CommunicationObjectFaultedException)
+				{ }
+
+				Thread.Sleep(250);
+			}
+		}
+	}
+}
+</pre></figure>
+
+<p>We create a channel to the MGM machine (static IP of 192.168.0.35). We’ll continue to call the IServer service every 250ms, writing either the result of the Ping function, or a message explaining any problems that have occurred. Note that in real life situations we’d not create a new channel each time, but in this case we have to, so we really do authenticate on each call (so we’re affected immediatly when the DC dies).</p>
+<p>The following clip will show what happens when we run the server &amp; client while the DC goes down (by pausing the virtual machine). Note that we’re receiving a timeout exception, not a SecurityException. This is because I’m using SecurityMode.Transport which requires us to authenticate before even reaching the service, thus the method is never invoked, and the PrincipPermission.Demand() call is NOT the one failing us, it’s the WCF security layer trying to open a TCP transport. As soon as the DC (running on LUXOR) fails, we lose connectivity with our service (running on MGM).</p>
+<div class="video-container"><iframe src="//www.youtube.com/embed/P7ufIfZlfjU" frameborder="0" allowfullscreen></iframe></div>
+
+
+
+<p>The goal obviously is to prevent this from happening, we cannot have all our services brought to a standstill if the DC fails. The first step in installing a failover AD DC is to get a DNS secondary server up and running (on the soon to be secondary DC machine) so we have redundant DNS functionality.</p>
+<p>A quick recap of the servers:</p>
+<figure class="highlight"><pre><span class="setting">LUXOR = <span class="value">Primary DC, primary DNS</span></span>
+<span class="setting">EXCALIBUR = <span class="value">To be secondary DC, secondary DNS</span></span>
+<span class="setting">MGM = <span class="value">Client server</span></span>
+</pre></figure>
+
+<div class="video-container"><iframe src="//www.youtube.com/embed/BE5mB417BNs" frameborder="0" allowfullscreen></iframe></div>
+
+
+
+<p>Now that we’ve got the secondary DNS set up, we’re ready to install Active Directory on the secondary AD server (EXCALIBUR). The following video shows how easy it is to install a failover DC:</p>
+<div class="video-container"><iframe src="//www.youtube.com/embed/x5qTxr-pglg" frameborder="0" allowfullscreen></iframe></div>
+
+
+
+<p>That’s it! After the server reboots, it now functions as a failover DC in case the primary one kicks the bucket. I’ll end this post post by running my WcfServer application on the MGM server whilst both LUXOR and EXCALIBUR are running. You’ll se a fluent stream of “Pong”s returning. After shutting down LUXOR, the WCF client will immediately start reporting connection problems, but after a short while it automatically starts returning Pongs again - it got a hold of the second DC! Now, if I shut down the second DC aswell, we’ll get errors in our client again. If I then restart the primary DC, after a short while, the client starts Ponging again - we got a hold of the primary DC. So we haven’t eliminated downtime completely, but we’ve reduced it to a 5-30 sec period before everything automatically switches over to the failover DC.</p>
+<div class="video-container"><iframe src="//www.youtube.com/embed/KWkEjiulJu8" frameborder="0" allowfullscreen></iframe></div>
+
+
+
+<p>This is my first blog post utilizing videos - does it work? Do you prefer seeing live video like this, or a long series of screenshots? I know what I prefer :)</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=Setting%20Up%20and%20Testing%20Active%20Directory%20Failover%20http%3A%2F%2Fimprove.dk%2Fsetting-up-and-testing-active-directory-failover%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fsetting-up-and-testing-active-directory-failover%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fsetting-up-and-testing-active-directory-failover%2F&title=Setting%20Up%20and%20Testing%20Active%20Directory%20Failover" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/setting-up-and-testing-active-directory-failover/setting-up-and-testing-active-directory-failover.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'setting-up-and-testing-active-directory-failover';
+	var disqus_url = 'http://improve.dk/setting-up-and-testing-active-directory-failover/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

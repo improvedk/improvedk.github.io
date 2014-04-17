@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Sparse Column Storage &amp; the Sparse Vector | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">15</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/sparse-column-storage-ndash-the-sparse-vector/" title="Sparse Column Storage &amp; the Sparse Vector" rel="bookmark">Sparse Column Storage &amp; the Sparse Vector</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on Sparse Column Storage &amp; the Sparse Vector">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>In this post I’ll be looking at the internal storage mechanism that supports sparse columns. For an introduction to what sparse columns are and when they ought to be used, <a href="http://msdn.microsoft.com/en-us/library/cc280604.aspx" target="_blank">take a look here</a>.</p>
+<a id="more"></a>
+
+<p>Sparse columns, whether fixed or variable length, or not stored together with the normal columns in a <a href="http://www.sqlskills.com/blogs/paul/post/Inside-the-Storage-Engine-Anatomy-of-a-record.aspx" target="_blank">record</a>. Instead, they’re all stored in a hidden variable length column at the very end of the record (barring the potential 14 byte structure that may be stored when using versioning).</p>
+<h2 id="Creating_and_finding_a_sparse_vector">Creating and finding a sparse vector</h2>
+<p>Let’s create a sample table and insert a couple of test rows:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> Sparse
+(
+    ID <span class="keyword">int</span>,
+    A <span class="keyword">int</span> SPARSE,
+    B <span class="keyword">int</span> SPARSE,
+    C <span class="keyword">int</span> SPARSE,
+    D <span class="keyword">int</span> SPARSE,
+    E <span class="keyword">int</span> SPARSE
+)
+
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> Sparse (ID, B, E) <span class="keyword">VALUES</span> (<span class="number">1</span>, <span class="number">3</span>, <span class="number">1234</span>)
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> Sparse (ID, A, B) <span class="keyword">VALUES</span> (<span class="number">45</span>, <span class="number">243</span>, <span class="number">328</span>)</span>
+</pre></figure>
+
+<p>As you’d expect, a SELECT * yields the following result:</p>
+<div class="imgwrapper" style=""><div><a href="/sparse-column-storage-ndash-the-sparse-vector/image_210.png" class="fancy"><img src="/sparse-column-storage-ndash-the-sparse-vector/image_210.png" style="max-height: 250px"/></a></div></div>
+
+<p>Now let’s use DBCC IND to find the lone data pages ID, and then check out the stored record using DBCC PAGE:</p>
+<figure class="highlight sql"><pre>DBCC IND (X, 'Sparse', -1)
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/sparse-column-storage-ndash-the-sparse-vector/image_44.png" class="fancy"><img src="/sparse-column-storage-ndash-the-sparse-vector/image_44.png" style="max-height: 250px"/></a></div></div>
+
+
+<figure class="highlight sql"><pre>DBCC PAGE (X, 1, 4328, 3)
+</pre></figure>
+
+<p>This gives us two records, the first one looking like this:</p>
+<div class="imgwrapper" style=""><div><a href="/sparse-column-storage-ndash-the-sparse-vector/image_85.png" class="fancy"><img src="/sparse-column-storage-ndash-the-sparse-vector/image_85.png" style="max-height: 250px"/></a></div></div>
+
+<p>In a previous post I detailed how we <a href="/identifying-complex-columns-in-records/">identify complex columns like sparse vectors</a>, so I won’t go into too much detail there. The two red bytes is the single entry in the variable length offset array, with a value of 0x8023 = 32.803. Once we flip the high order bit (identifying this column as a complex column) we get an offset value of 35. Thus we know that the remaining 20 bytes in the record is our sparse vector.</p>
+<h2 id="The_sparse_vector_structure">The sparse vector structure</h2>
+<p>So what do those 20 bytes contain? The sparse vector structure looks like this:</p>
+<table><br>    <tbody><br>        <tr><br>            <td valign="top" width="173"><strong>Name</strong></td><br>            <td valign="top" width="281"><strong>Bytes</strong></td><br>            <td valign="top" width="344"><strong>Description</strong></td><br>        </tr><br>        <tr><br>            <td valign="top" width="175">Complex column header</td><br>            <td valign="top" width="281">2</td><br>            <td valign="top" width="344">The header identifies the type of complex column that we’re dealing with. A value of 5 denotes a sparse vector.</td><br>        </tr><br>        <tr><br>            <td valign="top" width="175">Sparse column count</td><br>            <td valign="top" width="281">2</td><br>            <td valign="top" width="344">Number of sparse column values that are stored in the vector – only columns that have values are included in the vector.</td><br>        </tr><br>        <tr><br>            <td valign="top" width="176">Column ID set</td><br>            <td valign="top" width="281">2 <em> Number of sparse columns with values</td><br>            <td valign="top" width="344">Each sparse column storing a value will use two bytes to store the ID of the column (as seen in sys.columns).</td><br>        </tr><br>        <tr><br>            <td valign="top" width="176">Column offset table</td><br>            <td valign="top" width="281">2 </em> Number of sparse columns with values</td><br>            <td valign="top" width="344">Just like the record variable offset array, this stores two bytes per sparse column with a value. The value denotes the end of the actual value in the sparse vector.</td><br>        </tr><br>        <tr><br>            <td valign="top" width="176">Sparse data</td><br>            <td valign="top" width="281">Total length of all sparse column data values.</td><br>            <td valign="top" width="344"></td><br>        </tr><br>    </tbody><br></table>
+
+<p>It’s interesting to note that unlike the normal record structure, fixed length and variable length sparse columns are stored in exactly the same way – both have an entry in the offset table, even though the fixed length values don’t differ in length.</p>
+<h3 id="Looking_at_a_record">Looking at a record</h3>
+<p>Going back to our record structure, I’ve colored it according to separate the different parts of the vector:</p>
+<p><strong><span style="color: #ff0000;"><span style="color: #000000;">0x</span>0500</span><span style="color: #0000ff;">0200</span><span style="color: #9b00d3;">03000600</span><span style="color: #008000;">10001400</span>03000000d2040000</strong></p>
+<p><em>Note that I’ve byte swapped the following byte references.</em></p>
+<p>The first two bytes <strong><span style="color: #ff0000;">0x0005</span></strong> == 5 contains the complex column ID.</p>
+<p>The next two bytes <strong><span style="color: #0000ff;">0x0002</span></strong> == 2 contains the number of sparse columns that are non-null, that is, they have a value stored in the sparse vector.</p>
+<p>The purple part stores two bytes per column, namely the column IDs of the stored columns. <strong><span style="color: #9b00d3;">0x0003</span></strong> == 3, <span style="color: #9b00d3;"><strong>0x0006</strong></span> == 6.</p>
+<p>Next up we have the green part – again storing two bytes per column, this time the offsets in the sparse vector. <strong><span style="color: #008000;">0x0010</span></strong> == 16, <strong><span style="color: #008000;">0x0014</span></strong> == 20.</p>
+<p>Finally we have the values themselves. We know that the first column has an ID of 3 and it’s data ends et offset 16. Since the first 12 bytes are made up of the header, the actual values are stored in bytes 13-16: <strong>0x00000003</strong> == 3. The second value ends at offset 20, meaning it’s stored in bytes 17-20: <strong>0x000004d2</strong> == 1.234.</p>
+<h3 id="Correlating_sparse_vector_values_with_sys-columns">Correlating sparse vector values with sys.columns</h3>
+<p>Now that we have the values, we just need to correlate them with the columns whose value they store. Let’s select the columns in our Sparse table:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	*
+<span class="keyword">FROM</span>
+	sys.columns
+<span class="keyword">WHERE</span>
+	object_id = OBJECT_ID(<span class="string">'Sparse'</span>)</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/sparse-column-storage-ndash-the-sparse-vector/image_104.png" class="fancy"><img src="/sparse-column-storage-ndash-the-sparse-vector/image_104.png" style="max-height: 250px"/></a></div></div>
+
+<p>And there we have it – the value 3 was stored in column_id = 3 =&gt; B. The value 1.234 was stored in column_id = 6 =&gt; E. Coincidentally, that matches up with our originally select query:</p>
+<div class="imgwrapper" style=""><div><a href="/sparse-column-storage-ndash-the-sparse-vector/image_13.png" class="fancy"><img src="/sparse-column-storage-ndash-the-sparse-vector/image_13.png" style="max-height: 250px"/></a></div></div>
+
+<p>The same procedure can be repeated for the second record, but I’m going to leave that as an exercise for the reader :)</p>
+<h2 id="Writing_a_sparse_vector_parser_in_C">Writing a sparse vector parser in C</h2>
+<p>Once we know the structure of the sparse vector, writing a parser in C# is surprisingly simple:</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Collections.Generic;
+<span class="keyword">using</span> System.Linq;
+
+namespace OrcaMDF.Core.Engine
+{
+	<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+	<span class="comment"><span class="xmlDocTag">///</span> Parses sparse vectors as stored in records for tables containing sparse columns.</span>
+	<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+	<span class="keyword">public</span> <span class="keyword">class</span> SparseVectorParser
+	{
+		<span class="keyword">public</span> <span class="keyword">short</span> ColumnCount { <span class="keyword">get</span>; <span class="keyword">private</span> <span class="keyword">set</span>; }
+		<span class="keyword">public</span> IDictionary&lt;<span class="keyword">short</span>, <span class="keyword">byte</span>[]&gt; ColumnValues { <span class="keyword">get</span>; <span class="keyword">private</span> <span class="keyword">set</span>; }
+
+		<span class="keyword">public</span> <span class="title">SparseVectorParser</span>(<span class="keyword">byte</span>[] bytes)
+		{
+			<span class="comment">// First two bytes must have the value 5, indicating this is a sparse vector</span>
+			<span class="keyword">short</span> complexColumnID = BitConverter.ToInt16(bytes, <span class="number">0</span>);
+			<span class="keyword">if</span> (complexColumnID != <span class="number">5</span>)
+				<span class="keyword">throw</span> <span class="keyword">new</span> ArgumentException(<span class="string">"Input bytes does not contain a sparse vector."</span>);
+
+			<span class="comment">// Number of columns contained in this sparse vector</span>
+			ColumnCount = BitConverter.ToInt16(bytes, <span class="number">2</span>);
+
+			<span class="comment">// For each column, read the data into the columnValues dictionary</span>
+			ColumnValues = <span class="keyword">new</span> Dictionary&lt;<span class="keyword">short</span>, <span class="keyword">byte</span>[]&gt;();
+			<span class="keyword">short</span> columnIDSetOffset = <span class="number">4</span>;
+			<span class="keyword">short</span> columnOffsetTableOffset = (<span class="keyword">short</span>)(columnIDSetOffset + <span class="number">2</span> * ColumnCount);
+			<span class="keyword">short</span> columnDataOffset = (<span class="keyword">short</span>)(columnOffsetTableOffset + <span class="number">2</span> * ColumnCount);
+			<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>; i&lt;ColumnCount; i++)
+			{
+				<span class="comment">// Read ID, data offset and data from vector</span>
+				<span class="keyword">short</span> columnID = BitConverter.ToInt16(bytes, columnIDSetOffset);
+				<span class="keyword">short</span> columnOffset = BitConverter.ToInt16(bytes, columnOffsetTableOffset);
+				<span class="keyword">byte</span>[] data = bytes.Take(columnOffset).Skip(columnDataOffset).ToArray();
+
+				<span class="comment">// Add ID + data to dictionary</span>
+				ColumnValues.Add(columnID, data);
+
+				<span class="comment">// Increment both ID and offset offsets by two bytes</span>
+				columnIDSetOffset += <span class="number">2</span>;
+				columnOffsetTableOffset += <span class="number">2</span>;
+				columnDataOffset = columnOffset;
+			}
+		}
+	}
+}
+</pre></figure>
+
+<p>I won’t go into the code as it’s documented and follows the procedure we just went through. A quick test verifies that it achieves the same results as we just did by hand:</p>
+<figure class="highlight csharp"><pre>[TestFixture]
+<span class="keyword">public</span> <span class="keyword">class</span> SparseVectorParserTests
+{
+	[Test]
+	<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Parse</span>()
+	{
+		<span class="keyword">byte</span>[] bytes = <span class="keyword">new</span> <span class="keyword">byte</span> [] { <span class="number">0x05</span>, <span class="number">0x00</span>, <span class="number">0x02</span>, <span class="number">0x00</span>, <span class="number">0x03</span>, <span class="number">0x00</span>, <span class="number">0x06</span>, <span class="number">0x00</span>, <span class="number">0x10</span>, <span class="number">0x00</span>, <span class="number">0x14</span>, <span class="number">0x00</span>, <span class="number">0x03</span>, <span class="number">0x00</span>, <span class="number">0x00</span>, <span class="number">0x00</span>, <span class="number">0xd2</span>, <span class="number">0x04</span>, <span class="number">0x00</span>, <span class="number">0x00</span> };
+		<span class="keyword">var</span> parser = <span class="keyword">new</span> SparseVectorParser(bytes);
+
+		Assert.AreEqual(<span class="number">2</span>, parser.ColumnCount);
+		Assert.AreEqual(<span class="number">3</span>, BitConverter.ToInt32(parser.ColumnValues[<span class="number">3</span>], <span class="number">0</span>));
+		Assert.AreEqual(<span class="number">1234</span>, BitConverter.ToInt32(parser.ColumnValues[<span class="number">6</span>], <span class="number">0</span>));
+	}
+}
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/sparse-column-storage-ndash-the-sparse-vector/image_15.png" class="fancy"><img src="/sparse-column-storage-ndash-the-sparse-vector/image_15.png" style="max-height: 250px"/></a></div></div>
+
+<p>You can check out the full code at the <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF Github repository</a>.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=Sparse%20Column%20Storage%20%26%20the%20Sparse%20Vector%20http%3A%2F%2Fimprove.dk%2Fsparse-column-storage-ndash-the-sparse-vector%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fsparse-column-storage-ndash-the-sparse-vector%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fsparse-column-storage-ndash-the-sparse-vector%2F&title=Sparse%20Column%20Storage%20%26%20the%20Sparse%20Vector" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/sparse-column-storage-ndash-the-sparse-vector/sparse-column-storage-ndash-the-sparse-vector.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'sparse-column-storage-ndash-the-sparse-vector';
+	var disqus_url = 'http://improve.dk/sparse-column-storage-ndash-the-sparse-vector/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

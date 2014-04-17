@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Nov</span>
+			<span class="day">06</span>
+		</div>
+		<div class="lower">2013</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/sql-server-corruption-recovery-when-all-else-fails/" title="SQL Server Corruption Recovery - When All Else Fails" rel="bookmark">SQL Server Corruption Recovery - When All Else Fails</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server/">SQL Server</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>In this post I want to walk through a number of SQL Server corruption recovery techniques for when you’re out of luck, have no backups, and the usual methods don’t work. I’ll be using the <a href="http://msftdbprodsamples.codeplex.com/releases/view/93587" target="_blank">AdventureWorksLT2008R2 sample database</a> as my victim.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Nov</span>
+			<span class="day">05</span>
+		</div>
+		<div class="lower">2013</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/corrupting-databases-purpose-using-orcamdf-corruptor/" title="Corrupting Databases on Purpose Using the OrcaMDF Corruptor" rel="bookmark">Corrupting Databases on Purpose Using the OrcaMDF Corruptor</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server/">SQL Server</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Sometimes you must first do evil, to do good. Such is the case when you want to hone your skills in corruption recovery of SQL Server databases.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Nov</span>
+			<span class="day">04</span>
+		</div>
+		<div class="lower">2013</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/orcamdf-rawdatabase-a-swiss-army-knife-for-mdf-files/" title="OrcaMDF RawDatabase - A Swiss Army Knife for MDF Files" rel="bookmark">OrcaMDF RawDatabase - A Swiss Army Knife for MDF Files</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server/">SQL Server</a>
+				, 
+			
+				<a href="http://improve.dk/category/Tools of the Trade/">Tools of the Trade</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>When I initially started working on <a href="/introducing-orcamdf/">OrcaMDF</a> I had just one goal, to gain a deeper knowledge of MDF file internals than I could through most books available.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Oct</span>
+			<span class="day">23</span>
+		</div>
+		<div class="lower">2013</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/announcing-tribalsql/" title="Announcing Tribal SQL" rel="bookmark">Announcing Tribal SQL</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Community/">SQL Server - Community</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server/">SQL Server</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>I’m slightly late to announce this, but better late than never!</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Aug</span>
+			<span class="day">27</span>
+		</div>
+		<div class="lower">2012</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/where-does-sql-server-store-the-source-for-stored-procedures/" title="Where Does SQL Server Store the Source for Stored Procedures?" rel="bookmark">Where Does SQL Server Store the Source for Stored Procedures?</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>At the moment I’m working on extending <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF Studio</a> to not only list base tables, DMVs and tables, but also stored procedures. That’s easy enough, we just need to query sys.procedures – or that is, the sys.sysschobjs base table, since the sys.procedures DMV isn’t available when SQL Server isn’t running.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jun</span>
+			<span class="day">19</span>
+		</div>
+		<div class="lower">2012</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/video-from-ndc-2012-revealing-the-sql-server-magic/" title="Video From NDC 2012: Revealing the SQL Server Magic" rel="bookmark">Video From NDC 2012: Revealing the SQL Server Magic</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/Conferences and Presenting/">Conferences and Presenting</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>I’m really lagging behind on my blogging – life is busy as the moment! Just a couple of weeks ago I presented my Revealing the Magic session at the Norwegian Developers Conference in Oslo. I was quite excited to give my SQL Server oriented session to a crowd of developers – a 500 level session, at SQL Server events that is.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Feb</span>
+			<span class="day">29</span>
+		</div>
+		<div class="lower">2012</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/why-use-big-endian-for-compressed-integers/" title="Why Use Big Endian For Compressed Integers?" rel="bookmark">Why Use Big Endian For Compressed Integers?</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>While implementing compression support for <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a>, it stumped me when I discovered that integers (including datetime, money and all other type based on integers) were <a href="/the-anatomy-of-row-amp-page-compressed-integers">stored in big endian</a>. As all other integers are stored in little endian and I couldn’t see why they’d want to change it, I assumed it must’ve been due to using different libraries or something to that extent.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jan</span>
+			<span class="day">30</span>
+		</div>
+		<div class="lower">2012</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/the-anatomy-of-row-amp-page-compressed-integers/" title="The Anatomy of Row &amp; Page Compressed Integers" rel="bookmark">The Anatomy of Row &amp; Page Compressed Integers</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>While working on row compression support for <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a>, I ran into some challenges when trying to parse integers. Contrary to normal non-compressed integer storage, these are all variable width – meaning an integer with a value of <em>50</em> will only take up one byte, instead of the usual four. That wasn’t new though, seeing as <a href="/how-are-vardecimals-stored">vardecimals are also stored as variable width</a>. What is different however is the way the numbers are stored on disk. Note that while I was only implementing row compression, the integer compression used in page compression is exactly the same, so this goes for both types of compression.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Dec</span>
+			<span class="day">13</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/how-are-vardecimals-stored/" title="The Anatomy of Vardecimals" rel="bookmark">The Anatomy of Vardecimals</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>In this post I’ll do a deep dive into how vardecimals are stored on disk. For a general introduction to what they are and how/when to use them, <a href="http://msdn.microsoft.com/en-us/library/bb326755.aspx" target="_blank">see this post</a>.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Dec</span>
+			<span class="day">12</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/determining-if-vardecimal-is-enabled-for-a-table-without-using/" title="Determining If Vardecimal Is Enabled For a Table Without Using OBJECTPROPERTY" rel="bookmark">Determining If Vardecimal Is Enabled For a Table Without Using OBJECTPROPERTY</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Determining whether <a href="http://msdn.microsoft.com/en-us/library/bb508963(v=sql.90" target="_blank">vardecimal</a>.aspx) is enabled for a given table is usually done by using the OBJECTPROPERTY function like so:</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">18</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/" title="What is the Size of the LOB Pointer for (MAX) Types Like Varchar, Varbinary, Etc?" rel="bookmark">What is the Size of the LOB Pointer for (MAX) Types Like Varchar, Varbinary, Etc?</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>LOB types like varchar(MAX), nvarchar(MAX), varbinary(MAX) and xml suffer from split personality disorder. SQL Server may store values in-row or off-row depending on the size of the value, the available space in the record and the table settings. Because of this, it’s no easy task to predict the size of the pointer left in the record itself. You might even say… It depends.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">16</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/the-8-byte-record-that-was-9-bytes-while-making-no-sense/" title="The 8 Byte Record That Was 9 Bytes While Making No Sense" rel="bookmark">The 8 Byte Record That Was 9 Bytes While Making No Sense</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Warning: this is a <em>select is (most likely) not broken, it’s just not working as I’d expect</em>. It may very well be that I’m just overlooking something, in which case I hope someone will correct me :)</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">16</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/depending-on-how-itrsquos-added-spare-bits-in-the-null/" title="The Garbage Null Bitmap and Why You Can&#39;t Rely on It Solely" rel="bookmark">The Garbage Null Bitmap and Why You Can&#39;t Rely on It Solely</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>While adding some extra sparse column tests to the <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a> test suite, I discovered an bug in my parsing of records. While the problem was simple enough, it took me a while to debug. Running the test, it worked about 40% of the time while failing the remaining 60% of the time. As I hadn’t picked up on this pattern I happily fixed (or so I thought) the bug, ran my test and verified that it was working. Shortly after the test failed – without me having changed any code. After having the first few strains of hair turn grey, I noticed the pattern and subsequently fixed the bug.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">15</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/sparse-column-storage-ndash-the-sparse-vector/" title="Sparse Column Storage &amp; the Sparse Vector" rel="bookmark">Sparse Column Storage &amp; the Sparse Vector</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>In this post I’ll be looking at the internal storage mechanism that supports sparse columns. For an introduction to what sparse columns are and when they ought to be used, <a href="http://msdn.microsoft.com/en-us/library/cc280604.aspx" target="_blank">take a look here</a>.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">15</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/the-null-bitmap-is-not-always-present-in-data-records/" title="The Null Bitmap is Not Always Present in Data Records" rel="bookmark">The Null Bitmap is Not Always Present in Data Records</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>While <a href="/sparse-column-storage-ndash-the-sparse-vector/">implementing sparse column support</a> for <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a>, I ran into a special condition that caught me by surprise – a data record with no null bitmap. Even <a href="http://www.sqlskills.com/BLOGS/PAUL/" target="_blank">Paul Randal</a> mentioned that the null bitmap would <em>always</em> be present in data records in his <a href="http://www.sqlskills.com/BLOGS/PAUL/post/A-SQL-Server-DBA-myth-a-day-(630" target="_blank">A SQL Server DBA myth a day: (6/30) three null bitmap myths</a>-three-null-bitmap-myths.aspx) post.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">15</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/identifying-complex-columns-in-records/" title="Identifying Complex Columns in Records" rel="bookmark">Identifying Complex Columns in Records</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p><em>For an introduction to the anatomy of records, I suggest you read </em><a href="http://www.sqlskills.com/blogs/paul/post/Inside-the-Storage-Engine-Anatomy-of-a-record.aspx" target="_blank"><em>this post</em></a><em> by </em><a href="http://www.sqlskills.com/BLOGS/PAUL/" target="_blank"><em>Paul Randal</em></a><em>.</em></p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">13</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/exploring-the-sys-system_internals_partition_columns-ti-field/" title="Exploring the sys.system_internals_partition_columns.ti Field" rel="bookmark">Exploring the sys.system_internals_partition_columns.ti Field</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Running sp_helptext on the sys.system_internals_partition_columns system view reveals the following internal query:</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">13</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/creating-a-type-aware-parser-for-the-sys-system_internals_partition_columns-ti-field/" title="Creating a Type Aware Parser for the sys.system_internals_partition_columns.ti Field" rel="bookmark">Creating a Type Aware Parser for the sys.system_internals_partition_columns.ti Field</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Based on my findings <a href="/exploring-the-sys-system_internals_partition_columns-ti-field">exploring the sys.system_internals_partition_columns.ti field</a>, I needed parser that could extract the scale, precision, max_length as well as the max_inrow_length fields from it. The tricky part is that those values are stored differently for each individual type, added onto the fact that some types have hardcoded defaults that are not stored in the ti field, even though there’s space for it.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">06</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/" title="Determining the Uniquifier Column Ordinal for Clustered and Nonclustered Indexes" rel="bookmark">Determining the Uniquifier Column Ordinal for Clustered and Nonclustered Indexes</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Lately I’ve been working on nonclustered index parsing. One of my test cases proved to be somewhat more tricky than I’d anticipated, namely the parsing of nonclustered indexes for non-unique clustered tables. Working with non-unique clustered indexes, we’ll have to take care of <a href="http://www.mssqltips.com/tip.asp?tip=2082" target="_blank">uniquifiers</a> when necessary.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jun</span>
+			<span class="day">16</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/getting-bit-by-datetime-rounding-or-why-235959-999-ltgt/" title="Getting Bit by Datetime Rounding or Why 23:59:59.999 &lt; &#39;23:59:59.999&#39;" rel="bookmark">Getting Bit by Datetime Rounding or Why 23:59:59.999 &lt; &#39;23:59:59.999&#39;</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Earlier today I was doing some ad-hoc querying to retrieve some numbers for the month of May. Not giving it deeper thought, I made a simple query like this:</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jun</span>
+			<span class="day">09</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/anatomy-of-a-forwarded-record-ndash-the-back-pointer/" title="Anatomy of a Forwarded Record &amp; the Back Pointer" rel="bookmark">Anatomy of a Forwarded Record &amp; the Back Pointer</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Earlier this week I provided some details on the <a href="/anatomy-of-a-forwarded-record-ndash-the-forwarding-stub">forwarding stub that’s left behind</a> when a heap record is forwarded. In this post I’ll look at the second part of a forwarded record – the actual record to which the forwarding stub points.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jun</span>
+			<span class="day">07</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/anatomy-of-a-forwarded-record-ndash-the-forwarding-stub/" title="Anatomy of a Forwarded Record &amp; the Forwarding Stub" rel="bookmark">Anatomy of a Forwarded Record &amp; the Forwarding Stub</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>A forwarded record occurs whenever a record in a <a href="http://msdn.microsoft.com/en-us/library/ms188270.aspx" target="_blank">heap</a> increases in size and it no longer fits on the page. Instead of causing a page split, as would happen had the table not been a heap, the record is moved onto another with enough free space, or onto a newly allocated page. Forwarded records can wreak havoc to your performance due to fragmentation, but I’ll leave not cover that here as many other more skilled people <a href="http://sqlblog.com/blogs/kalen_delaney/archive/2009/11/11/fragmentation-and-forwarded-records-in-a-heap.aspx" target="_blank">have</a> <a href="http://blogs.msdn.com/b/mssqlisv/archive/2006/12/01/knowing-about-forwarded-records-can-help-diagnose-hard-to-find-performance-issues.aspx" target="_blank">already</a> <a href="http://www.sqlskills.com/BLOGS/PAUL/post/Forwarding-and-forwarded-records-and-the-back-pointer-size.aspx" target="_blank">done</a> <a href="http://blogs.msdn.com/b/sqlserverstorageengine/archive/2006/09/19/761437.aspx" target="_blank">so</a>.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">31</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/saving-space-by-storing-real-values-in-smallints/" title="Saving Space by Storing Decimal Values in Integer Data Types" rel="bookmark">Saving Space by Storing Decimal Values in Integer Data Types</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>I recently stumbled upon a <a href="http://stackoverflow.com/questions/6015605/design-question-on-storing-meteorological-data-on-sql-server-2008/6016237#6016237" target="_blank">question on Stack Overflow</a> on how best to reduce their data size as it’s growing out of hand. As the original author hasn’t replied back yet (as of writing this post, I’m making some assumptions on the scenario – so take it as an abstract scenario). The basic scenario is that they have a number of measuring stations, each one of those containing a lot of equipment reporting back to a SQL Server in a schema like the following abstract:</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">19</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/reverse-engineering-sql-server-page-headers/" title="Reverse Engineering SQL Server Page Headers" rel="bookmark">Reverse Engineering SQL Server Page Headers</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>One of the first challenges I faced when starting out the development of <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a> was parsing page headers. We all know that <a href="/deciphering-a-sql-server-data-page/">pages are basically split in two parts</a>, the 96 byte header and the 8096 byte body of remaining bytes. Much has been written about headers and Paul Randal (<a href="http://www.sqlskills.com/BLOGS/PAUL/" target="_blank">b</a>|<a href="http://twitter.com/#!/paulrandal" target="_blank">t</a>) has a great post describing the <a href="http://www.sqlskills.com/blogs/paul/post/Inside-the-Storage-Engine-Anatomy-of-a-page.aspx" target="_blank">contents of the header</a> as well. However, though the contents have been described, I’ve been completely unable to find any kind of details on the storage format. What data types are the individual fields, and what’s the order? Oh well, we’ve always got DBCC PAGE.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">12</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/reading-bits-in-orcamdf/" title="Reading Bits in OrcaMDF" rel="bookmark">Reading Bits in OrcaMDF</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Bits are stored very differently from other fixed length data types in SQL Server. Usually all fixed length columns will be present, one after the other, in the fixed data part of a record. As the smallest unit of data we can write to disk is a byte, the naïve approach to storing bits would be to use a whole bit for each bit. It would be very simple to parse as it would follow the usual scheme, but it would also waste quite some space.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">10</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/parsing-dates-in-orcamdf/" title="Parsing Dates in OrcaMDF" rel="bookmark">Parsing Dates in OrcaMDF</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>There are several different date related data types in SQL Server. Currently <a href="introducing-orcamdf">OrcaMDF</a> supports the three most common types: <a href="http://msdn.microsoft.com/en-us/library/bb630352.aspx" target="_blank">date</a>, <a href="http://msdn.microsoft.com/en-us/library/ms187819.aspx" target="_blank">datetime</a> &amp; <a href="http://msdn.microsoft.com/en-us/library/ms182418.aspx" target="_blank">smalldatetime</a>.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">05</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/implementing-data-types-in-orcamdf/" title="Implementing Data Types in OrcaMDF" rel="bookmark">Implementing Data Types in OrcaMDF</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Implementing parsing support for SQL Server data types in <a href="/introducing-orcamdf">OrcaMDF</a> is a simple matter of implementing the ISqlType interface:</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">03</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/introducing-orcamdf/" title="Introducing OrcaMDF" rel="bookmark">Introducing OrcaMDF</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>I’ve been spamming Twitter the last couple of days with progress on my pet project, OrcaMDF. But what is OrcaMDF really?</p>
+<h2 id="Miracle_Open_World_2011">Miracle Open World 2011</h2>
+<p>I was invited to speak at <a href="http://mow2011.dk/" target="_blank">MOW2011</a> for the SQL Server track. Last year I got good reviews for my presentation on <a href="Dissecting_PDF_Documents_1.pdf">Dissecting PDF Documents</a>, a deep dive into the file format of PDF files. Wanting to stay in the same grove, I decided to take a look at the MDF format as it’s somewhat closer to SQL Server DBA’s than PDF files. Having almost worn my <a href="http://www.amazon.com/Microsoft%C2%AE-SQL-Server%C2%AE-2008-Internals/dp/0735626243" target="_blank">SQL Server 2008 Internals</a> book down from reading, I’ve always been interested in the internals, though I still felt like I was lacking a lot of knowledge.</p>
+<h2 id="A_parser_is_born">A parser is born</h2>
+<p>For my demos at MOW I wanted to at least read the records from a data page, just like the output from DBCC Page. The basic page format is well documented, and it’s not the first time I’ve taken a <a href="/deciphering-a-sql-server-data-page">deeper look</a> at pages. Surprisingly quickly, I had record parsing from data pages functioning using a hardcoded schema. Parsing a single page is fun, but really, I’d like to get all the data from a table. Restricting myself to just consider clustered tables made it simpler as it’d just be a matter of following the linked list of pages from start to end. However, that meant I’d have to parse the header as well. There’s some good information out there on the <a href="http://sqlskills.com/blogs/paul/post/Inside-the-Storage-Engine-Anatomy-of-a-page.aspx" target="_blank">anatomy of pages</a>, but everything I could find had a distinct lack of information on the actual header structure and field types.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">28</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/converting-page-pointers-into-a-human-readable-format/" title="Converting Page Pointers Into a Humanly Readable Format" rel="bookmark">Converting Page Pointers Into a Humanly Readable Format</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>I often like to spend my weekends perusing the sys.system_internals_allocation_units table, looking for the remnants of Frodo and his crew. In the sys.system_internals_allocation_units there are several references to relevant pages:</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Mar</span>
+			<span class="day">26</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/deciphering-a-sql-server-data-page/" title="Deciphering a SQL Server Data Page" rel="bookmark">Deciphering a SQL Server Data Page</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>SQL Server stores all of it’s data in what is basically a large array of “pages”. Each page is exactly 8kb and can contain various kinds of data, depending on the page type. In this entry we’ll explore how to decipher a data page.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

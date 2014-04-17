@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Fixing Flash Bugs and Intercepting IIS Application Request Routing Cookies | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Dec</span>
+			<span class="day">09</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/fixing-flash-bugs-by-intercepting-iis-application-request-routing-cookies/" title="Fixing Flash Bugs and Intercepting IIS Application Request Routing Cookies" rel="bookmark">Fixing Flash Bugs and Intercepting IIS Application Request Routing Cookies</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				, 
+			
+				<a href="http://improve.dk/category/AS/Flex/Flash/">AS/Flex/Flash</a>
+				, 
+			
+				<a href="http://improve.dk/category/IIS/">IIS</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on Fixing Flash Bugs and Intercepting IIS Application Request Routing Cookies">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>What does Flash, upload, cookies, IIS load balancing and cookies have to do with each others? More than I’d like :(</p>
+<a id="more"></a>
+
+<p>When users need to upload files I often use the Flash based <a href="http://swfupload.org/" target="_blank">SWFUpload</a> component. It allows for multiple file selection and progress display during upload. Handling the uploaded files on the .NET side is rather easy:</p>
+<figure class="highlight csharp"><pre><span class="keyword">for</span> (int i = <span class="number">0</span>; i &lt; Request.Files.Count; i++)
+{
+    HttpPostedFile hpf = Request.Files[i];
+
+    // <span class="keyword">...</span> Save / process the HttpPostedFile
+}
+</pre></figure>
+
+<p>One of the arguments for using Flash for web designs is that it’ll look the same in all browsers. While that is literally true, there are a number of functionality differences when it comes to Flash and cross browser support.</p>
+<p>There’s a bug in all current Flash players that causes the Flash player to send persistent cookies from Internet Explorer, no matter what browser you’re currently using. That is, if you’ve visited a given website in IE previously and you’re nor visiting it in Chrome/Firefox - yup, your IE cookies will be sent to the website instead of the Firefox/Chrome cookies! There’s a good <a href="http://swfupload.org/forum/generaldiscussion/383" target="_blank">description and discussion</a> at the SWFUpload site.</p>
+<p>This bug poses a number of problems if you’re using SWFUpload on a password protected site that relies on <a href="http://support.microsoft.com/kb/910443" target="_blank">cookie based forms authentication</a>. Whenever the file is uploaded, the users will appear to not be logged in. This is because the forms authentication ticket is stored in a cookie (which is correctly stored by Firefox/Chrome), but whenever the request is made IE’s cookies are sent and those do not contain a valid forms authentication ticket cookie.</p>
+<p>Luckily there’s a workaround for this. Basically we’ll need to tell our upload SWF the current SessionID as well as the contents of the forms authentication ticket cookie:</p>
+<figure class="highlight csharp"><pre>var flashVars = {
+    ASPSESSID: "<span class="vbscript">&lt;%= Session.SessionID %&gt;</span>",
+    AUTHID: "<span class="vbscript">&lt;%= <span class="built_in">Request</span>.Cookies[FormsAuthentication.FormsCookieName] == <span class="literal">null</span> ? <span class="string">""</span> : <span class="built_in">Request</span>.Cookies[FormsAuthentication.FormsCookieName].Value %&gt;</span>"
+}
+</pre></figure>
+
+<p>Now we need to modify our SWFUpload code so it sends the SessionID and ticket values in the query string to the upload file, so instead of calling:</p>
+<figure class="highlight csharp"><pre>UploadFile_Upload<span class="preprocessor">.aspx</span>
+</pre></figure>
+
+<p>We’ll call:</p>
+<figure class="highlight csharp"><pre><span class="attribute">UploadFile_Upload.aspx?ASPSESSID</span>=<span class="string">e2u35jfs0pvevfugkfnmm045&AUTHID=E7BA5BDD2D6E9FBBC7CF613352EF10E01E0E8B0AD9920F62A465BC0CA20FB9CC2BA67F95D5A82F5D30B3162D6DFB3EA7FD505456E5EA5407094D03C1D48E6EE0B80F85F1B6AFD5F52FDC14C2ED6D77A8</span>
+</pre></figure>
+
+<p>Now that we have the SessionID and ticket value we can manually restore those cookies in Global.asax (or an HttpModule, doesn’t matter). We’ll be doing the fix in Application_BeginRequest as this allows us to fix the cookies before ASP.NET will perform its validation and thereby notice the missing session and forms authentication cookies.</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> Global : HttpApplication
+{
+    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">Application_BeginRequest</span>(<span class="keyword">object</span> sender, EventArgs e)
+    {
+        fixCookie(<span class="string">"ASP.NET_SessionId"</span>, <span class="string">"ASPSESSID"</span>);
+        fixCookie(FormsAuthentication.FormsCookieName, <span class="string">"AUTHID"</span>);
+    }
+
+    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title">fixCookie</span>(<span class="keyword">string</span> cookieName, <span class="keyword">string</span> queryStringKey)
+    {
+        <span class="comment">// Did we get a querystring value to override the cookie value?</span>
+        <span class="keyword">if</span> (HttpContext.Current.Request.QueryString[queryStringKey] != <span class="keyword">null</span>)
+        {
+            <span class="comment">// Try to get the current cookie value</span>
+            HttpCookie cookie = HttpContext.Current.Request.Cookies.Get(cookieName);
+
+            <span class="keyword">if</span> (cookie == <span class="keyword">null</span>)
+            {
+                <span class="comment">/* If there's no cookie, add a new one and add it to the Response.Cookies collection.
+                   Note that it HAS to be put in the Response.Cookies collection even though Request.Cookies
+                   makes more sense.
+                */</span> 
+                cookie = <span class="keyword">new</span> HttpCookie(cookieName, HttpContext.Current.Request.QueryString[queryStringKey]);
+                Response.Cookies.Add(cookie);
+            }
+            <span class="keyword">else</span>
+            {
+                <span class="comment">/* If there's already a cookie (one from IE perhaps), overwrite its value with the querystring
+                   provided value.
+                */</span>
+                cookie.Value = HttpContext.Current.Request.QueryString[queryStringKey];
+                HttpContext.Current.Request.Cookies.Set(cookie);
+            }
+        }
+    }
+}
+</pre></figure>
+
+<p>Note that there is a security implication in doing this as it allows for session hijacking if you’re able to fake another users SessionID and forms authentication ticket! Thus, make sure you handle this or at least know the risks in not doing so.</p>
+<p>OK, so that fixes the SWFUpload issue. This ran perfectly for some time. However, once i placed an <a href="http://forums.iis.net/1154.aspx" target="_blank">IIS7 Application Request Routing based load balancer</a> in front of the machine serving the upload applications, the issue from before reappeared, even though my original cookie handling code was still in place.</p>
+<p>The reason for the resurrection of the cookie bug was to be found in the way ARR maintains client affinity:</p>
+<div class="imgwrapper" style=""><div><a href="/fixing-flash-bugs-by-intercepting-iis-application-request-routing-cookies/arrswfupload_1_2.jpg" class="fancy"><img src="/fixing-flash-bugs-by-intercepting-iis-application-request-routing-cookies/arrswfupload_1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>IIS ARR will set a cookie on the client that basically contains a hash of the content server to which the client is bound. This is a very simple and neat client affinity solution as there’s no shared state on the IIS ARR machine itself. Thus, it’s easy to combine a number of IIS ARR servers using NLB and let IIS ARR handle client affinity and thus simplify the NLB setup.</p>
+<p>However, since the client affinity is handled by a cookie - that cookie was now suffering from the same bug as before. Basicaly the IIS ARR load balancer thought it received a completely new client request and thus assigned the request to a random content server, giving a 1/[num_machines] chance of succeeding in case it randomly hit the correct content server.</p>
+<p>The solution is similar, though there is one major difference. The previous problem occurred on the actual content machines because those were missing a cookie value, in this case it’s the load balancer itself. Thus, deploying a fix on the content servers won’t do any good.</p>
+<p>We’ll create a new HttpModule that performs the fix in Application_BeginRequest - which occurs before IIS ARR assigns the request to a content server. To ensure this fix does not in any way affect normal requests in case something goes wrong, exceptions are being silently ignored. This is generally a bad practice, but in this case I really do not want to affect the load balancer as that’ll put down the website for all users if an error occurs. Note that while the handling is very similar to the previous bit of code, this time we’re modifying the actual Cookie header directly. If we don’t do this, IIS ARR won’t pick up the overwritten cookie values and thus still send the user to a random content server.</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Text.RegularExpressions;
+<span class="keyword">using</span> System.Web;
+
+namespace iPaper.Web.ArrCookieRestorer
+{
+    <span class="keyword">public</span> <span class="keyword">class</span> ArrCookieRestorer : IHttpModule
+    {
+        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Dispose</span>()
+        { }
+
+        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Init</span>(HttpApplication context)
+        {
+            context.BeginRequest += context_BeginRequest;
+        }
+
+        <span class="keyword">private</span> <span class="keyword">void</span> <span class="title">context_BeginRequest</span>(<span class="keyword">object</span> sender, EventArgs e)
+        {
+            <span class="keyword">try</span>
+            {
+                HttpContext context = HttpContext.Current;
+                <span class="keyword">string</span> serverHash = context.Request.QueryString[<span class="string">"ARRIPARRAffinity"</span>];
+
+                <span class="keyword">if</span> (serverHash != <span class="keyword">null</span>)
+                {
+                    <span class="keyword">string</span> cookieHeader = context.Request.Headers[<span class="string">"Cookie"</span>];
+
+                    <span class="keyword">if</span> (cookieHeader != <span class="keyword">null</span>)
+                    {
+                        <span class="keyword">if</span> (cookieHeader.Contains(<span class="string">"IPARRAffinity="</span>))
+                            cookieHeader = Regex.Replace(cookieHeader, <span class="string">"IPARRAffinity=[0-9a-f]+;?"</span>, <span class="string">"IPARRAffinity="</span> + serverHash + <span class="string">";"</span>);
+                        <span class="keyword">else</span>
+                            cookieHeader += <span class="string">"; IPARRAffinity="</span> + serverHash;
+
+                        context.Request.Headers[<span class="string">"Cookie"</span>] = cookieHeader;
+                    }
+                    <span class="keyword">else</span>
+                        context.Request.Headers.Add(<span class="string">"Cookie"</span>, <span class="string">"IPARRAffinity="</span> + serverHash);
+                }
+            }
+            <span class="keyword">catch</span>
+            {}
+        }
+    }
+}
+</pre></figure>
+
+<p>Once you’ve compiled the HttpModule we need to install it on the IIS ARR machine. On a default installation of IIS ARR you’ll have your rewrite rules as global rules at the IIS-level. However, if you install the HttpModule at the IIS level you’ll get the following exception on all requests:</p>
+<blockquote>
+<p>The virtual path ‘null’ maps to another application, which is not allowed root</p>
+</blockquote>
+<p>Apparently <a href="http://forums.iis.net/t/1162754.aspx" target="_blank">it’s a bug</a> in IIS 7.0 on Windows Server 2008 which has been fixed in IIS 7.5 on Windows Server 2008 R2. As I’m still running a vanilla 2008 and IIS 7.0, I had to get around it by moving the rewrite rules into the default website - which code runs for all requests.</p>
+<p>Make sure there’s a bin folder in the default website root and place your HttpModule in there. Then setup your web.config like so:</p>
+<figure class="highlight xml"><pre><span class="pi">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+</pre></figure>
+
+<p>This adds our HttpModule so it’ll run for all requests - fixing any missing ARR client affinity cookies. Note that your rewrite rules will likely differ from mine.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=Fixing%20Flash%20Bugs%20and%20Intercepting%20IIS%20Application%20Request%20Routing%20Cookies%20http%3A%2F%2Fimprove.dk%2Ffixing-flash-bugs-by-intercepting-iis-application-request-routing-cookies%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Ffixing-flash-bugs-by-intercepting-iis-application-request-routing-cookies%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Ffixing-flash-bugs-by-intercepting-iis-application-request-routing-cookies%2F&title=Fixing%20Flash%20Bugs%20and%20Intercepting%20IIS%20Application%20Request%20Routing%20Cookies" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/fixing-flash-bugs-by-intercepting-iis-application-request-routing-cookies/fixing-flash-bugs-by-intercepting-iis-application-request-routing-cookies.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'fixing-flash-bugs-by-intercepting-iis-application-request-routing-cookies';
+	var disqus_url = 'http://improve.dk/fixing-flash-bugs-by-intercepting-iis-application-request-routing-cookies/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

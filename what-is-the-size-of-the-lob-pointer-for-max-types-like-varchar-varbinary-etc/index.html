@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>What is the Size of the LOB Pointer for (MAX) Types Like Varchar, Varbinary, Etc? | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">18</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/" title="What is the Size of the LOB Pointer for (MAX) Types Like Varchar, Varbinary, Etc?" rel="bookmark">What is the Size of the LOB Pointer for (MAX) Types Like Varchar, Varbinary, Etc?</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on What is the Size of the LOB Pointer for (MAX) Types Like Varchar, Varbinary, Etc?">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>LOB types like varchar(MAX), nvarchar(MAX), varbinary(MAX) and xml suffer from split personality disorder. SQL Server may store values in-row or off-row depending on the size of the value, the available space in the record and the table settings. Because of this, it’s no easy task to predict the size of the pointer left in the record itself. You might even say… It depends.</p>
+<a id="more"></a>
+
+<p>Based on <a href="http://www.sqlservercentral.com/Forums/Topic1143500-391-1.aspx" target="_blank">this post</a>, and the fact that I’m working on LOB type support for <a href="/introducing-orcamdf">OrcaMDF</a> at the moment, I decided to look into the LOB pointer storage structures.</p>
+<h2 id="Setup">Setup</h2>
+<p>For testing, we’ll use a very simple schema:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> Lob
+(
+	A <span class="keyword">char</span>(<span class="number">5000</span>) <span class="keyword">NULL</span>,
+	B <span class="keyword">varchar</span>(<span class="aggregate">MAX</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>
+)</span>
+</pre></figure>
+
+<h2 id="The_[BLOB_Inline_Data]_for_in-row_data">The [BLOB Inline Data] for in-row data</h2>
+<p>If data is small enough (“small enough” being hard to define as it depends on the free space in the page, the mood of SQL Server and probably a bunch of other undocumented factors), it will be stored in the record itself. Let’s insert a single small row:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> Lob (B) <span class="keyword">VALUES</span> (<span class="string">'Test'</span>)</span>
+</pre></figure>
+
+<p>Since A takes up 5000 bytes and we only try to insert 4 bytes into B, there’s plenty of space for it to be stored in-row, taking up only the expected 4 bytes that we inserted. This behavior is just as a normal varchar(X) SLOB column would react.</p>
+<div class="imgwrapper" style=""><div><a href="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_4.png" class="fancy"><img src="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_4.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="The_[BLOB_Inline_Root]_for_row-overflow_data">The [BLOB Inline Root] for row-overflow data</h2>
+<p>Now let’s truncate the table and insert a new row, forcing SQL Server to push the data off-row as there isn’t enough space on the original record:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">TRUNCATE</span> <span class="keyword">TABLE</span> LOB
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> Lob (B) <span class="keyword">VALUES</span> (REPLICATE(<span class="keyword">CAST</span>(<span class="string">'a'</span> <span class="keyword">AS</span> <span class="keyword">varchar</span>(<span class="aggregate">max</span>)), <span class="number">4000</span>))</span>
+</pre></figure>
+
+<p>Since A once again takes up a fixed amount of 5000 bytes and we’re now trying to insert 4000 more bytes, we exceed the maximum capacity of 8096 bytes for the page body, causing SQL Server to push the data off-row. Running a DBCC IND confirms that SQL Server has allocated a new IAM page to track the LOB data pages:</p>
+<figure class="highlight sql"><pre>DBCC IND (X, 'Lob', -1)
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_6.png" class="fancy"><img src="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_6.png" style="max-height: 250px"/></a></div></div>
+
+<p>Extracting the record and looking at column 2 reveals that we’re now storing a 24 byte row-overflow pointer:</p>
+<div class="imgwrapper" style=""><div><a href="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_8.png" class="fancy"><img src="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_8.png" style="max-height: 250px"/></a></div></div>
+
+<p>This pointer, once again, is exactly like a SLOB column would be stored. The (MAX) LOB variants do have one trick that SLOBs don’t have though – they can be longer than 8000 bytes. In that case, we need more than one page to store the value – and thus the off-row pointer needs to point at more than one page. The off-row pointer, at an abstract level, points to a root of pointers that then point onwards to the actual data pages (or onto another root in case we need more than two levels of page references). If the root is small enough, it’ll be stored in-row. The smallest root possible is 12 bytes – a single page reference (the extra 12 bytes is due to overhead). Each following page reference takes up an extra 12 bytes. Thus, an inline root pointing to two pages will take up 36 bytes of space, and so forth, just look at this:</p>
+<div class="imgwrapper" style=""><div><a href="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_10.png" class="fancy"><img src="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_10.png" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_12.png" class="fancy"><img src="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_12.png" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_14.png" class="fancy"><img src="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_14.png" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_16.png" class="fancy"><img src="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_16.png" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_18.png" class="fancy"><img src="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_18.png" style="max-height: 250px"/></a></div></div>
+
+<p>Note how we go from 24 to 36, 48, 60 and finally 72 bytes for a total of 40.000 bytes of data, stored on five data pages. Once we exceed 72 bytes, SQL Server doesn’t store the whole root inline any longer, instead if points to a single new slot on another page. The (1:379) page is a text_tree page, containing references to the pages where the data is stored:</p>
+<div class="imgwrapper" style=""><div><a href="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_20.png" class="fancy"><img src="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_20.png" style="max-height: 250px"/></a></div></div>
+
+<p>I haven’t been able to make SQL Server store inline blob roots any larger than 72 bytes so I’m guessing that’s a hard cutoff value before it’ll start referencing text_tree pages. Ignoring text_tree pages, the pointer format so far has been exactly the same as for SLOBs. So when exactly does SQL Server store a classic 16 byte LOB pointer for (MAX) LOB types?</p>
+<h2 id="The_[Textpointer]_for_LOB_data">The [Textpointer] for LOB data</h2>
+<p>SQL Server will <em>never</em> store a LOB pointer for the (MAX) LOB types, <em>unless</em> the <a href="http://msdn.microsoft.com/en-us/library/ms173530.aspx" target="_blank">large value types out of row</a> setting has been turned on. Let’s clear the table, set the setting, and then insert a new row like before:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">TRUNCATE</span> <span class="keyword">TABLE</span> LOB
+<span class="keyword">EXEC</span> sp_tableoption N<span class="string">'Lob'</span>, <span class="string">'large value types out of row'</span>, <span class="string">'ON'</span>
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> Lob (B) <span class="keyword">VALUES</span> (REPLICATE(<span class="keyword">CAST</span>(<span class="string">'a'</span> <span class="keyword">AS</span> <span class="keyword">varchar</span>(<span class="aggregate">max</span>)), <span class="number">4000</span>))</span>
+</pre></figure>
+
+<p>Now just as with the inline root, SQL Server allocates an IAM page to track the LOB data pages:</p>
+<div class="imgwrapper" style=""><div><a href="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_22.png" class="fancy"><img src="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_22.png" style="max-height: 250px"/></a></div></div>
+
+<p>But when we look at the record stored on page (1:4380), we see that it stores a Textpointer instead of an inline blob root:</p>
+<div class="imgwrapper" style=""><div><a href="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_24.png" class="fancy"><img src="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_24.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Mixed_pointer_types">Mixed pointer types</h2>
+<p>As long as the <a href="http://msdn.microsoft.com/en-us/library/ms173530.aspx" target="_blank">large value types out of row</a> setting is off (which it is by default), the (MAX) LOB types will act exactly like a SLOB column, except for the fact that the data can be larger than 8000 bytes. Once we turn the setting on, the (MAX) LOB types start acting like classic LOB types. So does this mean that the tables will always either use inline blob roots or textpointers? No, if only it were that simple. Take a look at this sample:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> TrickyLob
+(
+	A <span class="keyword">varchar</span>(<span class="aggregate">MAX</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>
+)
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> TrickyLob <span class="keyword">VALUES</span> (<span class="string">'Mark'</span>)
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> TrickyLob <span class="keyword">VALUES</span> (REPLICATE(<span class="keyword">CAST</span>(<span class="string">'a'</span> <span class="keyword">AS</span> <span class="keyword">varchar</span>(<span class="aggregate">MAX</span>)), <span class="number">9000</span>))
+<span class="keyword">EXEC</span> sp_tableoption N<span class="string">'TrickyLob'</span>, <span class="string">'large value types out of row'</span>, <span class="string">'ON'</span>
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> TrickyLob <span class="keyword">VALUES</span> (REPLICATE(<span class="keyword">CAST</span>(<span class="string">'a'</span> <span class="keyword">AS</span> <span class="keyword">varchar</span>(<span class="aggregate">MAX</span>)), <span class="number">4000</span>))</span>
+</pre></figure>
+
+<p>Running DBCC PAGE on the single allocated data page reveals that we now have three records using three different pointer types:</p>
+<div class="imgwrapper" style=""><div><a href="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_28.png" class="fancy"><img src="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_28.png" style="max-height: 250px"/></a></div></div>
+
+<p>Lesson: When sp_tableoption is run to set the <a href="http://msdn.microsoft.com/en-us/library/ms173530.aspx" target="_blank">large value types out of row</a> setting, it only takes effect for newly added records. A table rebuild won’t affect existing inline blob roots either, only updates to existing records will rebuild the record and convert the inline blob root to a textpointers.</p>
+<h2 id="Conclusion">Conclusion</h2>
+<p>Predicting the LOB pointer type &amp; size can be tricky as it depends on multiple factors. Using the above, you should be able to get a notion of what will be stored, as well as to interpret the DBCC PAGE results you might run into.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=What%20is%20the%20Size%20of%20the%20LOB%20Pointer%20for%20(MAX)%20Types%20Like%20Varchar%2C%20Varbinary%2C%20Etc%3F%20http%3A%2F%2Fimprove.dk%2Fwhat-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fwhat-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fwhat-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc%2F&title=What%20is%20the%20Size%20of%20the%20LOB%20Pointer%20for%20(MAX)%20Types%20Like%20Varchar%2C%20Varbinary%2C%20Etc%3F" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc';
+	var disqus_url = 'http://improve.dk/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

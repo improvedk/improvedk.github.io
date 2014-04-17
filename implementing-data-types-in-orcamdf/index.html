@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Implementing Data Types in OrcaMDF | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">05</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/implementing-data-types-in-orcamdf/" title="Implementing Data Types in OrcaMDF" rel="bookmark">Implementing Data Types in OrcaMDF</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Internals/">SQL Server - Internals</a>
+				, 
+			
+				<a href="http://improve.dk/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on Implementing Data Types in OrcaMDF">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>Implementing parsing support for SQL Server data types in <a href="/introducing-orcamdf">OrcaMDF</a> is a simple matter of implementing the ISqlType interface:</p>
+<a id="more"></a>
+
+
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">interface</span> ISqlType
+{
+	<span class="keyword">bool</span> IsVariableLength { <span class="keyword">get</span>; }
+	<span class="keyword">short</span>? FixedLength { <span class="keyword">get</span>; }
+	<span class="keyword">object</span> GetValue(<span class="keyword">byte</span>[] <span class="keyword">value</span>);
+}
+</pre></figure>
+
+<p><em>IsVariableLength</em> returns whether this data type has a fixed length size or is variable. <em>FixedLength</em> returns the fixed length of the data type, provided that it is fixed length, otherwise it returns null. The data type parser itself does not care about the length of variable length fields, the size of the input bytes will determine that. Finally <em>GetValue</em> parses the input bytes into and converts them into a .NET object of relevant type.</p>
+<h2 id="SqlInt_implementation">SqlInt implementation</h2>
+<p>int is very simple as it’s fixed length and is very straight forward to convert using BitConverter:</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlInt : ISqlType
+{
+	<span class="keyword">public</span> <span class="keyword">bool</span> IsVariableLength
+	{
+		<span class="keyword">get</span> { <span class="keyword">return</span> <span class="keyword">false</span>; }
+	}
+
+	<span class="keyword">public</span> <span class="keyword">short</span>? FixedLength
+	{
+		<span class="keyword">get</span> { <span class="keyword">return</span> <span class="number">4</span>; }
+	}
+
+	<span class="keyword">public</span> <span class="keyword">object</span> <span class="title">GetValue</span>(<span class="keyword">byte</span>[] <span class="keyword">value</span>)
+	{
+		<span class="keyword">if</span> (<span class="keyword">value</span>.Length != <span class="number">4</span>)
+			<span class="keyword">throw</span> <span class="keyword">new</span> ArgumentException(<span class="string">"Invalid value length: "</span> + <span class="keyword">value</span>.Length);
+
+		<span class="keyword">return</span> BitConverter.ToInt32(<span class="keyword">value</span>, <span class="number">0</span>);
+	}
+}
+</pre></figure>
+
+<p>And the related tests:</p>
+<figure class="highlight csharp"><pre>[TestFixture]
+<span class="keyword">public</span> <span class="keyword">class</span> SqlIntTests
+{
+	[Test]
+	<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">GetValue</span>()
+	{
+		<span class="keyword">var</span> type = <span class="keyword">new</span> SqlInt();
+		<span class="keyword">byte</span>[] input;
+
+		input = <span class="keyword">new</span> <span class="keyword">byte</span>[] { <span class="number">0x5e</span>, <span class="number">0x3b</span>, <span class="number">0x27</span>, <span class="number">0x2a</span> };
+		Assert.AreEqual(<span class="number">707214174</span>, Convert.ToInt32(type.GetValue(input)));
+
+		input = <span class="keyword">new</span> <span class="keyword">byte</span>[] { <span class="number">0x8d</span>, <span class="number">0xf9</span>, <span class="number">0xaa</span>, <span class="number">0x30</span> };
+		Assert.AreEqual(<span class="number">816511373</span>, Convert.ToInt32(type.GetValue(input)));
+
+		input = <span class="keyword">new</span> <span class="keyword">byte</span>[] { <span class="number">0x7a</span>, <span class="number">0x4a</span>, <span class="number">0x72</span>, <span class="number">0xe2</span> };
+		Assert.AreEqual(-<span class="number">495826310</span>, Convert.ToInt32(type.GetValue(input)));
+	}
+
+	[Test]
+	<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Length</span>()
+	{
+		<span class="keyword">var</span> type = <span class="keyword">new</span> SqlInt();
+
+		Assert.Throws&lt;ArgumentException&gt;(() =&gt; type.GetValue(<span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">3</span>]));
+		Assert.Throws&lt;ArgumentException&gt;(() =&gt; type.GetValue(<span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">5</span>]));
+	}
+}
+</pre></figure>
+
+<h2 id="SqlNVarchar_implementation">SqlNVarchar implementation</h2>
+<p>nvarchar is very simple as well – note that we return null for the length as the length varies and the ISqlType implementation must be stateless. GetValue simply converts whatever amount of input bytes it gets into the relevant .NET data type, string in this case.</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlNVarchar : ISqlType
+{
+	<span class="keyword">public</span> <span class="keyword">bool</span> IsVariableLength
+	{
+		<span class="keyword">get</span> { <span class="keyword">return</span> <span class="keyword">true</span>; }
+	}
+
+	<span class="keyword">public</span> <span class="keyword">short</span>? FixedLength
+	{
+		<span class="keyword">get</span> { <span class="keyword">return</span> <span class="keyword">null</span>; }
+	}
+
+	<span class="keyword">public</span> <span class="keyword">object</span> <span class="title">GetValue</span>(<span class="keyword">byte</span>[] <span class="keyword">value</span>)
+	{
+		<span class="keyword">return</span> Encoding.Unicode.GetString(<span class="keyword">value</span>);
+	}
+}
+</pre></figure>
+
+<p>And the relevant test in this case:</p>
+<figure class="highlight csharp"><pre>[TestFixture]
+<span class="keyword">public</span> <span class="keyword">class</span> SqlNvarcharTests
+{
+	[Test]
+	<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">GetValue</span>()
+	{
+		<span class="keyword">var</span> type = <span class="keyword">new</span> SqlNVarchar();
+		<span class="keyword">byte</span>[] input = <span class="keyword">new</span> <span class="keyword">byte</span>[] { <span class="number">0x47</span>, <span class="number">0x04</span>, <span class="number">0x2f</span>, <span class="number">0x04</span>, <span class="number">0xe6</span>, <span class="number">0x00</span> };
+
+		Assert.AreEqual(<span class="string">"u0447u042fu00e6"</span>, (<span class="keyword">string</span>)type.GetValue(input));
+	}
+}
+</pre></figure>
+
+<h2 id="Other_implementations">Other implementations</h2>
+<p>OrcaMDF currently <a href="https://github.com/improvedk/OrcaMDF/tree/2b2403c4422cc47b309857d42fb182970bbe11d8/src/OrcaMDF.Core/Engine/SqlTypes" target="_blank">supports 12 data types</a> out of the box. I’ll be covering datetime and bit later as those are a tad special compared to the rest of the current types. As the remaining types are implemented, I will be covering those too.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=Implementing%20Data%20Types%20in%20OrcaMDF%20http%3A%2F%2Fimprove.dk%2Fimplementing-data-types-in-orcamdf%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fimplementing-data-types-in-orcamdf%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fimplementing-data-types-in-orcamdf%2F&title=Implementing%20Data%20Types%20in%20OrcaMDF" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/implementing-data-types-in-orcamdf/implementing-data-types-in-orcamdf.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'implementing-data-types-in-orcamdf';
+	var disqus_url = 'http://improve.dk/implementing-data-types-in-orcamdf/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Finding Specific Windows Using PInvoke | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">07</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/finding-specific-windows/" title="Finding Specific Windows Using PInvoke" rel="bookmark">Finding Specific Windows Using PInvoke</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on Finding Specific Windows Using PInvoke">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>Last time I made an example of how to enumerate windows. This time I present to you a class that greatly simplifies the process of searching for specific windows, types of windows, windows belonging to a specific process, having a specific text. You can search for any number of these parameters at the same time, using regular expressions for all string matches to provide optimal flexibility.</p>
+<a id="more"></a>
+
+
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System.Runtime.InteropServices;
+<span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Text;
+<span class="keyword">using</span> System.Text.RegularExpressions;
+<span class="keyword">using</span> System.Diagnostics;
+
+namespace Searching_for_windows
+{
+	class Program
+	{
+		<span class="comment">// Win32 constants.</span>
+		<span class="keyword">const</span> <span class="keyword">int</span> WM_GETTEXT = <span class="number">0x000D</span>;
+		<span class="keyword">const</span> <span class="keyword">int</span> WM_GETTEXTLENGTH = <span class="number">0x000E</span>;
+
+		<span class="comment">// Win32 functions that have all been used in previous blogs.</span>
+		[DllImport(<span class="string">"User32.Dll"</span>)]
+		<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">extern</span> <span class="keyword">void</span> <span class="title">GetClassName</span>(<span class="keyword">int</span> hWnd, StringBuilder s, <span class="keyword">int</span> nMaxCount);
+
+		[DllImport(<span class="string">"User32.dll"</span>)]
+		<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">extern</span> <span class="keyword">int</span> <span class="title">GetWindowText</span>(<span class="keyword">int</span> hWnd, StringBuilder text, <span class="keyword">int</span> count);
+
+		[DllImport(<span class="string">"User32.dll"</span>)]
+		<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">extern</span> Int32 <span class="title">SendMessage</span>(<span class="keyword">int</span> hWnd, <span class="keyword">int</span> Msg, <span class="keyword">int</span> wParam, StringBuilder lParam);
+
+		[DllImport(<span class="string">"User32.dll"</span>)]
+		<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">extern</span> Int32 <span class="title">SendMessage</span>(<span class="keyword">int</span> hWnd, <span class="keyword">int</span> Msg, <span class="keyword">int</span> wParam, <span class="keyword">int</span> lParam);
+
+		<span class="comment">// Main entrypoint function</span>
+		<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
+		{
+			WindowFinder wf = <span class="keyword">new</span> WindowFinder();
+
+			<span class="comment">// Find all Internet Explorer instances</span>
+			wf.FindWindows(<span class="number">0</span>, <span class="keyword">null</span>, <span class="keyword">null</span>, <span class="keyword">new</span> Regex(<span class="string">"iexplore"</span>), <span class="keyword">new</span> WindowFinder.FoundWindowCallback(foundWindow));
+
+			<span class="comment">// Find all visual studio instances</span>
+			wf.FindWindows(<span class="number">0</span>, <span class="keyword">null</span>, <span class="keyword">new</span> Regex(<span class="string">" - Microsoft Visual Studio"</span>), <span class="keyword">new</span> Regex(<span class="string">"devenv"</span>), <span class="keyword">new</span> WindowFinder.FoundWindowCallback(foundWindow));
+
+			Console.WriteLine(<span class="string">"Done"</span>);
+			Console.Read();
+		}
+
+		<span class="comment">// Gets called each time a window is found by the WindowFinder class.</span>
+		<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">foundWindow</span>(<span class="keyword">int</span> handle)
+		{
+			<span class="comment">// Print the window info.</span>
+			printWindowInfo(handle);
+
+			<span class="comment">// Continue on with next window.</span>
+			<span class="keyword">return</span> <span class="keyword">true</span>;
+		}
+
+		<span class="comment">// Prints basic properties of a window, uses function already used in previous blogs.</span>
+		<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">printWindowInfo</span>(<span class="keyword">int</span> handle)
+		{
+			<span class="comment">// Get the class.</span>
+			StringBuilder sbClass = <span class="keyword">new</span> StringBuilder(<span class="number">256</span>);
+			GetClassName(handle, sbClass, sbClass.Capacity);
+
+			<span class="comment">// Get the text.</span>
+			<span class="keyword">int</span> txtLength = SendMessage(handle, WM_GETTEXTLENGTH, <span class="number">0</span>, <span class="number">0</span>);
+			StringBuilder sbText = <span class="keyword">new</span> StringBuilder(txtLength + <span class="number">1</span>);
+			SendMessage(handle, WM_GETTEXT, sbText.Capacity, sbText);
+
+			<span class="comment">// Now we can write out the information we have on the window.</span>
+			Console.WriteLine(<span class="string">"Handle: "</span> + handle);
+			Console.WriteLine(<span class="string">"Class : "</span> + sbClass);
+			Console.WriteLine(<span class="string">"Text  : "</span> + sbText);
+			Console.WriteLine();
+		}
+	}
+
+	<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+	<span class="comment"><span class="xmlDocTag">///</span> A class used for finding windows based upon their class, title, process and parent window handle.</span>
+	<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+	<span class="keyword">public</span> <span class="keyword">class</span> WindowFinder
+	{
+		<span class="comment">// Win32 constants.</span>
+		<span class="keyword">const</span> <span class="keyword">int</span> WM_GETTEXT = <span class="number">0x000D</span>;
+		<span class="keyword">const</span> <span class="keyword">int</span> WM_GETTEXTLENGTH = <span class="number">0x000E</span>;
+
+		<span class="comment">// Win32 functions that have all been used in previous blogs.</span>
+		[DllImport(<span class="string">"User32.Dll"</span>)]
+		<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">extern</span> <span class="keyword">void</span> <span class="title">GetClassName</span>(<span class="keyword">int</span> hWnd, StringBuilder s, <span class="keyword">int</span> nMaxCount);
+
+		[DllImport(<span class="string">"User32.dll"</span>)]
+		<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">extern</span> <span class="keyword">int</span> <span class="title">GetWindowText</span>(<span class="keyword">int</span> hWnd, StringBuilder text, <span class="keyword">int</span> count);
+
+		[DllImport(<span class="string">"User32.dll"</span>)]
+		<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">extern</span> Int32 <span class="title">SendMessage</span>(<span class="keyword">int</span> hWnd, <span class="keyword">int</span> Msg, <span class="keyword">int</span> wParam, StringBuilder lParam);
+
+		[DllImport(<span class="string">"User32.dll"</span>)]
+		<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">extern</span> Int32 <span class="title">SendMessage</span>(<span class="keyword">int</span> hWnd, <span class="keyword">int</span> Msg, <span class="keyword">int</span> wParam, <span class="keyword">int</span> lParam);
+
+		[DllImport(<span class="string">"user32"</span>)]
+		<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">extern</span> <span class="keyword">int</span> <span class="title">GetWindowThreadProcessId</span>(<span class="keyword">int</span> hWnd, <span class="keyword">out</span> <span class="keyword">int</span> lpdwProcessId);
+
+		<span class="comment">// EnumChildWindows works just like EnumWindows, except we can provide a parameter that specifies the parent</span>
+		<span class="comment">// window handle. If this is NULL or zero, it works just like EnumWindows. Otherwise it'll only return windows</span>
+		<span class="comment">// whose parent window handle matches the hWndParent parameter.</span>
+		[DllImport(<span class="string">"user32.Dll"</span>)]
+		<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">extern</span> Boolean <span class="title">EnumChildWindows</span>(<span class="keyword">int</span> hWndParent, PChildCallBack lpEnumFunc, <span class="keyword">int</span> lParam);
+
+		<span class="comment">// The PChildCallBack delegate that we used with EnumWindows.</span>
+		<span class="keyword">private</span> <span class="keyword">delegate</span> <span class="keyword">bool</span> <span class="title">PChildCallBack</span>(<span class="keyword">int</span> hWnd, <span class="keyword">int</span> lParam);
+
+		<span class="comment">// This is an event that is run each time a window was found that matches the search criterias. The boolean</span>
+		<span class="comment">// return value of the delegate matches the functionality of the PChildCallBack delegate function.</span>
+		<span class="keyword">private</span> <span class="keyword">event</span> FoundWindowCallback foundWindow;
+		<span class="keyword">public</span> <span class="keyword">delegate</span> <span class="keyword">bool</span> <span class="title">FoundWindowCallback</span>(<span class="keyword">int</span> hWnd);
+
+		<span class="comment">// Members that'll hold the search criterias while searching.</span>
+		<span class="keyword">private</span> <span class="keyword">int</span> parentHandle;
+		<span class="keyword">private</span> Regex className;
+		<span class="keyword">private</span> Regex windowText;
+		<span class="keyword">private</span> Regex process;
+
+		<span class="comment">// The main search function of the WindowFinder class. The parentHandle parameter is optional, taking in a zero if omitted.</span>
+		<span class="comment">// The className can be null as well, in this case the class name will not be searched. For the window text we can input</span>
+		<span class="comment">// a Regex object that will be matched to the window text, unless it's null. The process parameter can be null as well,</span>
+		<span class="comment">// otherwise it'll match on the process name (Internet Explorer = "iexplore"). Finally we take the FoundWindowCallback</span>
+		<span class="comment">// function that'll be called each time a suitable window has been found.</span>
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">FindWindows</span>(<span class="keyword">int</span> parentHandle, Regex className, Regex windowText, Regex process, FoundWindowCallback fwc)
+		{
+			<span class="keyword">this</span>.parentHandle = parentHandle;
+			<span class="keyword">this</span>.className = className;
+			<span class="keyword">this</span>.windowText = windowText;
+			<span class="keyword">this</span>.process = process;
+
+			<span class="comment">// Add the FounWindowCallback to the foundWindow event.</span>
+			foundWindow = fwc;
+
+			<span class="comment">// Invoke the EnumChildWindows function.</span>
+			EnumChildWindows(parentHandle, <span class="keyword">new</span> PChildCallBack(enumChildWindowsCallback), <span class="number">0</span>);
+		}
+
+		<span class="comment">// This function gets called each time a window is found by the EnumChildWindows function. The foun windows here</span>
+		<span class="comment">// are NOT the final found windows as the only filtering done by EnumChildWindows is on the parent window handle.</span>
+		<span class="keyword">private</span> <span class="keyword">bool</span> <span class="title">enumChildWindowsCallback</span>(<span class="keyword">int</span> handle, <span class="keyword">int</span> lParam)
+		{
+			<span class="comment">// If a class name was provided, check to see if it matches the window.</span>
+			<span class="keyword">if</span> (className != <span class="keyword">null</span>)
+			{
+				StringBuilder sbClass = <span class="keyword">new</span> StringBuilder(<span class="number">256</span>);
+				GetClassName(handle, sbClass, sbClass.Capacity);
+
+				<span class="comment">// If it does not match, return true so we can continue on with the next window.</span>
+				<span class="keyword">if</span> (!className.IsMatch(sbClass.ToString()))
+					<span class="keyword">return</span> <span class="keyword">true</span>;
+			}
+
+			<span class="comment">// If a window text was provided, check to see if it matches the window.</span>
+			<span class="keyword">if</span> (windowText != <span class="keyword">null</span>)
+			{
+				<span class="keyword">int</span> txtLength = SendMessage(handle, WM_GETTEXTLENGTH, <span class="number">0</span>, <span class="number">0</span>);
+				StringBuilder sbText = <span class="keyword">new</span> StringBuilder(txtLength + <span class="number">1</span>);
+				SendMessage(handle, WM_GETTEXT, sbText.Capacity, sbText);
+
+				<span class="comment">// If it does not match, return true so we can continue on with the next window.</span>
+				<span class="keyword">if</span> (!windowText.IsMatch(sbText.ToString()))
+					<span class="keyword">return</span> <span class="keyword">true</span>;
+			}
+
+			<span class="comment">// If a process name was provided, check to see if it matches the window.</span>
+			<span class="keyword">if</span> (process != <span class="keyword">null</span>)
+			{
+				<span class="keyword">int</span> processID;
+				GetWindowThreadProcessId(handle, <span class="keyword">out</span> processID);
+
+				<span class="comment">// Now that we have the process ID, we can use the built in .NET function to obtain a process object.</span>
+				Process p = Process.GetProcessById(processID);
+
+				<span class="comment">// If it does not match, return true so we can continue on with the next window.</span>
+				<span class="keyword">if</span> (!process.IsMatch(p.ProcessName))
+					<span class="keyword">return</span> <span class="keyword">true</span>;
+			}
+
+			<span class="comment">// If we get to this point, the window is a match. Now invoke the foundWindow event and based upon</span>
+			<span class="comment">// the return value, whether we should continue to search for windows.</span>
+			<span class="keyword">return</span> foundWindow(handle);
+		}
+	}
+}
+</pre></figure>
+
+<p>And the result:</p>
+<div class="imgwrapper" style=""><div><a href="/finding-specific-windows/win32_6_1_2.jpg" class="fancy"><img src="/finding-specific-windows/win32_6_1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=Finding%20Specific%20Windows%20Using%20PInvoke%20http%3A%2F%2Fimprove.dk%2Ffinding-specific-windows%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Ffinding-specific-windows%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Ffinding-specific-windows%2F&title=Finding%20Specific%20Windows%20Using%20PInvoke" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/finding-specific-windows/finding-specific-windows.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'finding-specific-windows';
+	var disqus_url = 'http://improve.dk/finding-specific-windows/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

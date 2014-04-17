@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>SQL Server Mirroring - A Practical Approach | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Mar</span>
+			<span class="day">23</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/sql-server-mirroring-a-practical-approach/" title="SQL Server Mirroring - A Practical Approach" rel="bookmark">SQL Server Mirroring - A Practical Approach</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server/">SQL Server</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on SQL Server Mirroring - A Practical Approach">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>In this post I’ll take a practical approach at talking about what SQL Server Mirroring is, the advantages and considerations that follows.</p>
+<a id="more"></a>
+
+<h2 id="Availability,_not_scalability">Availability, not scalability</h2>
+<p>SQL Server Mirroring aims to increase database availability, not scalability. Boiled down, a mirrored database consists of a principal database on SQL Server instance X and an exact mirror of that database on instance Y. Everytime a transaction has occured on X, it is executed on Y as well. While this is happening, the Y instance database is in recovery mode, meaning you cannot query it directly, and thus you cannot use this as a secondary readonly database to achieve scalability.</p>
+<p>While you can run mirroring on different SQL Server instances on the same machine, this defeats the purpose as most errors will be hardware/system based, and usually these will affect all instances on the same phyiscal server. Trying out mirroring across instances is a good way to test it out however. In my demos I will be using virtual PCs, each loaded with SQL Server 2005 Enterprise sp1.</p>
+<h2 id="Operating_modes">Operating modes</h2>
+<p>SQL Server supports <a href="http://msdn2.microsoft.com/en-us/library/ms191456.aspx" target="_blank">three different operating modes</a>.</p>
+<h3 id="High_performance_(asynchronous)">High performance (asynchronous)</h3>
+<p>As the name implies, maintaining high performance is the key issue in this mode. Whenever a transaction is completed on the principal, the log is sent to the mirror, but the principal does not wait for this to complete. Thus if the mirror were to die out, throw an error during execution, the databases would become out of synch. The mirror could also trail behind due to a difference in computing power or other external factors. If the principal fails, you will have to do a manual failover to the mirror.</p>
+<h3 id="High_safety_(synchronous)_-_also_known_as_“high_protection”">High safety (synchronous) - also known as “high protection”</h3>
+<p>As with the high performance mode, each time a transaction occurs on the principal, it is sent to the mirror. The principal will not commit the transaction until the mirror has committed the transaction also. Thus you will never risk your databases being out of synch. The downside is that your mirrored setup will be no faster than the slowest machine that is part of the mirror, plus the implicit overhead in server chatting. As with the high performance mode, you will have to make a manual failover in case of principal failure.</p>
+<h3 id="High_safety_with_automatic_failover_(synchronous)">High safety with automatic failover (synchronous)</h3>
+<p>This mode involves a third instance besides the principal and mirror, known as the witness. The witness instance constantly monitors the principal for availability, and if a problem is detected, it will automatically perform a failover. At this point, the database as a whole will still be available, but you should manually get the failed mirror up and running again and reinitiate mirroring.</p>
+<h2 id="Prerequisites">Prerequisites</h2>
+<p>There are a <a href="http://msdn2.microsoft.com/en-us/library/ms366349.aspx" target="_blank">couple of things that should be in place</a> before attempting to setup database mirroring.</p>
+<h3 id="Service_pack_1">Service pack 1</h3>
+<p>Make sure all instances have been upgraded to <a href="http://www.microsoft.com/downloads/details.aspx?FamilyID=cb6c71ea-d649-47ff-9176-e7cac58fd4bc&amp;displaylang=en" target="_blank">service pack 1</a>. If you do not have service pack 1, you will receive the following warning when trying to start the mirror:</p>
+<div class="imgwrapper" style=""><div><a href="/sql-server-mirroring-a-practical-approach/enablemirroring_2.jpg" class="fancy"><img src="/sql-server-mirroring-a-practical-approach/enablemirroring_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<h3 id="Unified_SQL_Server_service_account">Unified SQL Server service account</h3>
+<p>If you’re using Active Directory, make sure the SQL Server service accounts are running as the same user. Local System will not work as it does not have any network credentials. If you’re not using Active Directory, just make sure the services are running on an account with the same name &amp; password on each machine. Make sure you change the service account through the SQL Server Configuration application and not the services console. Alternatively you can specify user accounts that should be used for mirror replication, but having the servers run on the same domain account is the easiest way.</p>
+<h3 id="Full_recovery_model">Full recovery model</h3>
+<p>Make sure the database you want to mirror is setup to use the full recovery backup model, otherwise there’ll be no log to ship to the mirror instance and mirroring will not be possible.</p>
+<h2 id="Licensing">Licensing</h2>
+<p>Mirroring is supported in the SQL Server Standard and Enterprise editions. Neither Express nor Workgroup edition will work. Enterprise supports the high performance operating mode, Standard only supports the two high safety modes. You can use the free Express version for the mirror server. Note that you <a href="http://www.microsoft.com/sql/howtobuy/sqlserverlicensing.mspx" target="_blank">do NOT need an extra SQL Server license for the mirroring server</a>, provided that it does nothing else but maintain the mirrored database - take note of the 30 days clause.</p>
+<h2 id="Test_setup">Test setup</h2>
+<p>My demos will be using three servers, all running Windows Server 2003 Standard (fully updated) through Virtual PC. All three have SQL Server 2005 Enterprise installed. I will be using the Microsoft sample database Adventureworks. You can <a href="http://codeplex.com/SqlServerSamples#databases" target="_blank">download the AdventureWorks database</a> at CodePlex.</p>
+<p>The three servers are RIO, MANDALAY and MGM (yes, I like Vegas). MGM will only be used for setting up a witness, RIO and MANDALAY will both host the actual databases, MANDALAY being the initial principal and RIO being the initial mirror. All servers are completely fresh installations using SQL Server authentication.</p>
+<p>I will be connecting to the instances from SQL Server Management Studio running on my desktop computer.</p>
+<h2 id="Initial_setup_of_the_databases">Initial setup of the databases</h2>
+<p>The first step is to restore the AdventureWorks .bak backup file to both servers. On the principal (MANDALAY) we should make a normal restore (RESTORE WITH RECOVERY) so the database is online. On the mirror (RIO), we should restore into the recovering state so no changes can be made (RESTORE WITH NORECOVERY). You can watch how it’s done here, or skip on to the next section.</p>
+<div class="video-container"><iframe src="//www.youtube.com/embed/eHeVZ1NzIO0" frameborder="0" allowfullscreen></iframe></div>
+
+
+
+<h2 id="Mirroring_configuration">Mirroring configuration</h2>
+<p>Now that we’ve got both databases setup, we’re ready to setup the actual mirror. A couple of notes on what I’m doing during the setup. In the first demo, I’ll setup a synchronous high safety mirror with a witness. As all the virtual PCs are running on the same machine, I’ll have to use different ports for the endpoints. Whether you want to use encryption for the endpoint communication is scenario specific. Encryption will <a href="http://www.microsoft.com/technet/prodtechnol/sql/2005/technologies/dbm_best_pract.mspx" target="_blank">have an overhead</a> - albeit a minor one - so it’s up to you to determine if it’s neccessary. As our SQL Services are running on the same account across the machines, we do not have to specify any custom service account names during the setup.</p>
+<p>For some reason, SQL Server needs a fully qualified domain name for the instance addresses. If you’re setting this up on a computer that is part of the domain, you should simply use the domain name, [Computer].[domain]:port. In this example my desktop is not part of the Active Directory domain and thus it’ll use addresses like TCP://COMPUTER:PORT which is not accepted. I’ll fix it by simply writing the machine IP addresses manually instead. The IP for MANDALAY is 192.168.0.31 and for RIO it’s 192.168.0.33. Note that you should ALWAYS use FQDNs, using IPs are not recommended as it may result in configuration as well as runtime issues. See <a href="http://sqlblog.com/blogs/adam_machanic/archive/2007/06/13/database-mirroring-fqdns-are-your-friends.aspx" target="_blank">Adam Machanics blogpost</a> on the same issue as I ran into a couple of times.</p>
+<div class="video-container"><iframe src="//www.youtube.com/embed/rlAMl3D47bo" frameborder="0" allowfullscreen></iframe></div>
+
+
+
+<h2 id="Testing_the_mirror">Testing the mirror</h2>
+<p>Besides my DBA excesses, I’m a developer. And what’s more natural than to whip together a small application that tests the mirrors availability?</p>
+<div class="imgwrapper" style=""><div><a href="/sql-server-mirroring-a-practical-approach/mirrortester_2.jpg" class="fancy"><img src="/sql-server-mirroring-a-practical-approach/mirrortester_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>It continuously attempts to connect to the databases using three different connection strings:</p>
+<figure class="highlight csharp"><pre><span class="keyword">string</span> principalConnection = <span class="string">"Data Source=Mandalay;Connect Timeout=1;Initial Catalog=AdventureWorks;User Id=sa;Password=sadpassword;Pooling=false"</span>;
+<span class="keyword">string</span> mirrorConnection = <span class="string">"Data Source=Rio;Connect Timeout=1;Initial Catalog=AdventureWorks;User Id=sa;Password=sadpassword;Pooling=false"</span>;
+<span class="keyword">string</span> totalConnection = <span class="string">"Data Source=Mandalay;Failover Partner=Rio;Connect Timeout=1;Initial Catalog=AdventureWorks;User Id=sa;Password=sadpassword;Pooling=false"</span>;
+</pre></figure>
+
+<p>The first connects directly to MANDALAY, the principal database. The second one goes to RIO, the mirror. And the last one is the mirror enabled connection string that combines the two. The principal should respond and act like any other normal database. The mirror will throw an exception as we cannot interact with a datbase in recovery mode. The combined connection will automatically connect to the current principal database, whether it be MANDALAY or RIO.</p>
+<p>To detect a broken connection quickly, I connect to the databases every 250ms and display a green bar if the connection succeeded (and an UPDATE &amp; SELECT went well), and red if any kind of exception arose. To detect a connection timeout in a timely fashion, I’m using my <a href="/controlling-sqlconnection-timeouts/">QuickOpen</a> functionality. The SUM(SafetyStockLevel) is the result of a simple SELECT query being done on the database (the UPDATE modifies the same table, hence the changing values), just to make sure we’re actually talking to a live database.</p>
+<p>In the following test, it gets a bit more complicated to follow. I’ve got two SQL Server Profiler windows open, the left one is monitoring the MANDALAY server, the right one is monitoring the RIO server. The windows are so small you cannot see what actually gets logged, but that is the point. The only relevant data in this case is the bottom rightmost value, Rows:X that displays an increasing rowcount when the server is active.</p>
+<p>I will start out by starting up the mirror testing application. We should see a red bar for the mirror database (RIO) as we cannot connect to it directly, while the principal (MANDALAY) and the mirrored connection should both show green bars. The MANDALAY profiler should also show activity, whilst the RIO profiler should not show any activity.</p>
+<p>When it’s running, I’ll initiate a manual mirror failover. A failover means we’re switching roles, thus RIO will become the new principal and MANDALAY will become the mirror. Effectively this should mean the combined connection still shows a green bar, MANDALAY shows red and RIO switches to green.</p>
+<div class="video-container"><iframe src="//www.youtube.com/embed/W7iw58KN4Sg" frameborder="0" allowfullscreen></iframe></div>
+
+
+<h2 id="The_TCP/IP_connection_retry_algorithm">The TCP/IP connection retry algorithm</h2>
+<p>The failover went perfect. There’s a short amount of downtime as the actual failover takes place, but shortly thereafter, we get green bars again - but one too many. When we started out, we got a red bar when trying to connect to the mirror, RIO. Shouldn’t we be getting a red bar when trying to connect to MANDALAY after we’ve switched the roles so MANDALAY has now become the new mirror? As you can see in the profilers, only RIO is being queried, so although MANDALAY is not responding, the connection string pointing to MANDALAY is succeeding. And what’s more confusing is that the new instance of the testing application showed the expected result, a green bar for RIO and red for MANDALAY - at the same time as the existing one showed all greens.</p>
+<p>The explanation is due to the <a href="http://msdn2.microsoft.com/en-us/library/ms365783.aspx" target="_blank">connection retry algorithm for TCP/IP connections</a>. When we have a mirrored connection, the partner names are cached when used. Although we couldn’t query RIO before, the partner name was cached. Thus when we make the failover and MANDALAY looses connection, it’ll automatically make a retry attempt by connecting to the mirror partner, RIO. When the database comes up again, RIO is responding to both connections successfully. So although the connection string specifies MANDALAY as the endpoint, we’re actually talking to RIO directly.</p>
+<p>Now, when the cache times out, or if we start a new application (the cache is tied to the SqlClient within a specific AppDomain), the partner name has not been cached and a retry will not be attempted, and that’s why the new instance shows the expected result alongside the old instance.</p>
+<h2 id="When_a_database_dies">When a database dies</h2>
+<p>This is the scenario we’ve been preparing for. But what happens when one of the databases die? In high safety mode, a transaction has to be committed on both the principal and on the mirror before it’s declared successful, but in case the mirror dies (whether due to the service stopping, the physical hardware crashing or something else) the principal will enter a disconnected state, still offering full availability. When you get the mirror database up and running again, it will automatically synchronize with the principal and the mirror will continue as if nothing had happened. High performance mode will also continue unaffected with a dead mirror, and it will also automatically resynch when the mirror comes back online.</p>
+<p>Here’s a quick video demonstrating the availability of the principal when the mirror goes down (the short red bars are caused by Virtual PC pausing all VPCs when the menu bar is open).</p>
+<div class="video-container"><iframe src="//www.youtube.com/embed/UQFrD3RmNrg" frameborder="0" allowfullscreen></iframe></div>
+
+
+
+<p>If the principal dies, we need to promote the mirror to the principal role. As soon as the mirror has undertaken the principal role, we have access to our database again. This can be done safely in the synchronous high safety operating mode as we do not risk any dataloss due to all transactions being made simultaneously in both databases. In the high performance mode thugh, we cannot do this as there could potentially be transactions that has not yet been transferred to the mirror, which would result in data loss. In this case we have to get the principal back online - or accept possible data loss, depending on what’s acceptable.</p>
+<p>In the following video I’ll simulate a dead principal. I’ll show the availability tester application running, using MANDALAY as the principal, RIO being the mirror. I’ll the pause the MANDALAY server, effectively simulating it dropping completely off the network. You’ll then notice all red bars in the tester application, as expected. To get the database up again, we have to do a manual failover to the mirror server, making it the new principal. We do that by executing the query:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">ALTER</span> <span class="keyword">DATABASE</span> AdventureWorks <span class="keyword">SET</span> PARTNER FORCE_SERVICE_ALLOW_DATA_LOSS</span>
+</pre></figure>
+
+<p>There is no GUI that’ll execute this query. Soon after I’ve executed the query, we get green bars again. Notice that all bars are green, this is due to the connection retry algorithm as explained earlier - the MANDALAY server is still offline. As I refresh the database list on RIO, you’ll notice that the database is now listed as “Principal, Disconnected”, confirming that the RIO database has undertaken the principal role, while disconnected from the mirror. I’ll then resume MANDALAY, and as I refresh the MANDALAY database list, you’ll notice that the database automatically changed state into “Mirror, Suspended / Restoring” - it picked up on the role change and is now awaiting further commands. It will not automatically resynch as mirroring is suspended when we force the principiality change through the ALLOW_SERVICE_DATA_LOSS parameter. We first have to resume the mirroring functionality. After having resumed mirroring, I’ll wait for the databases to synch up completely, after which I’ll do a manual failover so MANDALAY becomes the principal again. There’s a short downtime as the failover takes place, but after that, we’ve got green bars and MANDALAY returns as the principal, RIO changing to mirror.</p>
+<div class="video-container"><iframe src="//www.youtube.com/embed/R73OPBzS0ag" frameborder="0" allowfullscreen></iframe></div>
+
+
+
+<p>And there we go, we just experienced a principal going down with minimal service unavailability.</p>
+<h2 id="High_security_with_a_witness">High security with a witness</h2>
+<p>The restoration process we just experienced can be automated if we choose to utilize a third server known as the witness. The witness server continually monitors the principal and will initiate a failover in case the principal dies, as well as restoring the mirrors functionality when it returns (that is, converting the previous principal to the new mirror). It requires a third server, MGM (IP 192.168.0.35) for the witness part. Setup is more or less as usual, we just need to include the FQDN for the witness server.</p>
+<p>In the last video I’ll show how to setup the mirroring including a witness server. I will then start the availability testing application and pause the principal server afterwards. This will immediatly result in red boxes all over, but after a short while, the RIO server (the new principal) becomes green, and a moment after, the mirrored connection itself also becomes green. The MANDALAY box is also green, but again, this is due to the retry mechanism as explained earlier. You’ll then see that the previous mirror database has now changed status to “Principal, Disconnected”, proving that it has overtaken the principal responsibility and that it has lost connection to the mirror. I’ll then show how the MANDALAY database has changed status to mirror, and how we can do a manual failover so everything goes back to normal. This is the point when FQDNs became neccessary. Using IPs resulted in the mirror not being able to make the failover. As stated earlier, using IPs is a bad practice, you should always use FQDNs. I’ve added the AD hostnames to my hosts file so I can enter them from my non-AD member desktop machine.</p>
+<div class="video-container"><iframe src="//www.youtube.com/embed/oa6ZYxIPNFg" frameborder="0" allowfullscreen></iframe></div>
+
+
+
+<h2 id="Conclusion">Conclusion</h2>
+<p>SQL Mirroring is a great way to increase your availability rate in case of database failures. You need to understand precisely where mirroring will help and where it won’t make a difference. It won’t help when you fire out a TRUNCATE [WRONG_TABLE] statement since it’ll just be replicated on the mirror, for that you’ll still have to make a rollback via the logs. It’ll help you in the case of a server crashing due to either hardware, software or network failures (depending on your network setup) and so forth. It’ll also enable you to <a href="http://msdn2.microsoft.com/en-us/library/bb497962.aspx" target="_blank">do rolling upgrades</a>.</p>
+<p>While configuration is rather straight forward, mirroring will add complexity to your setup and errors may be harder to track down. You also have to consider the licensing requirements depending on the level of mirroring you’re planning to use.</p>
+<h2 id="Downloads">Downloads</h2>
+<p><a href="SQL_Mirroring_Tester.zip">SQL_Mirroring_Tester.zip - Test solution</a></p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=SQL%20Server%20Mirroring%20-%20A%20Practical%20Approach%20http%3A%2F%2Fimprove.dk%2Fsql-server-mirroring-a-practical-approach%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fsql-server-mirroring-a-practical-approach%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fsql-server-mirroring-a-practical-approach%2F&title=SQL%20Server%20Mirroring%20-%20A%20Practical%20Approach" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/sql-server-mirroring-a-practical-approach/sql-server-mirroring-a-practical-approach.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'sql-server-mirroring-a-practical-approach';
+	var disqus_url = 'http://improve.dk/sql-server-mirroring-a-practical-approach/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

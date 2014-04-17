@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Working With Identity Column Seed &amp; Increment Values | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Oct</span>
+			<span class="day">28</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/working-with-identity-column-seed-and-increment-values/" title="Working With Identity Column Seed &amp; Increment Values" rel="bookmark">Working With Identity Column Seed &amp; Increment Values</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/SQL Server - Tricks/">SQL Server - Tricks</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on Working With Identity Column Seed &amp; Increment Values">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>All of the following samples are based on the following table:</p>
+<a id="more"></a>
+
+
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> [dbo].[tblCars]
+(
+	[CarID] [<span class="keyword">int</span>] <span class="keyword">IDENTITY</span>(<span class="number">2</span>,<span class="number">5</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>,
+	[Name] [nvarchar](<span class="number">50</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>,
+)</span>
+</pre></figure>
+
+<h2 id="Find_identity_column_seed_and_increment_values">Find identity column seed and increment values</h2>
+<p>We can use the <a href="http://msdn.microsoft.com/en-us/library/ms189834.aspx" target="_blank">IDENT_SEED</a>, <a href="http://msdn.microsoft.com/en-us/library/ms189795.aspx" target="_blank">IDENT_INCR</a> and <a href="http://msdn.microsoft.com/en-us/library/ms175098.aspx" target="_blank">IDENT_CURRENT</a> functions to retrieve the identity seed and increment values, as well as the current value. Note that the next row will have IDENT_CURRENT() + IDENT_INCR() as its identity value.</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	IDENT_SEED(<span class="string">'tblCars'</span>) <span class="keyword">AS</span> Seed,
+	IDENT_INCR(<span class="string">'tblCars'</span>) <span class="keyword">AS</span> Increment,
+	IDENT_CURRENT(<span class="string">'tblCars'</span>) <span class="keyword">AS</span> CurrentIdentity</span>
+</pre></figure>
+
+<p>Result:</p>
+<figure class="highlight sql"><pre>Seed    Increment    CurrentIdentity
+2       5            17
+</pre></figure>
+
+<p>An alternative way is to query the <a href="http://technet.microsoft.com/en-us/library/ms187334.aspx" target="_blank">sys.identity_columns</a> system view for the same values. Note that the sys.columns view (of which sys.identity_columns inherit) has an object_id column specifying the object ID of the table to which the column belongs. Thus we’ll have to apply a predicate filtering away any columns not belonging to the desired table, tblCars in this example.</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	seed_value <span class="keyword">AS</span> Seed,
+	increment_value <span class="keyword">AS</span> Increment,
+	last_value <span class="keyword">AS</span> CurrentIdentity
+<span class="keyword">FROM</span>
+	sys.identity_columns
+<span class="keyword">WHERE</span>
+	object_id = OBJECT_ID(<span class="string">'tblCars'</span>)</span>
+</pre></figure>
+
+<p>Result:</p>
+<figure class="highlight sql"><pre>Seed    Increment   CurrentIdentity
+2       5           17
+</pre></figure>
+
+<p>A third way of finding the current identity value is to use the <a href="http://technet.microsoft.com/en-us/library/ms176057.aspx" target="_blank">DBCC CHECKIDENT</a> function:</p>
+<figure class="highlight sql"><pre>DBCC CHECKIDENT(tblCars, NORESEED)
+</pre></figure>
+
+<p>Result:</p>
+<figure class="highlight sql"><pre>Checking identity information: current identity value '22', current column value '22'.
+DBCC execution completed. If DBCC printed error messages, contact your system administrator.
+</pre></figure>
+
+<h2 id="Changing_the_seed_value">Changing the seed value</h2>
+<p>Using the DBCC CHECKIDENT command we can manually apply a new seed value to our table. Note that this will enable you to set an identity value that’ll cause the identity column to have duplicates unless you have a unique index on the column, in which case you’ll get an error instead. Thus, if you manually reseed the table, make sure you won’t run into duplicate values.</p>
+<figure class="highlight sql"><pre>DBCC CHECKIDENT(tblCars, RESEED, 500)
+</pre></figure>
+
+<p>Result:</p>
+<figure class="highlight sql"><pre>Checking identity information: current identity value '22', current column value '500'.
+DBCC execution completed. If DBCC printed error messages, contact your system administrator.
+</pre></figure>
+
+<p>If for some reason the identity value has become out of synch with the values in the table, we can automatically reseed the table to a valid identity value. In the following case I’ve manually set the seed to 10 while the highest identity value in the table is 27. After running RESEED with no explicit value, the seed is automatically set to 27, thus the next inserted row will have an identity value of 32, provided the increment is 5.</p>
+<figure class="highlight sql"><pre>DBCC CHECKIDENT(tblCars, RESEED)
+</pre></figure>
+
+<p>Result:</p>
+<figure class="highlight sql"><pre>Checking identity information: current identity value '10', current column value '27'.
+DBCC execution completed. If DBCC printed error messages, contact your system administrator.
+</pre></figure>
+
+<h2 id="Getting_the_maximum_and_minimum_identity_values">Getting the maximum and minimum identity values</h2>
+<p>Using the IDENTITYCOL alias for any identity column in a table (of which there can be at most one), we can easily select the maximum and minimum identity values:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	<span class="aggregate">MAX</span>(IDENTITYCOL) <span class="keyword">AS</span> MaximumIdentity,
+	<span class="aggregate">MIN</span>(IDENTITYCOL) <span class="keyword">AS</span> MinimumIdentity
+<span class="keyword">FROM</span>
+	tblCars</span>
+</pre></figure>
+
+<p>Result:</p>
+<figure class="highlight sql"><pre>MaximumIdentity MinimumIdentity
+27              22
+</pre></figure>
+
+<h2 id="Changing_the_identity_increment_value">Changing the identity increment value</h2>
+<p>Unfortunately there’s no easy way to change the increment value of an identity column. The only way to do so is to drop the identity column and add a new column with the new increment value. The following code will create a new temporary table, copy the data into it, recreate the original table with the correct increment value and then finally copy the data back using <a href="http://msdn.microsoft.com/en-us/library/aa259221(SQL.80" target="_blank">SET IDENTITY_INSERT ON</a>.aspx) to insert explicit values into the identity column.</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">BEGIN</span> TRAN
+
+-- <span class="keyword">Create</span> new <span class="keyword">temporary</span> <span class="keyword">table</span> <span class="keyword">to</span> hold data while restructuring tblCars
+<span class="keyword">CREATE</span> <span class="keyword">TABLE</span> tblCars_TMP
+(
+	CarID <span class="keyword">int</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span>,
+	Name nvarchar(<span class="number">50</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>
+)
+
+-- <span class="keyword">Insert</span> tblCars data <span class="keyword">into</span> tblCars_TMP
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> tblCars_TMP <span class="keyword">SELECT</span> * <span class="keyword">FROM</span> tblCars
+
+-- <span class="keyword">Drop</span> original <span class="keyword">table</span>
+<span class="keyword">DROP</span> <span class="keyword">TABLE</span> tblCars
+
+-- <span class="keyword">Create</span> new tblCars <span class="keyword">table</span> <span class="keyword">with</span> correct <span class="keyword">identity</span> <span class="keyword">values</span> (<span class="number">1</span>,<span class="number">1</span>) <span class="keyword">in</span> this <span class="keyword">case</span>
+<span class="keyword">CREATE</span> <span class="keyword">TABLE</span> [dbo].[tblCars]
+(
+	[CarID] [<span class="keyword">int</span>] <span class="keyword">IDENTITY</span>(<span class="number">1</span>,<span class="number">1</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>,
+	[Name] [nvarchar](<span class="number">50</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>,
+)
+
+-- Reinsert data <span class="keyword">into</span> tblCars <span class="keyword">table</span>
+<span class="keyword">SET</span> IDENTITY_INSERT tblCars <span class="keyword">ON</span>
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> tblCars (CarID, Name) <span class="keyword">SELECT</span> CarID, Name <span class="keyword">FROM</span> tblCars_TMP
+<span class="keyword">SET</span> IDENTITY_INSERT tblCars OFF
+
+<span class="keyword">COMMIT</span></span>
+</pre></figure>
+
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=Working%20With%20Identity%20Column%20Seed%20%26%20Increment%20Values%20http%3A%2F%2Fimprove.dk%2Fworking-with-identity-column-seed-and-increment-values%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fworking-with-identity-column-seed-and-increment-values%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fworking-with-identity-column-seed-and-increment-values%2F&title=Working%20With%20Identity%20Column%20Seed%20%26%20Increment%20Values" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/working-with-identity-column-seed-and-increment-values/working-with-identity-column-seed-and-increment-values.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'working-with-identity-column-seed-and-increment-values';
+	var disqus_url = 'http://improve.dk/working-with-identity-column-seed-and-increment-values/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

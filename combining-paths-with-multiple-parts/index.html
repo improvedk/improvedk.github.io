@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Combining Paths With Multiple Parts | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Sep</span>
+			<span class="day">16</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/combining-paths-with-multiple-parts/" title="Combining Paths With Multiple Parts" rel="bookmark">Combining Paths With Multiple Parts</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on Combining Paths With Multiple Parts">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>Whenever you concatenate multiple strings into a path, you really ought to be using the <a href="http://msdn.microsoft.com/en-us/library/system.io.path.aspx" target="_blank">System.IO.Path</a> class’s Combine method. At times you may be concatenating a number of smaller parts of a path instead of just the two that the <a href="http://msdn.microsoft.com/en-us/library/fyy7a5kt.aspx" target="_blank">Path.Combine()</a> method takes. Nested Path.Combine calls quickly become difficult to read and error prone:</p>
+<a id="more"></a>
+
+
+<figure class="highlight csharp"><pre><span class="keyword">string</span> partOne = <span class="string">@"C:"</span>;
+<span class="keyword">string</span> partTwo = <span class="string">"Windows"</span>;
+<span class="keyword">string</span> partThree = <span class="string">@"System32\drivers"</span>;
+<span class="keyword">string</span> partFour = <span class="string">@"etc\hosts"</span>;
+<span class="keyword">string</span> combinedPath;
+
+combinedPath = Path.Combine(Path.Combine(Path.Combine(partOne, partTwo), partThree), partFour);
+</pre></figure>
+
+<p>Often we won’t have all of our path parts in named variables, and even when we do, they’ll rarely be named partOne, partTwo, partX etc. If we mix literal strings with variables and multiple levels of nested Path.Combine calls, mayhem will arise.</p>
+<p>As an alternative I’m using a simple wrapper method above the Path.Combine method:</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> PathCombiner
+{
+	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">string</span> <span class="title">Combine</span>(<span class="keyword">string</span> path1, <span class="keyword">string</span> path2, <span class="keyword">params</span> <span class="keyword">string</span>[] pathn)
+	{
+		<span class="keyword">string</span> path = Path.Combine(path1, path2);
+
+		<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; pathn.Length; i++)
+			path = Path.Combine(path, pathn[i]);
+
+		<span class="keyword">return</span> path;
+	}
+}
+</pre></figure>
+
+<p>The C# <a href="http://msdn.microsoft.com/en-us/library/w5zay9db(VS.71" target="_blank">params</a>.aspx) keyword allows us to make a method take in any number of parameters of the same type - string in this case. Note that I’ve split the paths up into three parts - path1, path2 and pathn. If we were to only take the params string[] parameter, the user might send in no parameters at all - which wouldn’t make sense. By forcing the user to send in at least two paths, we maintain the interface of Path.Combine and just add extra functionality on top of it - though the user may still just send in two paths as before.</p>
+<figure class="highlight csharp"><pre>static void Main(string[] args)
+{
+	string partOne = @<span class="string">"C:"</span>;
+	string partTwo = <span class="string">"Windows"</span>;
+	string partThree = @<span class="string">"System32\drivers"</span>;
+	string partFour = @<span class="string">"etc\hosts"</span>;
+	string combinedPath;
+
+	// Using System.IO.Path
+	combinedPath = Path.Combine(Path.Combine(Path.Combine(partOne, partTwo), partThree), partFour);
+	Console.WriteLine(combinedPath);
+	
+	// Using PathCombiner
+	combinedPath = PathCombiner.Combine(partOne, partTwo, partThree, partFour);
+	Console.WriteLine(combinedPath);
+
+	Console.Read();
+}
+</pre></figure>
+
+<p>An extension method you say? The logical place to put this function would be in the Path class itself, perhaps named CombineMultiple. Unfortunately the Path class is static so we’re unable to extend it. Another option might be directly on string as a CombinePath method like this:</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> PathCombiner
+{
+	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">string</span> <span class="title">Combine</span>(<span class="keyword">string</span> path1, <span class="keyword">string</span> path2, <span class="keyword">params</span> <span class="keyword">string</span>[] pathn)
+	{
+		<span class="keyword">string</span> path = Path.Combine(path1, path2);
+
+		<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; pathn.Length; i++)
+			path = Path.Combine(path, pathn[i]);
+
+		<span class="keyword">return</span> path;
+	}
+
+	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">string</span> <span class="title">CombinePath</span>(<span class="keyword">this</span> <span class="keyword">string</span> path1, <span class="keyword">string</span> path2, <span class="keyword">params</span> <span class="keyword">string</span>[] pathn)
+	{
+		<span class="keyword">return</span> Combine(path1, path2, pathn);
+	}
+}
+</pre></figure>
+
+<p>We’d call the extension method like so:</p>
+<figure class="highlight csharp"><pre>combinedPath = partOne<span class="preprocessor">.CombinePath</span>(partTwo)<span class="preprocessor">.CombinePath</span>(partThree)<span class="preprocessor">.CombinePath</span>(partFour)<span class="comment">;</span>
+</pre></figure>
+
+<p>While this does work, I really don’t recommend it. I’m against overly use of extension methods unless there’s a good reason. I think it’s much cleaner to contain this code in a separate class whose only purpose is path combining. Now devs are going to be confused when they sometimes see the CombinePath method in Intellisense and not at other times, depending on whether the namespace has been imported. Also, I think the PathCombiner.Combine syntax is the cleanest on top of that, but you be the judge:</p>
+<figure class="highlight csharp"><pre>string partOne = @<span class="string">"C:"</span><span class="comment">;</span>
+string partTwo = <span class="string">"Windows"</span><span class="comment">;</span>
+string partThree = @<span class="string">"System32\drivers"</span><span class="comment">;</span>
+string partFour = @<span class="string">"etc\hosts"</span><span class="comment">;</span>
+string combinedPath<span class="comment">;</span>
+
+// Using System<span class="preprocessor">.IO</span><span class="preprocessor">.Path</span>
+combinedPath = Path<span class="preprocessor">.Combine</span>(Path<span class="preprocessor">.Combine</span>(Path<span class="preprocessor">.Combine</span>(partOne, partTwo), partThree), partFour)<span class="comment">;</span>
+Console<span class="preprocessor">.WriteLine</span>(combinedPath)<span class="comment">;</span>
+
+// Using PathCombiner
+combinedPath = PathCombiner<span class="preprocessor">.Combine</span>(partOne, partTwo, partThree, partFour)<span class="comment">;</span>
+Console<span class="preprocessor">.WriteLine</span>(combinedPath)<span class="comment">;</span>
+
+combinedPath = partOne<span class="preprocessor">.CombinePath</span>(partTwo)<span class="preprocessor">.CombinePath</span>(partThree)<span class="preprocessor">.CombinePath</span>(partFour)<span class="comment">;</span>
+Console<span class="preprocessor">.WriteLine</span>(combinedPath)<span class="comment">;</span>
+
+Console<span class="preprocessor">.Read</span>()<span class="comment">;</span>
+</pre></figure>
+
+
+<figure class="highlight csharp"><pre>C:<span class="command">\Windows</span><span class="command">\System</span>32<span class="command">\drivers</span><span class="command">\etc</span><span class="command">\hosts</span>
+C:<span class="command">\Windows</span><span class="command">\System</span>32<span class="command">\drivers</span><span class="command">\etc</span><span class="command">\hosts</span>
+C:<span class="command">\Windows</span><span class="command">\System</span>32<span class="command">\drivers</span><span class="command">\etc</span><span class="command">\hosts</span>
+</pre></figure>
+
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=Combining%20Paths%20With%20Multiple%20Parts%20http%3A%2F%2Fimprove.dk%2Fcombining-paths-with-multiple-parts%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fcombining-paths-with-multiple-parts%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fcombining-paths-with-multiple-parts%2F&title=Combining%20Paths%20With%20Multiple%20Parts" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/combining-paths-with-multiple-parts/combining-paths-with-multiple-parts.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'combining-paths-with-multiple-parts';
+	var disqus_url = 'http://improve.dk/combining-paths-with-multiple-parts/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>Pushing the Limits of Amazon S3 Upload Performance | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-2479580-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Nov</span>
+			<span class="day">07</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/pushing-the-limits-of-amazon-s3-upload-performance/" title="Pushing the Limits of Amazon S3 Upload Performance" rel="bookmark">Pushing the Limits of Amazon S3 Upload Performance</a></h1>
+		<div class="categories">
+			
+				<a href="http://improve.dk/category/.NET/">.NET</a>
+				, 
+			
+				<a href="http://improve.dk/category/Amazon Web Services/">Amazon Web Services</a>
+				
+			
+		</div>
+		
+			<div class="comments">
+				<a href="#comments" title="Comment on Pushing the Limits of Amazon S3 Upload Performance">Comments</a>
+			</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" class="single">
+
+		
+		
+			<div class="body">
+			
+				<p>Recently I’ve been working on a project where I’ve got millions of relatively small objects, sized between 5kb and 500kb, and they all have to be uploaded to S3. Naturally, doing a synchronous upload of each object, one by one, just doesn’t cut it. We need to upload the objects in parallel to achieve acceptable performance. But what are the optimal parameters when it comes to the number of simultaneous upload threads? Does it depend on the object size? How much of a difference does HTTPS over HTTP make? Let me share what I discovered during my testing.</p>
+<a id="more"></a>
+
+<p>Note that some of these graphs are much larger than what I can show in-page. All can be opened in full size by clicking them.</p>
+<h2 id="Test_code">Test code</h2>
+<p>To reduce variance in the outcome, I’ve run all test cases four times and reported the average runtime. Each test case tries to upload 512 objects of a given size. In total, 2048 objects are uploaded across the four repetitions, before the average runtime is reported back. Even though I ran four repetitions, I still saw some fluctuations in the results that I’ll have to attest to variance.</p>
+<p>I started out by using the thread pool and the asynchronous Begin/EndPutObject methods. However, even when setting the thread pool max/min thread/IO settings explicitly, I found the thread pool usage caused too much variance. Instead I went with manual thread control.</p>
+<p>One major player is the ServicePointManager.DefaultConnectionLimit – this limits the number of active connections to any given host at the same time. By default, this has a low value of 2 and thus limits you to just two concurrent uploads to S3, before others are queued at the network level. If this limit is set below the number of active threads, you will invariably have threads waiting to open network connections. To avoid this, I set the connection limit equal to the number of threads I was running.</p>
+<p>I tried running the tests both with and without MD5 checksum generation &amp; verification, but I saw no measurable difference in the outcome.</p>
+<p>At no point, in any of the test environments, were the CPUs stressed to the point where they were close to becoming bottlenecks. As the test object is all in-memory and no disk is involved, I’ve ruled out disks as a bottleneck factor as well. Thus, the number one of piece of hardware affecting the results is the network interface card (NIC).</p>
+<p>Before starting the four repetitions of the test, I fire off a single PutObject request to warm up the stack. The test code is relatively simple, it runs in an infinite loop, checking whether we need to upload more objects, or whether we’re done. If done, it breaks the loop and ends the thread. When launching I start up X amount of threads and immediately after join with them to wait for them all to complete. The runtime includes the amount of time required to instantiate the threads, though it should have no measurable impact on the result. The runtime calculation is done using integer math for output simplicity, but the impact should be minimal in the big picture.</p>
+<figure class="highlight csharp"><pre>using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Diagnostics;
+using System.Net;
+using System.Threading;
+using Amazon;
+using Amazon.S3;
+using Amazon.S3.Model;
+
+namespace S3Optimization
+{
+	<span class="class"><span class="keyword">class</span> <span class="title">Program</span></span>
+	{
+		private <span class="reserved">const</span> string bucketName = <span class="string">"improve.dk"</span>;
+		private <span class="reserved">const</span> string serviceUrl = <span class="string">"s3-eu-west-1.amazonaws.com"</span>;
+
+		<span class="regexp">//</span> ConnectionLimit ObjSizeInKB
+		static <span class="reserved">void</span> Main(string[] args)
+		{
+			int repetitions = <span class="number">4</span>;
+			int uploadCount = <span class="number">512</span>;
+			int objSize = Convert.ToInt32(args[<span class="number">1</span>]) * <span class="number">1024</span>;
+			int numThreads = Convert.ToInt32(args[<span class="number">0</span>]);
+			string dir = <span class="string">"Optimization/"</span> + Guid.NewGuid();
+			<span class="reserved">var</span> config = <span class="keyword">new</span> AmazonS3Config().WithServiceURL(serviceUrl).WithCommunicationProtocol(Protocol.HTTPS);
+			<span class="reserved">var</span> sw = <span class="keyword">new</span> Stopwatch();
+			object locker = <span class="keyword">new</span> object();
+			string obj = randomString(objSize);
+
+			<span class="regexp">//</span> Ensuring all connections have network connectivity
+			ServicePointManager.DefaultConnectionLimit = numThreads;
+
+			<span class="regexp">//</span> The actual job each thread will be performing
+			<span class="reserved">var</span> work = <span class="keyword">new</span> ThreadStart<span class="function"><span class="params">(() =&gt;
+				{
+					using (<span class="reserved">var</span> s3Client = AWSClientFactory.CreateAmazonS3Client(ConfigurationManager.AppSettings[<span class="string">"AccessKeyID"</span>], ConfigurationManager.AppSettings[<span class="string">"SecretAccessKey"</span>], config))
+					{
+						<span class="keyword">while</span> (<span class="literal">true</span>)
+						{
+							lock (locker)
+							{
+								<span class="keyword">if</span> (uploadCount &lt;= <span class="number">0</span>)
+									<span class="keyword">break</span>;
+								uploadCount--;
+							}
+
+							<span class="reserved">var</span> request = <span class="keyword">new</span> PutObjectRequest()
+								.WithBucketName(bucketName)
+								.WithKey(dir + <span class="string">"/"</span> + Guid.NewGuid())
+								.WithContentBody(obj);
+							s3Client.PutObject(request);
+						}
+					}
+				})</span>;
+
+			// <span class="title">Warmup</span>
+			<span class="title">using</span> <span class="params">(<span class="reserved">var</span> s3Client = AWSClientFactory.CreateAmazonS3Client(ConfigurationManager.AppSettings[<span class="string">"AccessKeyID"</span>], ConfigurationManager.AppSettings[<span class="string">"SecretAccessKey"</span>], config))</span>
+			{
+				<span class="title">var</span> <span class="title">request</span> = <span class="title">new</span> <span class="title">PutObjectRequest</span><span class="params">()</span>
+					.<span class="title">WithBucketName</span><span class="params">(bucketName)</span>
+					.<span class="title">WithKey</span><span class="params">(dir + <span class="string">"/"</span> + Guid.NewGuid())</span>
+					.<span class="title">WithContentBody</span><span class="params">(obj)</span>;
+				<span class="title">s3Client</span>.<span class="title">PutObject</span><span class="params">(request)</span>;
+			}
+
+			// <span class="title">Actual</span> <span class="title">timing</span>
+			<span class="title">sw</span>.<span class="title">Start</span><span class="params">()</span>;
+			<span class="title">for</span><span class="params">(int i=<span class="number">0</span>; i&lt;repetitions; i++)</span>
+			{
+				<span class="title">int</span> <span class="title">originalUploadCount</span> = <span class="title">uploadCount</span>;
+
+				<span class="title">var</span> <span class="title">threads</span> = <span class="title">new</span> <span class="title">List</span><span class="params">()</span>;
+				<span class="title">for</span><span class="params">(int j=<span class="number">0</span>; j&lt;numthreads; j++)</span>="" <span class="title">threads</span>.<span class="title">add</span><span class="params">(<span class="keyword">new</span>=<span class="string">""</span> thread(work))</span>;="" <span class="title">threads</span>.<span class="title">foreach</span><span class="params">(x=<span class="string">""</span>&gt; x.Start())</span>;
+				<span class="title">threads</span>.<span class="title">ForEach</span><span class="params">(x =&gt; x.Join())</span>;
+
+				<span class="title">uploadCount</span> = <span class="title">originalUploadCount</span>;
+			}
+			<span class="title">sw</span>.<span class="title">Stop</span><span class="params">()</span>;
+
+			<span class="title">Console</span>.<span class="title">WriteLine</span><span class="params">(sw.ElapsedMilliseconds / repetitions)</span>;
+		}
+
+		<span class="title">static</span> <span class="title">string</span> <span class="title">randomString</span><span class="params">(int size)</span>
+		{
+			<span class="title">var</span> <span class="title">rnd</span> = <span class="title">new</span> <span class="title">Random</span><span class="params">()</span>;
+			<span class="title">var</span> <span class="title">chars</span> = "<span class="title">ABCDEFGHIJKLMNOPQRSTUVWXYZ</span>";
+
+			<span class="title">char</span>[] <span class="title">buffer</span> = <span class="title">new</span> <span class="title">char</span>[<span class="title">size</span>];
+
+			<span class="title">for</span> <span class="params">(int i = <span class="number">0</span>; i &lt; size; i++)</span>
+				<span class="title">buffer</span>[<span class="title">i</span>] = <span class="title">chars</span>[<span class="title">rnd</span>.<span class="title">Next</span><span class="params">(chars.Length)</span>];
+
+			<span class="title">return</span> <span class="title">new</span> <span class="title">string</span><span class="params">(buffer)</span>;
+		}
+	}
+}</span>
+</pre></figure>
+
+<p>For running the tests, I’m using the following test runner application, testing all combinations of thread count and object size between 1 and 256/2048 respectively (in powers of 2):</p>
+<figure class="highlight csharp"><pre><span class="keyword">var</span> psi = <span class="keyword">new</span> ProcessStartInfo(<span class="string">"S3Optimization.exe"</span>)
+    {
+        UseShellExecute = <span class="keyword">false</span>,
+		RedirectStandardOutput = <span class="keyword">true</span>
+    };
+
+<span class="keyword">var</span> connectionLimits = <span class="keyword">new</span>[] { <span class="number">1</span>, <span class="number">2</span>, <span class="number">4</span>, <span class="number">8</span>, <span class="number">16</span>, <span class="number">32</span>, <span class="number">64</span>, <span class="number">128</span>, <span class="number">256</span> };
+<span class="keyword">var</span> objSizes = <span class="keyword">new</span>[] { <span class="number">1</span>, <span class="number">2</span>, <span class="number">4</span>, <span class="number">8</span>, <span class="number">16</span>, <span class="number">32</span>, <span class="number">64</span>, <span class="number">128</span>, <span class="number">256</span>, <span class="number">512</span>, <span class="number">1024</span>, <span class="number">2048</span> };
+
+<span class="keyword">foreach</span>(<span class="keyword">int</span> connectionLimit <span class="keyword">in</span> connectionLimits)
+{
+	<span class="keyword">foreach</span> (<span class="keyword">int</span> objSize <span class="keyword">in</span> objSizes)
+	{
+		psi.Arguments = connectionLimit + <span class="string">" "</span> + objSize;
+
+		<span class="keyword">var</span> p = Process.Start(psi);
+		<span class="keyword">string</span> output = connectionLimit + <span class="string">"t"</span> + objSize + <span class="string">"t"</span> + p.StandardOutput.ReadToEnd();
+		p.WaitForExit();
+
+		Console.Write(output);
+		File.AppendAllText(<span class="string">"Output.txt"</span>, output);
+	}
+}
+</pre></figure>
+
+<h2 id="Initial_results">Initial results</h2>
+<p>The first test is done using a colocation (colo) Dell PowerEdge 1950 placed at a Danish ISP in Aarhus, Denmark. The server is running Windows Server 2003 x64 and has a single gigabit NIC with gigabit support throughout the network stack. Note that I won’t be mentioning neither CPU, memory nor disk for any of the machines. Neither of those were ever close to being the bottleneck and are thus irrelevant. Suffice to say – they all had plenty of CPU, memory and disk capabilities. A tracert from the server to the S3 EU endpoint in Dublin looks like this:</p>
+<figure class="highlight"><pre>Tracing route to s3-eu-west-<span class="number">1.</span>amazonaws<span class="preprocessor">.com</span> [<span class="number">178.236</span><span class="number">.6</span><span class="number">.31</span>]
+over a maximum of <span class="number">30</span> hops:
+
+<span class="number">1</span>	<span class="number">1</span> ms	<span class="number">4</span> ms	<span class="number">13</span> ms	<span class="number">89.221</span><span class="number">.162</span><span class="number">.249</span>
+<span class="number">2</span>	<span class="number">1</span> ms	<span class="number">1</span> ms	<span class="number">3</span> ms	<span class="number">10.1</span><span class="number">.2</span><span class="number">.1</span>
+<span class="number">3</span>	<span class="number">3</span> ms	<span class="number">2</span> ms	<span class="number">2</span> ms	<span class="number">89.221</span><span class="number">.161</span><span class="number">.105</span>
+<span class="number">4</span>	&lt;<span class="number">1</span> ms	&lt;<span class="number">1</span> ms	&lt;<span class="number">1</span> ms	<span class="number">92</span>-<span class="number">62</span>-<span class="number">199</span>-<span class="number">177.</span>customer<span class="preprocessor">.fuzion</span><span class="preprocessor">.dk</span> [<span class="number">92.62</span><span class="number">.199</span><span class="number">.177</span>]
+<span class="number">5</span>	&lt;<span class="number">1</span> ms	&lt;<span class="number">1</span> ms	&lt;<span class="number">1</span> ms	<span class="number">87.116</span><span class="number">.1</span><span class="number">.157</span>
+<span class="number">6</span>	<span class="number">5</span> ms	<span class="number">4</span> ms	<span class="number">4</span> ms	<span class="number">93.176</span><span class="number">.94</span><span class="number">.175</span>
+<span class="number">7</span>	<span class="number">4</span> ms	<span class="number">4</span> ms	<span class="number">4</span> ms	xe-<span class="number">3</span>-<span class="number">3</span>-<span class="number">0.</span>cph10<span class="preprocessor">.ip</span>4<span class="preprocessor">.tinet</span><span class="preprocessor">.net</span> [<span class="number">77.67</span><span class="number">.74</span><span class="number">.37</span>]
+<span class="number">8</span>	<span class="number">47</span> ms	<span class="number">47</span> ms	<span class="number">47</span> ms	xe-<span class="number">2</span>-<span class="number">2</span>-<span class="number">0.</span>dub40<span class="preprocessor">.ip</span>4<span class="preprocessor">.tinet</span><span class="preprocessor">.net</span> [<span class="number">89.149</span><span class="number">.181</span><span class="number">.37</span>]
+<span class="number">9</span>	*	*	*	Request timed <span class="keyword">out</span>.
+</pre></figure>
+
+<p>The following graph has the number of threads (that is, simultaneous uploads) on the X-axis and the MiB/s on the Y-axis. The MiB/s was calculated using the formula (UploadCount x ObjectSizeInKB / 1024 / AvgTimePerRepetitionInSeconds). Each color bar represents a given object size in KB as noted on the legend on the right. Note also that these results were made using the standard HTTPS protocol. You might ask yourself why I’m measuring MiB/s and not requests/s. Thing is – they’re exactly the same. MiB/s and requests/s are just calculations based on the time it took to run a fixed number of requests. The absolute values are less interesting than they are in relation to each other. If you want to take a look at the requests/sec, you can download my raw data at the end of the post.</p>
+<div class="imgwrapper" style=""><div><a href="/pushing-the-limits-of-amazon-s3-upload-performance/image_2.png" class="fancy"><img src="/pushing-the-limits-of-amazon-s3-upload-performance/image_2.png" style="max-height: 250px"/></a></div></div>
+
+<p>There is an overwhelming amount of information in this graph alone. We can see how the general throughput seems to increase relatively linearly along the amount of threads, though they seem to reach their max potential at <strong>128 threads</strong>.</p>
+<h3 id="Small_object_characteristics">Small object characteristics</h3>
+<p>Let me zoom in on the 1KB object size:</p>
+<div class="imgwrapper" style=""><div><a href="/pushing-the-limits-of-amazon-s3-upload-performance/image_4.png" class="fancy"><img src="/pushing-the-limits-of-amazon-s3-upload-performance/image_4.png" style="max-height: 250px"/></a></div></div>
+
+<p>For the 1KB object size we see clear improvements all the way up to <strong>64 threads</strong>, after which it seems to stabilize. The 1KB object size is the one that incurs the most overhead due to S3 not utilizing persistent connections. Each request we make needs to create a new TCP connection and perform an SSL handshake. Compared to a 2MB object, we spend a lot more time and resources on overhead compared to actually transferring data. What if we disabled SSL and used unencrypted HTTP instead?</p>
+<div class="imgwrapper" style=""><div><a href="/pushing-the-limits-of-amazon-s3-upload-performance/image_6.png" class="fancy"><img src="/pushing-the-limits-of-amazon-s3-upload-performance/image_6.png" style="max-height: 250px"/></a></div></div>
+
+<p>Now we get increased performance all the way up <strong>128 threads</strong> – and we actually end up pushing 200% as much data as we did using HTTPS! For small objects, HTTPS has an extremely high cost – you should avoid it if you can.</p>
+<h3 id="Number_of_threads_–_finding_the_sweet_spot">Number of threads – finding the sweet spot</h3>
+<p>Take a look at this graph, showing the results for object sizes 1KB – 128KB:</p>
+<div class="imgwrapper" style=""><div><a href="/pushing-the-limits-of-amazon-s3-upload-performance/image_13.png" class="fancy"><img src="/pushing-the-limits-of-amazon-s3-upload-performance/image_13.png" style="max-height: 250px"/></a></div></div>
+
+<p>Ignoring minor deviances, all of the objects seem to <strong>peak at 64 connections</strong>. Any more than that either causes a significant drop off, or just minor variance. For objects less than 128KB, 64 threads definitely seem to be the cut-off point. Compare it with the following graph, showing object sizes 256KB – 2048KB:</p>
+<div class="imgwrapper" style=""><div><a href="/pushing-the-limits-of-amazon-s3-upload-performance/image_17.png" class="fancy"><img src="/pushing-the-limits-of-amazon-s3-upload-performance/image_17.png" style="max-height: 250px"/></a></div></div>
+
+<p>For these objects, we clearly see that going up to <strong>128 connections actually provide a boost in throughput</strong>, leading me to conclude that for objects of size 256KB+, you can use somewhat more threads successfully.</p>
+<p>For all object sizes, using  HTTP over HTTPS seems to increase the maximum throughput thread limit – this increasing it from 64 to 128 for smaller objects and from 128 to 256 threads for larger objects. If you’re uploading objects of varying sizes, this means you’ll have to do some testing with your specific workload to find out the optimal amount of threads.</p>
+<h3 id="Object_size_vs-_HTTPS_performance_impact">Object size vs. HTTPS performance impact</h3>
+<p>In the following graph I’ve calculated the average gain HTTP had over HTTPS for each object size, across all thread counts. As there is quite some variance, the trend line is the most interesting part of the graph. It clearly shows that as object size grows, the HTTP over HTTPS advantage decreases.</p>
+<div class="imgwrapper" style=""><div><a href="/pushing-the-limits-of-amazon-s3-upload-performance/image_19.png" class="fancy"><img src="/pushing-the-limits-of-amazon-s3-upload-performance/image_19.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Server_2008_R2_vs-_Server_2003">Server 2008 R2 vs. Server 2003</h2>
+<p>You’ve probably heard about Server 2008 bringing along a <a href="http://technet.microsoft.com/en-us/network/bb545475" target="_blank">bunch of updates to the TCP/IP stack</a>. I thought it would be interesting to run the same tests on an identical server, just running Windows Server 2008 R2 x64. Luckily, I have just that. A server with identical hardware, on the same subnet at the same ISP, just running Server 2008 R2 x64 instead. Question is, how big of a difference does the OS alone make?</p>
+<p>For this graph, I calculated the maximum attainable transfer speed, using HTTPS, for a given object, across any number of threads. I’ve then mapped those values into the graph for both Server 2003 and Server 2008 R2 (note the log(2) scale!).</p>
+<div class="imgwrapper" style=""><div><a href="/pushing-the-limits-of-amazon-s3-upload-performance/image_21.png" class="fancy"><img src="/pushing-the-limits-of-amazon-s3-upload-performance/image_21.png" style="max-height: 250px"/></a></div></div>
+
+<p>It clearly shows that Server 2008 R2 consistently wins out over 2003 - and this is using the exact same hardware, same switches, connection, etc. - only the OS is different. What about HTTP?</p>
+<div class="imgwrapper" style=""><div><a href="/pushing-the-limits-of-amazon-s3-upload-performance/image_23.png" class="fancy"><img src="/pushing-the-limits-of-amazon-s3-upload-performance/image_23.png" style="max-height: 250px"/></a></div></div>
+
+<p>Ignoring some minor variance, HTTP is still clearly the winner.</p>
+<p>On average, I found Server 2008 R2 to be <strong>16.8% faster</strong> than Server 2003 when testing HTTPS, and <strong>18.7% faster</strong> when using HTTP. That is a major gain just by changing the OS!</p>
+<h2 id="The_impact_of_locality_–_EC2_meets_S3">The impact of locality – EC2 meets S3</h2>
+<p>At this point I’ve demonstrated that you get rather crappy performance if you perform your uploads single threaded. By just scaling out the number of threads, we can actually end up saturating a gigabit NIC, provided the object size is large enough. However, we do spend a large amount of time waiting for network latency. What difference would it make if we were to run this in the cloud… Say in EC2 for example?</p>
+<p>I spawned an m1.xlarge instance in the EU EC2 region, providing me with a stable instance with plenty of CPU and memory. A tracert confirms that we are indeed <strong>very close to the S3 servers</strong>:</p>
+<figure class="highlight"><pre><span class="title">Tracing</span> route to s3-eu-west-<span class="number">1</span>.amazonaws.com [<span class="number">178.236.5.31</span>]
+over a maximum of <span class="number">30</span> hops:
+
+<span class="number">1</span>	&lt;<span class="number">1</span> ms	&lt;<span class="number">1</span> ms	&lt;<span class="number">1</span> ms	ip-<span class="number">10</span>-<span class="number">48</span>-<span class="number">248</span>-<span class="number">2</span>.eu-west-<span class="number">1</span>.compute.internal [<span class="number">10.48.248.2</span>]
+<span class="number">2</span>	&lt;<span class="number">1</span> ms	&lt;<span class="number">1</span> ms	&lt;<span class="number">1</span> ms	ec2-<span class="number">79</span>-<span class="number">125</span>-<span class="number">0</span>-<span class="number">242</span>.eu-west-<span class="number">1</span>.compute.amazonaws.com [<span class="number">79.125.0.242</span>]
+<span class="number">3</span>	&lt;<span class="number">1</span> ms	&lt;<span class="number">1</span> ms	&lt;<span class="number">1</span> ms	ip-<span class="number">10</span>-<span class="number">1</span>-<span class="number">44</span>-<span class="number">253</span>.eu-west-<span class="number">1</span>.compute.internal [<span class="number">10.1.44.253</span>]
+<span class="number">4</span>	<span class="number">1</span> ms	<span class="number">2</span> ms	<span class="number">1</span> ms	ip-<span class="number">10</span>-<span class="number">1</span>-<span class="number">0</span>-<span class="number">5</span>.eu-west-<span class="number">1</span>.compute.internal [<span class="number">10.1.0.5</span>]
+<span class="number">5</span>	&lt;<span class="number">1</span> ms	&lt;<span class="number">1</span> ms	&lt;<span class="number">1</span> ms	ec2-<span class="number">79</span>-<span class="number">125</span>-<span class="number">1</span>-<span class="number">97</span>.eu-west-<span class="number">1</span>.compute.amazonaws.com [<span class="number">79.125.1.97</span>]
+<span class="number">6</span>	<span class="number">2</span> ms	<span class="number">2</span> ms	<span class="number">2</span> ms	<span class="number">178.236.0.138</span>
+<span class="number">7</span>	<span class="number">2</span> ms	<span class="number">20</span> ms	<span class="number">2</span> ms	<span class="number">178.236.0.123</span>
+<span class="number">8</span>	<span class="number">2</span> ms	<span class="number">2</span> ms	<span class="number">2</span> ms	<span class="number">178.236.0.155</span>
+<span class="number">9</span>	<span class="number">2</span> ms	<span class="number">2</span> ms	<span class="number">2</span> ms	<span class="number">178.236.5.31</span>
+</pre></figure>
+
+<h3 id="HTTP_still_wins_out_over_HTTPS">HTTP still wins out over HTTPS</h3>
+<p>Just to make sure, I compared the average performance of HTTP over HTTPS again. For now, I’m hiding the actual units, and instead I’m just showing the percentage difference. Note that the blue HTTPS line is a baseline performance of 100%.</p>
+<div class="imgwrapper" style=""><div><a href="/pushing-the-limits-of-amazon-s3-upload-performance/image_48.png" class="fancy"><img src="/pushing-the-limits-of-amazon-s3-upload-performance/image_48.png" style="max-height: 250px"/></a></div></div>
+
+<p>Ignoring variation, we see an <strong>average performance improvement of almost 150% compared to HTTPS</strong>. From this we can conclude that locality doesn’t change the performance characteristics of HTTP vs. HTTPS – HTTP still wins any day. As a result of this, numbers from now on will be based on HTTP tests, unless explicitly stated otherwise.</p>
+<h3 id="Now_we’re_talking_throughput!">Now we’re talking throughput!</h3>
+<p>Let’s look at a quick graph detailing the maximum attainable transfer speeds for any given object, comparing my colo Server 2008 R2 server with the m1.xlarge instance run in the AWS EC2 cloud (note the log(10) scale):</p>
+<div class="imgwrapper" style=""><div><a href="/pushing-the-limits-of-amazon-s3-upload-performance/image_25.png" class="fancy"><img src="/pushing-the-limits-of-amazon-s3-upload-performance/image_25.png" style="max-height: 250px"/></a></div></div>
+
+<p>Wow. I redid this test several times as I just couldn’t believe the results. Where my 2008 R2 instance pushed about 1 meg/sec, I was getting <strong>5.2 megs/sec</strong> through the EC2 instance. Okay, I guess that’s reasonable since the smaller objects are punished so severely by connection overhead - and that’s the primary advantage of having close locality to the S3 servers, right?</p>
+<p>However - once we get to object size 32, we’re now pushing <strong>120 megs/sec</strong> from EC2 - at the very border of the 100Mbps NIC that the server reports. But it doesn’t stop there - oh no. I ended up hitting the ceiling at a stable transfer speed of <strong>460 megs/sec</strong>, pushing 1024KB objects using 64 threads. But how in the world am I able to push <strong>3,680Mbps</strong> through a<strong> 100Mbps NIC</strong>?</p>
+<p>The thing is, these are all just virtual machines sharing physical hardware. The server itself reports 100Mbps, but Amazon will scale your NIC depending on the instance type - typically telling you to expect a worst case of 250Mbps on a large instance. My guess is that these machines are running 10gige internally, and you’ll get whatever is available, though QoS’ed so you’ll get your 250Mbps at a minimum. If that is the case, I can easily pull 3,680Mbps of the theoretically available 10,000Mbps, the rest being used by other VPCs on the same physical network. To all my neighbors during these tests, sorry!</p>
+<p>This begs the question though - what if I had that 10gige connection all by myself? What if I didn’t have to share it?</p>
+<h2 id="Pushing_the_limits_using_compute_clusters">Pushing the limits using compute clusters</h2>
+<p>If we take a look at the <strong>Cluster Compute Quadruple Extra Large Instance</strong> (let’s just call it CC from now on) specs, we’re told to expect <strong>10gige network connectivity</strong>:</p>
+<div class="imgwrapper" style=""><div><a href="/pushing-the-limits-of-amazon-s3-upload-performance/image_27.png" class="fancy"><img src="/pushing-the-limits-of-amazon-s3-upload-performance/image_27.png" style="max-height: 250px"/></a></div></div>
+
+<p>Aha! Just what we need. Unfortunately the CC instances are only available in the US regions, so I had to setup a new bucket in the US, and change my test code to connect to said bucket, from the US. As such, it shouldn’t change anything, though it should be noted that the tests so far have been run in the Dublin DC, whereas this test is run in the North Virginia DC.</p>
+<p>Let’s start out by looking at object sizes 1-16KB, comparing the m1.xlarge instance with the cc1.4xlarge instance:</p>
+<div class="imgwrapper" style=""><div><a href="/pushing-the-limits-of-amazon-s3-upload-performance/image_39.png" class="fancy"><img src="/pushing-the-limits-of-amazon-s3-upload-performance/image_39.png" style="max-height: 250px"/></a></div></div>
+
+<p>Huh, that’s kinda disappointing. It seems that the CC instance consistently performs worse than the m1.xlarge instance. Let’s try and take a look at object sizes 32-2048KB:</p>
+<div class="imgwrapper" style=""><div><a href="/pushing-the-limits-of-amazon-s3-upload-performance/image_41.png" class="fancy"><img src="/pushing-the-limits-of-amazon-s3-upload-performance/image_41.png" style="max-height: 250px"/></a></div></div>
+
+<p>Now we’re talking! As soon as we cross 256KB in object size, we start to saturate the available fabric speed of the m1.xlarge instance - the CC instance on the other hand, it just keeps going up! In this test I reached a max speed of <strong>1091,7 megs/sec</strong> using 128 threads pushing objects of 2048KB. That’s <strong>8,733.6Mbps</strong> out of a theoretical max of <strong>10,000Mbps</strong> - on a single virtualized instance, mind you.</p>
+<h3 id="To_infinity_and_beyond">To infinity and beyond</h3>
+<p>Still not satisfied? Well, neither was I. I tried to tweak the settings a bit more to see if I could push it even further. Given that an object size of 2048KB seemed to improve the result over 1024KB, would an even larger object help? How about more than 128 threads?</p>
+<div class="imgwrapper" style=""><div><a href="/pushing-the-limits-of-amazon-s3-upload-performance/image_49.png" class="fancy"><img src="/pushing-the-limits-of-amazon-s3-upload-performance/image_49.png" style="max-height: 250px"/></a></div></div>
+
+<p>It’s evident that more than 256 threads does not yield any benefit, quite the contrary. However, using 256 threads and an object size of 4096KB, I was able to push <strong>1117,9 megs/sec to S3</strong>. I am extremely satisfied with that result. I honestly did not expect to even get 25% of that from a single machine, whether physical or virtual. That’s <strong>8,943,2Mbps of pure data</strong> - that is, not including the inevitable network overhead.</p>
+<h2 id="Expanding_on_the_results">Expanding on the results</h2>
+<p>You can download an Excel sheet of all my raw data, including the various graphs and calculations that I’ve made. Note that all raw numbers are repeated, first sorted by the number of threads, then sorted by the object size. Note also that there are some extra data here and there where I had to do some adhoc tests.</p>
+<p>If you want me to create some graphs of a specific scenario, compare two different result sets, environments, etc. - just let me know in the comments. I’ve probably overlooked something interesting as there is just so much data to pull out. Optimally I’d want to run each of these tests for 100 repetitions at different times of the day, just to weed out all of the variance completely. Unfortunately, that would cost me way too much, and it would take ages. I may do some high-rep tests for specific scenarios like the HTTP vs. HTTPS tests as I feel there were too many fluctuations there.</p>
+<p>Download: <a href="/S3Optimization.xlsx">S3Optimization.xlsx</a></p>
+<h2 id="Conclusions">Conclusions</h2>
+<p>There are a lot of factors to consider when optimizing for upload speed. However, there are just a few rules that you need to follow to reach near-optimal speed with limited effort.</p>
+<h3 id="Parallelization">Parallelization</h3>
+<p><strong>The easiest way to scale is to just parallelize your workload</strong>. Each S3 connection doesn’t get that much bandwidth through, but as long as you run many of them at the same time, the aggregate throughput is excellent. Most workloads showed 64, 128 or 256 to be the optimal number of threads.</p>
+<div class="imgwrapper" style=""><div><a href="/pushing-the-limits-of-amazon-s3-upload-performance/image_57.png" class="fancy"><img src="/pushing-the-limits-of-amazon-s3-upload-performance/image_57.png" style="max-height: 250px"/></a></div></div>
+
+<h3 id="Locality_&amp;_bandwidth">Locality &amp; bandwidth</h3>
+<p>Being close to the S3 bucket servers is of utmost importance. As can be seen from the graph, I almost exhausted my 1gige NIC on my colo servers, but I doubt I’d be able to exhaust a 10gige connection (anyone got a server I can borrow for testing?). The graph is slightly misleading though as the EC2 servers had anywhere from 4gige to 10gige of connectivity, so it’s not all just latency - bandwidth certainly matters too, especially once you reach high amounts of thread with large object sizes.</p>
+<div class="imgwrapper" style=""><div><a href="/pushing-the-limits-of-amazon-s3-upload-performance/image_61.png" class="fancy"><img src="/pushing-the-limits-of-amazon-s3-upload-performance/image_61.png" style="max-height: 250px"/></a></div></div>
+
+<h3 id="Operating_system">Operating system</h3>
+<p>Now, you shouldn’t go out and format all of your Server 2003 servers just to get 2008 R2. However, 2008 R2 does consistently perform better than 2003. Though I haven’t tested it, I expect 2008 and 2008 R2 to be about the same. Generally you’ll get about <strong>15% better performance on a 2008 R2 server over a 2003 server</strong>.</p>
+<div class="imgwrapper" style=""><div><a href="/pushing-the-limits-of-amazon-s3-upload-performance/image_63.png" class="fancy"><img src="/pushing-the-limits-of-amazon-s3-upload-performance/image_63.png" style="max-height: 250px"/></a></div></div>
+
+<h3 id="Saturating_the_S3_service">Saturating the S3 service</h3>
+<p>Not going to happen, simple as that. I’m utterly amazed at the throughput I managed to gain from just a single machine. At the top, I was pushing more than one gigabyte of data to S3 every second - 1117,9 megs/sec to be precise. That is an awful lot of data, all coming from a single machine. Now imagine you scale this out over multiple machines, and you have the network infrastructure to support it - you can really send a lot of data.</p>
+<div class="imgwrapper" style=""><div><a href="/pushing-the-limits-of-amazon-s3-upload-performance/image_67.png" class="fancy"><img src="/pushing-the-limits-of-amazon-s3-upload-performance/image_67.png" style="max-height: 250px"/></a></div></div>
+
+<h3 id="Variance">Variance</h3>
+<p>As can be seen in some of my results, you can’t avoid running into variance when using a cloud service. However, it’s important to look at the baseline numbers - what is the worst case performance you can expect? Not only did my best-case numbers blow my mind, so did the worst-case numbers! Even though performance does fluctuate, the median performance is what matters, and it’s nothing short of impressive.</p>
+<h3 id="Optimizing_the_network_stack">Optimizing the network stack</h3>
+<p>I’m certain I’ve left out some percentages by not looking at the NIC drivers and settings. However, generally that’ll be your very last resort, and it’ll only help you get those last few percentages. In most cases there’s no reason to mess around with the remaining 1%, I’ll easily settle for the 99%.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+					<div id="postsharing">
+						<a href="https://twitter.com/home?status=Pushing%20the%20Limits%20of%20Amazon%20S3%20Upload%20Performance%20http%3A%2F%2Fimprove.dk%2Fpushing-the-limits-of-amazon-s3-upload-performance%2F%20via%20%40improvedk" target="_blank"><img src="/img/twitter_64x64.png" /></a>
+						<a href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Fimprove.dk%2Fpushing-the-limits-of-amazon-s3-upload-performance%2F" target="_blank"><img src="/img/facebook_64x64.png" /></a>
+						<a href="http://reddit.com/submit?url=http%3A%2F%2Fimprove.dk%2Fpushing-the-limits-of-amazon-s3-upload-performance%2F&title=Pushing%20the%20Limits%20of%20Amazon%20S3%20Upload%20Performance" target="_blank"><img src="/img/reddit_64x64.png" /></a>
+						<a href="https://github.com/improvedk/improve.dk/blob/master/source/_posts/pushing-the-limits-of-amazon-s3-upload-performance/pushing-the-limits-of-amazon-s3-upload-performance.md" target="_blank" title="View source"><img src="/img/octocat_64x64.png" /></a>
+					</div>
+
+					<div id="bio">
+						<img src="/img/avatar.jpg" class="avatar photo" height="96" width="96">
+						<div class="wrapper">
+							<div class="name">Mark S. Rasmussen</div>
+							<div class="description">
+								I'm the CTO at <a href="http://www.ipaper-cms.com/">iPaper</a> where I cuddle with databases, mold code and maintain the overall technical &amp; team responsibility. I'm an avid speaker at user groups &amp; conferences. I love life, motorcycles, photography and all things technical. Say hi on <a href="http://twitter.com/improvedk">Twitter</a>, write me an <a href="mailto:mark@improve.dk">email</a> or look me up on <a href="http://dk.linkedin.com/in/markrasmussen/">LinkedIn</a>.
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				
+
+			</div>
+
+		
+
+		
+			<a name="comments"></a>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'improvedk';
+	var disqus_identifier = 'pushing-the-limits-of-amazon-s3-upload-performance';
+	var disqus_url = 'http://improve.dk/pushing-the-limits-of-amazon-s3-upload-performance/';
+
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+		
+
+	</div>
+</article>
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>
