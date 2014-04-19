@@ -75,6 +75,112 @@
 	<div class="datebox">
 		<div class="upper">
 			<span class="month">Sep</span>
+			<span class="day">25</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/iis7-w3wp-process-hung-on-shutdown/" title="IIS 7 w3wp Process Hung on Shutdown" rel="bookmark">IIS 7 w3wp Process Hung on Shutdown</a></h1>
+		<div class="categories">
+			
+				<a href="/category/IIS/">IIS</a>
+				, 
+			
+				<a href="/category/Windbg/">Windbg</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>A single server has started to sometime leave zombie w3wp.exe processes when trying to recycle. A new process is spawned properly and everything seems to work, except the old processes are still present and take up memory. Task manager reports there’s only a single thread left, far from the active ones that have between 40 and 70 threads usually.  Using <a href="http://technet.microsoft.com/en-us/sysinternals/dd996900.aspx" target="_blank">ProcDump</a> I’ve taken a full memory dump to analyze further in <a href="http://www.microsoft.com/whdc/DevTools/Debugging/default.mspx" target="_blank">WinDbg</a>.  The machine is a Server 2008 R2 x64 8 core machine as stated by WinDbg:</p>
+<a id="more"></a>
+
+
+<figure class="highlight"><pre>Windows <span class="number">7</span> <span class="keyword">Version</span> <span class="number">7600</span> MP (<span class="number">8</span> procs) Free x64
+</pre></figure>
+
+<p>After loading sos a printout of the managed threads reveals the following:</p>
+<figure class="highlight"><pre><span class="number">0</span>:<span class="number">000</span>&gt; !threads
+ThreadCount: <span class="number">19</span>
+UnstartedThread: <span class="number">0</span>
+BackgroundThread: <span class="number">19</span>
+PendingThread: <span class="number">0</span>
+DeadThread: <span class="number">0</span>
+Hosted Runtime: no
+                                              PreEmptive                                                Lock
+       ID OSID        ThreadOBJ     State   GC     GC Alloc <span class="keyword">Context</span>                  Domain           <span class="keyword">Count</span> APT Exception
+XXXX    <span class="number">1</span>  <span class="number">9</span>d0 <span class="number">000000000209</span>b4c0      <span class="number">8220</span> <span class="keyword">Enabled</span>  <span class="number">0000000000000000</span>:<span class="number">0000000000000000</span> <span class="number">000000000208e770</span>     <span class="number">0</span> Ukn
+XXXX    <span class="number">2</span>  c60 <span class="number">00000000020</span>c3130      b220 <span class="keyword">Enabled</span>  <span class="number">000000013</span>fbe5ed0:<span class="number">000000013</span>fbe7da8 <span class="number">000000000208e770</span>     <span class="number">0</span> MTA (Finalizer)
+XXXX    <span class="number">3</span>  a24 <span class="number">00000000020</span>f0d60   <span class="number">880</span>a220 <span class="keyword">Enabled</span>  <span class="number">0000000000000000</span>:<span class="number">0000000000000000</span> <span class="number">000000000208e770</span>     <span class="number">0</span> MTA (Threadpool Completion Port)
+XXXX    <span class="number">4</span>  <span class="number">97</span>c <span class="number">0000000002105180</span>    <span class="number">80</span>a220 <span class="keyword">Enabled</span>  <span class="number">0000000000000000</span>:<span class="number">0000000000000000</span> <span class="number">000000000208e770</span>     <span class="number">0</span> MTA (Threadpool Completion Port)
+XXXX    <span class="number">5</span>  c28 <span class="number">000000000210</span>bfe0      <span class="number">1220</span> <span class="keyword">Enabled</span>  <span class="number">0000000000000000</span>:<span class="number">0000000000000000</span> <span class="number">000000000208e770</span>     <span class="number">0</span> Ukn
+XXXX    <span class="number">6</span>  d40 <span class="number">00000000053</span>f9080   <span class="number">180</span>b220 <span class="keyword">Enabled</span>  <span class="number">00000001</span>bfe75d20:<span class="number">00000001</span>bfe767c8 <span class="number">000000000208e770</span>     <span class="number">0</span> MTA (Threadpool Worker)
+XXXX    <span class="number">7</span>  c18 <span class="number">00000000053</span>f9b30   <span class="number">180</span>b220 <span class="keyword">Enabled</span>  <span class="number">00000000</span>fff95880:<span class="number">00000000</span>fff97210 <span class="number">000000000208e770</span>     <span class="number">0</span> MTA (Threadpool Worker)
+XXXX    <span class="number">8</span>  f7c <span class="number">00000000053</span>fa5e0   <span class="number">180</span>b220 <span class="keyword">Enabled</span>  <span class="number">000000011</span>fbea268:<span class="number">000000011</span>fbea920 <span class="number">000000000208e770</span>     <span class="number">0</span> MTA (Threadpool Worker)
+XXXX    <span class="number">9</span>  <span class="number">91</span>c <span class="number">00000000053</span>fb090   <span class="number">180</span>b220 <span class="keyword">Enabled</span>  <span class="number">00000001</span>dfc39138:<span class="number">00000001</span>dfc39670 <span class="number">000000000208e770</span>     <span class="number">0</span> MTA (Threadpool Worker)
+XXXX    a  fb0 <span class="number">00000000053</span>fbd20   <span class="number">180</span>b220 <span class="keyword">Enabled</span>  <span class="number">00000000</span>fff922b0:<span class="number">00000000</span>fff93210 <span class="number">000000000208e770</span>     <span class="number">0</span> MTA (Threadpool Worker)
+XXXX    b  fc8 <span class="number">00000000053</span>fc9b0   <span class="number">180</span>b220 <span class="keyword">Enabled</span>  <span class="number">0000000160053</span>ea0:<span class="number">0000000160054778</span> <span class="number">000000000208e770</span>     <span class="number">0</span> MTA (Threadpool Worker)
+XXXX    c  <span class="number">538</span> <span class="number">00000000053</span>fd460   <span class="number">180</span>b220 <span class="keyword">Enabled</span>  <span class="number">000000017</span>fd8fc98:<span class="number">000000017</span>fd911f8 <span class="number">000000000208e770</span>     <span class="number">0</span> MTA (Threadpool Worker)
+XXXX    d  <span class="number">604</span> <span class="number">00000000053</span>fdf10   <span class="number">180</span>b220 <span class="keyword">Enabled</span>  <span class="number">000000019</span>fd7aa78:<span class="number">000000019</span>fd7c648 <span class="number">000000000208e770</span>     <span class="number">0</span> MTA (Threadpool Worker)
+   <span class="number">0</span>    f  <span class="number">2</span>cc <span class="number">0000000005514</span>c60       <span class="number">220</span> <span class="keyword">Enabled</span>  <span class="number">0000000000000000</span>:<span class="number">0000000000000000</span> <span class="number">000000000208e770</span>     <span class="number">0</span> Ukn
+XXXX   <span class="number">10</span>  <span class="number">9</span>bc <span class="number">00000000020</span>a90c0       <span class="number">220</span> <span class="keyword">Enabled</span>  <span class="number">0000000000000000</span>:<span class="number">0000000000000000</span> <span class="number">000000000208e770</span>     <span class="number">0</span> Ukn
+XXXX   <span class="number">11</span>  <span class="number">9</span>c0 <span class="number">00000000056</span>b7a00       <span class="number">220</span> <span class="keyword">Enabled</span>  <span class="number">0000000000000000</span>:<span class="number">0000000000000000</span> <span class="number">000000000208e770</span>     <span class="number">0</span> Ukn
+XXXX    e  <span class="number">9</span>d4 <span class="number">00000000056</span>b7fd0       <span class="number">220</span> <span class="keyword">Enabled</span>  <span class="number">0000000000000000</span>:<span class="number">0000000000000000</span> <span class="number">000000000208e770</span>     <span class="number">0</span> Ukn
+XXXX   <span class="number">12</span>  <span class="number">9</span>d8 <span class="number">00000000056</span>b85a0       <span class="number">220</span> <span class="keyword">Enabled</span>  <span class="number">0000000000000000</span>:<span class="number">0000000000000000</span> <span class="number">000000000208e770</span>     <span class="number">0</span> Ukn
+XXXX   <span class="number">13</span>  cb8 <span class="number">00000000056</span>b8b70       <span class="number">220</span> <span class="keyword">Enabled</span>  <span class="number">0000000000000000</span>:<span class="number">0000000000000000</span> <span class="number">000000000208e770</span>     <span class="number">0</span> Ukn
+</pre></figure>
+
+<p>Of more interest however is probably the output of a stack backtrace for the single unmanaged thread remaining:</p>
+<figure class="highlight"><pre><span class="number">0</span>:<span class="number">000</span>&gt; ~* kb <span class="number">2000</span>
+
+<span class="label">.  0  Id: 85c.2cc Suspend: -1 Teb:</span> <span class="number">000007</span>ff<span class="escape">`f</span>ffd3000 Unfrozen
+<span class="label">RetAddr           : Args to Child                                                           :</span> Call Site
+<span class="number">000007</span>fe<span class="escape">`f</span>dcc1843 : <span class="number">00000000</span><span class="escape">`0</span>0fd6b60 <span class="number">00000000</span><span class="escape">`0</span>0fd6b60 ffffffff<span class="escape">`f</span>fffffff <span class="number">00000000</span><span class="escape">`7</span>7bc04a0 : ntdll!ZwClose+<span class="number">0</span>xa
+<span class="number">00000000</span><span class="escape">`7</span>7ab2c41 : <span class="number">00000000</span><span class="escape">`7</span>7bc1670 <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`7</span>7bc04a0 <span class="number">7</span>fffffff<span class="escape">`f</span>fffffff : KERNELBASE!CloseHandle+<span class="number">0</span>x13
+<span class="number">000007</span>fe<span class="escape">`f</span>56537c6 : <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`0</span>12da080 <span class="number">000007</span>fe<span class="escape">`f</span>5442eac : kernel32!CloseHandleImplementation+<span class="number">0</span>x3d
+<span class="number">000007</span>fe<span class="escape">`f</span>54443d2 : <span class="number">00000000</span><span class="escape">`0</span>0000007 <span class="number">000007</span>fe<span class="escape">`f</span>5443d3c <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`7</span>7bc9997 : httpapi!HttpCloseRequestQueue+<span class="number">0</span>xa
+<span class="number">000007</span>fe<span class="escape">`f</span>54444c3 : <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`0</span>12e6900 <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`7</span>7bd5afa : w3dt!UL_APP_POOL::Cleanup+<span class="number">0</span>x62
+<span class="number">000007</span>fe<span class="escape">`f</span>549384a : <span class="number">00000000</span><span class="escape">`0</span>12da080 <span class="number">00000000</span><span class="escape">`0</span>0c93a28 <span class="number">00000000</span><span class="escape">`0</span>12e6900 <span class="number">00000000</span><span class="escape">`0</span>0000000 : w3dt!WP_CONTEXT::CleanupOutstandingRequests+<span class="number">0</span>x83
+<span class="number">000007</span>fe<span class="escape">`f</span>549417a : <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`0</span>000ffff <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`7</span>7bcf9fd : iiscore!W3_SERVER::StopListen+<span class="number">0</span>x4a
+<span class="number">000007</span>fe<span class="escape">`f</span>562b5bf : <span class="number">00000000</span><span class="escape">`0</span>12d2f30 <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`0</span>000ffff : iiscore!IISCORE_PROTOCOL_MANAGER::StopListenerChannel+<span class="number">0</span>x5a
+<span class="number">000007</span>fe<span class="escape">`f</span>5626e8f : <span class="number">00000000</span><span class="escape">`0</span>12d2f30 <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`0</span>0424380 <span class="number">00000000</span><span class="escape">`0</span>0000000 : w3wphost!LISTENER_CHANNEL_STOP_WORKITEM::ExecuteWorkItem+<span class="number">0</span>x7b
+<span class="number">00000000</span><span class="escape">`7</span>7bcf8eb : <span class="number">00000000</span><span class="escape">`0</span>21782b0 <span class="number">00000000</span><span class="escape">`0</span>21782b0 <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`0</span>0000001 : w3wphost!W3WP_HOST::ExecuteWorkItem+<span class="number">0</span>xf
+<span class="number">00000000</span><span class="escape">`7</span>7bc9d9f : <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`0</span>12d2f30 <span class="number">00000000</span><span class="escape">`0</span>0424380 <span class="number">00000000</span><span class="escape">`0</span>10aa528 : ntdll!RtlpTpWorkCallback+<span class="number">0</span>x16b
+<span class="number">00000000</span><span class="escape">`7</span>7aaf56d : <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`0</span>0000000 : ntdll!TppWorkerThread+<span class="number">0</span>x5ff
+<span class="number">00000000</span><span class="escape">`7</span>7be3281 : <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`0</span>0000000 : kernel32!BaseThreadInitThunk+<span class="number">0</span>xd
+<span class="number">00000000</span><span class="escape">`0</span>0000000 : <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`0</span>0000000 <span class="number">00000000</span><span class="escape">`0</span>0000000 : ntdll!RtlUserThreadStart+<span class="number">0</span>x1d
+</pre></figure>
+
+<p>From the stack trace it’s obvious that the w3wp process is trying to shut down and perform its cleanup tasks, but for some reason ntdll!ZwClose is hanging up. It’s been hung for several days without change - and without apparent side effects besides an increased amount of memory usage.</p>
+<p>The w3wp processes do not hang up all the time, I have yet to find a reproducible pattern. In the meantime, any suggestions for further debugging?</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Sep</span>
 			<span class="day">23</span>
 		</div>
 		<div class="lower">2009</div>
@@ -1378,53 +1484,6 @@ Console<span class="preprocessor">.ReadLine</span>()<span class="comment">;</spa
 <p>Based on some of the comments I’ve received, I’ve posted an <a href="http://www.improve.dk/blog/2009/05/01/evolution-of-the-simple-genetic-algorithm" target="_blank">update to the genetic algorithm</a> to make it more “genetic”.</p>
 <h2 id="Downloads">Downloads</h2>
 <p>Sample solution code:<br><a href="GeneticTesting.zip">GeneticTesting.zip</a></p>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Apr</span>
-			<span class="day">24</span>
-		</div>
-		<div class="lower">2009</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/txf-presentation-materials/" title="TxF presentation materials" rel="bookmark">TxF presentation materials</a></h1>
-		<div class="categories">
-			
-				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>Yesterday I presented on how to use Transactional NTFS (TxF) in .NET, at the <a href="http://www.cnug.dk/" target="_blank">Copenhagen .NET User Group</a>.</p>
-<a id="more"></a>
-
-<h2 id="Downloads">Downloads</h2>
-<p>Slides: <a href="TxF.pptx">TxF.pptx</a><br>Materials: <a href="TxFMaterials.zip">TxFMaterials.zip</a></p>
 
 
 				<div style="clear: both"></div>

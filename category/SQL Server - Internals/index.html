@@ -514,7 +514,7 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/depending-on-how-itrsquos-added-spare-bits-in-the-null/" title="The Garbage Null Bitmap and Why You Can&#39;t Rely on It Solely" rel="bookmark">The Garbage Null Bitmap and Why You Can&#39;t Rely on It Solely</a></h1>
+		<h1><a href="/the-8-byte-record-that-was-9-bytes-while-making-no-sense/" title="The 8 Byte Record That Was 9 Bytes While Making No Sense" rel="bookmark">The 8 Byte Record That Was 9 Bytes While Making No Sense</a></h1>
 		<div class="categories">
 			
 				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
@@ -529,7 +529,7 @@
 
 		
 
-			<div class="body"><p>While adding some extra sparse column tests to the <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a> test suite, I discovered an bug in my parsing of records. While the problem was simple enough, it took me a while to debug. Running the test, it worked about 40% of the time while failing the remaining 60% of the time. As I hadn’t picked up on this pattern I happily fixed (or so I thought) the bug, ran my test and verified that it was working. Shortly after the test failed – without me having changed any code. After having the first few strains of hair turn grey, I noticed the pattern and subsequently fixed the bug.</p>
+			<div class="body"><p>Warning: this is a <em>select is (most likely) not broken, it’s just not working as I’d expect</em>. It may very well be that I’m just overlooking something, in which case I hope someone will correct me :)</p>
 </div>
 		
 		
@@ -549,7 +549,7 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/the-8-byte-record-that-was-9-bytes-while-making-no-sense/" title="The 8 Byte Record That Was 9 Bytes While Making No Sense" rel="bookmark">The 8 Byte Record That Was 9 Bytes While Making No Sense</a></h1>
+		<h1><a href="/depending-on-how-itrsquos-added-spare-bits-in-the-null/" title="The Garbage Null Bitmap and Why You Can&#39;t Rely on It Solely" rel="bookmark">The Garbage Null Bitmap and Why You Can&#39;t Rely on It Solely</a></h1>
 		<div class="categories">
 			
 				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
@@ -564,7 +564,7 @@
 
 		
 
-			<div class="body"><p>Warning: this is a <em>select is (most likely) not broken, it’s just not working as I’d expect</em>. It may very well be that I’m just overlooking something, in which case I hope someone will correct me :)</p>
+			<div class="body"><p>While adding some extra sparse column tests to the <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a> test suite, I discovered an bug in my parsing of records. While the problem was simple enough, it took me a while to debug. Running the test, it worked about 40% of the time while failing the remaining 60% of the time. As I hadn’t picked up on this pattern I happily fixed (or so I thought) the bug, ran my test and verified that it was working. Shortly after the test failed – without me having changed any code. After having the first few strains of hair turn grey, I noticed the pattern and subsequently fixed the bug.</p>
 </div>
 		
 		
@@ -619,41 +619,6 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/identifying-complex-columns-in-records/" title="Identifying Complex Columns in Records" rel="bookmark">Identifying Complex Columns in Records</a></h1>
-		<div class="categories">
-			
-				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-
-			<div class="body"><p><em>For an introduction to the anatomy of records, I suggest you read </em><a href="http://www.sqlskills.com/blogs/paul/post/Inside-the-Storage-Engine-Anatomy-of-a-record.aspx" target="_blank"><em>this post</em></a><em> by </em><a href="http://www.sqlskills.com/BLOGS/PAUL/" target="_blank"><em>Paul Randal</em></a><em>.</em></p>
-</div>
-		
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Jul</span>
-			<span class="day">15</span>
-		</div>
-		<div class="lower">2011</div>
-	</div>
-
-	<div class="title">
 		<h1><a href="/sparse-column-storage-ndash-the-sparse-vector/" title="Sparse Column Storage &amp; the Sparse Vector" rel="bookmark">Sparse Column Storage &amp; the Sparse Vector</a></h1>
 		<div class="categories">
 			
@@ -683,13 +648,13 @@
 	<div class="datebox">
 		<div class="upper">
 			<span class="month">Jul</span>
-			<span class="day">13</span>
+			<span class="day">15</span>
 		</div>
 		<div class="lower">2011</div>
 	</div>
 
 	<div class="title">
-		<h1><a href="/creating-a-type-aware-parser-for-the-sys-system_internals_partition_columns-ti-field/" title="Creating a Type Aware Parser for the sys.system_internals_partition_columns.ti Field" rel="bookmark">Creating a Type Aware Parser for the sys.system_internals_partition_columns.ti Field</a></h1>
+		<h1><a href="/identifying-complex-columns-in-records/" title="Identifying Complex Columns in Records" rel="bookmark">Identifying Complex Columns in Records</a></h1>
 		<div class="categories">
 			
 				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
@@ -704,7 +669,7 @@
 
 		
 
-			<div class="body"><p>Based on my findings <a href="/exploring-the-sys-system_internals_partition_columns-ti-field">exploring the sys.system_internals_partition_columns.ti field</a>, I needed parser that could extract the scale, precision, max_length as well as the max_inrow_length fields from it. The tricky part is that those values are stored differently for each individual type, added onto the fact that some types have hardcoded defaults that are not stored in the ti field, even though there’s space for it.</p>
+			<div class="body"><p><em>For an introduction to the anatomy of records, I suggest you read </em><a href="http://www.sqlskills.com/blogs/paul/post/Inside-the-Storage-Engine-Anatomy-of-a-record.aspx" target="_blank"><em>this post</em></a><em> by </em><a href="http://www.sqlskills.com/BLOGS/PAUL/" target="_blank"><em>Paul Randal</em></a><em>.</em></p>
 </div>
 		
 		
@@ -740,6 +705,41 @@
 		
 
 			<div class="body"><p>Running sp_helptext on the sys.system_internals_partition_columns system view reveals the following internal query:</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">13</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/creating-a-type-aware-parser-for-the-sys-system_internals_partition_columns-ti-field/" title="Creating a Type Aware Parser for the sys.system_internals_partition_columns.ti Field" rel="bookmark">Creating a Type Aware Parser for the sys.system_internals_partition_columns.ti Field</a></h1>
+		<div class="categories">
+			
+				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Based on my findings <a href="/exploring-the-sys-system_internals_partition_columns-ti-field">exploring the sys.system_internals_partition_columns.ti field</a>, I needed parser that could extract the scale, precision, max_length as well as the max_inrow_length fields from it. The tricky part is that those values are stored differently for each individual type, added onto the fact that some types have hardcoded defaults that are not stored in the ti field, even though there’s space for it.</p>
 </div>
 		
 		

@@ -75,6 +75,116 @@
 	<div class="datebox">
 		<div class="upper">
 			<span class="month">Nov</span>
+			<span class="day">25</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/weighted-random-selections-in-sql-server/" title="Weighted Random Selections in SQL Server" rel="bookmark">Weighted Random Selections in SQL Server</a></h1>
+		<div class="categories">
+			
+				<a href="/category/SQL Server/">SQL Server</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<h2 id="UPDATE">UPDATE</h2>
+<p>After testing my code through based on JP’s comments, I’ve realized my implementation was way too naïve and cannot be used for most datasets. For a correct weighted random implementation, see <a href="http://stackoverflow.com/questions/58457/random-weighted-choice-in-t-sql/454454#454454" target="_blank">Dems’ answer on StackOverflow</a>.</p>
+<a id="more"></a>
+
+<h2 id="Original_(flawed)_implementation">Original (flawed) implementation</h2>
+<p>There are no built-in functions for selecting weighted averages in SQL Server. Fortunately it’s a simple task to do so oneself.</p>
+<p>We’ll use this table as an example:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> #tmp
+(
+	Name <span class="keyword">varchar</span>(<span class="number">64</span>),
+	Points <span class="keyword">int</span>
+)
+
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> #tmp <span class="keyword">VALUES</span> (<span class="string">'Mark'</span>, <span class="number">25</span>);</span>
+<span class="operator"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> #tmp <span class="keyword">VALUES</span> (<span class="string">'Jakob'</span>, <span class="number">12</span>);</span>
+<span class="operator"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> #tmp <span class="keyword">VALUES</span> (<span class="string">'Peter'</span>, <span class="number">17</span>);</span>
+<span class="operator"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> #tmp <span class="keyword">VALUES</span> (<span class="string">'Anders'</span>, <span class="number">0</span>);</span>
+<span class="operator"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> #tmp <span class="keyword">VALUES</span> (<span class="string">'Kirsten'</span>, <span class="number">33</span>);</span>
+<span class="operator"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> #tmp <span class="keyword">VALUES</span> (<span class="string">'Mads'</span>, <span class="number">4</span>);</span>
+</pre></figure>
+
+<p>This table represents a list of players in an arbitrary game. The more points you have, the bigger the chance of winning. It has to be weighted, meaning that the person with just 4 points may win, but is unlikely to do so.</p>
+<p>The RAND() function in SQL Server returns a floating point number between 0 and 1. Multiplying that with our points gives a random weight based on the amount of points. Unfortunately the RAND() function is seeded once for each query, not for each row - meaning that for each row RAND() will yield the same result, effectively multiplying the points with a constant all the way through. We need to provide a new seed for the RAND() function for each row. NEWID() returns a new unique identifier that may be used as a seed if cast to VARBINARY:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span> Name, Points, RAND(<span class="keyword">CAST</span>(NEWID() <span class="keyword">AS</span> VARBINARY)) * Points <span class="keyword">AS</span> Weight <span class="keyword">FROM</span> #tmp <span class="keyword">ORDER</span> <span class="keyword">BY</span> Weight <span class="keyword">DESC</span>
+
+Name     Points  Weight
+Peter    <span class="number">17</span>      <span class="number">15</span>,<span class="number">9795741766356</span>
+Mark     <span class="number">25</span>      <span class="number">14</span>,<span class="number">9122204505153</span>
+Kirsten  <span class="number">33</span>      <span class="number">9</span>,<span class="number">67888480542761</span>
+Jakob    <span class="number">12</span>      <span class="number">9</span>,<span class="number">38697608441358</span>
+Mads     <span class="number">4</span>       <span class="number">0</span>,<span class="number">833340539027792</span>
+Anders   <span class="number">0</span>       <span class="number">0</span></span>
+</pre></figure>
+
+<p>And here we have the result ordered by weight. As you can see, although Kirsten has the most points, Peter ended up winning the competition.</p>
+<h2 id="FIG1:_Showing_the_statistical_distribution_of_using_RAND(NEWID())">FIG1: Showing the statistical distribution of using RAND(NEWID())</h2>
+<figure class="highlight sql"><pre>DECLARE @SampleSize int = 100000;
+
+WITH RND AS
+(
+	<span class="operator"><span class="keyword">select</span> top (@SampleSize) ROUND(RAND(<span class="keyword">CAST</span>(NEWID() <span class="keyword">AS</span> VARBINARY)), <span class="number">1</span>, <span class="number">1</span>) <span class="keyword">AS</span> RandValue <span class="keyword">from</span> sys.objects <span class="keyword">cross</span> <span class="keyword">join</span> sys.columns
+)
+<span class="keyword">SELECT</span>
+	<span class="aggregate">COUNT</span>(*),
+	RandValue,
+	<span class="aggregate">COUNT</span>(*) / <span class="keyword">CAST</span>(@SampleSize <span class="keyword">AS</span> <span class="keyword">float</span>) * <span class="number">100</span> <span class="keyword">AS</span> [%]
+<span class="keyword">FROM</span>
+	RND
+<span class="keyword">GROUP</span> <span class="keyword">BY</span>
+	RandValue
+<span class="keyword">ORDER</span> <span class="keyword">BY</span>
+	<span class="aggregate">COUNT</span>(*) <span class="keyword">DESC</span></span>
+</pre></figure>
+
+<p>Results:</p>
+<figure class="highlight sql"><pre>COUNT	VAL	%
+10117	0,8	10,117
+10091	0,4	10,091
+10073	0	10,073
+10034	0,9	10,034
+9996	0,5	9,996
+9993	0,2	9,993
+9956	0,7	9,956
+9927	0,6	9,927
+9923	0,3	9,923
+9890	0,1	9,89
+</pre></figure>
+
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Nov</span>
 			<span class="day">19</span>
 		</div>
 		<div class="lower">2007</div>
@@ -1170,120 +1280,6 @@ namespace Cascading_Windows
 
 <p>And the result:</p>
 <p><em>Having three monitors generates quite a large screenshot so I’ll leave this one up for you to try / your imagination :)</em></p>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Apr</span>
-			<span class="day">13</span>
-		</div>
-		<div class="lower">2007</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/animating-windows/" title="Animating Windows Using PInvoke" rel="bookmark">Animating Windows Using PInvoke</a></h1>
-		<div class="categories">
-			
-				<a href="/category/.NET/">.NET</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>Let’s be a bit more graphic. This time I’ll show you how to use the Windows API to make your forms fade in/out, slide in from the side or do various other animations. For this example we’ll have to use a Windows Forms project as we have to utilize a Form object in the example.</p>
-<a id="more"></a>
-
-
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
-<span class="keyword">using</span> System.Collections.Generic;
-<span class="keyword">using</span> System.ComponentModel;
-<span class="keyword">using</span> System.Data;
-<span class="keyword">using</span> System.Drawing;
-<span class="keyword">using</span> System.Text;
-<span class="keyword">using</span> System.Windows.Forms;
-<span class="keyword">using</span> System.Runtime.InteropServices;
-
-namespace Animating_windows
-{
-	<span class="keyword">public</span> <span class="keyword">partial</span> <span class="keyword">class</span> Form1 : Form
-	{
-		<span class="comment">// The possible AW flags for use with the AnimateWindow function.</span>
-		<span class="keyword">public</span> <span class="keyword">enum</span> AW : <span class="keyword">int</span>
-		{
-			SLIDE = <span class="number">262144</span>,
-			ACTIVATE = <span class="number">131072</span>,
-			BLEND = <span class="number">524288</span>,
-			HIDE = <span class="number">65536</span>,
-			CENTER = <span class="number">16</span>,
-			HOR_POSITIVE = <span class="number">1</span>,
-			HOR_NEGATIVE = <span class="number">2</span>,
-			VER_POSITIVE = <span class="number">4</span>,
-			VER_NEGATIVE = <span class="number">8</span>
-		}
-
-		<span class="comment">// The AnimateWindow function enables you to produce special effects when showing or hiding windows. The hWnd parameter</span>
-		<span class="comment">// is the handle to the window - note that this window HAS to be in the same thread as the thread calling the AnimateWindow</span>
-		<span class="comment">// function - thus the windows project so we have a Form to experiment with. The time flag is the duration of the</span>
-		<span class="comment">// animation, and finally the flags parameter sets the type of animation to perform.</span>
-		<span class="comment">// See http://msdn.microsoft.com/library/default.asp?url=/library/en-us/winui/winui/windowsuserinterface/windowing/windows/windowreference/windowfunctions/animatewindow.asp</span>
-		<span class="comment">// for full documentation.</span>
-		[DllImport(<span class="string">"user32.dll"</span>)]
-		<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">extern</span> <span class="keyword">bool</span> <span class="title">AnimateWindow</span>(IntPtr hWnd, <span class="keyword">int</span> time, <span class="keyword">int</span> flags);
-
-		<span class="keyword">public</span> <span class="title">Form1</span>()
-		{
-			InitializeComponent();
-		}
-
-		<span class="keyword">private</span> <span class="keyword">void</span> <span class="title">Form1_Load</span>(<span class="keyword">object</span> sender, EventArgs e)
-		{
-			<span class="comment">// Fade in the form over a period of 3 seconds.</span>
-			AnimateWindow(<span class="keyword">this</span>.Handle, <span class="number">3000</span>, (<span class="keyword">int</span>)AW.BLEND);
-
-			<span class="comment">// Hide the form so we can perform the next animation.</span>
-			<span class="keyword">this</span>.Hide();
-
-			<span class="comment">// Make the window expand outward.</span>
-			AnimateWindow(<span class="keyword">this</span>.Handle, <span class="number">3000</span>, (<span class="keyword">int</span>)AW.CENTER);
-
-			<span class="comment">// And collapse inward...</span>
-			AnimateWindow(<span class="keyword">this</span>.Handle, <span class="number">3000</span>, (<span class="keyword">int</span>)AW.CENTER | (<span class="keyword">int</span>)AW.HIDE);
-
-			<span class="comment">// Let's slide in the form from the left side to the right.</span>
-			AnimateWindow(<span class="keyword">this</span>.Handle, <span class="number">3000</span>, (<span class="keyword">int</span>)AW.SLIDE | (<span class="keyword">int</span>)AW.HOR_POSITIVE);
-		}
-	}
-}
-</pre></figure>
-
-<p>And the result:</p>
-<div class="imgwrapper" style=""><div><a href="/animating-windows/win32_12_1_2.jpg" class="fancy"><img src="/animating-windows/win32_12_1_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/animating-windows/win32_12_2_2.jpg" class="fancy"><img src="/animating-windows/win32_12_2_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/animating-windows/win32_12_3_2.jpg" class="fancy"><img src="/animating-windows/win32_12_3_2.jpg" style="max-height: 250px"/></a></div></div>
 
 
 				<div style="clear: both"></div>

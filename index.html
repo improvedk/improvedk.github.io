@@ -74,6 +74,155 @@
 	<article>
 	<div class="datebox">
 		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">19</span>
+		</div>
+		<div class="lower">2014</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/migrating-from-wordpress-to-hexo/" title="Migrating from Wordpress to Hexo" rel="bookmark">Migrating from Wordpress to Hexo</a></h1>
+		<div class="categories">
+			
+				<a href="/category/Miscellaneous/">Miscellaneous</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>It’s this time of the year again - the time to migrate from one blog engine to another.</p>
+<a id="more"></a>
+
+<p>About a year ago, I migrated from <a href="http://subtextproject.com/" target="_blank">Subtext</a> to <a href="http://wordpress.org/" target="_blank">Wordpress</a>. While I was initially happy, I still wasn’t completely satisfied with the workflow. My primary peeves were:</p>
+<ul>
+<li>Complexity - I had to pay a host to run a stack consisting of PHP and MySQL and keep it updated.</li>
+<li>Security - I needed to constantly keep watch over Wordpress and keep it updated, seeing as it’s a popular target for mass defacements, etc.</li>
+<li>Backups - While I did run an automated backup plugin, it was cumbersome as I needed an offsite location (i used FTP).</li>
+<li>Writing - While the WYSIWYG editor works for some, it didn’t for me. As such I ended up writing all my posts in pure HTML.</li>
+<li>Openness - I’m a big proponent of open source and while I did publish the source code for my <a href="https://github.com/improvedk/improve.dk_Wordpress" target="_blank">custom Wordpress theme</a>, I wanted to also open up my blog posts themselves.</li>
+<li>Speed - I’ve spent more time than I’d like to, just keeping Wordpress running smoothly. A lot of things were outside of my control though, seeing as performance optimization was typically relegated to third party plugins.</li>
+</ul>
+<p>While considering the above list, I ended up settling on <a href="http://hexo.io" target="_blank">Hexo</a> - a static site generator powered by <a href="http://nodejs.org" target="_blank">Node.js</a>.</p>
+<h2 id="Migration">Migration</h2>
+<p>The migration process was simple enough, though it required some manual labor. All my Wordpress posts are written in HTML and since Hexo posts are based on Markdown, they needed to be converted. After dumping my old Wordpress site into a backup XML file, I was able to <a href="https://github.com/improvedk/improve.dk/blob/master/WP%20Conversion.linq" target="_blank">write a script</a> that parsed the backup XML file and converted each post into the Hexo Markdown format. There were some misses that required manual intervention, seeing as I had invalid HTML, special cases, etc. But overall, 95% of the posts were converted automatically.</p>
+<p>Since Hexo is a static site generator, I needed to host my comments offsite. Thankfully <a href="http://disqus.com/" target="_blank">Disqus</a> has native support for the Wordpress comment backup format so importing the comments was a breeze.</p>
+<p>Hexo does not support storing assets and posts in folders but prefers to store posts and assets seperately. As I like to keep them together (seeing as I’ve got close to 300 posts), I had to write a small script that copied the assets into the right output locations:</p>
+<figure class="highlight js"><pre><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);
+<span class="keyword">var</span> path = <span class="built_in">require</span>(<span class="string">'path'</span>);
+<span class="keyword">var</span> publicDir = hexo.public_dir;
+<span class="keyword">var</span> sourceDir = hexo.source_dir;
+<span class="keyword">var</span> postsDir = path.join(sourceDir, <span class="string">'_posts'</span>);
+<span class="keyword">var</span> htmlTag = hexo.util.html_tag;
+<span class="keyword">var</span> route = hexo.route;
+
+<span class="comment">// Stores assets that'll need to be copied to the post output folders</span>
+<span class="keyword">var</span> filesToCopy = [];
+
+<span class="comment">// After Hexo's done generating, we'll copy post assets to their public folderse</span>
+hexo.on(<span class="string">'generateAfter'</span>, <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
+	filesToCopy.forEach(<span class="function"><span class="keyword">function</span><span class="params">(obj)</span> {</span>
+		fs.writeFileSync(obj.destination, fs.readFileSync(obj.source));
+	});
+});
+
+<span class="comment">// Each time a post is rendered, note that we need to copy its assets</span>
+hexo.extend.filter.register(<span class="string">'post'</span>, <span class="function"><span class="keyword">function</span><span class="params">(data, cb)</span> {</span>
+	<span class="keyword">if</span> (data.slug) {
+		<span class="keyword">var</span> postDir = path.join(postsDir, data.slug);
+		<span class="keyword">var</span> files = fs.readdirSync(postDir);
+
+		files.forEach(<span class="function"><span class="keyword">function</span><span class="params">(file)</span> {</span>
+			<span class="comment">// Skip the markdown files themselves</span>
+			<span class="keyword">if</span> (path.extname(file) == <span class="string">'.md'</span>)
+				<span class="keyword">return</span>;
+
+			<span class="keyword">var</span> outputDir = path.join(publicDir, data.slug);
+			<span class="keyword">var</span> outputPath = path.join(publicDir, data.slug, file);
+			<span class="keyword">var</span> inputPath = path.join(postDir, file);
+
+			<span class="keyword">if</span> (!fs.existsSync(outputDir))
+				fs.mkdirSync(path.join(outputDir));
+			
+			filesToCopy.push({ source: inputPath, destination: outputPath });
+		});
+	}
+
+	cb();
+});
+</pre></figure>
+
+<p>Though Hexo has a number of helpers to easily insert image links, I prefer to be able to just write an image name on a line by itself and then have the asset link inserted. Enabling that was easy enough too:</p>
+<figure class="highlight js"><pre><span class="comment">// Replaces lines with image names with the actual image markup</span>
+hexo.extend.filter.register(<span class="string">'pre'</span>, <span class="function"><span class="keyword">function</span><span class="params">(data, cb)</span> {</span>
+	<span class="comment">// Find all matching image tags</span>
+	<span class="keyword">var</span> regex = <span class="keyword">new</span> <span class="built_in">RegExp</span>(<span class="regexp">/^([a-z_0-9\-\.]+(?:.jpg|png|gif))(?: ([a-z]+)( \d+)?)?$/gim</span>);
+	
+	data.content = data.content.replace(regex, <span class="function"><span class="keyword">function</span><span class="params">(match, file, type, maxHeight)</span> {</span>
+		<span class="comment">// Create image link</span>
+		<span class="keyword">var</span> imgLink;
+		<span class="keyword">if</span> (data.slug) <span class="comment">// Posts need to reference image absolutely</span>
+			imgLink = <span class="string">'/'</span> + data.slug + <span class="string">'/'</span> + file;
+		<span class="keyword">else</span>
+			imgLink = file;
+
+		<span class="comment">// Max height of image</span>
+		<span class="keyword">var</span> imgMaxHeight = <span class="string">'250px'</span>;
+		<span class="keyword">if</span> (maxHeight)
+			imgMaxHeight = maxHeight + <span class="string">'px'</span>;
+
+		<span class="comment">// Set style depending on type</span>
+		<span class="keyword">var</span> style = <span class="string">''</span>;
+		<span class="keyword">if</span> (type) {
+			<span class="keyword">switch</span> (type) {
+				<span class="keyword">case</span> <span class="string">'right'</span>:
+					style = <span class="string">'float: right; margin: 20px'</span>;
+					<span class="keyword">break</span>;
+
+				<span class="keyword">case</span> <span class="string">'left'</span>:
+					style = <span class="string">'float: left'</span>;
+					<span class="keyword">break</span>;
+			}
+		}
+
+		<span class="keyword">return</span> <span class="string">'&lt;div class="imgwrapper" style="'</span> + style + <span class="string">'"&gt;&lt;div&gt;&lt;a href="'</span> + imgLink + <span class="string">'" class="fancy"&gt;&lt;img src="'</span> + imgLink + <span class="string">'" style="max-height: '</span> + imgMaxHeight + <span class="string">'"/&gt;&lt;/a&gt;&lt;/div&gt;&lt;/div&gt;'</span>;
+	});
+	
+	<span class="comment">// Let hexo continue</span>
+	cb();
+});
+</pre></figure>
+
+<h2 id="Hosting,_Security,_Backup_&amp;_Speed">Hosting, Security, Backup &amp; Speed</h2>
+<p>Due to its static nature, there are no logins to protect, per se - seeing as there’s no backend. The blog itself is hosted on Github, both the <a href="https://github.com/improvedk/improve.dk" target="_blank">source</a> as well as the statically generated <a href="https://github.com/improvedk/improvedk.github.io" target="_blank">output files</a>. This means I’ve got full backup in the form of distributed git repositories, as well as very easy rollback in case of mistakes.</p>
+<p>As for speed, it doesn’t get much faster than serving static files. Comments are lazily loaded after the post itself is loaded. While I can’t utilize the Github CDN (seeing as I’m hosting the blog at an apex domain, making it impossible for me to setup a CNAME - which is required to use the Github CDN), the speed is way faster than it used to be on Wordpress. I could move my DNS to a registrar that supports apex aliasing, but I’m happy with the speed for now.</p>
+<h2 id="Openness">Openness</h2>
+<p>Finally, since the source for the blog itself is hosted on Github, including the posts themselves, each post is actually editable directly on Github. You’ll notice that I’ve added an Octocat link at the bottom of each post, next to the social sharing icons. Clicking the Octocat will lead you directly to the source of the post you’re looking at. If you find an error or have a suggestion for an edit, feel free to fork the post and submit a pull request.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
 			<span class="month">Feb</span>
 			<span class="day">04</span>
 		</div>
@@ -1430,66 +1579,6 @@ Followup: MachineOwner
 <li>The driver name: <strong>FiioE17.sys</strong></li>
 </ul>
 <p>With the above options, you’ve got a lot of details that can be sent to the developer, hopefully enabling him/her/them to fix the issue. For now, I’ll have to unplug my <a href="http://www.amazon.com/FiiO-Headphone-Amplifier-Docking-Interface/dp/B0070UFMOW" target="_blank">Fiio E17 USB DAC</a> :(</p>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">May</span>
-			<span class="day">28</span>
-		</div>
-		<div class="lower">2013</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/speaking-at-sql-pass-summit-2013/" title="Speaking at SQL PASS Summit 2013" rel="bookmark">Speaking at SQL PASS Summit 2013</a></h1>
-		<div class="categories">
-			
-				<a href="/category/SQL Server - Community/">SQL Server - Community</a>
-				, 
-			
-				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>I’m delighted to announce that <a href="http://www.sqlpass.org/summit/2013/Sessions/SpeakerDetails.aspx?spid=245" target="_blank">I’ll be speaking</a> at this years <a href="http://www.sqlpass.org/summit/2013/" target="_blank">SQL PASS Summit in Charlotte, North Carolina</a>. Having submitted several times before, unsuccessfully, I’m really happy to have made the cut this year. Looking at the <a href="http://www.sqlpass.org/summit/2013/Sessions.aspx" target="_blank">lineup of speakers</a>, I take great pride in being given the opportunity.</p>
-<a id="more"></a>
-
-<h2 id="My_Sessions">My Sessions</h2>
-<p>That’s right, not just one session, but two! And as if that wasn’t enough, the two selected sessions are my absolute favorite ones to perform! I’ve presented both several times before and thanks to great feedback from the audiences I’ve slowly fine tuned the format and content.</p>
-<h2 id="Top_Tricks_and_Best_Practices_for_-NET_SQL_Server_Developers">Top Tricks and Best Practices for .NET SQL Server Developers</h2>
-<p>This is a session chock-full of easy-to-use tips, tricks and gotchas that can be implemented immediately. If you’re either a .NET developer yourself, or if you have .NET developers on your team, using SQL Server, this session is sure to be an eye opener with valuable lessons.</p>
-<blockquote>
-<p>Being the acting DBA while doing development and managing a team of .NET developers, I’ve learned a trick or two through the years. For this session, I’ve gathered my list of top tricks any .NET developer should know and use when dealing with SQL Server. We’ll cover how to use TransactionScopes without locking up the database, avoiding MSDTC escalation, using internal batching functions in the BCL through reflection, avoiding unnecessary round trips, and much more. These are tips, tricks, and best practices that I ensure all my developers are taught before they have a chance of committing code to our production systems.</p>
-</blockquote>
-<h2 id="Understanding_Data_Files_at_the_Byte_Level">Understanding Data Files at the Byte Level</h2>
-<p>The best part about this session, for me, is watching heads explode only 15 minutes in when I make a live demonstration of how to reverse engineer SQL Server, to persuade it into describing its own data file format. In just 75 minutes I will give you not only a thorough tour of the MDF file format, but also a plethora of techniques on how to analyze your own databases internal storage as well. Using these techniques you’ll be well armed when it comes to schema discussions, column type choice and for those rare events where you need to dive just a bit below the surface to discover what’s really happening.</p>
-<blockquote>
-<p>This session won’t explain when to use a heap instead of an index, but you will learn how they work – and differ – behind the scenes. Demonstrations will show how data files are organized on the disk and how that organization allows SQL Server to effectively query the data. Knowing how data files are organized will in turn help immensely when it comes to optimizing databases for both performance and storage efficiency.</p>
-</blockquote>
 
 
 				<div style="clear: both"></div>

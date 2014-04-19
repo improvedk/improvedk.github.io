@@ -75,6 +75,116 @@
 	<div class="datebox">
 		<div class="upper">
 			<span class="month">Dec</span>
+			<span class="day">11</span>
+		</div>
+		<div class="lower">2006</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/making-url-rewriting-on-iis7-work-like-iis6/" title="Making URL Rewriting on IIS 7 Work Like IIS 6" rel="bookmark">Making URL Rewriting on IIS 7 Work Like IIS 6</a></h1>
+		<div class="categories">
+			
+				<a href="/category/IIS/">IIS</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Upgrading to IIS 7 should be rather transparent, unfortunately that is not the case when it comes to URL rewriting as we knew it from IIS 6. In IIS 6 all we had to do was to add a wildcard mapping making sure that all requests went through the ASPNET ISAPI process. After this was done, one could create a global.asax file that would either pass requests directly through or rewrite the URL based on an internal algorithm.</p>
+<a id="more"></a>
+
+<p><strong>UPDATE: Please see my <a href="/how-to-do-url-rewriting-on-iis-7-properly">updated post</a> on how to do proper URL rewriting using IIS 7.</strong></p>
+<p>I didn’t really expect this to be a problem when I first requested <a href="http://localhost" target="_blank">http://localhost</a> for the first time after setting up my site on IIS 7 (all default settings).</p>
+<div class="imgwrapper" style=""><div><a href="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur1_2.jpg" class="fancy"><img src="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Unfortunately this was what I was presented with. Anyone having worked with wildcard mappings from IIS 6 will recognize this, this is the result you’ll get after adding a wildcard mapping without having created your URL rewriting functionality. After adding a wildcard map the IIS will not automatically find a default file (by design).</p>
+<p>This however, is not the problem cause here. I already have my URL rewriting functionality written in my global.asax BeginRequest method and I’d really like to just reuse my current code. Although the new IIS has a whole new bunch of features - one of them being a new “more correct” way of doing URL rewriting -, I really just wan’t to get my website up and running again so I can continue my work.</p>
+<p>What I present below is a quick’n’dirty hack that will get my old URL rewriting code to work again. It may not be the IIS 7 way of doing it, and it may not work in your case, it depends on the type of URL mapping you’re doing in your project. In short, <a href="http://en.wikipedia.org/wiki/Your_mileage_may_vary" target="_blank">YMMV</a>.</p>
+<h2 id="My_scenario">My scenario</h2>
+<p>For this website, improve.dk, all URL’s except static files are requested as though they were folders. That means you will not see any pages ending in anything but a /. Any static files are requested as usual. That means I can be sure that a regular expression like <em>.</em> will catch all static files, while * will catch all pages - as well as the static files!</p>
+<h2 id="How_I_got_URL_rewriting_to_work_like_IIS_6">How I got URL rewriting to work like IIS 6</h2>
+<p>Start by opening the IIS Manager and selecting your website.</p>
+<div class="imgwrapper" style=""><div><a href="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur2_2.jpg" class="fancy"><img src="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur2_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Now enter the “Handler Mappings” section:</p>
+<div class="imgwrapper" style=""><div><a href="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur3_2.jpg" class="fancy"><img src="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur3_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Notice the “StaticFile” handler. Currently it’s set to match <em> and catch both File and Directory requests. If you look back at the first image, you’ll notice that the error message details that the handler causing the 404 error is the StaticFile handler. As I know that all my static files will have a file extension (also I don’t care for directory browsing), I’ll simply change my StaticFile handler so it only matches </em>.* - and only files.</p>
+<div class="imgwrapper" style=""><div><a href="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur4_2.jpg" class="fancy"><img src="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur4_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur5_2.jpg" class="fancy"><img src="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur5_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Your StaticFile handler should now look like this:</p>
+<div class="imgwrapper" style=""><div><a href="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur6_2.jpg" class="fancy"><img src="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur6_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Now, if you go back and make a request to <a href="http://localhost" target="_blank">http://localhost</a> you’ll still get the 404 error, but this time the request is not handled by the StaticFile handler, actually it doesn’t get handled by any handler at all:</p>
+<div class="imgwrapper" style=""><div><a href="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur7_2.jpg" class="fancy"><img src="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur7_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>What needs to be done now is that we need to map any and all requests to the aspnet_isapi.dll isapi file - just like we would usually do in IIS 6.</p>
+<p>Add a new Script Map to the list of Handler Mappings and set it up like this:</p>
+<div class="imgwrapper" style=""><div><a href="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur8_2.jpg" class="fancy"><img src="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur8_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur9_2.jpg" class="fancy"><img src="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur9_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Click OK and click <em>Yes</em> at the confirmation dialog:</p>
+<div class="imgwrapper" style=""><div><a href="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur10_2.jpg" class="fancy"><img src="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur10_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Now if you make a request to either <a href="http://localhost" target="_blank">http://localhost</a> or any other file you’ll get the following error:</p>
+<div class="imgwrapper" style=""><div><a href="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur11_2.jpg" class="fancy"><img src="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur11_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Looking throug the Event log reveals the cause of the error:</p>
+<div class="imgwrapper" style=""><div><a href="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur12_2.jpg" class="fancy"><img src="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur12_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>The aspnet_isapi.dll file cannot be used as a Handler for websites running in the new IIS 7 Integrated Mode, thus we will need to make our website run in classic .NET mode. Right click your website node in the IIS Manager and select Advanced Settings. Select the “Classic .NET AppPool” and close the dialog boxes:</p>
+<div class="imgwrapper" style=""><div><a href="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur13_2.jpg" class="fancy"><img src="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur13_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Now you should be able to make a request to <a href="http://localhost" target="_blank">http://localhost</a> and see it work. Your URL rewriting should work as a charm aswell:</p>
+<div class="imgwrapper" style=""><div><a href="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur14_2.jpg" class="fancy"><img src="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur14_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>But obviously somethings wrong. Making a request to any static file will reveal the problem:</p>
+<div class="imgwrapper" style=""><div><a href="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur15_2.jpg" class="fancy"><img src="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur15_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>“Failed to Execute URL”, what a great descriptive error. Fortunately you won’t have to spend hours ripping out hair… As I have already done that - at least I’ll save a trip or two to the barber.</p>
+<p>The problem is that the static files are being processed by the aspnet_isapi.dll file instead of simply sending the request along to the StaticFile handler. If you click the “View Ordered List…” link in the IIS Manager from the Handler Mappings view, you’ll see the order in which the handlers are being executed for each request:</p>
+<div class="imgwrapper" style=""><div><a href="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur16_2.jpg" class="fancy"><img src="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur16_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>When you add a new Script Map it’ll automatically get placed at the very top of the line taking precedence over any other handlers, including the StaticFile one.</p>
+<p>What we have to do is to move our Wildcard handler to the very bottom, below the StaticFile handler. By letting the StaticFile handler have precedence over our Wildcard handler we ensure that any static files (matching <em>.</em>) gets processed correctly while any other URL’s gets passed along to our own Wildcard handler that’ll do the URL rewriting and make business work as usual:</p>
+<div class="imgwrapper" style=""><div><a href="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur17_2.jpg" class="fancy"><img src="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur17_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>After doing so, both static files as well as your custom URL’s should execute as they would under IIS 6:</p>
+<div class="imgwrapper" style=""><div><a href="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur18_2.jpg" class="fancy"><img src="/making-url-rewriting-on-iis7-work-like-iis6/iis7ur18_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Disclaimer">Disclaimer</h2>
+<p>Please notice that this is a hack. This is not the way URL rewriting is supposed to be done under IIS 7. But instead of spending hours upon hours investigating how to do it the right way, this is quick fix to make things work like they did before.</p>
+<p>Also please note that this solution is intended to work for my specific situation. Your needs for URL rewriting may not necessarily match mine, so you may have to modify certain settings to suit your specific needs.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Dec</span>
 			<span class="day">08</span>
 		</div>
 		<div class="lower">2006</div>
@@ -226,6 +336,53 @@
 	</div>
 
 	<div class="title">
+		<h1><a href="/running-ie6-and-ie7-at-the-same-time/" title="Running IE6 and IE7 at the Same Time" rel="bookmark">Running IE6 and IE7 at the Same Time</a></h1>
+		<div class="categories">
+			
+				<a href="/category/Tools of the Trade/">Tools of the Trade</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Ever since IE7 came out developers have had the problem of whether they should upgrade or not. If they chose to upgrade, they wouldn’t be able to test their sites in IE6 any longer as installing IE7 would uninstall IE6. There are 3rd party hacks that allow both versions to be installed at the same time, but they will not simulate a true IE6 / IE7 environment.</p>
+<a id="more"></a>
+
+<p>In recognition of this problem, Microsoft has put out a free Virtual PC 2004 (VPC itself has also been made a free download) image containing a pre-activated Windows XP SP2 installation as well as IE6 and the IE7 readiness toolkit. The image will self destruct on the 1st of april 2007, there’ll probably be another solution out by then.</p>
+<p><a href="http://blogs.msdn.com/ie/archive/2006/11/30/ie6-and-ie7-running-on-a-single-machine.aspx" target="_blank">Click here to go to the Microsoft IEBlog for further information and download links</a></p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Dec</span>
+			<span class="day">04</span>
+		</div>
+		<div class="lower">2006</div>
+	</div>
+
+	<div class="title">
 		<h1><a href="/setpoint-volume-control-in-vista/" title="SetPoint Volume Control In Vista" rel="bookmark">SetPoint Volume Control In Vista</a></h1>
 		<div class="categories">
 			
@@ -254,53 +411,6 @@
 <div class="imgwrapper" style=""><div><a href="/setpoint-volume-control-in-vista/setpoint_2_2.jpg" class="fancy"><img src="/setpoint-volume-control-in-vista/setpoint_2_2.jpg" style="max-height: 250px"/></a></div></div>
 
 <p>Now rightclick SetPoint.exe and select “Properties”. Navigate to the Compatibility pane and set it to run in compatibility mode as Windows XP (Service Pack 2). After this, double click SetPoint.exe to restart the process. Your volume control should now work!</p>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Dec</span>
-			<span class="day">04</span>
-		</div>
-		<div class="lower">2006</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/running-ie6-and-ie7-at-the-same-time/" title="Running IE6 and IE7 at the Same Time" rel="bookmark">Running IE6 and IE7 at the Same Time</a></h1>
-		<div class="categories">
-			
-				<a href="/category/Tools of the Trade/">Tools of the Trade</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>Ever since IE7 came out developers have had the problem of whether they should upgrade or not. If they chose to upgrade, they wouldn’t be able to test their sites in IE6 any longer as installing IE7 would uninstall IE6. There are 3rd party hacks that allow both versions to be installed at the same time, but they will not simulate a true IE6 / IE7 environment.</p>
-<a id="more"></a>
-
-<p>In recognition of this problem, Microsoft has put out a free Virtual PC 2004 (VPC itself has also been made a free download) image containing a pre-activated Windows XP SP2 installation as well as IE6 and the IE7 readiness toolkit. The image will self destruct on the 1st of april 2007, there’ll probably be another solution out by then.</p>
-<p><a href="http://blogs.msdn.com/ie/archive/2006/11/30/ie6-and-ie7-running-on-a-single-machine.aspx" target="_blank">Click here to go to the Microsoft IEBlog for further information and download links</a></p>
 
 
 				<div style="clear: both"></div>
@@ -624,667 +734,6 @@
 <p>Part of being a Microsoft Student Partner is exactly this, travelling the universities and spreading knowledge of the Microsoft platform. Naturally .NET is the most exciting topic to talk about as the primary audience mostly consists of computer scientists.</p>
 <p>Due to my work as a MSP I’ve got my 2006 Tech-Ed conference entry ticket paid, so I’m taking a short trip to Barcelona on the 8th of november untill the 11th of november. Hopefully I’ll get a lot of hands-on experiences with the new technologies and platforms, I can’t wait!</p>
 <p><a href="http://www.improve.dk/securing-dotnet-code-article/" target="_blank">Read my article on securing .NET code here</a></p>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Oct</span>
-			<span class="day">02</span>
-		</div>
-		<div class="lower">2006</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/securing-dotnet-code-article/" title="Securing .NET Code" rel="bookmark">Securing .NET Code</a></h1>
-		<div class="categories">
-			
-				<a href="/category/.NET/">.NET</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p><em>When you write your code, compile it, and distribute the exe/dll’s, is your source safe? We’re not talking about protection against buffer overruns, SQL injection and various other code hacking techniques, we’re talking protection of the source code itself, protection of intellectual properties.</em></p>
-<a id="more"></a>
-
-<p><em>This article is the result of me touring the danish universities as a <a href="http://www.microsoft.com/uk/academia/students/student-partners/default.mspx" target="_blank">Microsoft Student Partner</a>, giving lectures on the subject of securing code and intellectual properties in the realm of the .NET Framework.</em></p>
-<p>Download source code for the examples:<br><a href="/securing_dotnet.zip">securing_dotnet.zip</a></p>
-<h2 id="The_problem">The problem</h2>
-<p>Why even bother protecting our source code? There are millions of reasons for why we would want to protect our source code. Although security does not derive from obfuscation, but instead from writing secure code, there are a lot of situations where we simply cannot distribute our source code for various reasons.</p>
-<p>You might be developing code that does not belong to you, due to you developing the code at your job.<br>It could be that you’re developing an application that will be commercialised, it wouldn’t be appropriate to release the source code as that would most likely lower your sales and open up all sorts of risks of counterfeited copies (I won’t go into the topic of open source enterprises as they are vastly out of scope, but of course they do have their basis for existance).<br>It could also simply be a matter of security. As mentioned before, security shouldn’t come from obfuscation, but any extra bit of unneccesary information that a potential hacker can get about your application will add up to the overall risk.</p>
-<h3 id="Why_is_this_an_inherent_problem_with_-NET?">Why is this an inherent problem with .NET?</h3>
-<p>To understand why this problem is especially explicit in .NET, one must understand how the .NET framework works. Let me introduce you to a simple illustration of the .NET framework levels:</p>
-<div class="imgwrapper" style=""><div><a href="/securing-dotnet-code-article/framework_2.jpg" class="fancy"><img src="/securing-dotnet-code-article/framework_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>One of the coolest parts of the .NET framework is that we can write in more or less any language we want. C#, VB.NET, C++.NET, Delphi.NET, SmallTalk.NET, you name it! What enables us to do this is the Microsoft Intermediate Language (or MSIL in short). The MSIL compiler compiles your .NET language code into an intermediate language called MSIL. The MSIL language is common for all .NET languages, they all compile into this intermediate stage. Compared to native code, MSIL is a high level language. Although it is not easily read, it doesn’t take long to get a grip of what’s happening if you look at it. When an application (application being any .NET code, ASP.NET, DLL, EXE and so forth) is run, the Just-In-Time (or JIT in short) compiler takes over and compiles the MSIL code into native code that the CPU can run.</p>
-<h3 id="Java,_C++,_Pascal_etc">Java, C++, Pascal etc</h3>
-<p>The MSIL language can easily be compared to the Java bytecode intermediate code. All Java code is compiled into Java bytecode which is then run by the Java Virtual Machine (or JVM in short). Although Java bytecode is not nearly as highlevel as MSIL, it is still easily parsable, making it easy to reverse engineer it back into real Java code. Although the reasoning behind the JVM and the MSIL/CLR compiler are not the same, Java has the same disadvantage as .NET. Other native languages like C++ and Pascal (and a lot others) do not have this problem. Instead of compiling into an intermediate language, they simply compile directly into native code. This has the advantage that code execution is usually faster and the disk footprint is smaller. Also while it is possible, it is unfeasible to reverse engineer large amounts of native code.</p>
-<h3 id="So_why_not_just_dump_the_MSIL?">So why not just dump the MSIL?</h3>
-<p>Having the MSIL/JIT combination has a lot of advantages, some of them being that the .NET framework can boast of a vast amount of supported languages and that the JIT compiler can make CPU/platform specific optimizations when it compiles from MSIL to native code. I won’t be making any in depth analysis of the advantages and disadvantages of JIT compilation versus direct native compilation in this article, I’ll leave that for a followup article later on.</p>
-<h2 id="Tools">Tools</h2>
-<p>Alright, before we start, let me introduce you to a couple of tools that I will be using to demonstrate the weaknesses of the .NET application protection schemes that I will be showcasing.</p>
-<h3 id="Reflector">Reflector</h3>
-<p>You will have to learn to live with, love, hate and embrace Reflector, it’s a godsend! <a href="http://www.aisto.com/roeder/dotnet/" target="_blank">Click here to open Lutz Roeder’s ‘Programming .NET’ website where you can download Reflector</a>. Reflector is used to decompile existing .NET applications, whether that be EXE’s or DLL’s or any other .NET code. I won’t be describing how to use Reflector, I will simply show the results of using Reflector.</p>
-<h3 id="IL_DASM">IL DASM</h3>
-<p>If you have the .NET Framework SDK installed then you will also have installed the Microsoft ‘MSIL Disassembler’ tool, called IL DASM in short. IL DASM is used to decompile .NET code into the underlying MSIL code. Reflector does the same, though Reflector can go a step further and reverse engineer the MSIL code into more humanly readable .NET code in the most commong .NET languages.</p>
-<h3 id="Wireshark">Wireshark</h3>
-<p><a href="http://www.wireshark.org/" target="_blank">Wireshark, formerly known as Etheral</a> is the number one network sniffer for more or less any platform, and it’s free!</p>
-<h3 id="Dotfuscator">Dotfuscator</h3>
-<p><a href="http://www.preemptive.com/products/dotfuscator/index.html" target="_blank">Preemptive’s Dotfuscator</a> is a great .NET code obfuscation tool. A lightweight community edition ships with Visual Studio .NET 2003 &amp; 2005. The professional edition has a lot more options for code obfuscation and code compression.</p>
-<p>I demoed the evaluation version of Dotfuscator during my MSP lectures. Just before my demo at the last university on the tour, I had an emergency. “Your evaluation copy has expired”… Not what you want to read when you are to show the demo in just under two hours. I got hold of the european office department by phone and within minutes I had a new evaluation license that I could use. Great support!</p>
-<h2 id="Simple_password_protection">Simple password protection</h2>
-<p>In this example we will be creating a simple .NET application that includes a “secret” algorithm that we want to protect, as well as protect the actual appliction by requiring a password before it can be used.</p>
-<h3 id="Creating_the_application">Creating the application</h3>
-<p>Start out by creating a new Windows Application project, call it “SecureApplication”. Add a TextBox and a Button to the form, Form1.cs like so:</p>
-<div class="imgwrapper" style=""><div><a href="/securing-dotnet-code-article/1_2.jpg" class="fancy"><img src="/securing-dotnet-code-article/1_2.jpg" style="max-height: 250px"/></a></div></div>
-
-
-<figure class="highlight csharp"><pre><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">button1_Click</span>(<span class="keyword">object</span> sender, EventArgs e)
-{
-	<span class="keyword">if</span> (textBox1.Text == <span class="string">"password"</span>)
-		MessageBox.Show(answerToAllLife().ToString());
-	<span class="keyword">else</span>
-		MessageBox.Show(<span class="string">"Error"</span>);
-}
-</pre></figure>
-
-<p>Now insert the following two functions into the form:</p>
-<figure class="highlight csharp"><pre><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">button1_Click</span>(<span class="keyword">object</span> sender, EventArgs e)
-{
-	<span class="keyword">if</span> (textBox1.Text == <span class="string">"password"</span>)
-		MessageBox.Show(answerToAllLife().ToString());
-	<span class="keyword">else</span>
-		MessageBox.Show(<span class="string">"Error"</span>);
-}
-
-<span class="keyword">string</span> answerToAllLife()
-{
-	<span class="keyword">string</span> result = <span class="string">""</span>;
-
-	result += (<span class="keyword">char</span>)(Math.Pow(<span class="number">2</span>, <span class="number">6</span>) + <span class="number">8</span>);
-
-	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= <span class="number">100</span>; i++)
-		<span class="keyword">if</span> (i == <span class="number">100</span>)
-			result += (<span class="keyword">char</span>)++i;
-
-	result += (<span class="keyword">char</span>)(<span class="number">117</span> - <span class="number">9</span>);
-
-	result += result[result.Length - <span class="number">1</span>];
-
-	result += <span class="keyword">typeof</span>(List&lt;<span class="keyword">string</span>&gt;).ToString().Split(<span class="string">'.'</span>)[<span class="number">1</span>][<span class="number">1</span>];
-
-	<span class="keyword">return</span> result;
-}
-</pre></figure>
-
-<p>The answerToAllLife() method is the secret algorithm we want to secure. Never mind the complexity of it, is simply to make it a bit less readable when we decompile our application, to make things a bit more realistic. Now if you run the application, it will only allow you to run the algorithm if you provide the correct passowrd: ‘password’. Simple and effective eh? Oh, you don’t think that’s protection enough?</p>
-<h3 id="Decompiling_the_application">Decompiling the application</h3>
-<p>Now, let’s see what happens when we open the application using the ILDASM tool that ships with every installation of the .NET Framework:</p>
-<figure class="highlight csharp"><pre><span class="preprocessor">.method</span> private hidebysig instance void  button1_Click(object sender, class [mscorlib]System<span class="preprocessor">.EventArgs</span> e) cil managed
-{
-	// Code size       <span class="number">60</span> (<span class="number">0x3c</span>)
-	<span class="preprocessor">.maxstack</span>  <span class="number">2</span>
-	<span class="preprocessor">.locals</span> init ([<span class="number">0</span>] bool CS$4$0000)
-	IL_0000:  <span class="keyword">nop</span>
-	IL_0001:  ldarg<span class="number">.0</span>
-	IL_0002:  ldfld      class [System<span class="preprocessor">.Windows</span><span class="preprocessor">.Forms</span>]System<span class="preprocessor">.Windows</span><span class="preprocessor">.Forms</span><span class="preprocessor">.TextBox</span> SecureApplication<span class="preprocessor">.Form</span>1::textBox1
-	IL_0007:  callvirt   instance string [System<span class="preprocessor">.Windows</span><span class="preprocessor">.Forms</span>]System<span class="preprocessor">.Windows</span><span class="preprocessor">.Forms</span><span class="preprocessor">.Control</span>::get_Text()
-	IL_000c:  ldstr      <span class="string">"password"</span>
-	IL_0011:  <span class="keyword">call</span>       bool [mscorlib]System<span class="preprocessor">.String</span>::op_Equality(string, string)
-	IL_0016:  ldc<span class="preprocessor">.i</span>4<span class="number">.0</span>
-	IL_0017:  ceq
-	IL_0019:  stloc<span class="number">.0</span>
-	IL_001a:  ldloc<span class="number">.0</span>
-	IL_001b:  brtrue<span class="preprocessor">.s</span>   IL_0030
-	IL_001d:  ldarg<span class="number">.0</span>
-	IL_001e:  <span class="keyword">call</span>       instance string SecureApplication<span class="preprocessor">.Form</span>1::answerToAllLife()
-	IL_0023:  callvirt   instance string [mscorlib]System<span class="preprocessor">.Object</span>::ToString()
-	IL_0028:  <span class="keyword">call</span>       valuetype [System<span class="preprocessor">.Windows</span><span class="preprocessor">.Forms</span>]System<span class="preprocessor">.Windows</span><span class="preprocessor">.Forms</span><span class="preprocessor">.DialogResult</span> [System<span class="preprocessor">.Windows</span><span class="preprocessor">.Forms</span>]System<span class="preprocessor">.Windows</span><span class="preprocessor">.Forms</span><span class="preprocessor">.MessageBox</span>::Show(string)
-	IL_002d:  <span class="keyword">pop</span>
-	IL_002e:  br<span class="preprocessor">.s</span>       IL_003b
-	IL_0030:  ldstr      <span class="string">"Error"</span>
-	IL_0035:  <span class="keyword">call</span>       valuetype [System<span class="preprocessor">.Windows</span><span class="preprocessor">.Forms</span>]System<span class="preprocessor">.Windows</span><span class="preprocessor">.Forms</span><span class="preprocessor">.DialogResult</span> [System<span class="preprocessor">.Windows</span><span class="preprocessor">.Forms</span>]System<span class="preprocessor">.Windows</span><span class="preprocessor">.Forms</span><span class="preprocessor">.MessageBox</span>::Show(string)
-	IL_003a:  <span class="keyword">pop</span>
-	IL_003b:  <span class="keyword">ret</span>
-} // end of method Form1::button1_Click
-</pre></figure>
-
-<p>I am by no means an MSIL expert, but we can pretty easily spot the strings “password” and “Error” and by putting two and two together, I wonder what the “password” might be? This is a crude example, but still, it shows the point, we cannot embed our password into the application.</p>
-<p>Not only can we not include our password in our application, we also can’t exchange the password with some kind of registration key pattern matching algorithm as that one could also be reverse engineered, opening up for the possibility of key generators and the likes.</p>
-<p>But hey, this is the least of our problems. In case you didn’t notice, the complete source code of our algorithm is also available!</p>
-<figure class="highlight csharp"><pre>.method private hidebysig instance string answerToAllLife() cil managed
-{
-	// Code size 205 (0xcd)
-	.maxstack  5
-	.locals init ([0] string result,
-			[1] int32 i,
-			[2] string CS$1$0000,
-			[3] bool CS$4$0001,
-			[4] char[] CS$0$0002)
-	IL_0000:  nop
-	IL_0001:  ldstr      <span class="string">""</span>
-	IL_0006:  stloc.0
-	IL_0007:  ldloc.0
-	IL_0008:  ldc.r8     2.
-	IL_0011:  ldc.r8     6.
-	IL_001a:  call       float64 [mscorlib]System.Math::Pow(float64,
-															float64)
-	IL_001f:  ldc.r8     8.
-	IL_0028:  add
-	IL_0029:  conv.u2
-	IL_002a:  box        [mscorlib]System.Char
-	IL_002f:  call       string [mscorlib]System.String::Concat(object,
-																object)
-	IL_0034:  stloc.0
-	IL_0035:  ldc.i4.1
-	IL_0036:  stloc.1
-	IL_0037:  br.s       IL_005b
-	IL_0039:  ldloc.1
-	IL_003a:  ldc.i4.s   100
-	IL_003c:  ceq
-	IL_003e:  ldc.i4.0
-	IL_003f:  ceq
-	IL_0041:  stloc.3
-	IL_0042:  ldloc.3
-	IL_0043:  brtrue.s   IL_0057
-	IL_0045:  ldloc.0
-	IL_0046:  ldloc.1
-	IL_0047:  ldc.i4.1
-	IL_0048:  add
-	IL_0049:  dup
-	IL_004a:  stloc.1
-	IL_004b:  conv.u2
-	IL_004c:  box        [mscorlib]System.Char
-	IL_0051:  call       string [mscorlib]System.String::Concat(object,
-																object)
-	IL_0056:  stloc.0
-	IL_0057:  ldloc.1
-	IL_0058:  ldc.i4.1
-	IL_0059:  add
-	IL_005a:  stloc.1
-	IL_005b:  ldloc.1
-	IL_005c:  ldc.i4.s   100
-	IL_005e:  cgt
-	IL_0060:  ldc.i4.0
-	IL_0061:  ceq
-	IL_0063:  stloc.3
-	IL_0064:  ldloc.3
-	IL_0065:  brtrue.s   IL_0039
-	IL_0067:  ldloc.0
-	IL_0068:  ldc.i4.s   108
-	IL_006a:  box        [mscorlib]System.Char
-	IL_006f:  call       string [mscorlib]System.String::Concat(object,
-																object)
-	IL_0074:  stloc.0
-	IL_0075:  ldloc.0
-	IL_0076:  ldloc.0
-	IL_0077:  ldloc.0
-	IL_0078:  callvirt   instance int32 [mscorlib]System.String::get_Length()
-	IL_007d:  ldc.i4.1
-	IL_007e:  sub
-	IL_007f:  callvirt   instance char [mscorlib]System.String::get_Chars(int32)
-	IL_0084:  box        [mscorlib]System.Char
-	IL_0089:  call       string [mscorlib]System.String::Concat(object,
-																object)
-	IL_008e:  stloc.0
-	IL_008f:  ldloc.0
-	IL_0090:  ldtoken    class [mscorlib]System.Collections.Generic.List`1&lt;string&gt;
-	IL_0095:  call       class [mscorlib]System.Type [mscorlib]System.Type::GetTypeFromHandle(valuetype [mscorlib]System.RuntimeTypeHandle)
-	IL_009a:  callvirt   instance string [mscorlib]System.Object::ToString()
-	IL_009f:  ldc.i4.1
-	IL_00a0:  newarr     [mscorlib]System.Char
-	IL_00a5:  stloc.s    CS$0$0002
-	IL_00a7:  ldloc.s    CS$0$0002
-	IL_00a9:  ldc.i4.0
-	IL_00aa:  ldc.i4.s   46
-	IL_00ac:  stelem.i2
-	IL_00ad:  ldloc.s    CS$0$0002
-	IL_00af:  callvirt   instance string[] [mscorlib]System.String::Split(char[])
-	IL_00b4:  ldc.i4.1
-	IL_00b5:  ldelem.ref
-	IL_00b6:  ldc.i4.1
-	IL_00b7:  callvirt   instance char [mscorlib]System.String::get_Chars(int32)
-	IL_00bc:  box        [mscorlib]System.Char
-	IL_00c1:  call       string [mscorlib]System.String::Concat(object,
-																object)
-	IL_00c6:  stloc.0
-	IL_00c7:  ldloc.0
-	IL_00c8:  stloc.2
-	IL_00c9:  br.s       IL_00cb
-	IL_00cb:  ldloc.2
-	IL_00cc:  ret
-} // end of method Form1::answerToAllLife
-</pre></figure>
-
-<p>Now this code isn’t especially readable when it get’s large, but what if we try using Reflector instead? This is what we get when we decompile our buttons Click event:</p>
-<figure class="highlight csharp"><pre><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">button1_Click</span>(<span class="keyword">object</span> sender, EventArgs e)
-{
-	  <span class="keyword">if</span> (<span class="keyword">this</span>.textBox1.Text == <span class="string">"password"</span>)
-	  {
-			MessageBox.Show(<span class="keyword">this</span>.answerToAllLife().ToString());
-	  }
-	  <span class="keyword">else</span>
-	  {
-			MessageBox.Show(<span class="string">"Error"</span>);
-	  }
-}
-</pre></figure>
-
-<p>Looks familiar? This should make it pretty obvious that our code is NOT safe, it is simply too easy to decompile unprotected .NET code. So what can we do?</p>
-<h2 id="Using_native_code_to_protect_vital_parts">Using native code to protect vital parts</h2>
-<p>I gave a comparison between .NET and the native languages earlier on. What if we were to create our vital code parts in native code, and then keep all the non-vital code as .NET? Let’s try to protect our algorithm by coding that one in native code while presevering the user interface in .NET. Of course we ought to also code the password check in native code, but for this example I’ll stick with our algorithm.</p>
-<h3 id="Creating_a_VC++_DLL_and_calling_it_from_-NET">Creating a VC++ DLL and calling it from .NET</h3>
-<p>Create a new VC++ Win32 Project to the solution, call it “SecureComponent”. When prompted, select “DLL” as application type and make sure that you check the “Export symbols” checkbox.</p>
-<p>Now replace the whole SecureComponent.cpp file with the following code:</p>
-<figure class="highlight c"><pre><span class="preprocessor">#include "stdafx.h"</span>
-<span class="preprocessor">#include "SecureComponent.h"</span>
-
-<span class="keyword">extern</span> <span class="string">"C"</span> SECURECOMPONENT_API <span class="keyword">char</span>* AnswerToAllLife(<span class="keyword">void</span>)
-{
-	<span class="keyword">return</span> <span class="string">"Hello"</span>;
-}
-</pre></figure>
-
-<p>And replace the corresponding header file SecureComponent.h with the following code:</p>
-<figure class="highlight c"><pre><span class="preprocessor">#ifdef SECURECOMPONENT_EXPORTS</span>
-	<span class="preprocessor">#define SECURECOMPONENT_API __declspec(dllexport)</span>
-<span class="preprocessor">#else</span>
-	<span class="preprocessor">#define SECURECOMPONENT_API __declspec(dllimport)</span>
-<span class="preprocessor">#endif</span>
-
-<span class="keyword">extern</span> <span class="string">"C"</span> SECURECOMPONENT_API <span class="keyword">char</span>* AnswerToAllLife(<span class="keyword">void</span>);
-</pre></figure>
-
-<p><p>I am by no means a C++ expert, and you need not be either. This C++ DLL project contains a single function, AnswerToAllLife() of type char* which corresponds to a .NET string. Instead of writing the actual algorithm we’ll suffice with returning the alogrithm result, “Hello”.</p>
-<p>Compile the SecureComponent project and locate the resulting SecureComponent.dll file in the output directory. We will be calling this DLL through platform invoke (p/invoke in short) as that is the simplest and quickest way to call our native code from .NET.</p>
-<p>Copy the SecureComponent.dll file into the %windir%system32 directory. Now modify the SecureApplication form1.cs code so it matches the following:</p>
-<figure class="highlight csharp"><pre>[DllImport(<span class="string">"SecureComponent.dll"</span>)]
-<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">extern</span> <span class="keyword">string</span> <span class="title">AnswerToAllLife</span>();
-
-<span class="keyword">public</span> <span class="title">Form1</span>()
-{
-	InitializeComponent();
-}
-
-<span class="keyword">private</span> <span class="keyword">void</span> <span class="title">button1_Click</span>(<span class="keyword">object</span> sender, EventArgs e)
-{
-	<span class="keyword">if</span> (textBox1.Text == <span class="string">"password"</span>)
-	{
-		MessageBox.Show(AnswerToAllLife());
-	}
-	<span class="keyword">else</span>
-		MessageBox.Show(<span class="string">"Error!"</span>);
-}
-</pre></figure>
-
-<p>Make sure that you import the correct namespace (System.Runtime.InteropServices) for the DllImport attribute to work.</p>
-<p>Now try running the SecureApplication project and test that it works (messagebox saying “Hello” when you provide the correct password and click the button).</p>
-<p>Now comes the interesting part. Open up Reflector and add the SecureApplication.exe file to the list of loaded assemblies (make sure you remove it if it’s already loaded as Reflector will otherwise show an old cached version). Browse to the AnswerToAllLife() function est voilá:</p>
-<div class="imgwrapper" style=""><div><a href="/securing-dotnet-code-article/disassembly1_2.gif" class="fancy"><img src="/securing-dotnet-code-article/disassembly1_2.gif" style="max-height: 250px"/></a></div></div>
-
-<p>Now our algorithm is securely hidden from the usual means of decompilation. This however does not mean that our code is universally secure. Sure it’s somwhat more difficult to get to our algorithm than before, but it ain’t possible. Native code can be reverse engineered but it’s a very tough job, especially as the code get’s larger and more complicated.</p>
-<p>A drawback with this method is that we’ll have to write our vital code parts in native code. Naturally we’d prefer to write in managed code, but depending on the project, native code is an opportunity. So what am I saying? No matter what you do, if your code is physically at the clients machine, it is not safe. No matter what you do. As long as the code is physically at the client, all we can do is to make it as cumbersome as possible to get to the original source as possible, hopefully evading most reverse engineering attempts.</p>
-<h2 id="Creating_a_webservice_that_will_host_our_algorithm">Creating a webservice that will host our algorithm</h2>
-<p>Let’s make our code 100% secure. How? By not supplying the clients with our algorithm at all, but simply allowing them to invoke the algorithm remotely. The easiest way to do this in the .NET framework is by using web services.</p>
-<h3 id="Creating_the_web_service">Creating the web service</h3>
-<p>Add a new ASP.NET Web Service to the solution, call it “AlgorithmService”. Now open the Service.asmx codebehind file and replace the contents with this code:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
-<span class="keyword">using</span> System.Web;
-<span class="keyword">using</span> System.Web.Services;
-<span class="keyword">using</span> System.Web.Services.Protocols;
-
-[WebServiceBinding(ConformsTo = WsiProfiles.BasicProfile1_1)]
-<span class="keyword">public</span> <span class="keyword">class</span> Service : System.Web.Services.WebService
-{
-	[WebMethod]
-	<span class="keyword">public</span> <span class="keyword">string</span> <span class="title">AnswerToAllLife</span>()
-	{
-		<span class="keyword">return</span> <span class="string">"Hello"</span>;
-	}
-}
-</pre></figure>
-
-<p>Our webservice contains a single function, AnswerToAllLife that represents our algorithm, just like our C++ version. Try running the webservice (you may need to set the Service.asmx file as the start page) and check that the web service works by invoking the AnswerToAllLife function:</p>
-<div class="imgwrapper" style=""><div><a href="/securing-dotnet-code-article/servicetest_2.gif" class="fancy"><img src="/securing-dotnet-code-article/servicetest_2.gif" style="max-height: 250px"/></a></div></div>
-
-<p>Now add a web reference to the SecureApplication project. Click the “Web services in this solution” link and select the AlgorithmService web service. Name it “AlgorithmService” and click the “Add reference” button.</p>
-<p>Now modify the button1_click method as follows:</p>
-<figure class="highlight csharp"><pre><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">button1_Click</span>(<span class="keyword">object</span> sender, EventArgs e)
-{
-	<span class="keyword">if</span> (textBox1.Text == <span class="string">"password"</span>)
-	{
-		AlgorithmService.Service algorithm =
-			<span class="keyword">new</span> SecureApplication.AlgorithmService.Service();
-
-		MessageBox.Show(algorithm.AnswerToAllLife());
-	}
-	<span class="keyword">else</span>
-		MessageBox.Show(<span class="string">"Error!"</span>);
-}
-</pre></figure>
-
-<p>Now, when the user provides the correct password, we invoke the AlgorithmService web service and show the result. If you decompile the SecureApplication exe file using Reflector, this is the code you’ll see for our button’s click event:</p>
-<figure class="highlight csharp"><pre><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">button1_Click</span>(<span class="keyword">object</span> sender, EventArgs e)
-{
-	  <span class="keyword">if</span> (<span class="keyword">this</span>.textBox1.Text == <span class="string">"password"</span>)
-	  {
-			MessageBox.Show(<span class="keyword">new</span> Service().AnswerToAllLife());
-	  }
-	  <span class="keyword">else</span>
-	  {
-			MessageBox.Show(<span class="string">"Error!"</span>);
-	  }
-}
-</pre></figure>
-
-<p>And this is the code we see if we go to the “AnswerToAllLife” method in the Service class:</p>
-<figure class="highlight csharp"><pre>[SoapDocumentMethod(<span class="string">"http://tempuri.org/AnswerToAllLife"</span>,
-	RequestNamespace=<span class="string">"http://tempuri.org/"</span>,
-	ResponseNamespace=<span class="string">"http://tempuri.org/"</span>,
-	Use=SoapBindingUse.Literal,
-	ParameterStyle=SoapParameterStyle.Wrapped)]
-<span class="keyword">public</span> <span class="keyword">string</span> <span class="title">AnswerToAllLife</span>()
-{
-	  <span class="keyword">object</span>[] objArray1 = <span class="keyword">base</span>.Invoke(<span class="string">"AnswerToAllLife"</span>, <span class="keyword">new</span> <span class="keyword">object</span>[<span class="number">0</span>]);
-	  <span class="keyword">return</span> (<span class="keyword">string</span>) objArray1[<span class="number">0</span>];
-}
-</pre></figure>
-
-<p>Neat eh? Now there is no way that our source code can be compromised. There are however some drawbacks to using web services. First of all, we’ll need to require that our clients are connected to the internet, or at least to some kind of network that’ll allow access to our web service. Also web services impose a significant overhead on each algorithm call compared to direct managed/native calls. Finally there may also be security issues, for instance, a credit card validation service might not be the best of projects to provide via a web service.</p>
-<h2 id="Recap">Recap</h2>
-<ul>
-<li>Without any protection at all, our code is very unsafe. Any person is able to decompile a .NET application using only free tools within minutes.</li>
-<li>We may protect our code by writing it in a native language. Though it is not bulletproof, it severely complicates the process of reverse engineering our code. It is however also morecumbersome for us to write our vital code in the native language as oposed to writing it in managed code.</li>
-<li>The only 100% secure way to protect our code is to not supply it to our clients in any way. Web services and remoting are two ideal methods of accomplishing this separation. It isn’t always possible separate parts of our code due to certain circumstances, so it’ll be a matter of judgement whether it’s possible.</li>
-</ul>
-<h2 id="Obfuscation">Obfuscation</h2>
-<p>Ok, so we can remove our algorithm code by utilizing web services, but what about the password check? And what about our other code that we’d also prefer to keep to ourselves? Let’s look at obfuscation.</p>
-<p>Obfuscation is a technique used to complicate code. Obfuscation makes code harder to understand when it is decompiled, but it typically has no affect on the functionality of the code.</p>
-<h3 id="PreEmptive_Dotfuscator">PreEmptive Dotfuscator</h3>
-<p>I have tested several tools that boast of being able to obfuscate .NET code without providing a lot of overhead on the developers… Us. The most effective and efficient obfuscation tool that I have tested so far is PreEmptive’s Dotfuscator. You can request a free 14 day evaluation at their website. Don’t worry if you haven’t gotten it up and running while following this article, I’ll be showing screenshots of the most important aspects of using the Dotfuscator product.</p>
-<h3 id="Seamless_Visual_Studio_integration">Seamless Visual Studio integration</h3>
-<p>What’s cool with Dotfuscator is that it integrates directly into Visual Studio (2003 and 2005) by providing a new project type:</p>
-<div class="imgwrapper" style=""><div><a href="/securing-dotnet-code-article/dotfuscatorproject_2.gif" class="fancy"><img src="/securing-dotnet-code-article/dotfuscatorproject_2.gif" style="max-height: 250px"/></a></div></div>
-
-<p>After creating the project, we can add any number of assemblies to obfuscate, or even project outputs - Dotfuscator will then make sure to obfuscate the resulting assemblies automatically.</p>
-<div class="imgwrapper" style=""><div><a href="/securing-dotnet-code-article/projectoutput_2.gif" class="fancy"><img src="/securing-dotnet-code-article/projectoutput_2.gif" style="max-height: 250px"/></a></div></div>
-
-<p>We can set the individual obfuscation settings by using the six setting categories. I won’t go into major details as that is out of scope of this article.</p>
-<div class="imgwrapper" style=""><div><a href="/securing-dotnet-code-article/renaming_2.gif" class="fancy"><img src="/securing-dotnet-code-article/renaming_2.gif" style="max-height: 250px"/></a></div></div>
-
-<p>Under the renaming category we can set the options for how our assembly members should be renamed. We can choose to rename using numeric names, lower/uppercase alpha names, or my favorite - the unprintable characters. Although we can rename our members to our liking, there are still certain restrictions. In .NET every function must have a unique signature. Normally the signature consists of the name of the function as well as the parameter types. Dotfuscator can use the “Enhanced overload induction” to also identify functions by their return type, effectively causing us to give a lot more functions the same names, confusing our potential decompilers even more.</p>
-<p>We can also choose to alter the control flow, causing a number of lables and goto calls to be embedded in our code, I haven’t observed any noticable performance hits. Dotfuscator also supports automatic encryption of strings in our application without us having to do anything. You can choose which strings encrypt and which to keep unencrypted. The strings are decrypted on-the-fly as the application is running, so keeping unimportant strings in cleartext will be the most efficient.</p>
-<h3 id="The_process_of_obfuscating">The process of obfuscating</h3>
-<p>Obfuscating our SecureApplication is very easy. Simply add the SecureApplication project output to the “Input Assemblies” part of our Dotfuscator project and compile the project as we would compile any other project. After compiling, try to open the project in Reflector:</p>
-<div class="imgwrapper" style=""><div><a href="/securing-dotnet-code-article/obfuscatedreflector_2.gif" class="fancy"><img src="/securing-dotnet-code-article/obfuscatedreflector_2.gif" style="max-height: 250px"/></a></div></div>
-
-<p>Notice how our namespace and class structure is completely unreadable, thanks to the unprintable characters. We can still find our buttons click method by looking at the method signature - as our methods still have to have a unique signature. We can identify our buttons click event by looking for a method with the same signature: void(object, EventArgs).</p>
-<p>IL DASM can still decompile our application, this is the resulting code from out buttons click method:</p>
-<figure class="highlight csharp"><pre>.method <span class="keyword">private</span> hidebysig instance <span class="keyword">void</span>  'eval_?'(<span class="keyword">object</span> A_0, <span class="keyword">class</span> [mscorlib]System.EventArgs A_1) cil managed
-{
-	<span class="comment">// Code size       171 (0xab)</span>
-	.maxstack  <span class="number">3</span>
-	.locals init ([<span class="number">0</span>] class <span class="string">'eval_?'</span> <span class="string">'algorithm'</span>,
-		   [<span class="number">1</span>] <span class="keyword">bool</span> CS$<span class="number">4</span>$<span class="number">0000</span>,
-		   [<span class="number">2</span>] int32 EGSwitchVar,
-		   [<span class="number">3</span>] int32 V_3)
-	IL_0000:  ldc.i4     <span class="number">0x6</span>
-	IL_0005:  stloc      V_3
-	IL_0009:  br.s       IL_0024
-	IL_000b:  ldloc      EGSwitchVar
-	IL_000f:  <span class="keyword">switch</span>     ( 
-						IL_0060,
-						IL_0052,
-						IL_00a8,
-						IL_0081)
-	IL_0024:  nop
-	IL_0025:  ldarg<span class="number">.0</span>
-	IL_0026:  ldfld      class [System.Windows.Forms]System.Windows.Forms.TextBox eval_a::<span class="string">'eval_?'</span>
-	IL_002b:  callvirt   instance <span class="keyword">string</span> [System.Windows.Forms]System.Windows.Forms.Control::get_Text()
-	IL_0030:  ldstr      bytearray (<span class="number">14</span> <span class="number">65</span> <span class="number">16</span> <span class="number">76</span> <span class="number">18</span> <span class="number">6</span>A <span class="number">1</span>A <span class="number">68</span> <span class="number">1</span>C <span class="number">6</span>A <span class="number">1</span>E <span class="number">70</span> <span class="number">20</span> <span class="number">53</span> <span class="number">22</span> <span class="number">47</span> ) <span class="comment">// .e.v.j.h.j.p S"G</span>
-	IL_0035:  ldloc      V_3
-	IL_0039:  call       <span class="keyword">string</span> a$PST06000001(<span class="keyword">string</span>,
-											int32)
-	IL_003e:  call       <span class="keyword">bool</span> [mscorlib]System.String::op_Equality(<span class="keyword">string</span>,
-																 <span class="keyword">string</span>)
-	IL_0043:  ldc.i4<span class="number">.0</span>
-	IL_0044:  ceq
-	IL_0046:  stloc<span class="number">.1</span>
-	IL_0047:  ldc.i4     <span class="number">0x1</span>
-	IL_004c:  stloc      EGSwitchVar
-	IL_0050:  br.s       IL_000b
-	IL_0052:  ldloc<span class="number">.1</span>
-	IL_0053:  brtrue.s   IL_0062
-	IL_0055:  ldc.i4     <span class="number">0x0</span>
-	IL_005a:  stloc      EGSwitchVar
-	IL_005e:  br.s       IL_000b
-	IL_0060:  br.s       IL_0083
-	IL_0062:  ldstr      bytearray (<span class="number">14</span> <span class="number">50</span> <span class="number">16</span> <span class="number">65</span> <span class="number">18</span> <span class="number">6</span>B <span class="number">1</span>A <span class="number">74</span> <span class="number">1</span>C <span class="number">6</span>F <span class="number">1</span>E <span class="number">3</span>E )             <span class="comment">// .P.e.k.t.o.&gt;</span>
-	IL_0067:  ldloc      V_3
-	IL_006b:  call       <span class="keyword">string</span> a$PST06000001(<span class="keyword">string</span>,
-											int32)
-	IL_0070:  call       valuetype [System.Windows.Forms]System.Windows.Forms.DialogResult [System.Windows.Forms]System.Windows.Forms.MessageBox::Show(<span class="keyword">string</span>)
-	IL_0075:  pop
-	IL_0076:  ldc.i4     <span class="number">0x3</span>
-	IL_007b:  stloc      EGSwitchVar
-	IL_007f:  br.s       IL_000b
-	IL_0081:  br.s       IL_00aa
-	IL_0083:  nop
-	IL_0084:  newobj     instance <span class="keyword">void</span> <span class="string">'eval_?'</span>::.ctor()
-	IL_0089:  stloc<span class="number">.0</span>
-	IL_008a:  ldloc<span class="number">.0</span>
-	IL_008b:  callvirt   instance <span class="keyword">string</span> <span class="string">'eval_?'</span>::<span class="string">'eval_?'</span>()
-	IL_0090:  call       valuetype [System.Windows.Forms]System.Windows.Forms.DialogResult [System.Windows.Forms]System.Windows.Forms.MessageBox::Show(<span class="keyword">string</span>)
-	IL_0095:  pop
-	IL_0096:  nop
-	IL_0097:  br.s       IL_009a
-	IL_0099:  <span class="keyword">break</span>
-	IL_009a:  ldc.i4     <span class="number">0x2</span>
-	IL_009f:  stloc      EGSwitchVar
-	IL_00a3:  br         IL_000b
-	IL_00a8:  br.s       IL_00aa
-	IL_00aa:  ret
-} <span class="comment">// end of method eval_a::'eval_?'</span>
-</pre></figure>
-
-<p>Notice how our “password” string now looks like this: bytearray (14 65 16 76 18 6A 1A 68 1C 6A 1E 70 20 53 22 47 ), neat eh?</p>
-<h2 id="Checking_our_password_through_a_web_service">Checking our password through a web service</h2>
-<p>Although our password is encrypted, it still isn’t safe to have the password check on the client machine. Why don’t we check the password via a web service? Again, this is only possible if we can require a network connection to our web service. If that isn’t possible, we might want to code our password check in a native language.</p>
-<h3 id="Creating_our_password_checking_web_service">Creating our password checking web service</h3>
-<p>Add a new ASP.NET web service project to our solution, call it “PasswordService”. Modify the Service.asmx.cs file so it contains the following code:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
-<span class="keyword">using</span> System.Web;
-<span class="keyword">using</span> System.Web.Services;
-<span class="keyword">using</span> System.Web.Services.Protocols;
-
-[WebServiceBinding(ConformsTo = WsiProfiles.BasicProfile1_1)]
-<span class="keyword">public</span> <span class="keyword">class</span> Service : System.Web.Services.WebService
-{
-	[WebMethod]
-	<span class="keyword">public</span> <span class="keyword">bool</span> <span class="title">ValidPassword</span>(<span class="keyword">string</span> password)
-	{
-		<span class="keyword">return</span> password == <span class="string">"password"</span>;
-	}
-}
-</pre></figure>
-
-<p>Our password checking web service only contains a single method, ValidPassword. ValidPassword takes a single parameter, the password to check. It returns true if the password is valid, and false otherwise. Now, this time we’ll publish our web service to an actual web server as the local hosting won’t be sufficient for the next section of this article. If you don’t have access to a web server yourself, you can use my web password checking web service running at <a href="http://service.improve.dk/Service.asmx" target="_blank">http://service.improve.dk/Service.asmx</a>.</p>
-<p>Add a web reference to the SecureApplication project, remember to use the location “<a href="http://service.improve.dk/Service.asmx&quot;" target="_blank">http://service.improve.dk/Service.asmx”</a> this time. Call the service “PasswordService” and click “Add reference”. Now modify our buttons click event so it matches the following:</p>
-<figure class="highlight csharp"><pre>private void button1_Click(object sender, EventArgs e)
-{
-	PasswordService<span class="preprocessor">.Service</span> password =
-		new SecureApplication<span class="preprocessor">.PasswordService</span><span class="preprocessor">.Service</span>()<span class="comment">;</span>
-
-	if (password<span class="preprocessor">.ValidPassword</span>(textBox1<span class="preprocessor">.Text</span>))
-	{
-		AlgorithmService<span class="preprocessor">.Service</span> algorithm = 
-			new SecureApplication<span class="preprocessor">.AlgorithmService</span><span class="preprocessor">.Service</span>()<span class="comment">;</span>
-
-		MessageBox<span class="preprocessor">.Show</span>(algorithm<span class="preprocessor">.AnswerToAllLife</span>())<span class="comment">;</span>
-	}
-	else
-		MessageBox<span class="preprocessor">.Show</span>(<span class="string">"Error!"</span>)<span class="comment">;</span>
-}
-</pre></figure>
-
-<p>Notice how we this time use our PasswordService to check our password while still using our AlgorithmService to run the algorithm. So what’s the advantage? Both our password checking code as well as our algorithm code is 100% secured this time. Combine this with the obfuscation and you’ve got some really tough to read MSIL code.</p>
-<h2 id="Cracking_the_password_check">Cracking the password check</h2>
-<p>Now that our code is totally safe, how can we get around the password check? Let’s ignore the fact that it is possible to decompile our application to MSIL code, remove the password checking parts and then reconnect the bits to create our complete application, except the password check. While this is possible, it’s more or less unfeasible for a major project, especially if you’ve obfuscated it effectively. Let’s change the scenario.</p>
-<p>Now we’re the hacker who’s trying to beat our password check. We do not have access to the code of our SecureApplication, but we do have the distributed exe file (that utilizes our two previous web services).</p>
-<h3 id="Analyzing_the_SecureApplication">Analyzing the SecureApplication</h3>
-<p>We want to know what happens under the hood of the SecureApplication that we’ve got. Fire up Wireshark and start a new capture.</p>
-<div class="imgwrapper" style=""><div><a href="/securing-dotnet-code-article/wiresharksettings_2.gif" class="fancy"><img src="/securing-dotnet-code-article/wiresharksettings_2.gif" style="max-height: 250px"/></a></div></div>
-
-<p>Be aware that if you’re using a WIFI, you may have to turn off promiscuous mode. We’ll cheat a tiny bit, since we know the application uses webservices, let’s setup a filter so we only see TCP HTTP (port 80) traffic, this’ll reduce a lot of unwanted traffic.</p>
-<p>Now start the capture, run the SecureApplication and type in a false password (remember, we’re the hacker, we haven’t got the correct password). Close down the SecureApplication and stop the capture, hopefully you’ll see a result like this:</p>
-<div class="imgwrapper" style=""><div><a href="/securing-dotnet-code-article/wiresharkresults_2.gif" class="fancy"><img src="/securing-dotnet-code-article/wiresharkresults_2.gif" style="max-height: 250px"/></a></div></div>
-
-<p>Right click on one of the green lines and select “Follow TCP stream”, you should see a stream like this:</p>
-<figure class="highlight"><pre>POST /service.asmx HTTP/1.1
-User-Agent: Mozilla/4.0 (compatible; MSIE 6.0; MS Web Services Client
-														Protocol 2.0.50727.42)
-Content-Type: text/xml; charset=utf-8
-SOAPAction: "http://tempuri.org/ValidPassword"
-Host: service.improve.dk
-Content-Length: 329
-Connection: Keep-Alive
-
-<span class="comment">&lt;!--?xml version="1.0" encoding="utf-8"?--&gt;</span>
-<span class="tag">&lt;<span class="title">soap:envelope</span> <span class="attribute">xmlns:soap</span>=<span class="value">"http://schemas.xmlsoap.org/soap/envelope/"</span> <span class="attribute">xmlns:xsi</span>=<span class="value">"http://www.w3.org/2001/XMLSchema-instance"</span> <span class="attribute">xmlns:xsd</span>=<span class="value">"http://www.w3.org/2001/XMLSchema"</span>&gt;</span>
-	<span class="tag">&lt;<span class="title">soap:body</span>&gt;</span>
-		<span class="tag">&lt;<span class="title">validpassword</span> <span class="attribute">xmlns</span>=<span class="value">"http://tempuri.org/"</span>&gt;</span>
-			<span class="tag">&lt;<span class="title">password</span>&gt;</span>asd<span class="tag">&lt;/<span class="title">password</span>&gt;</span>
-		<span class="tag">&lt;/<span class="title">validpassword</span>&gt;</span>
-	<span class="tag">&lt;/<span class="title">soap:body</span>&gt;</span>
-<span class="tag">&lt;/<span class="title">soap:envelope</span>&gt;</span>
-
-HTTP/1.1 200 OK
-Date: Thu, 26 Oct 2006 22:08:34 GMT
-Server: Microsoft-IIS/6.0
-X-Powered-By: ASP.NET
-X-AspNet-Version: 2.0.50727
-Cache-Control: private, max-age=0
-Content-Type: text/xml; charset=utf-8
-Content-Length: 369
-
-<span class="comment">&lt;!--?xml version="1.0" encoding="utf-8"?--&gt;</span>
-<span class="tag">&lt;<span class="title">soap:envelope</span> <span class="attribute">xmlns:soap</span>=<span class="value">"http://schemas.xmlsoap.org/soap/envelope/"</span> <span class="attribute">xmlns:xsi</span>=<span class="value">"http://www.w3.org/2001/XMLSchema-instance"</span> <span class="attribute">xmlns:xsd</span>=<span class="value">"http://www.w3.org/2001/XMLSchema"</span>&gt;</span>
-	<span class="tag">&lt;<span class="title">soap:body</span>&gt;</span>
-		<span class="tag">&lt;<span class="title">validpasswordresponse</span> <span class="attribute">xmlns</span>=<span class="value">"http://tempuri.org/"</span>&gt;</span>
-			<span class="tag">&lt;<span class="title">validpasswordresult</span>&gt;</span>false<span class="tag">&lt;/<span class="title">validpasswordresult</span>&gt;</span>
-		<span class="tag">&lt;/<span class="title">validpasswordresponse</span>&gt;</span>
-	<span class="tag">&lt;/<span class="title">soap:body</span>&gt;</span>
-<span class="tag">&lt;/<span class="title">soap:envelope</span>&gt;</span>
-</pre></figure>
-
-<p>Analyzing the contained HTTP request and response gives us som valuable information. The top part is the POST request and the bottom is the response.</p>
-<p>In the request we can gather that the host is “service.improve.dk” and that we’re requesting the file “/service.asmx”. The SOAP XML tells us that a function called ValidPassword is being called, and it expects the parameter “password”. Heck, we just found out the structure of the password checking web service. Now, what can we gather from the response?</p>
-<p>Well, I wonder what <ValidPasswordResult>false</ValidPasswordResult> means… If only we somehow could switch that “false” to a true.</p>
-<h3 id="Faking_the_web_service">Faking the web service</h3>
-<p>Our goal here is to setup our own web service and somehow make the SecureApplication call our own service instead of the real one. We cannot change the code of the SecureApplication, so we’ll have to work around it somehow. Start by adding a new ASP.NET web service to our solution, call it “FakePassword”. Modify the Service.asmx.cs file so it matches the following code:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
-<span class="keyword">using</span> System.Web;
-<span class="keyword">using</span> System.Web.Services;
-<span class="keyword">using</span> System.Web.Services.Protocols;
-
-[WebServiceBinding(ConformsTo = WsiProfiles.BasicProfile1_1)]
-<span class="keyword">public</span> <span class="keyword">class</span> Service : System.Web.Services.WebService
-{
-	[WebMethod]
-	<span class="keyword">public</span> <span class="keyword">bool</span> <span class="title">ValidPassword</span>(<span class="keyword">string</span> password)
-	{
-		<span class="keyword">return</span> <span class="keyword">true</span>;
-	}
-}
-</pre></figure>
-
-<p>From the HTTP stream we gathered the function name, type and parameter(s). In our fake service we’ll just return “true” everytime, effectively bypassing the password check by ignoring the password parameter. Now open up your IIS and set the default website home directory to the folder where your fake password service lies.</p>
-<div class="imgwrapper" style=""><div><a href="/securing-dotnet-code-article/iis_2.gif" class="fancy"><img src="/securing-dotnet-code-article/iis_2.gif" style="max-height: 250px"/></a></div></div>
-
-<p>Now if you go to <a href="http://localhost/Service.asmx" target="_blank">http://localhost/Service.asmx</a>, you should see our fake password service. What we need now is for our service to somehow respond to the address <a href="http://service.improve.dk/Service.asmx" target="_blank">http://service.improve.dk/Service.asmx</a>. Open up the file “hosts” in the following directory: %windir%system32driversetchosts, note that it does not have an extension, simply open it in notepad. Now add the following two lines:</p>
-<figure class="highlight csharp"><pre><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>		service<span class="preprocessor">.improve</span><span class="preprocessor">.dk</span>
-<span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>		http://service<span class="preprocessor">.improve</span><span class="preprocessor">.dk</span>
-</pre></figure>
-
-<p>You have to ensure that you keep the tabs just like the default line in the hosts file. Now if you go to <a href="http://service.improve.dk/Service.asmx" target="_blank">http://service.improve.dk/Service.asmx</a>, you’ll no longer get to the real web service as we’ve just setup our system so that 127.0.0.1 (our local machine) responds to this domain name instead. You can’t test the webservice locally through this address as it will fail if you don’t use the proper .NET classes. Now think about what happens when we run our SecureApplication again… It will connect to the address it was built to connect to, <a href="http://service.improve.dk" target="_blank">http://service.improve.dk</a>, but it’s no longer the original web service, this is now our fake service. This should be the result:</p>
-<div class="imgwrapper" style=""><div><a href="/securing-dotnet-code-article/hello_2.gif" class="fancy"><img src="/securing-dotnet-code-article/hello_2.gif" style="max-height: 250px"/></a></div></div>
-
-<p>No matter what password we supply, our algorithm will be run as our fake web service will tell the application that our password is valid.</p>
-<h2 id="Recap-1">Recap</h2>
-<ul>
-<li>Obfuscation vastly improves the safety of our application since strings and member names are no longer visible. Also it forces people to look at the MSIL code or break the obfuscation before they have access to our code. Obfuscation isn’t safety in itself, but combined with other methods of protection, it’s a big plus.</li>
-<li>We really shouldn’t have any registration methods lying in the client application as they can and eventually will be cracked, resulting in either keygens or password floating around on the internet. If possible, use remote checking of registration codes.</li>
-<li>Don’t put a lot of trust in your solution just because you use remote checking, it can be broken.</li>
-</ul>
-<h2 id="A_proposed_solution">A proposed solution</h2>
-<p>My proposed solution is a mix of the earlier mentioned methods, combined together it is rather effective. It does however require a connection to our remote registration server.</p>
-<p>For this demo I won’t be creating any code as it gets rather complex. Instead I will be describing the overall thought behind the solution. I am considering making a general purpose registration framework that will encompass my proposed solution. When I do make this framework, I will surely be releasing an article describing it in more detail.</p>
-<h3 id="Public_key_cryptography">Public key cryptography</h3>
-<p>The solution is built upon a publick key cryptosystem, in my implemented solution I’ve used the RSA cryptosystem, but which specific system is used really isn’t important.</p>
-<p>Public key cryptosystems are built upon the idea that every person get’s a set of keys, a public key that anyone knows about as well as a secret (normally the word private is used, by to avoid confusion due to both public and private starting with a “p”, I’ll use the term secret for the private key) key. The secret key is to be kept totally secret from everybody else, only you should know the contents of that one.</p>
-<p>The correlation between the keys is that any data encrypted with a public key can only be decrypted by using the matching secret key. Likewise, any data encrypted using the secret key can only be decrypted using the matching public key. This allows us for two very important scenarios of cryptography.</p>
-<p>Say I want to send a secret message to Alice, I’ll use Alice’s public key to encrypt my message. The only way to decrypt the message is to use Alice’s secret key, and only Alice knows that one, so only Alice can read my message. Now, Alice can’t positively know who the message comes from, that is, unless I sign the message. Signing the message implies that I use my secret key to encrypt the already encrypted data (encrypted with Alice’s public key as before) with my secret key. Now only my public key can decrypt the data, hence the message can only come from me if it’s decryptable by using my public key.</p>
-<p>Using these correlations it’s possible for me to send a message to Alice that only Alice is able to read. Furthermore I can sign my message so that Alice can verify it is coming from me.</p>
-<h3 id="Customer_entity">Customer entity</h3>
-<p>First of all we have the Customer. The Customer consists of the customer data itself, not really important to this solution. Besides the trivial customer data, the customer has a Keyset.</p>
-<div class="imgwrapper" style=""><div><a href="/securing-dotnet-code-article/customerentity_2.gif" class="fancy"><img src="/securing-dotnet-code-article/customerentity_2.gif" style="max-height: 250px"/></a></div></div>
-
-<h3 id="Keyset">Keyset</h3>
-<p>The Keyset contains three keys (keys of the RSA cryptosystem):</p>
-<ul>
-<li>The customers public key.</li>
-<li>The customers secret key.</li>
-<li>The registration servers public key.</li>
-</ul>
-<div class="imgwrapper" style=""><div><a href="/securing-dotnet-code-article/keysetentity_2.gif" class="fancy"><img src="/securing-dotnet-code-article/keysetentity_2.gif" style="max-height: 250px"/></a></div></div>
-
-<p>The reason for the customer to have to registration servers public key is so that we can verify the messages being received from the registration server.</p>
-<h3 id="The_registration_server">The registration server</h3>
-<p>The registration server can be set up in any way you like. I’ve personally used an ASP.NET Webservice, but you could use remoting or any other means of communication. The registration server only has two functions, GetKeyset and GetLicense.</p>
-<div class="imgwrapper" style=""><div><a href="/securing-dotnet-code-article/keyserverentity_2.gif" class="fancy"><img src="/securing-dotnet-code-article/keyserverentity_2.gif" style="max-height: 250px"/></a></div></div>
-
-<h3 id="Step_1">Step 1</h3>
-<p>When the customer starts up the application for the first time, the GetKeyset function is invoked on the registration server. The GetKeyset function takes the users registration code as a parameter and returns the proper Keyset, provided that the registration code is valid. If a registration code at some point is misused, shared or in any other way has been used in an illegal way, simply inactivate the registration code on the registration server, ensuring that no new keysets will be returned for that registration code in the future.</p>
-<div class="imgwrapper" style=""><div><a href="/securing-dotnet-code-article/step1_2.gif" class="fancy"><img src="/securing-dotnet-code-article/step1_2.gif" style="max-height: 250px"/></a></div></div>
-
-<h3 id="Step_2">Step 2</h3>
-<p>After the keyset has been retrieved, we now have the means to decipher any licenses we retrieve from the registration server.</p>
-<p>The next step is to invoke the GetLicense method, again passing in our registration code as a parameter. The license is in its most basic form simply a boolean value, true/false, telling us whether we’re allowed to run the application or not. The important part here is that we first encrypt the license result using customers public key, then we encrypt/sign that data with the registration servers secret key.</p>
-<div class="imgwrapper" style=""><div><a href="/securing-dotnet-code-article/step2_2.gif" class="fancy"><img src="/securing-dotnet-code-article/step2_2.gif" style="max-height: 250px"/></a></div></div>
-
-<h3 id="Step_3">Step 3</h3>
-<p>Now that we have retrieved the license, all we need to do is to decipher the result and then verify that the result originates from the correct registration server. We do this by first deciphering the data using the customers secret key. Then we decipher that data using the registration servers public key. If the data is valid, we know it comes from the correct registration server.</p>
-<div class="imgwrapper" style=""><div><a href="/securing-dotnet-code-article/step3_2.gif" class="fancy"><img src="/securing-dotnet-code-article/step3_2.gif" style="max-height: 250px"/></a></div></div>
-
-<h3 id="The_FCKGW_effect">The FCKGW effect</h3>
-<p>One of the most common problems with registration protection of software is that users tend to share registration keys. As mentioned before, we can mark registration keys as invalid on the registration server. Marking keys as invalid will cause any new keyset requests for that specific key to be denied. But what if a thousand people had already requested - and successfully retrieved - keysets? Of course there could be implemented an automatic check ensuring a max number of keyset requests for a single registration key, IP protection and so forth. What we really want, is to be able to invalidate a keyset/license that a user has already retrieved.</p>
-<p>A way to do this is to impose a time restriction on the licenses that a customer retrieves from the registration server. For instance, if a license was automatically invalidated on the client machine after a week, then the customer would have to retrieve a new license from the registration server. If the registration had been invalidated on the server in the meantime, the license wouldn’t be able to update, and thus the client wouldn’t be allowed to run the application any longer.</p>
-<h2 id="Ending_remarks">Ending remarks</h2>
-<p>Deciding whether to protect your code, and to what degree, is not a simple task. You must carefully weigh the pros and cons of the various techniques, and to what degree you need the protection.</p>
-<p>Always remember that there is no totally safe way to protect your code, unless you keep it away from the client computer.</p>
-<p>Please feel free to post any comments you may have on my article, I’ll appreciate any feedback you give.</p>
 
 
 				<div style="clear: both"></div>

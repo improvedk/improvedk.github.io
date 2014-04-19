@@ -75,6 +75,54 @@
 	<div class="datebox">
 		<div class="upper">
 			<span class="month">Oct</span>
+			<span class="day">09</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/live-blogging-from-the-pass-keynotes/" title="Live Blogging From the PASS Keynotes" rel="bookmark">Live Blogging From the PASS Keynotes</a></h1>
+		<div class="categories">
+			
+				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I’m glad to announce that I’m one of the lucky few who’ve been appointed a seat at the coveted bloggers table during the PASS Summit keynotes. This means I’ll have an excellent view of the leynotes, and I’ll be live blogging and tweeting from both.</p>
+<a id="more"></a>
+
+<p>Wednesday 8:15-10:00 AM, PST:<br>Ted Kummert, Senior VP, Business Platform Division, Microsoft<br>Rushabh Mehta, President, PASS</p>
+<p>Thursday 8:15-10:00 AM, PST:<br>Quentin Clark, Corporate VP, SQL Server Database Systems Group, Microsoft<br>Bill Graziano, Executive VP of Finance, PASS</p>
+<p>For both days, 8:15 AM PST will be 4:15 PM in Denmark. The live blogging will be in English, as usual. Once the PASS Summit is over, I’ll be following up with a full summary in Danish.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Oct</span>
 			<span class="day">07</span>
 		</div>
 		<div class="lower">2011</div>
@@ -701,72 +749,6 @@
 <p>Lesson: When sp_tableoption is run to set the <a href="http://msdn.microsoft.com/en-us/library/ms173530.aspx" target="_blank">large value types out of row</a> setting, it only takes effect for newly added records. A table rebuild won’t affect existing inline blob roots either, only updates to existing records will rebuild the record and convert the inline blob root to a textpointers.</p>
 <h2 id="Conclusion">Conclusion</h2>
 <p>Predicting the LOB pointer type &amp; size can be tricky as it depends on multiple factors. Using the above, you should be able to get a notion of what will be stored, as well as to interpret the DBCC PAGE results you might run into.</p>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Jul</span>
-			<span class="day">16</span>
-		</div>
-		<div class="lower">2011</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/the-8-byte-record-that-was-9-bytes-while-making-no-sense/" title="The 8 Byte Record That Was 9 Bytes While Making No Sense" rel="bookmark">The 8 Byte Record That Was 9 Bytes While Making No Sense</a></h1>
-		<div class="categories">
-			
-				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>Warning: this is a <em>select is (most likely) not broken, it’s just not working as I’d expect</em>. It may very well be that I’m just overlooking something, in which case I hope someone will correct me :)</p>
-<a id="more"></a>
-
-<p>I’ve previously blogged about <a href="/the-null-bitmap-is-not-always-present-in-data-records/">how sparse-column-only table records didn’t have a null bitmap</a>, nor did they store the usual column count, except for the number of variable length columns. In my effort to test <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a>, I added the following SQL code as the setup for a test:</p>
-<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> ScanAllNullSparse
-(
-	A <span class="keyword">int</span> SPARSE,
-	B <span class="keyword">int</span> SPARSE
-)
-<span class="keyword">INSERT</span> <span class="keyword">INTO</span> ScanAllNullSparse <span class="keyword">DEFAULT</span> <span class="keyword">VALUES</span></span>
-</pre></figure>
-
-<p>Dumping out the resulting record yields the following:</p>
-<div class="imgwrapper" style=""><div><a href="/the-8-byte-record-that-was-9-bytes-while-making-no-sense/image_21.png" class="fancy"><img src="/the-8-byte-record-that-was-9-bytes-while-making-no-sense/image_21.png" style="max-height: 250px"/></a></div></div>
-
-<p>And this is where things start to get weird. The status bits (<span style="color: #ff0000;">red</span>) are all off, meaning there’s neither a null bitmap nor variable length columns in this record. The next two (<span style="color: #0000ff;">blue</span>) bytes indicate the end offset of the fixed length portion – right after those two very bytes, since we don’t have any fixed length data.</p>
-<p>At this point I’m not too sure what to expect next – after all, in the <a href="/the-null-bitmap-is-not-always-present-in-data-records/">previous blog post</a> I showed how the column count wasn’t stored in all-sparse tables. Also, the status bits indicate that there’s no null bitmap. But what is the <span style="color: #008000;">green</span> 0x0100 (decimal value 1) bytes then? The only value I can see them possible indicating is the number of variable length columns. But why would that be present when the status bits indicate there are no such columns? Oh well, if that’s the case, then the next two (<span style="color: #ff0080;">pink</span>) bytes must be the offset array entry for the variable length column – having a value of 8 indicates that the variable length column has no value.</p>
-<p>But wait, if the variable length column doesn’t have a value, then what is that last (<span style="color: #d16349;">orange/brownish</span>) 0x00 byte doing at the very end? That’s beyond the offset marked in the (assumedly) variable length offset array… And if the <span style="color: #ff0080;">pink</span> bytes really is the variable length offset array – should it not indicate a complex column for the sparse vector? (though it would make sense for it not to do so, if it weren’t stored in the record).</p>
-<p>I can still parse this by just taking some precautions, but I still don’t understand what’s going on. Any suggestions?</p>
-<h2 id="It’s_not_just_DBCC_PAGE">It’s not just DBCC PAGE</h2>
-<p>To clear DBCC PAGE of any suspicion I amended my original test by inserting two extra rows with DEFAULT VALUES. The resulting offset table looks like this:</p>
-<div class="imgwrapper" style=""><div><a href="/the-8-byte-record-that-was-9-bytes-while-making-no-sense/image_42.png" class="fancy"><img src="/the-8-byte-record-that-was-9-bytes-while-making-no-sense/image_42.png" style="max-height: 250px"/></a></div></div>
-
-<p>As can be seen, the storage engine allocates 9 bytes for all three rows (though we can only verify the first two). Thus it’s not just DBCC PAGE that reads the records as being 9 bytes, so does the storage engine. This just strengthens the case that SQL Server knows best, now if only I could figure out why :)</p>
 
 
 				<div style="clear: both"></div>

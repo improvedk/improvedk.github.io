@@ -81,6 +81,72 @@
 	</div>
 
 	<div class="title">
+		<h1><a href="/the-8-byte-record-that-was-9-bytes-while-making-no-sense/" title="The 8 Byte Record That Was 9 Bytes While Making No Sense" rel="bookmark">The 8 Byte Record That Was 9 Bytes While Making No Sense</a></h1>
+		<div class="categories">
+			
+				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Warning: this is a <em>select is (most likely) not broken, it’s just not working as I’d expect</em>. It may very well be that I’m just overlooking something, in which case I hope someone will correct me :)</p>
+<a id="more"></a>
+
+<p>I’ve previously blogged about <a href="/the-null-bitmap-is-not-always-present-in-data-records/">how sparse-column-only table records didn’t have a null bitmap</a>, nor did they store the usual column count, except for the number of variable length columns. In my effort to test <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a>, I added the following SQL code as the setup for a test:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> ScanAllNullSparse
+(
+	A <span class="keyword">int</span> SPARSE,
+	B <span class="keyword">int</span> SPARSE
+)
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> ScanAllNullSparse <span class="keyword">DEFAULT</span> <span class="keyword">VALUES</span></span>
+</pre></figure>
+
+<p>Dumping out the resulting record yields the following:</p>
+<div class="imgwrapper" style=""><div><a href="/the-8-byte-record-that-was-9-bytes-while-making-no-sense/image_21.png" class="fancy"><img src="/the-8-byte-record-that-was-9-bytes-while-making-no-sense/image_21.png" style="max-height: 250px"/></a></div></div>
+
+<p>And this is where things start to get weird. The status bits (<span style="color: #ff0000;">red</span>) are all off, meaning there’s neither a null bitmap nor variable length columns in this record. The next two (<span style="color: #0000ff;">blue</span>) bytes indicate the end offset of the fixed length portion – right after those two very bytes, since we don’t have any fixed length data.</p>
+<p>At this point I’m not too sure what to expect next – after all, in the <a href="/the-null-bitmap-is-not-always-present-in-data-records/">previous blog post</a> I showed how the column count wasn’t stored in all-sparse tables. Also, the status bits indicate that there’s no null bitmap. But what is the <span style="color: #008000;">green</span> 0x0100 (decimal value 1) bytes then? The only value I can see them possible indicating is the number of variable length columns. But why would that be present when the status bits indicate there are no such columns? Oh well, if that’s the case, then the next two (<span style="color: #ff0080;">pink</span>) bytes must be the offset array entry for the variable length column – having a value of 8 indicates that the variable length column has no value.</p>
+<p>But wait, if the variable length column doesn’t have a value, then what is that last (<span style="color: #d16349;">orange/brownish</span>) 0x00 byte doing at the very end? That’s beyond the offset marked in the (assumedly) variable length offset array… And if the <span style="color: #ff0080;">pink</span> bytes really is the variable length offset array – should it not indicate a complex column for the sparse vector? (though it would make sense for it not to do so, if it weren’t stored in the record).</p>
+<p>I can still parse this by just taking some precautions, but I still don’t understand what’s going on. Any suggestions?</p>
+<h2 id="It’s_not_just_DBCC_PAGE">It’s not just DBCC PAGE</h2>
+<p>To clear DBCC PAGE of any suspicion I amended my original test by inserting two extra rows with DEFAULT VALUES. The resulting offset table looks like this:</p>
+<div class="imgwrapper" style=""><div><a href="/the-8-byte-record-that-was-9-bytes-while-making-no-sense/image_42.png" class="fancy"><img src="/the-8-byte-record-that-was-9-bytes-while-making-no-sense/image_42.png" style="max-height: 250px"/></a></div></div>
+
+<p>As can be seen, the storage engine allocates 9 bytes for all three rows (though we can only verify the first two). Thus it’s not just DBCC PAGE that reads the records as being 9 bytes, so does the storage engine. This just strengthens the case that SQL Server knows best, now if only I could figure out why :)</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">16</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
 		<h1><a href="/depending-on-how-itrsquos-added-spare-bits-in-the-null/" title="The Garbage Null Bitmap and Why You Can&#39;t Rely on It Solely" rel="bookmark">The Garbage Null Bitmap and Why You Can&#39;t Rely on It Solely</a></h1>
 		<div class="categories">
 			
@@ -178,97 +244,6 @@
 }
 </pre></figure>
 
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Jul</span>
-			<span class="day">15</span>
-		</div>
-		<div class="lower">2011</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/identifying-complex-columns-in-records/" title="Identifying Complex Columns in Records" rel="bookmark">Identifying Complex Columns in Records</a></h1>
-		<div class="categories">
-			
-				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p><em>For an introduction to the anatomy of records, I suggest you read </em><a href="http://www.sqlskills.com/blogs/paul/post/Inside-the-Storage-Engine-Anatomy-of-a-record.aspx" target="_blank"><em>this post</em></a><em> by </em><a href="http://www.sqlskills.com/BLOGS/PAUL/" target="_blank"><em>Paul Randal</em></a><em>.</em></p>
-<a id="more"></a>
-
-<p>Not all variable length columns are the same. Some are more… Complex than others. An example of a complex column could be the 24 byte row-overflow pointer that are used when SLOB types overflow. <a href="http://sqlblog.com/blogs/kalen_delaney/default.aspx" target="_blank">Kalen Delaney</a> has an excellent post detailing how to <a href="http://sqlblog.com/blogs/kalen_delaney/archive/2007/10/09/geek-city-detecting-overflowing-columns.aspx" target="_blank">detect overflowing columns</a>. There are more than one complex column type though, and the technique outlined in Kalen’s post can be generalized a bit further.</p>
-<h2 id="Complex_columns_containing_row-overflow_pointers">Complex columns containing row-overflow pointers</h2>
-<p>Technically I don’t this is a complex column as it doesn’t follow the normal format. It is however identified the same way, so I’ll treat it as a complex column in this post. Let’s create a simple table, cause one of the columns to overflow and then check the record contents:</p>
-<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> OverflowTest (A <span class="keyword">varchar</span>(<span class="number">8000</span>), B <span class="keyword">varchar</span>(<span class="number">8000</span>))
-<span class="keyword">INSERT</span> <span class="keyword">INTO</span> OverflowTest <span class="keyword">VALUES</span> (REPLICATE(<span class="string">'a'</span>, <span class="number">5000</span>), REPLICATE(<span class="string">'b'</span>, <span class="number">5000</span>))
-DBCC IND (X, OverflowTest, -<span class="number">1</span>)</span>
-</pre></figure>
-
-<div class="imgwrapper" style=""><div><a href="/identifying-complex-columns-in-records/image_29.png" class="fancy"><img src="/identifying-complex-columns-in-records/image_29.png" style="max-height: 250px"/></a></div></div>
-
-<p>Outputting the contents of page (1:4345) shows the following (cropped to only show the first 36 bytes of the lone record body:</p>
-<div class="imgwrapper" style=""><div><a href="/identifying-complex-columns-in-records/image_124.png" class="fancy"><img src="/identifying-complex-columns-in-records/image_124.png" style="max-height: 250px"/></a></div></div>
-
-<p>The four colored bytes make up the variable length offset array – two bytes for each offset. The first offset has a value of 0x1395 == 5013, which fits perfectly with there being 5000 characters in the first column, plus 13 for the record overhead. The second offset has a value of 0x93AD == 37.805. Converted to binary that’s a value of 0b1001001110101101. Note how the high order bit is set to 1 – indicating a complex column. Getting the actual offset requires us to mask out the high order bit like so: 0n37805 &amp; 0b011111111111111 == 5.037. Now we can easily calculate the complex column length as being 5.037 – 5.013 == 24 bytes.</p>
-<p>At this point we know that the column contains a complex column and we know that it’s 24 bytes long. Row-overflow pointers only use a single byte to identify the type of complex column – this is what distinguishes it from “normal” complex columns, hence why I’m reluctant to call it a complex column.</p>
-<div class="imgwrapper" style=""><div><a href="/identifying-complex-columns-in-records/image_142.png" class="fancy"><img src="/identifying-complex-columns-in-records/image_142.png" style="max-height: 250px"/></a></div></div>
-
-<p>The very first byte determines the type of complex column that this is. For row-overflow/LOB pointers this can either be 1, indicating a LOB pointer, or 2, indicating a row-overflow pointer. In this case the value is 2, which confirms that we’re looking at a row-overflow pointer.</p>
-<h2 id="Complex_columns_containing_forwarded_record_back_pointers">Complex columns containing forwarded record back pointers</h2>
-<p>I’ve previously blogged about the <a href="/anatomy-of-a-forwarded-record-ndash-the-back-pointer">anatomy of a forwarded record back pointer</a>. The important thing to note are the first two bytes in the pointer, marked with red:</p>
-<div class="imgwrapper" style=""><div><a href="/identifying-complex-columns-in-records/image_163.png" class="fancy"><img src="/identifying-complex-columns-in-records/image_163.png" style="max-height: 250px"/></a></div></div>
-
-<p>All complex columns use the first two bytes to identify the kind of complex columns. In this case a complex column ID of 1.024 indicates a back pointer.</p>
-<h2 id="Complex_columns_containing_sparse_vectors">Complex columns containing sparse vectors</h2>
-<p>Let’s create a simple table containing some sparse columns:</p>
-<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> Sparse
-(
-	ID <span class="keyword">int</span>,
-	A <span class="keyword">int</span> SPARSE,
-	B <span class="keyword">int</span> SPARSE,
-	C <span class="keyword">int</span> SPARSE,
-	D <span class="keyword">int</span> SPARSE,
-	E <span class="keyword">int</span> SPARSE
-)</span>
-</pre></figure>
-
-<p>Taking a look at a dump of a record looks like this:</p>
-<div class="imgwrapper" style=""><div><a href="/identifying-complex-columns-in-records/image_183.png" class="fancy"><img src="/identifying-complex-columns-in-records/image_183.png" style="max-height: 250px"/></a></div></div>
-
-<p>Note that there are no variable length columns in the table definition. However, the sparse vector is stored as a variable length field, thus we have a variable length offset array. The red bytes make up the offset array value of 0x8023 = 32.803. Flipping the high order bit yields a value of 35, indicating that all remaining bytes in the record belong to the sparse vector.</p>
-<p>Since the high order bit was flipped, we know that this is a complex column. Checking out the first two bytes (marked with blue) yields a value of 0x0005. A value of 5 is exactly what indicates that we’re dealing with a sparse vector.</p>
-<h2 id="Conclusion">Conclusion</h2>
-<p>In general, variable length columns that contain some kind of special data will be indicated by having their high order bit flipped in the variable length offset array. While row-overflow pointers are not technically complex columns, that act similarly, except only using a single byte to indicate the column type.</p>
-<p>Forwarded record back pointers are stored in complex columns having a complex column ID of 1.024.</p>
-<p>Sparse vectors use a complex column ID of 5.</p>
-<p>I do not know of any more complex columns as of yet, but the documentation is rather non existent except for what’s mentioned in the <a href="http://www.amazon.com/Microsoft%C2%AE-SQL-Server%C2%AE-2008-Internals/dp/0735626243" target="_blank">SQL Server 2008 Internals book</a>.</p>
 
 
 				<div style="clear: both"></div>
@@ -449,6 +424,97 @@ namespace OrcaMDF.Core.Engine
 <div class="imgwrapper" style=""><div><a href="/sparse-column-storage-ndash-the-sparse-vector/image_15.png" class="fancy"><img src="/sparse-column-storage-ndash-the-sparse-vector/image_15.png" style="max-height: 250px"/></a></div></div>
 
 <p>You can check out the full code at the <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF Github repository</a>.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">15</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/identifying-complex-columns-in-records/" title="Identifying Complex Columns in Records" rel="bookmark">Identifying Complex Columns in Records</a></h1>
+		<div class="categories">
+			
+				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p><em>For an introduction to the anatomy of records, I suggest you read </em><a href="http://www.sqlskills.com/blogs/paul/post/Inside-the-Storage-Engine-Anatomy-of-a-record.aspx" target="_blank"><em>this post</em></a><em> by </em><a href="http://www.sqlskills.com/BLOGS/PAUL/" target="_blank"><em>Paul Randal</em></a><em>.</em></p>
+<a id="more"></a>
+
+<p>Not all variable length columns are the same. Some are more… Complex than others. An example of a complex column could be the 24 byte row-overflow pointer that are used when SLOB types overflow. <a href="http://sqlblog.com/blogs/kalen_delaney/default.aspx" target="_blank">Kalen Delaney</a> has an excellent post detailing how to <a href="http://sqlblog.com/blogs/kalen_delaney/archive/2007/10/09/geek-city-detecting-overflowing-columns.aspx" target="_blank">detect overflowing columns</a>. There are more than one complex column type though, and the technique outlined in Kalen’s post can be generalized a bit further.</p>
+<h2 id="Complex_columns_containing_row-overflow_pointers">Complex columns containing row-overflow pointers</h2>
+<p>Technically I don’t this is a complex column as it doesn’t follow the normal format. It is however identified the same way, so I’ll treat it as a complex column in this post. Let’s create a simple table, cause one of the columns to overflow and then check the record contents:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> OverflowTest (A <span class="keyword">varchar</span>(<span class="number">8000</span>), B <span class="keyword">varchar</span>(<span class="number">8000</span>))
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> OverflowTest <span class="keyword">VALUES</span> (REPLICATE(<span class="string">'a'</span>, <span class="number">5000</span>), REPLICATE(<span class="string">'b'</span>, <span class="number">5000</span>))
+DBCC IND (X, OverflowTest, -<span class="number">1</span>)</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/identifying-complex-columns-in-records/image_29.png" class="fancy"><img src="/identifying-complex-columns-in-records/image_29.png" style="max-height: 250px"/></a></div></div>
+
+<p>Outputting the contents of page (1:4345) shows the following (cropped to only show the first 36 bytes of the lone record body:</p>
+<div class="imgwrapper" style=""><div><a href="/identifying-complex-columns-in-records/image_124.png" class="fancy"><img src="/identifying-complex-columns-in-records/image_124.png" style="max-height: 250px"/></a></div></div>
+
+<p>The four colored bytes make up the variable length offset array – two bytes for each offset. The first offset has a value of 0x1395 == 5013, which fits perfectly with there being 5000 characters in the first column, plus 13 for the record overhead. The second offset has a value of 0x93AD == 37.805. Converted to binary that’s a value of 0b1001001110101101. Note how the high order bit is set to 1 – indicating a complex column. Getting the actual offset requires us to mask out the high order bit like so: 0n37805 &amp; 0b011111111111111 == 5.037. Now we can easily calculate the complex column length as being 5.037 – 5.013 == 24 bytes.</p>
+<p>At this point we know that the column contains a complex column and we know that it’s 24 bytes long. Row-overflow pointers only use a single byte to identify the type of complex column – this is what distinguishes it from “normal” complex columns, hence why I’m reluctant to call it a complex column.</p>
+<div class="imgwrapper" style=""><div><a href="/identifying-complex-columns-in-records/image_142.png" class="fancy"><img src="/identifying-complex-columns-in-records/image_142.png" style="max-height: 250px"/></a></div></div>
+
+<p>The very first byte determines the type of complex column that this is. For row-overflow/LOB pointers this can either be 1, indicating a LOB pointer, or 2, indicating a row-overflow pointer. In this case the value is 2, which confirms that we’re looking at a row-overflow pointer.</p>
+<h2 id="Complex_columns_containing_forwarded_record_back_pointers">Complex columns containing forwarded record back pointers</h2>
+<p>I’ve previously blogged about the <a href="/anatomy-of-a-forwarded-record-ndash-the-back-pointer">anatomy of a forwarded record back pointer</a>. The important thing to note are the first two bytes in the pointer, marked with red:</p>
+<div class="imgwrapper" style=""><div><a href="/identifying-complex-columns-in-records/image_163.png" class="fancy"><img src="/identifying-complex-columns-in-records/image_163.png" style="max-height: 250px"/></a></div></div>
+
+<p>All complex columns use the first two bytes to identify the kind of complex columns. In this case a complex column ID of 1.024 indicates a back pointer.</p>
+<h2 id="Complex_columns_containing_sparse_vectors">Complex columns containing sparse vectors</h2>
+<p>Let’s create a simple table containing some sparse columns:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> Sparse
+(
+	ID <span class="keyword">int</span>,
+	A <span class="keyword">int</span> SPARSE,
+	B <span class="keyword">int</span> SPARSE,
+	C <span class="keyword">int</span> SPARSE,
+	D <span class="keyword">int</span> SPARSE,
+	E <span class="keyword">int</span> SPARSE
+)</span>
+</pre></figure>
+
+<p>Taking a look at a dump of a record looks like this:</p>
+<div class="imgwrapper" style=""><div><a href="/identifying-complex-columns-in-records/image_183.png" class="fancy"><img src="/identifying-complex-columns-in-records/image_183.png" style="max-height: 250px"/></a></div></div>
+
+<p>Note that there are no variable length columns in the table definition. However, the sparse vector is stored as a variable length field, thus we have a variable length offset array. The red bytes make up the offset array value of 0x8023 = 32.803. Flipping the high order bit yields a value of 35, indicating that all remaining bytes in the record belong to the sparse vector.</p>
+<p>Since the high order bit was flipped, we know that this is a complex column. Checking out the first two bytes (marked with blue) yields a value of 0x0005. A value of 5 is exactly what indicates that we’re dealing with a sparse vector.</p>
+<h2 id="Conclusion">Conclusion</h2>
+<p>In general, variable length columns that contain some kind of special data will be indicated by having their high order bit flipped in the variable length offset array. While row-overflow pointers are not technically complex columns, that act similarly, except only using a single byte to indicate the column type.</p>
+<p>Forwarded record back pointers are stored in complex columns having a complex column ID of 1.024.</p>
+<p>Sparse vectors use a complex column ID of 5.</p>
+<p>I do not know of any more complex columns as of yet, but the documentation is rather non existent except for what’s mentioned in the <a href="http://www.amazon.com/Microsoft%C2%AE-SQL-Server%C2%AE-2008-Internals/dp/0735626243" target="_blank">SQL Server 2008 Internals book</a>.</p>
 
 
 				<div style="clear: both"></div>
@@ -1929,65 +1995,6 @@ DECLARE @NonclusteredIndexName sysname = 'CX_ID_Name'
 
 <p>The HexValue shows the offset column value represented in hex – no magic yet. After applying the 0xFFFF bitmask (0b1111111111111111 in binary), only the first 16 bits / 2 (starting from the right since we’re little endian) bytes will keep their value. Converting to binary(2) simply discards the last two bytes (the 0x0000 part).</p>
 <p>0x0001 is easily converted to the decimal value 1. 0xFFFF and 0xFFFE correspond to the decimal values 65.535 and 65.534 respectively. The way storing smallints work, 0 is stored as 0x0, 32.767 is stored as 0x7FFF and from there on the decimal value rolls over into –32.768 with a hex value of 0x8000 – continuing all the way up the –1 = 0xFFFF. And that’s why we can convert the binary(2) representations of the offset columns into the –1 and –2 decimal values.</p>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Jun</span>
-			<span class="day">30</span>
-		</div>
-		<div class="lower">2011</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/presenting-a-precon-at-sqlbits/" title="Presenting a Precon at SQLBits" rel="bookmark">Presenting a Precon at SQLBits</a></h1>
-		<div class="categories">
-			
-				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>I’m honored to announce that I’ll be presenting my <em><a href="http://sqlbits.com/information/Event9/SQL_Server_Storage_Engine_and_MDF_File_Internals/TrainingDetails.aspx" target="_blank">SQL Server Storage Engine and MDF File Internals</a></em> precon at <a href="http://sqlbits.com/" target="_blank">SQLBits</a> on September 29th. It’s an amazing bunch of <a href="http://sqlbits.com/information/TrainingDay.aspx" target="_blank">precon sessions and presenters</a>, I didn’t think I’d be speaking at SQLBits, much less presenting a precon – given the lineup of speakers.</p>
-<a id="more"></a>
-
-<div class="imgwrapper" style=""><div><a href="/presenting-a-precon-at-sqlbits/ImGoingToSqlBits200.png" class="fancy"><img src="/presenting-a-precon-at-sqlbits/ImGoingToSqlBits200.png" style="max-height: 250px"/></a></div></div>
-
-<h2 id="So_what_will_I_be_presenting?">So what will I be presenting?</h2>
-<p>Let me start out with the official abstract:</p>
-<blockquote>
-<p>Join me for a journey into the depths of the SQL Server storage engine. Through a series of lectures and demonstrations we’ll look at the internals of pages, data types, indexes, heaps, extent &amp; page allocation, allocation units, system views, base tables and nightmarish ways of data recovery. We’ll look at several storage structures that are either completely undocumented or very scarcely so.  By the end of the day, not only will you know about the most important data structures in SQL Server, you’ll also be able to parse every bit of a SQL Server data file yourself, using just a hex editor! There will be lots of hands on demos, a few of them performed in C# to demonstrate the parsing of data files outside of SQL Server.</p>
-</blockquote>
-<p>It all stems from some experimental coding I did back in March, trying to parse SQL Server data pages using C#. What started out as a learning experiment resulted in me presenting on the <em><a href="http://mow2011.dk/speakers/mark-s-rasmussen.aspx" target="_blank">Anatomy of an MDF File</a></em> at the <a href="http://mow2011.dk/mow2011.aspx" target="_blank">Miracle Open World 2011</a> conference in April. Since then I’ve continued my experiment and officially christened it <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a> while opening up the source.</p>
-<p>During my research for OrcaMDF I’ve reverse engineered data structures, matched up various undocumented base tables and generally achieved a really great understanding of the storage engine and MDF file format. It’s my goal that attendees of my session will have a complete (well, almost) understanding of the on disk structures we’ll see in typical databases. Not just by looking at them through DBCC PAGE, but by taking it a couple of steps further by attempting to parse the contents by hand. You’ll get an understanding of the importance of the sys.sysallocunits base table and how that fuels all metadata in SQL Server.</p>
-<p>For the full agenda, please check the official <a href="http://sqlbits.com/information/Event9/SQL_Server_Storage_Engine_and_MDF_File_Internals/TrainingDetails.aspx" target="_blank">precon description</a>. If you have any questions about the content that you’d like to clear up before signing up for either mine or one of the other precons available, I encourage you to leave a comment here or grab a hold of <a href="http://twitter.com/#!/improvedk" target="_blank">me on Twitter</a>.</p>
-<h2 id="Prerequisites">Prerequisites</h2>
-<p>While I will give brief introductions to the main concepts, I will assume a solid knowledge of what SQL Server does. I won’t spend a long time explaining why you should use clustered tables over heaps, instead I’ll give you the toolset to hopefully make that decision yourself. I’m not exaggerating when I classified the precon as level 500 – there will be 300 content too but we’ll be peaking at 500 several times during the day. We will be looking at hex codes, converting between decimal, hex and binary as needed – so make sure you don’t throw up when you see binary numbers :)</p>
-<h2 id="Registration">Registration</h2>
-<p>Registration hasn’t opened yet, but <a href="http://www.sqlbits.com/information/Pricing.aspx" target="_blank">sign up and you’ll be notified</a> as soon as it opens. A three day conference, including a precon day for just £375 really is a steal so make sure to get the early bind discount! I still can’t fathom that Saturday is free, as in £0, no charge – that’s too good an offer to pass up!</p>
 
 
 				<div style="clear: both"></div>

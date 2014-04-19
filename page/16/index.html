@@ -75,6 +75,122 @@
 	<div class="datebox">
 		<div class="upper">
 			<span class="month">Jun</span>
+			<span class="day">13</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/providing-custom-assembly-evidence/" title="Providing Custom Assembly Evidence" rel="bookmark">Providing Custom Assembly Evidence</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I recently <a href="/analyzing-assembly-evidence/">mentioned</a> the possibility of having an assembly provide custom evidence alongside the CLR provided evidence. Let’s see how to do it.</p>
+<a id="more"></a>
+
+<h2 id="Creating_the_evidence">Creating the evidence</h2>
+<p>The first step is to actually create the evidence itself. The evidence can be in any form, as long as it’s serializable. That means you can use strings, complex types (provided they’re serializable), or plain old’n’good XML. In lack of a better example, I’ll create a piece of evidence that tells the birthdate and name of the developer behind the assembly. Really useful, I know.</p>
+<figure class="highlight xml"><pre><span class="pi">&lt;?xml version="1.0" encoding="utf-8" ?&gt;</span>
+<span class="tag">&lt;<span class="title">myEvidence</span>&gt;</span>
+	<span class="tag">&lt;<span class="title">birthDay</span>&gt;</span>1985-07-25<span class="tag">&lt;/<span class="title">birthDay</span>&gt;</span>
+	<span class="tag">&lt;<span class="title">name</span>&gt;</span>Mark S. Rasmussen<span class="tag">&lt;/<span class="title">name</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">myEvidence</span>&gt;</span>
+</pre></figure>
+
+<h2 id="Saving_the_evidence_in_binary_form">Saving the evidence in binary form</h2>
+<p>To embed our XML as evidence, we first have to save it in binary form. To save a bit of typing, I use my SaveXmlAsBinaryEvidence function:</p>
+<figure class="highlight csharp"><pre><span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> Saves the input XML in binary format that can be used when linking custom evidence to an assembly</span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="xml"&gt;</span><span class="xmlDocTag">&lt;/param&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="outputFile"&gt;</span><span class="xmlDocTag">&lt;/param&gt;</span></span>
+<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">SaveXmlAsBinaryEvidence</span>(<span class="keyword">string</span> xml, <span class="keyword">string</span> outputFile)
+{
+	Evidence customEvidence = <span class="keyword">new</span> Evidence();
+	customEvidence.AddAssembly(xml);
+
+	<span class="keyword">using</span> (FileStream fs = <span class="keyword">new</span> FileStream(outputFile, FileMode.Create))
+	{
+		BinaryFormatter bf = <span class="keyword">new</span> BinaryFormatter();
+		bf.Serialize(fs, customEvidence);
+	}
+}
+</pre></figure>
+
+<p>This allows us to save out the evidence in binary format using a single line:</p>
+<figure class="highlight csharp"><pre>EvidenceCreator<span class="preprocessor">.SaveXmlAsBinaryEvidence</span>(File<span class="preprocessor">.ReadAllText</span>(<span class="string">"MyEvidence.xml"</span>), <span class="string">"MyEvidence.evidence"</span>)<span class="comment">;</span>
+</pre></figure>
+
+<h2 id="Compiling_the_relevant_assembly_in_netmodule_form">Compiling the relevant assembly in netmodule form</h2>
+<p>I’ve created a simple assembly named TestAssembly that consists of a single file, MyClass:</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+
+namespace TestAssembly
+{
+	<span class="keyword">public</span> <span class="keyword">class</span> MyClass
+	{
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Test</span>()
+		{
+			Console.Write(<span class="string">"Hello world!"</span>);
+		}
+	}
+}
+</pre></figure>
+
+<p>If we compile it directly in Visual Studio, we end up with an assembly called TestAssembly.dll - this is not what we want. We need to compile the code into a .netmodule module file so we can manually link it together with our assembly into a finished assembly. Running the following command (with relevant path variables setup, or from the Visual Studio Command Prompt) will compile MyClass into a netmodule called MyClass.netmodule:</p>
+<figure class="highlight csharp"><pre>csc /<span class="symbol">target:</span><span class="class"><span class="keyword">module</span> <span class="title">MyClass</span>.<span class="title">cs</span></span>
+</pre></figure>
+
+<p>You can actually load the .netmodule file into Reflector to verify the contents. It’ll work nicely, though Reflector will give a warning since our netmodule does not contain an assembly manifest.</p>
+<h2 id="Creating_an_assembly_by_linking_the_netmodule_and_evidence_together">Creating an assembly by linking the netmodule and evidence together</h2>
+<p>The final step is to link our evidence (MyEvidence.evidence) and netmodule (MyClass.netmodule) together. Make sure both files reside in the same directory (they don’t have to, but it’ll be easier). The following command will invoke AL.exe and do the final assembly linking:</p>
+<figure class="highlight csharp"><pre>al /target:library /evidence:MyEvidence<span class="preprocessor">.evidence</span> /<span class="keyword">out</span>:MyClass<span class="preprocessor">.dll</span> MyClass<span class="preprocessor">.netmodule</span>
+</pre></figure>
+
+<p>If you load up the resulting assembly in Reflector, you’ll see the attached evidence under the Resources directory:</p>
+<div class="imgwrapper" style=""><div><a href="/providing-custom-assembly-evidence/reflector_evidence_2.jpg" class="fancy"><img src="/providing-custom-assembly-evidence/reflector_evidence_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Now, if we <a href="/analyzing-assembly-evidence/">analyze the assembly evidence</a> by loading the assembly and enumerating the assembly provided evidence like so:</p>
+<figure class="highlight csharp"><pre>al /target:library /evidence:MyEvidence<span class="preprocessor">.evidence</span> /<span class="keyword">out</span>:MyClass<span class="preprocessor">.dll</span> MyClass<span class="preprocessor">.netmodule</span>
+</pre></figure>
+
+<p>We see our custom evidence:</p>
+<div class="imgwrapper" style=""><div><a href="/providing-custom-assembly-evidence/analyzing_custom_evidence_2.jpg" class="fancy"><img src="/providing-custom-assembly-evidence/analyzing_custom_evidence_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Trustworthiness">Trustworthiness</h2>
+<p><a href="/analyzing-assembly-evidence/">As mentioned earlier</a>, assembly provided evidence is inherently not trustworthy. There are however ways to secure it. We could use a public/private cryptosystem to sign the actual evidence. That way, anyone reading the evidence could verify the evidence providers signature and thus be sure that the entity linking the evidence into the assembly is trustworthy.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jun</span>
 			<span class="day">12</span>
 		</div>
 		<div class="lower">2008</div>
@@ -1432,6 +1548,57 @@ private static void performAutomappedDataReader()
 	</div>
 
 	<div class="title">
+		<h1><a href="/securing-dotnet-code/" title="Securing .NET Code" rel="bookmark">Securing .NET Code</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Time flies fast. Back in 2006, during my time as an <a href="http://en.wikipedia.org/wiki/Microsoft_Student_Partners" target="_blank">MSP</a>, I made a series of presentations on securing intellectual property in .NET code, resulting in my <a href="/securing-dotnet-code-article/">Securing .NET Code</a> article. Although it’s about two years old, most points are still valid today, unfortunately.</p>
+<a id="more"></a>
+
+<p>I recorded a screencast of this article sometime in 2007, but I never really got it published, except for a link on the Microsoft Denmark site. It was my first screencast and unfortunately I made some mistakes, the biggest one being the click sounds from the mouse. An even bigger mistake was me deleting the original Camtasia recording files so I can’t create a new version without them.</p>
+<p>Never the less, if you prefer watching to reading, it might be interesting to look through.</p>
+<div class="video-container"><iframe src="//www.youtube.com/embed/Dc9EE4YRGy8" frameborder="0" allowfullscreen></iframe></div>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">16</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
 		<h1><a href="/profiling-code-the-easy-way/" title="Profiling Code the Easy Way" rel="bookmark">Profiling Code the Easy Way</a></h1>
 		<div class="categories">
 			
@@ -1591,159 +1758,6 @@ namespace CodeProfiler
 <div class="imgwrapper" style=""><div><a href="/profiling-code-the-easy-way/codeprofilergraph_2.jpg" class="fancy"><img src="/profiling-code-the-easy-way/codeprofilergraph_2.jpg" style="max-height: 250px"/></a></div></div>
 
 <div class="imgwrapper" style=""><div><a href="/profiling-code-the-easy-way/codeprofilercmd_2.jpg" class="fancy"><img src="/profiling-code-the-easy-way/codeprofilercmd_2.jpg" style="max-height: 250px"/></a></div></div>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Apr</span>
-			<span class="day">16</span>
-		</div>
-		<div class="lower">2008</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/securing-dotnet-code/" title="Securing .NET Code" rel="bookmark">Securing .NET Code</a></h1>
-		<div class="categories">
-			
-				<a href="/category/.NET/">.NET</a>
-				, 
-			
-				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>Time flies fast. Back in 2006, during my time as an <a href="http://en.wikipedia.org/wiki/Microsoft_Student_Partners" target="_blank">MSP</a>, I made a series of presentations on securing intellectual property in .NET code, resulting in my <a href="/securing-dotnet-code-article/">Securing .NET Code</a> article. Although it’s about two years old, most points are still valid today, unfortunately.</p>
-<a id="more"></a>
-
-<p>I recorded a screencast of this article sometime in 2007, but I never really got it published, except for a link on the Microsoft Denmark site. It was my first screencast and unfortunately I made some mistakes, the biggest one being the click sounds from the mouse. An even bigger mistake was me deleting the original Camtasia recording files so I can’t create a new version without them.</p>
-<p>Never the less, if you prefer watching to reading, it might be interesting to look through.</p>
-<div class="video-container"><iframe src="//www.youtube.com/embed/Dc9EE4YRGy8" frameborder="0" allowfullscreen></iframe></div>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Apr</span>
-			<span class="day">07</span>
-		</div>
-		<div class="lower">2008</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/spawning-threads-in-aspnet-can-be-dangerous/" title="Spawning Threads in ASP.NET Can Be Dangerous" rel="bookmark">Spawning Threads in ASP.NET Can Be Dangerous</a></h1>
-		<div class="categories">
-			
-				<a href="/category/.NET/">.NET</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>In my <a href="/response-transmitfile-close-will-kill-your-application/">earlier blog post</a> about the dangers of using Response.TransmitFile, I gave an example of a workaround involving spawning a new thread in the ASP.NET page. While this does solve the issue at hand, it presents us with a new way to kill our application even quicker than last.</p>
-<a id="more"></a>
-
-<p>Usually when an uncaught exception occurs in an ASP.NET application, we will be presented with a “friendly” error message like the one below:</p>
-<div class="imgwrapper" style=""><div><a href="/spawning-threads-in-aspnet-can-be-dangerous/caughtexception.jpg" class="fancy"><img src="/spawning-threads-in-aspnet-can-be-dangerous/caughtexception.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>While there is an overhead of exceptions being thrown, they’re not directly dangerous and will at worst affect scalability (ignoring the actual reason of the exception being thrown). The problem is that ASP.NET will <em>only catch exceptions on the processing thread</em>. That means, if you spawn a new thread and an exception is thrown (and is not caught inside the thread itself), it will propagate and eventually <em>crash the w3wp.exe process</em>.</p>
-<h3 id="Safe">Safe</h3>
-<figure class="highlight csharp"><pre><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">Page_Load</span>(<span class="keyword">object</span> sender, EventArgs e)
-{
-	Response.Write(<span class="string">"CAN HAZ W3WP.EXE?"</span>);
-
-	<span class="keyword">throw</span> <span class="keyword">new</span> Exception(<span class="string">"I'll will be caught by ASP.NET :D"</span>);
-}
-</pre></figure>
-
-<h3 id="Unsafe,_will_crash_w3wp-exe">Unsafe, will crash w3wp.exe</h3>
-<figure class="highlight csharp"><pre><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">Page_Load</span>(<span class="keyword">object</span> sender, EventArgs e)
-{
-	Response.Write(<span class="string">"CAN HAZ W3WP.EXE?"</span>);
-
-	<span class="keyword">new</span> Thread(<span class="keyword">delegate</span>()
-	{
-		<span class="keyword">throw</span> <span class="keyword">new</span> Exception(<span class="string">"I'll not be caught by ASP.NET :("</span>);
-	}).Start();
-}
-</pre></figure>
-
-<p>There are several repercussions of the w3wp.exe crashing. There’s a major overhead in spawning a new w3wp.exe process on the next request, you will loose all session (if you’re using inprocess session storage), application and cache state. If you have error reporting turned on, you furthermore also see the “DW20.exe” process running and taking up 100% CPU for a significant amount of time (depending on w3wp.exe memory usage, etc) - if this happens often, you might have a large amount of DW20.exe error reporting processes running, effectively crashing your server.</p>
-<p>So how do we avoid this? Simple, make sure <em>all code</em> in spawned threads is handling exceptions:</p>
-<figure class="highlight csharp"><pre>protected void Page_Load(object sender, EventArgs e)
-{
-	Response.Write(<span class="string">"CAN HAZ W3WP.EXE?"</span>);
-
-	new Thread(delegate()
-	{
-		try
-		{
-			throw new Exception(<span class="string">"I'll be caught by our own exception handler :)"</span>);
-		}
-		catch
-		{
-			Response.Write(<span class="string">"What doesn't kill me will make me stronger!"</span>);
-		}
-	}).Start();
-}
-</pre></figure>
-
-<p>If you’re experiencing this issue, you will see errors in the System event log like this one:</p>
-<blockquote>
-<p>A process serving application pool ‘DefaultAppPool’ terminated unexpectedly. The process id was ‘708’. THe process exit code was ‘0xe0434f4d’.</p>
-</blockquote>
-<p>And like this one in the Application log:</p>
-<blockquote>
-<p>EventType clr20r3, P1 w3wp.exe, P2 6.0.3790.3959, P3 45d6968e, P4 crashw3wp, P5 1.0.0.0, P6 47f94ca4, P7 3, P8 b, P9 system.exception, P10 NIL.</p>
-</blockquote>
-<p><a href="http://blogs.msdn.com/tess" target="_blank">Tess</a> has a really great post on <a href="http://blogs.msdn.com/tess/archive/2006/04/27/584927.aspx" target="_blank">how to debug an unknown cause of the crash</a>.</p>
-<p>This issue is relevant to all flavors of Windows and all versions of IIS &amp; .NET.</p>
-<h2 id="Downloads">Downloads</h2>
-<p><a href="CrashW3WP.zip">CrashW3WP.zip - Sample code</a></p>
 
 
 				<div style="clear: both"></div>

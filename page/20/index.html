@@ -75,6 +75,91 @@
 	<div class="datebox">
 		<div class="upper">
 			<span class="month">Apr</span>
+			<span class="day">04</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/set-text-by-handle/" title="Set Text By Window Handle Using PInvoke" rel="bookmark">Set Text By Window Handle Using PInvoke</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>This time we won’t be reading the text from a window, we’ll be setting it.</p>
+<a id="more"></a>
+
+<p><a href="http://www.improve.dk/blog/2007/04/03/getting-text-from-handle" target="_blank">Like last time</a>, open an Internet Explorer browser and obtain a handle to the address field.</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Collections.Generic;
+<span class="keyword">using</span> System.Text;
+<span class="keyword">using</span> System.Runtime.InteropServices;
+<span class="keyword">using</span> System.Globalization;
+
+<span class="class"><span class="keyword">namespace</span> <span class="title">Set_text_by_handle</span>
+{</span>
+	<span class="class"><span class="keyword">class</span> <span class="title">Program</span>
+	{</span>
+		<span class="comment">// A Win32 constant</span>
+		<span class="keyword">const</span> <span class="keyword">int</span><span class="constant"> WM_SETTEXT </span>= <span class="number">0x000C</span>;
+
+		<span class="comment">// An overload of the SendMessage function, this time taking in a string as the lParam.</span>
+		[DllImport(<span class="string">"User32.dll"</span>)]
+		<span class="keyword">public</span> <span class="keyword">static</span> extern Int32 SendMessage(<span class="keyword">int</span> hWnd, <span class="keyword">int</span> Msg, <span class="keyword">int</span> wParam, <span class="keyword">string</span> lParam);
+
+		<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
+		{
+			<span class="comment">// First, read the handle from the console, remember this has to be in HEX format!</span>
+			<span class="keyword">int</span> handle = <span class="keyword">int</span>.Parse(Console.ReadLine(), NumberStyles.HexNumber);
+
+			<span class="comment">// Now we'll send the WM_SETTEXT message to the window, passing the text</span>
+			<span class="comment">// through the lParam parameter.</span>
+			SendMessage(handle, WM_SETTEXT, <span class="number">0</span>, <span class="string">"http://www.improve.dk"</span>);
+
+			<span class="comment">// And we're done</span>
+			Console.Write(<span class="string">"Text set!"</span>);
+			Console.Read();
+		}
+	}
+}
+</pre></figure>
+
+<p>And the result:</p>
+<div class="imgwrapper" style=""><div><a href="/set-text-by-handle/win32_3_2_2.jpg" class="fancy"><img src="/set-text-by-handle/win32_3_2_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Note that we have not navigated to the address, we have only set it!</p>
+<div class="imgwrapper" style=""><div><a href="/set-text-by-handle/win32_3_1_2.jpg" class="fancy"><img src="/set-text-by-handle/win32_3_1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
 			<span class="day">03</span>
 		</div>
 		<div class="lower">2007</div>
@@ -720,76 +805,6 @@ namespace Get_process_from_handle
 
 <p>Panasonics monitor booth.</p>
 <div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces63_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces63_2.jpg" style="max-height: 250px"/></a></div></div>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Jan</span>
-			<span class="day">23</span>
-		</div>
-		<div class="lower">2007</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/one-mans-sin-another-mans-blessing/" title="One Mans Sin, Another Mans Blessing" rel="bookmark">One Mans Sin, Another Mans Blessing</a></h1>
-		<div class="categories">
-			
-				<a href="/category/Windows/">Windows</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>This is a reply to the <a href="http://www.intelliadmin.com/blog/2007/01/5-sins-of-vista.html" target="_blank">Top 5 sins of Vista</a> blog post written by Steve Wiseman.</p>
-<a id="more"></a>
-
-<h2 id="Number_1_-_The_new_file_browsing_interface_is_different">Number 1 - The new file browsing interface is different</h2>
-<p>Yes, Notepad’s great, we all use it, whether we want to admit or not. The file browsing interface however, is also great. That is, if you’re willing to acknowledge it!</p>
-<div class="imgwrapper" style=""><div><a href="/one-mans-sin-another-mans-blessing/filebrowsing_2.jpg" class="fancy"><img src="/one-mans-sin-another-mans-blessing/filebrowsing_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>Admitted, there’s no reason for the web site addresses to figure in the drop down. But why use the drop down at all? Haven’t you noticed the button on the bottom left hand side, cleverly called, “Folders”? Click this and you’ll see the usual tree view of folders that you seem to miss so much. Keep in mind that this file browsing interface is in every new Vista aware application - including the tree view.</p>
-<h2 id="Number_2_-_The_new_start_menu_rocks_(kinda)">Number 2 - The new start menu rocks (kinda)</h2>
-<p>I think we can all agree that the new almost instantanious application search feature of the start menu is just great! You however, as I, would like to open various folders in an easy way as we used to. You say you used to click the start menu, click Run, type in the location and click enter. I however, do not believe you. You seem like someone who knows the system better than the average person.</p>
-<div class="imgwrapper" style=""><div><a href="/one-mans-sin-another-mans-blessing/rundialog_2.jpg" class="fancy"><img src="/one-mans-sin-another-mans-blessing/rundialog_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>Surely you know of the Windows key + R key combination that opens the Run dialog - as it also does on Vista. Pressing Winkey+R gives the run dialog in which you can type “C:” and have that drive open up for you. Much faster than going through the start menu in any way.</p>
-<h2 id="Number_3_-_Windows_networking_is_a_bless(ing)">Number 3 - Windows networking is a bless(ing)</h2>
-<p>When I first started up Vista and went into the network configuration, oh boy was I disappointed. I had more or less the same feelings as you describe. Luckily for me I was able to accept that Vista is an all new milestone compared to XP. Are Microsoft not allowed to change something that was - admittedly - working before? Having used Vista for no more than a week, surely you’ll have gotten used to the new way of browsing the networks as well as the network configuration. “If you have never used Vista before - Quickly tell me how to change the IP address on my wireless card!”. Now, how in gods name can you expect anyone who has never used a system to be able to tell you this? Were you instantly able to change the IP address of a network adapter the very first time you launched Windows 2000, XP?</p>
-<div class="imgwrapper" style=""><div><a href="/one-mans-sin-another-mans-blessing/networkconnections_2.jpg" class="fancy"><img src="/one-mans-sin-another-mans-blessing/networkconnections_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>Simply click “Manage network connections” from the tasks section of the menu and we’re back to the good old interface. It really isn’t that cumbersome.</p>
-<h2 id="Number_4_-_Windows_Search_is_as_broken_as_it_has_always_been">Number 4 - Windows Search is as broken as it has always been</h2>
-<p>Windows Search is not broken. It actually works. Have you tried it? Ok, so you can’t do a content based search on unknown file types, but have you ever been able to do so using Windows Search? You can however easily search through your email, documents, file name based search and so forth.</p>
-<div class="imgwrapper" style=""><div><a href="/one-mans-sin-another-mans-blessing/vistasearch_2.jpg" class="fancy"><img src="/one-mans-sin-another-mans-blessing/vistasearch_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p><em>Please</em>, please, please don’t tell me that a command prompt wildcard directory search enables you to do content based searches. Click the Location:Everywhere item and you’re all set for directory searches as we used to in XP.</p>
-<h2 id="Number_5_-_Windows_copying_has_improved">Number 5 - Windows copying has improved</h2>
-<p>Given the title of my website I should know what the word “improve” means. To improve something requires that you change something for the better. To improve something you must not make it worse than before. “Sure they have made the interface look cooler, a snazzy progress bar here and there.” You don’t call this an improvement? Sure, it’s not the robust search that you’re looking for, but honestly, isn’t it an improvement? I would really like to have seen the WinFS file system to have been a part of Vista. But surely, even though WinFS did not make it to Vista, I’ll not go as far as saying that Vista is not an improvement over XP. Explorer still has the old bugs, especially in regards of network sharing (shame on you Microsoft!), but still, you cannot say that it has not been <em>improved</em>.</p>
-<div class="imgwrapper" style=""><div><a href="/one-mans-sin-another-mans-blessing/filecopy_2.jpg" class="fancy"><img src="/one-mans-sin-another-mans-blessing/filecopy_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>I for one, love the fact that we can now see the transfer speed during transfers, even during network transfers!</p>
 
 
 				<div style="clear: both"></div>

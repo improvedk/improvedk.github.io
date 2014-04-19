@@ -151,6 +151,44 @@
 	</div>
 
 	<div class="title">
+		<h1><a href="/reverse-engineering-sql-server-page-headers/" title="Reverse Engineering SQL Server Page Headers" rel="bookmark">Reverse Engineering SQL Server Page Headers</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>One of the first challenges I faced when starting out the development of <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a> was parsing page headers. We all know that <a href="/deciphering-a-sql-server-data-page/">pages are basically split in two parts</a>, the 96 byte header and the 8096 byte body of remaining bytes. Much has been written about headers and Paul Randal (<a href="http://www.sqlskills.com/BLOGS/PAUL/" target="_blank">b</a>|<a href="http://twitter.com/#!/paulrandal" target="_blank">t</a>) has a great post describing the <a href="http://www.sqlskills.com/blogs/paul/post/Inside-the-Storage-Engine-Anatomy-of-a-page.aspx" target="_blank">contents of the header</a> as well. However, though the contents have been described, I’ve been completely unable to find any kind of details on the storage format. What data types are the individual fields, and what’s the order? Oh well, we’ve always got DBCC PAGE.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">19</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
 		<h1><a href="/checking-which-database-is-stored-in-a-deattached-mdf-file/" title="Checking Which Database is Stored in a Detached MDF File" rel="bookmark">Checking Which Database is Stored in a Detached MDF File</a></h1>
 		<div class="categories">
 			
@@ -205,44 +243,6 @@
 		
 
 			<div class="body"><p>Being a proponent of <a href="/wasted-bytes-add-up-consider-your-data-types-carefully">carefully choosing your data types</a>, I’ve often longed for the <a href="http://dev.mysql.com/doc/refman/5.0/en/numeric-types.html" target="_blank">mediumint data type</a> that MySQL has. Both smallint and int are signed data types, meaning their ranges are –32,768 to 32,767 for smallint and –2,147,483,648 to 2,147,483,647 for int. For most relational db schemas, positive identity values are used, meaning we’re looking at a possible 32,767 vs 2,147,483,647 values for smallint vs int. That’s a humongous difference, and it comes at a storage cost as well – 2 vs 4 bytes per column. If only there was something in between…</p>
-</div>
-		
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">May</span>
-			<span class="day">19</span>
-		</div>
-		<div class="lower">2011</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/reverse-engineering-sql-server-page-headers/" title="Reverse Engineering SQL Server Page Headers" rel="bookmark">Reverse Engineering SQL Server Page Headers</a></h1>
-		<div class="categories">
-			
-				<a href="/category/.NET/">.NET</a>
-				, 
-			
-				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-
-			<div class="body"><p>One of the first challenges I faced when starting out the development of <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a> was parsing page headers. We all know that <a href="/deciphering-a-sql-server-data-page/">pages are basically split in two parts</a>, the 96 byte header and the 8096 byte body of remaining bytes. Much has been written about headers and Paul Randal (<a href="http://www.sqlskills.com/BLOGS/PAUL/" target="_blank">b</a>|<a href="http://twitter.com/#!/paulrandal" target="_blank">t</a>) has a great post describing the <a href="http://www.sqlskills.com/blogs/paul/post/Inside-the-Storage-Engine-Anatomy-of-a-page.aspx" target="_blank">contents of the header</a> as well. However, though the contents have been described, I’ve been completely unable to find any kind of details on the storage format. What data types are the individual fields, and what’s the order? Oh well, we’ve always got DBCC PAGE.</p>
 </div>
 		
 		
@@ -411,6 +411,41 @@
 	</div>
 
 	<div class="title">
+		<h1><a href="/my-pass-summit-2011-abstracts/" title="My PASS Summit 2011 Abstracts" rel="bookmark">My PASS Summit 2011 Abstracts</a></h1>
+		<div class="categories">
+			
+				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Last year I went on a marathon conference trip, starting out in LA at <a href="http://2010.max.adobe.com/" target="_blank">Adobe Max</a>, continuing on to <a href="http://qconsf.com/sf2010/" target="_blank">QCon</a> in San Francisco before finally ending up in lovely Seattle for the <a href="http://www.sqlpass.org/summit/na2010/" target="_blank">PASS Summit</a>.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">03</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
 		<h1><a href="/introducing-orcamdf/" title="Introducing OrcaMDF" rel="bookmark">Introducing OrcaMDF</a></h1>
 		<div class="categories">
 			
@@ -434,41 +469,6 @@
 <p>I was invited to speak at <a href="http://mow2011.dk/" target="_blank">MOW2011</a> for the SQL Server track. Last year I got good reviews for my presentation on <a href="Dissecting_PDF_Documents_1.pdf">Dissecting PDF Documents</a>, a deep dive into the file format of PDF files. Wanting to stay in the same grove, I decided to take a look at the MDF format as it’s somewhat closer to SQL Server DBA’s than PDF files. Having almost worn my <a href="http://www.amazon.com/Microsoft%C2%AE-SQL-Server%C2%AE-2008-Internals/dp/0735626243" target="_blank">SQL Server 2008 Internals</a> book down from reading, I’ve always been interested in the internals, though I still felt like I was lacking a lot of knowledge.</p>
 <h2 id="A_parser_is_born">A parser is born</h2>
 <p>For my demos at MOW I wanted to at least read the records from a data page, just like the output from DBCC Page. The basic page format is well documented, and it’s not the first time I’ve taken a <a href="/deciphering-a-sql-server-data-page">deeper look</a> at pages. Surprisingly quickly, I had record parsing from data pages functioning using a hardcoded schema. Parsing a single page is fun, but really, I’d like to get all the data from a table. Restricting myself to just consider clustered tables made it simpler as it’d just be a matter of following the linked list of pages from start to end. However, that meant I’d have to parse the header as well. There’s some good information out there on the <a href="http://sqlskills.com/blogs/paul/post/Inside-the-Storage-Engine-Anatomy-of-a-page.aspx" target="_blank">anatomy of pages</a>, but everything I could find had a distinct lack of information on the actual header structure and field types.</p>
-</div>
-		
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">May</span>
-			<span class="day">03</span>
-		</div>
-		<div class="lower">2011</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/my-pass-summit-2011-abstracts/" title="My PASS Summit 2011 Abstracts" rel="bookmark">My PASS Summit 2011 Abstracts</a></h1>
-		<div class="categories">
-			
-				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-
-			<div class="body"><p>Last year I went on a marathon conference trip, starting out in LA at <a href="http://2010.max.adobe.com/" target="_blank">Adobe Max</a>, continuing on to <a href="http://qconsf.com/sf2010/" target="_blank">QCon</a> in San Francisco before finally ending up in lovely Seattle for the <a href="http://www.sqlpass.org/summit/na2010/" target="_blank">PASS Summit</a>.</p>
 </div>
 		
 		
