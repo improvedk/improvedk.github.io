@@ -39,7 +39,7 @@
 				
 				<ul id="sharing">
 					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
-					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk" id="rssfeed"><img src="/img/rss.png" /></a></li>
 					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
 					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
 					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
@@ -2691,7 +2691,7 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/sparse-column-storage-ndash-the-sparse-vector/" title="Sparse Column Storage &amp; the Sparse Vector" rel="bookmark">Sparse Column Storage &amp; the Sparse Vector</a></h1>
+		<h1><a href="/identifying-complex-columns-in-records/" title="Identifying Complex Columns in Records" rel="bookmark">Identifying Complex Columns in Records</a></h1>
 		<div class="categories">
 			
 				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
@@ -2706,7 +2706,7 @@
 
 		
 
-			<div class="body"><p>In this post I’ll be looking at the internal storage mechanism that supports sparse columns. For an introduction to what sparse columns are and when they ought to be used, <a href="http://msdn.microsoft.com/en-us/library/cc280604.aspx" target="_blank">take a look here</a>.</p>
+			<div class="body"><p><em>For an introduction to the anatomy of records, I suggest you read </em><a href="http://www.sqlskills.com/blogs/paul/post/Inside-the-Storage-Engine-Anatomy-of-a-record.aspx" target="_blank"><em>this post</em></a><em> by </em><a href="http://www.sqlskills.com/BLOGS/PAUL/" target="_blank"><em>Paul Randal</em></a><em>.</em></p>
 </div>
 		
 		
@@ -2726,7 +2726,7 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/identifying-complex-columns-in-records/" title="Identifying Complex Columns in Records" rel="bookmark">Identifying Complex Columns in Records</a></h1>
+		<h1><a href="/sparse-column-storage-ndash-the-sparse-vector/" title="Sparse Column Storage &amp; the Sparse Vector" rel="bookmark">Sparse Column Storage &amp; the Sparse Vector</a></h1>
 		<div class="categories">
 			
 				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
@@ -2741,7 +2741,7 @@
 
 		
 
-			<div class="body"><p><em>For an introduction to the anatomy of records, I suggest you read </em><a href="http://www.sqlskills.com/blogs/paul/post/Inside-the-Storage-Engine-Anatomy-of-a-record.aspx" target="_blank"><em>this post</em></a><em> by </em><a href="http://www.sqlskills.com/BLOGS/PAUL/" target="_blank"><em>Paul Randal</em></a><em>.</em></p>
+			<div class="body"><p>In this post I’ll be looking at the internal storage mechanism that supports sparse columns. For an introduction to what sparse columns are and when they ought to be used, <a href="http://msdn.microsoft.com/en-us/library/cc280604.aspx" target="_blank">take a look here</a>.</p>
 </div>
 		
 		
@@ -3292,41 +3292,6 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/bridging-the-gap-between-smallint-and-int/" title="Bridging the Gap Between Smallint and Int" rel="bookmark">Bridging the Gap Between Smallint and Int</a></h1>
-		<div class="categories">
-			
-				<a href="/category/SQL Server - Optimization/">SQL Server - Optimization</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-
-			<div class="body"><p>Being a proponent of <a href="/wasted-bytes-add-up-consider-your-data-types-carefully">carefully choosing your data types</a>, I’ve often longed for the <a href="http://dev.mysql.com/doc/refman/5.0/en/numeric-types.html" target="_blank">mediumint data type</a> that MySQL has. Both smallint and int are signed data types, meaning their ranges are –32,768 to 32,767 for smallint and –2,147,483,648 to 2,147,483,647 for int. For most relational db schemas, positive identity values are used, meaning we’re looking at a possible 32,767 vs 2,147,483,647 values for smallint vs int. That’s a humongous difference, and it comes at a storage cost as well – 2 vs 4 bytes per column. If only there was something in between…</p>
-</div>
-		
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">May</span>
-			<span class="day">19</span>
-		</div>
-		<div class="lower">2011</div>
-	</div>
-
-	<div class="title">
 		<h1><a href="/checking-which-database-is-stored-in-a-deattached-mdf-file/" title="Checking Which Database is Stored in a Detached MDF File" rel="bookmark">Checking Which Database is Stored in a Detached MDF File</a></h1>
 		<div class="categories">
 			
@@ -3346,6 +3311,41 @@
 		
 
 			<div class="body"><p>Inspired by <a href="http://stackoverflow.com/questions/6061510/any-way-to-quickly-tell-which-database-if-any-is-attached-to-a-mdf-file" target="_blank">this</a> question on StackOverflow, I’ve made a quick script to demonstrate how this might be done using <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a>.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">19</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/bridging-the-gap-between-smallint-and-int/" title="Bridging the Gap Between Smallint and Int" rel="bookmark">Bridging the Gap Between Smallint and Int</a></h1>
+		<div class="categories">
+			
+				<a href="/category/SQL Server - Optimization/">SQL Server - Optimization</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Being a proponent of <a href="/wasted-bytes-add-up-consider-your-data-types-carefully">carefully choosing your data types</a>, I’ve often longed for the <a href="http://dev.mysql.com/doc/refman/5.0/en/numeric-types.html" target="_blank">mediumint data type</a> that MySQL has. Both smallint and int are signed data types, meaning their ranges are –32,768 to 32,767 for smallint and –2,147,483,648 to 2,147,483,647 for int. For most relational db schemas, positive identity values are used, meaning we’re looking at a possible 32,767 vs 2,147,483,647 values for smallint vs int. That’s a humongous difference, and it comes at a storage cost as well – 2 vs 4 bytes per column. If only there was something in between…</p>
 </div>
 		
 		
@@ -3552,41 +3552,6 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/my-pass-summit-2011-abstracts/" title="My PASS Summit 2011 Abstracts" rel="bookmark">My PASS Summit 2011 Abstracts</a></h1>
-		<div class="categories">
-			
-				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-
-			<div class="body"><p>Last year I went on a marathon conference trip, starting out in LA at <a href="http://2010.max.adobe.com/" target="_blank">Adobe Max</a>, continuing on to <a href="http://qconsf.com/sf2010/" target="_blank">QCon</a> in San Francisco before finally ending up in lovely Seattle for the <a href="http://www.sqlpass.org/summit/na2010/" target="_blank">PASS Summit</a>.</p>
-</div>
-		
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">May</span>
-			<span class="day">03</span>
-		</div>
-		<div class="lower">2011</div>
-	</div>
-
-	<div class="title">
 		<h1><a href="/introducing-orcamdf/" title="Introducing OrcaMDF" rel="bookmark">Introducing OrcaMDF</a></h1>
 		<div class="categories">
 			
@@ -3610,6 +3575,41 @@
 <p>I was invited to speak at <a href="http://mow2011.dk/" target="_blank">MOW2011</a> for the SQL Server track. Last year I got good reviews for my presentation on <a href="Dissecting_PDF_Documents_1.pdf">Dissecting PDF Documents</a>, a deep dive into the file format of PDF files. Wanting to stay in the same grove, I decided to take a look at the MDF format as it’s somewhat closer to SQL Server DBA’s than PDF files. Having almost worn my <a href="http://www.amazon.com/Microsoft%C2%AE-SQL-Server%C2%AE-2008-Internals/dp/0735626243" target="_blank">SQL Server 2008 Internals</a> book down from reading, I’ve always been interested in the internals, though I still felt like I was lacking a lot of knowledge.</p>
 <h2 id="A_parser_is_born">A parser is born</h2>
 <p>For my demos at MOW I wanted to at least read the records from a data page, just like the output from DBCC Page. The basic page format is well documented, and it’s not the first time I’ve taken a <a href="/deciphering-a-sql-server-data-page">deeper look</a> at pages. Surprisingly quickly, I had record parsing from data pages functioning using a hardcoded schema. Parsing a single page is fun, but really, I’d like to get all the data from a table. Restricting myself to just consider clustered tables made it simpler as it’d just be a matter of following the linked list of pages from start to end. However, that meant I’d have to parse the header as well. There’s some good information out there on the <a href="http://sqlskills.com/blogs/paul/post/Inside-the-Storage-Engine-Anatomy-of-a-page.aspx" target="_blank">anatomy of pages</a>, but everything I could find had a distinct lack of information on the actual header structure and field types.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">03</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/my-pass-summit-2011-abstracts/" title="My PASS Summit 2011 Abstracts" rel="bookmark">My PASS Summit 2011 Abstracts</a></h1>
+		<div class="categories">
+			
+				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Last year I went on a marathon conference trip, starting out in LA at <a href="http://2010.max.adobe.com/" target="_blank">Adobe Max</a>, continuing on to <a href="http://qconsf.com/sf2010/" target="_blank">QCon</a> in San Francisco before finally ending up in lovely Seattle for the <a href="http://www.sqlpass.org/summit/na2010/" target="_blank">PASS Summit</a>.</p>
 </div>
 		
 		
@@ -3699,10 +3699,10 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/miracle-open-world-2011-follow-up/" title="Miracle Open World 2011 Followup" rel="bookmark">Miracle Open World 2011 Followup</a></h1>
+		<h1><a href="/42-weeks-later/" title="42 Weeks Later" rel="bookmark">42 Weeks Later</a></h1>
 		<div class="categories">
 			
-				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
+				<a href="/category/Miscellaneous/">Miscellaneous</a>
 				
 			
 		</div>
@@ -3714,7 +3714,8 @@
 
 		
 
-			<div class="body"><p>Last week I attended the <a href="http://mow2011.dk/" target="_blank">Miracle Open World 2011 conference</a>. As in the previous years the 80% content, 80% social moniker held true to its reputation. My legs and arms are still sore from carrying four-man rubber rings to the top of the four-story waterslide – not the typical aftermath of a conference. I met a lot of new awesome people and managed to pull of a couple of presentations with decent success as well, judging from the responses I’ve had so far. I’ve included the slides &amp; demo code for the presentations below.</p>
+			<div class="body"><div class="imgwrapper" style=""><div><a href="/42-weeks-later/film_28_weeks_later_2.png" class="fancy"><img src="/42-weeks-later/film_28_weeks_later_2.png" style="max-height: 250px"/></a></div></div>
+
 </div>
 		
 		
@@ -3734,10 +3735,10 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/42-weeks-later/" title="42 Weeks Later" rel="bookmark">42 Weeks Later</a></h1>
+		<h1><a href="/miracle-open-world-2011-follow-up/" title="Miracle Open World 2011 Followup" rel="bookmark">Miracle Open World 2011 Followup</a></h1>
 		<div class="categories">
 			
-				<a href="/category/Miscellaneous/">Miscellaneous</a>
+				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
 				
 			
 		</div>
@@ -3749,8 +3750,7 @@
 
 		
 
-			<div class="body"><div class="imgwrapper" style=""><div><a href="/42-weeks-later/film_28_weeks_later_2.png" class="fancy"><img src="/42-weeks-later/film_28_weeks_later_2.png" style="max-height: 250px"/></a></div></div>
-
+			<div class="body"><p>Last week I attended the <a href="http://mow2011.dk/" target="_blank">Miracle Open World 2011 conference</a>. As in the previous years the 80% content, 80% social moniker held true to its reputation. My legs and arms are still sore from carrying four-man rubber rings to the top of the four-story waterslide – not the typical aftermath of a conference. I met a lot of new awesome people and managed to pull of a couple of presentations with decent success as well, judging from the responses I’ve had so far. I’ve included the slides &amp; demo code for the presentations below.</p>
 </div>
 		
 		
@@ -5314,41 +5314,6 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/updating-xmloutput/" title="Updating XmlOutput" rel="bookmark">Updating XmlOutput</a></h1>
-		<div class="categories">
-			
-				<a href="/category/.NET/">.NET</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-
-			<div class="body"><p>Since I originally posted my XmlOutput class I’ve received lots of great feedback. I’m happy that many of you have found it useful.</p>
-</div>
-		
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Aug</span>
-			<span class="day">10</span>
-		</div>
-		<div class="lower">2008</div>
-	</div>
-
-	<div class="title">
 		<h1><a href="/twitter/" title="Twitter" rel="bookmark">Twitter</a></h1>
 		<div class="categories">
 			
@@ -5368,6 +5333,41 @@
 		
 
 			<div class="body"></div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Aug</span>
+			<span class="day">10</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/updating-xmloutput/" title="Updating XmlOutput" rel="bookmark">Updating XmlOutput</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Since I originally posted my XmlOutput class I’ve received lots of great feedback. I’m happy that many of you have found it useful.</p>
+</div>
 		
 		
 
@@ -5771,13 +5771,10 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/securing-dotnet-code/" title="Securing .NET Code" rel="bookmark">Securing .NET Code</a></h1>
+		<h1><a href="/profiling-code-the-easy-way/" title="Profiling Code the Easy Way" rel="bookmark">Profiling Code the Easy Way</a></h1>
 		<div class="categories">
 			
 				<a href="/category/.NET/">.NET</a>
-				, 
-			
-				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
 				
 			
 		</div>
@@ -5789,7 +5786,7 @@
 
 		
 
-			<div class="body"><p>Time flies fast. Back in 2006, during my time as an <a href="http://en.wikipedia.org/wiki/Microsoft_Student_Partners" target="_blank">MSP</a>, I made a series of presentations on securing intellectual property in .NET code, resulting in my <a href="/securing-dotnet-code-article/">Securing .NET Code</a> article. Although it’s about two years old, most points are still valid today, unfortunately.</p>
+			<div class="body"><p>I often do code profiling, usually involving a stopwatch and some boilerplate code. I decided to make a quick’n’simple class that’ll help me get rid of some of that code and concentrate on the actual code being profiled.</p>
 </div>
 		
 		
@@ -5809,10 +5806,13 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/profiling-code-the-easy-way/" title="Profiling Code the Easy Way" rel="bookmark">Profiling Code the Easy Way</a></h1>
+		<h1><a href="/securing-dotnet-code/" title="Securing .NET Code" rel="bookmark">Securing .NET Code</a></h1>
 		<div class="categories">
 			
 				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
 				
 			
 		</div>
@@ -5824,7 +5824,7 @@
 
 		
 
-			<div class="body"><p>I often do code profiling, usually involving a stopwatch and some boilerplate code. I decided to make a quick’n’simple class that’ll help me get rid of some of that code and concentrate on the actual code being profiled.</p>
+			<div class="body"><p>Time flies fast. Back in 2006, during my time as an <a href="http://en.wikipedia.org/wiki/Microsoft_Student_Partners" target="_blank">MSP</a>, I made a series of presentations on securing intellectual property in .NET code, resulting in my <a href="/securing-dotnet-code-article/">Securing .NET Code</a> article. Although it’s about two years old, most points are still valid today, unfortunately.</p>
 </div>
 		
 		
@@ -6618,41 +6618,6 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/getting-key-state/" title="Getting Key State Using PInvoke" rel="bookmark">Getting Key State Using PInvoke</a></h1>
-		<div class="categories">
-			
-				<a href="/category/.NET/">.NET</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-
-			<div class="body"><p>Here’s an example of how to retrieve the state of any keyboard key.</p>
-</div>
-		
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Apr</span>
-			<span class="day">11</span>
-		</div>
-		<div class="lower">2007</div>
-	</div>
-
-	<div class="title">
 		<h1><a href="/minimizing-and-maximizing-windows/" title="Minimizing and Maximizing Windows Using PInvoke" rel="bookmark">Minimizing and Maximizing Windows Using PInvoke</a></h1>
 		<div class="categories">
 			
@@ -6682,13 +6647,13 @@
 	<div class="datebox">
 		<div class="upper">
 			<span class="month">Apr</span>
-			<span class="day">09</span>
+			<span class="day">11</span>
 		</div>
 		<div class="lower">2007</div>
 	</div>
 
 	<div class="title">
-		<h1><a href="/modifying-window-location-and-size/" title="Modifying Window Location and Size Using PInvoke" rel="bookmark">Modifying Window Location and Size Using PInvoke</a></h1>
+		<h1><a href="/getting-key-state/" title="Getting Key State Using PInvoke" rel="bookmark">Getting Key State Using PInvoke</a></h1>
 		<div class="categories">
 			
 				<a href="/category/.NET/">.NET</a>
@@ -6703,7 +6668,7 @@
 
 		
 
-			<div class="body"><p>Last time we saw how to obtain a windows location and size. This time I’ll show how to change a windows size and location. I will be using the <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">WindowFinder class</a> that I introduced in the blog <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">Finding specific windows</a>.</p>
+			<div class="body"><p>Here’s an example of how to retrieve the state of any keyboard key.</p>
 </div>
 		
 		
@@ -6739,6 +6704,41 @@
 		
 
 			<div class="body"><p>This time I’ll show how to obtain the size and location of a window. I will be using the <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">WindowFinder class</a> that I introduced in the blog <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">Finding specific windows</a>.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">09</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/modifying-window-location-and-size/" title="Modifying Window Location and Size Using PInvoke" rel="bookmark">Modifying Window Location and Size Using PInvoke</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Last time we saw how to obtain a windows location and size. This time I’ll show how to change a windows size and location. I will be using the <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">WindowFinder class</a> that I introduced in the blog <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">Finding specific windows</a>.</p>
 </div>
 		
 		
@@ -6793,41 +6793,6 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/sending-keypresses-to-a-window/" title="Sending Keypresses to a Window Using PInvoke" rel="bookmark">Sending Keypresses to a Window Using PInvoke</a></h1>
-		<div class="categories">
-			
-				<a href="/category/.NET/">.NET</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-
-			<div class="body"><p>Now to complete the toolset required to make a great spyware / browser hijacking application, we’ll make Internet Explorer navigate to the address we set.</p>
-</div>
-		
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Apr</span>
-			<span class="day">06</span>
-		</div>
-		<div class="lower">2007</div>
-	</div>
-
-	<div class="title">
 		<h1><a href="/enumerating-windows/" title="Enumerating Windows Using PInvoke" rel="bookmark">Enumerating Windows Using PInvoke</a></h1>
 		<div class="categories">
 			
@@ -6857,13 +6822,13 @@
 	<div class="datebox">
 		<div class="upper">
 			<span class="month">Apr</span>
-			<span class="day">04</span>
+			<span class="day">06</span>
 		</div>
 		<div class="lower">2007</div>
 	</div>
 
 	<div class="title">
-		<h1><a href="/set-text-by-handle/" title="Set Text By Window Handle Using PInvoke" rel="bookmark">Set Text By Window Handle Using PInvoke</a></h1>
+		<h1><a href="/sending-keypresses-to-a-window/" title="Sending Keypresses to a Window Using PInvoke" rel="bookmark">Sending Keypresses to a Window Using PInvoke</a></h1>
 		<div class="categories">
 			
 				<a href="/category/.NET/">.NET</a>
@@ -6878,7 +6843,7 @@
 
 		
 
-			<div class="body"><p>This time we won’t be reading the text from a window, we’ll be setting it.</p>
+			<div class="body"><p>Now to complete the toolset required to make a great spyware / browser hijacking application, we’ll make Internet Explorer navigate to the address we set.</p>
 </div>
 		
 		
@@ -6914,6 +6879,41 @@
 		
 
 			<div class="body"><p>This time we want to retrieve the text from a given window, represented by a handle. Like last time, open an Internet Explorer instance. Now open Winspector and select the address field, ensure that it is the address field itself (class = Edit) and not the ComboBox that you select.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">04</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/set-text-by-handle/" title="Set Text By Window Handle Using PInvoke" rel="bookmark">Set Text By Window Handle Using PInvoke</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>This time we won’t be reading the text from a window, we’ll be setting it.</p>
 </div>
 		
 		
@@ -7003,13 +7003,10 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/turning-the-world-upside-down/" title="Turning the World Upside Down" rel="bookmark">Turning the World Upside Down</a></h1>
+		<h1><a href="/dedicated-to-the-api/" title="Dedicated to the API" rel="bookmark">Dedicated to the API</a></h1>
 		<div class="categories">
 			
-				<a href="/category/Tools of the Trade/">Tools of the Trade</a>
-				, 
-			
-				<a href="/category/Windows/">Windows</a>
+				<a href="/category/.NET/">.NET</a>
 				
 			
 		</div>
@@ -7021,7 +7018,7 @@
 
 		
 
-			<div class="body"><p>So, tell me, do you notice anything unusual in the picture below?</p>
+			<div class="body"><p>Unfortunately it’s been quite silent around here for the last couple of months. I want to change that, so why not make a promise?</p>
 </div>
 		
 		
@@ -7041,10 +7038,13 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/dedicated-to-the-api/" title="Dedicated to the API" rel="bookmark">Dedicated to the API</a></h1>
+		<h1><a href="/turning-the-world-upside-down/" title="Turning the World Upside Down" rel="bookmark">Turning the World Upside Down</a></h1>
 		<div class="categories">
 			
-				<a href="/category/.NET/">.NET</a>
+				<a href="/category/Tools of the Trade/">Tools of the Trade</a>
+				, 
+			
+				<a href="/category/Windows/">Windows</a>
 				
 			
 		</div>
@@ -7056,7 +7056,7 @@
 
 		
 
-			<div class="body"><p>Unfortunately it’s been quite silent around here for the last couple of months. I want to change that, so why not make a promise?</p>
+			<div class="body"><p>So, tell me, do you notice anything unusual in the picture below?</p>
 </div>
 		
 		
@@ -7322,6 +7322,41 @@
 	</div>
 
 	<div class="title">
+		<h1><a href="/day-1/" title="Day 1" rel="bookmark">Day 1</a></h1>
+		<div class="categories">
+			
+				<a href="/category/Poker/">Poker</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Since I woke up at 6 AM this morning I decided to just stay in bed and watch The Prestige through the hotel movie system.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jan</span>
+			<span class="day">09</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
 		<h1><a href="/royal-flush-baby/" title="Royal Flush Baby!" rel="bookmark">Royal Flush Baby!</a></h1>
 		<div class="categories">
 			
@@ -7374,41 +7409,6 @@
 
 			<div class="body"><p>Honeeey, I’m home!</p>
 <p>It’s good to be back. After all, it’s been about 4 months since I were here last, that’s simply too long time!</p>
-</div>
-		
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Jan</span>
-			<span class="day">09</span>
-		</div>
-		<div class="lower">2007</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/day-1/" title="Day 1" rel="bookmark">Day 1</a></h1>
-		<div class="categories">
-			
-				<a href="/category/Poker/">Poker</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-
-			<div class="body"><p>Since I woke up at 6 AM this morning I decided to just stay in bed and watch The Prestige through the hotel movie system.</p>
 </div>
 		
 		
@@ -7673,6 +7673,41 @@
 	</div>
 
 	<div class="title">
+		<h1><a href="/installing-office-2007-on-vista/" title="Installing Office 2007 on Vista" rel="bookmark">Installing Office 2007 on Vista</a></h1>
+		<div class="categories">
+			
+				<a href="/category/Windows/">Windows</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Ok, so I’d promised myself that I would at least give it a month before I’d install Vista on my desktop computer as I simply will not be able to cope with having major problems here. For work purposes I simply have to have a functional desktop computer.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Dec</span>
+			<span class="day">04</span>
+		</div>
+		<div class="lower">2006</div>
+	</div>
+
+	<div class="title">
 		<h1><a href="/setpoint-volume-control-in-vista/" title="SetPoint Volume Control In Vista" rel="bookmark">SetPoint Volume Control In Vista</a></h1>
 		<div class="categories">
 			
@@ -7724,41 +7759,6 @@
 		
 
 			<div class="body"><p>Ever since IE7 came out developers have had the problem of whether they should upgrade or not. If they chose to upgrade, they wouldn’t be able to test their sites in IE6 any longer as installing IE7 would uninstall IE6. There are 3rd party hacks that allow both versions to be installed at the same time, but they will not simulate a true IE6 / IE7 environment.</p>
-</div>
-		
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Dec</span>
-			<span class="day">04</span>
-		</div>
-		<div class="lower">2006</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/installing-office-2007-on-vista/" title="Installing Office 2007 on Vista" rel="bookmark">Installing Office 2007 on Vista</a></h1>
-		<div class="categories">
-			
-				<a href="/category/Windows/">Windows</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-
-			<div class="body"><p>Ok, so I’d promised myself that I would at least give it a month before I’d install Vista on my desktop computer as I simply will not be able to cope with having major problems here. For work purposes I simply have to have a functional desktop computer.</p>
 </div>
 		
 		
@@ -8373,6 +8373,41 @@
 	</div>
 
 	<div class="title">
+		<h1><a href="/santana/" title="Santana" rel="bookmark">Santana</a></h1>
+		<div class="categories">
+			
+				<a href="/category/Life/">Life</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>When I went to bed yesterday (after the Main Event) at around 7 AM, I didn’t think of setting my clock. I mean, I didn’t have to get up before around 5-6 PM, I’d be long awake before that.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">30</span>
+		</div>
+		<div class="lower">2006</div>
+	</div>
+
+	<div class="title">
 		<h1><a href="/cashsession3/" title="Cash Session" rel="bookmark">Cash Session</a></h1>
 		<div class="categories">
 			
@@ -8424,41 +8459,6 @@
 		
 
 			<div class="body"><p>Today was the big day. Today was the day that I was going to play the WSOP 2006 Main Event with a $10k buy in!</p>
-</div>
-		
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Jul</span>
-			<span class="day">30</span>
-		</div>
-		<div class="lower">2006</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/santana/" title="Santana" rel="bookmark">Santana</a></h1>
-		<div class="categories">
-			
-				<a href="/category/Life/">Life</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-
-			<div class="body"><p>When I went to bed yesterday (after the Main Event) at around 7 AM, I didn’t think of setting my clock. I mean, I didn’t have to get up before around 5-6 PM, I’d be long awake before that.</p>
 </div>
 		
 		
@@ -8583,7 +8583,7 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/wsop37/" title="$1500 NLHE WSOP Event" rel="bookmark">$1500 NLHE WSOP Event</a></h1>
+		<h1><a href="/cashsession1/" title="Cash Session" rel="bookmark">Cash Session</a></h1>
 		<div class="categories">
 			
 				<a href="/category/Poker/">Poker</a>
@@ -8598,9 +8598,7 @@
 
 		
 
-			<div class="body"><div class="imgwrapper" style=""><div><a href="/wsop37/wsop1_2.jpg" class="fancy"><img src="/wsop37/wsop1_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>Finally the day arrived, I’ve just turned 21! At four minutes past midnight I registered for my WSOP Players card at the Rio, while being registered I got a good chat with the girl behind the counter, she laughed a bit when she saw my ‘I support single moms’ t-shirt - she said she liked it.</p>
+			<div class="body"><p>So I finally got into my first ever real poker cash game at a casino. My main game is without doubt tournaments, I rarely play cash games as I don’t think they’re nearly as interesting, also I’m far worse at cash games than at tournaments. When I do get into cash games online, I usually play the NL25 games at Party, I’ve had lots of problems beating even NL50/100.</p>
 </div>
 		
 		
@@ -8620,7 +8618,7 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/cashsession1/" title="Cash Session" rel="bookmark">Cash Session</a></h1>
+		<h1><a href="/wsop37/" title="$1500 NLHE WSOP Event" rel="bookmark">$1500 NLHE WSOP Event</a></h1>
 		<div class="categories">
 			
 				<a href="/category/Poker/">Poker</a>
@@ -8635,7 +8633,9 @@
 
 		
 
-			<div class="body"><p>So I finally got into my first ever real poker cash game at a casino. My main game is without doubt tournaments, I rarely play cash games as I don’t think they’re nearly as interesting, also I’m far worse at cash games than at tournaments. When I do get into cash games online, I usually play the NL25 games at Party, I’ve had lots of problems beating even NL50/100.</p>
+			<div class="body"><div class="imgwrapper" style=""><div><a href="/wsop37/wsop1_2.jpg" class="fancy"><img src="/wsop37/wsop1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Finally the day arrived, I’ve just turned 21! At four minutes past midnight I registered for my WSOP Players card at the Rio, while being registered I got a good chat with the girl behind the counter, she laughed a bit when she saw my ‘I support single moms’ t-shirt - she said she liked it.</p>
 </div>
 		
 		

@@ -39,7 +39,7 @@
 				
 				<ul id="sharing">
 					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
-					<li><a href="http://feeds.feedburner.com/Improvedk"><img src="/img/rss.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk" id="rssfeed"><img src="/img/rss.png" /></a></li>
 					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
 					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
 					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
@@ -823,6 +823,85 @@ DBCC PAGE (Test, 1, 114, 3)
 	</div>
 
 	<div class="title">
+		<h1><a href="/checking-which-database-is-stored-in-a-deattached-mdf-file/" title="Checking Which Database is Stored in a Detached MDF File" rel="bookmark">Checking Which Database is Stored in a Detached MDF File</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Inspired by <a href="http://stackoverflow.com/questions/6061510/any-way-to-quickly-tell-which-database-if-any-is-attached-to-a-mdf-file" target="_blank">this</a> question on StackOverflow, I’ve made a quick script to demonstrate how this might be done using <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a>.</p>
+<a id="more"></a>
+
+<p>In this example I’m looping all .mdf files in my local SQL Server data directory. Each one is loaded using OrcaMDF, the boot page is fetched and finally the database name is printed:</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.IO;
+<span class="keyword">using</span> OrcaMDF.Core.Engine;
+
+<span class="class"><span class="keyword">namespace</span> <span class="title">OrcaMDF</span>.<span class="title">Adhoc</span>
+{</span>
+    <span class="class"><span class="keyword">class</span> <span class="title">Program</span>
+    {</span>
+        <span class="keyword">static</span> <span class="keyword">void</span> Main()
+        {
+			<span class="keyword">foreach</span> (<span class="keyword">string</span> mdfPath in Directory.GetFiles(@<span class="string">"C:\Program Files\Microsoft SQL Server\MSSQL10_50.MSSQLSERVER\MSSQL\DATA"</span>))
+			{
+				if (!mdfPath.ToLower().EndsWith(<span class="string">".mdf"</span>))
+					continue;
+
+				<span class="keyword">using</span> (<span class="keyword">var</span> file = <span class="keyword">new</span> MdfFile(mdfPath))
+				{
+					<span class="keyword">var</span> bootPage = file.GetBootPage();
+					Console.WriteLine(bootPage.DatabaseName);
+				}
+			}
+        }
+    }
+}
+</pre></figure>
+
+<p>And the following is the output we get:</p>
+<div class="imgwrapper" style=""><div><a href="/checking-which-database-is-stored-in-a-deattached-mdf-file/image_21.png" class="fancy"><img src="/checking-which-database-is-stored-in-a-deattached-mdf-file/image_21.png" style="max-height: 250px"/></a></div></div>
+
+<p>Which, coincidentally, matches up to the databases I’ve got attached to my local SQL Server. At this point we could match this list up to the one we’d get from sys.databases and see which files didn’t have a matching database, and thus weed out the non-attached mdf files from our data directory.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">19</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
 		<h1><a href="/bridging-the-gap-between-smallint-and-int/" title="Bridging the Gap Between Smallint and Int" rel="bookmark">Bridging the Gap Between Smallint and Int</a></h1>
 		<div class="categories">
 			
@@ -946,85 +1025,6 @@ DBCC PAGE (Test, 1, 114, 3)
 <h2 id="Summing_it_up">Summing it up</h2>
 <p>As I’ve shown, we can easily create our own mediumint data type, just as we can create a 5 byte integer, 6 byte… Well, you get it. However, there are obviously some trade offs in that you’ll have to manage this data type yourself. While you can query it more or less like a normal data type, you have to be wary of scans. Finally, retrieving values will require some extra work, though that could easily be abstracted away in a custom type.</p>
 <p>So should you do it? Probably not. Saving a single byte per column will gain you very little, unless you have a humongous table, especially so if you have a lot of columns that fit in between the smallint and int value range. For those humongous archival tables, this might just be a way to shave an extra byte off per <em>mediumint</em> column.</p>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">May</span>
-			<span class="day">19</span>
-		</div>
-		<div class="lower">2011</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/checking-which-database-is-stored-in-a-deattached-mdf-file/" title="Checking Which Database is Stored in a Detached MDF File" rel="bookmark">Checking Which Database is Stored in a Detached MDF File</a></h1>
-		<div class="categories">
-			
-				<a href="/category/.NET/">.NET</a>
-				, 
-			
-				<a href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>Inspired by <a href="http://stackoverflow.com/questions/6061510/any-way-to-quickly-tell-which-database-if-any-is-attached-to-a-mdf-file" target="_blank">this</a> question on StackOverflow, I’ve made a quick script to demonstrate how this might be done using <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a>.</p>
-<a id="more"></a>
-
-<p>In this example I’m looping all .mdf files in my local SQL Server data directory. Each one is loaded using OrcaMDF, the boot page is fetched and finally the database name is printed:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
-<span class="keyword">using</span> System.IO;
-<span class="keyword">using</span> OrcaMDF.Core.Engine;
-
-<span class="class"><span class="keyword">namespace</span> <span class="title">OrcaMDF</span>.<span class="title">Adhoc</span>
-{</span>
-    <span class="class"><span class="keyword">class</span> <span class="title">Program</span>
-    {</span>
-        <span class="keyword">static</span> <span class="keyword">void</span> Main()
-        {
-			<span class="keyword">foreach</span> (<span class="keyword">string</span> mdfPath in Directory.GetFiles(@<span class="string">"C:\Program Files\Microsoft SQL Server\MSSQL10_50.MSSQLSERVER\MSSQL\DATA"</span>))
-			{
-				if (!mdfPath.ToLower().EndsWith(<span class="string">".mdf"</span>))
-					continue;
-
-				<span class="keyword">using</span> (<span class="keyword">var</span> file = <span class="keyword">new</span> MdfFile(mdfPath))
-				{
-					<span class="keyword">var</span> bootPage = file.GetBootPage();
-					Console.WriteLine(bootPage.DatabaseName);
-				}
-			}
-        }
-    }
-}
-</pre></figure>
-
-<p>And the following is the output we get:</p>
-<div class="imgwrapper" style=""><div><a href="/checking-which-database-is-stored-in-a-deattached-mdf-file/image_21.png" class="fancy"><img src="/checking-which-database-is-stored-in-a-deattached-mdf-file/image_21.png" style="max-height: 250px"/></a></div></div>
-
-<p>Which, coincidentally, matches up to the databases I’ve got attached to my local SQL Server. At this point we could match this list up to the one we’d get from sys.databases and see which files didn’t have a matching database, and thus weed out the non-attached mdf files from our data directory.</p>
 
 
 				<div style="clear: both"></div>
