@@ -81,7 +81,7 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/set-text-by-handle/" title="Set Text By Window Handle Using PInvoke" rel="bookmark">Set Text By Window Handle Using PInvoke</a></h1>
+		<h1><a href="/getting-text-from-handle/" title="Getting Text From Window Handle Using PInvoke" rel="bookmark">Getting Text From Window Handle Using PInvoke</a></h1>
 		<div class="categories">
 			
 				<a href="/category/.NET/">.NET</a>
@@ -98,38 +98,59 @@
 		
 			<div class="body">
 			
-				<p>This time we won’t be reading the text from a window, we’ll be setting it.</p>
+				<p>This time we want to retrieve the text from a given window, represented by a handle. Like last time, open an Internet Explorer instance. Now open Winspector and select the address field, ensure that it is the address field itself (class = Edit) and not the ComboBox that you select.</p>
 <a id="more"></a>
 
-<p><a href="http://www.improve.dk/blog/2007/04/03/getting-text-from-handle" target="_blank">Like last time</a>, open an Internet Explorer browser and obtain a handle to the address field.</p>
+<div class="imgwrapper" style=""><div><a href="/getting-text-from-handle/win32_2_1_2.jpg" class="fancy"><img src="/getting-text-from-handle/win32_2_1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+
 <figure class="highlight csharp"><pre><span class="keyword">using</span> System;
 <span class="keyword">using</span> System.Collections.Generic;
 <span class="keyword">using</span> System.Text;
 <span class="keyword">using</span> System.Runtime.InteropServices;
 <span class="keyword">using</span> System.Globalization;
 
-<span class="class"><span class="keyword">namespace</span> <span class="title">Set_text_by_handle</span>
-{</span>
-	<span class="class"><span class="keyword">class</span> <span class="title">Program</span>
-	{</span>
-		<span class="comment">// A Win32 constant</span>
-		<span class="keyword">const</span> <span class="keyword">int</span><span class="constant"> WM_SETTEXT </span>= <span class="number">0x000C</span>;
+namespace Get_text_from_handle
+{
+	class Program
+	{
+		<span class="comment">// These are two Win32 constants that we'll need, they'll be explained later.</span>
+		<span class="keyword">const</span> <span class="keyword">int</span> WM_GETTEXT		= <span class="number">0x000D</span>;
+		<span class="keyword">const</span> <span class="keyword">int</span> WM_GETTEXTLENGTH = <span class="number">0x000E</span>;
 
-		<span class="comment">// An overload of the SendMessage function, this time taking in a string as the lParam.</span>
+		<span class="comment">// The SendMessage function sends a Win32 message to the specified handle, it takes three</span>
+		<span class="comment">// ints as parameters, the message to send, and to optional parameters (pass 0 if not required).</span>
 		[DllImport(<span class="string">"User32.dll"</span>)]
-		<span class="keyword">public</span> <span class="keyword">static</span> extern Int32 SendMessage(<span class="keyword">int</span> hWnd, <span class="keyword">int</span> Msg, <span class="keyword">int</span> wParam, <span class="keyword">string</span> lParam);
+		<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">extern</span> Int32 <span class="title">SendMessage</span>(<span class="keyword">int</span> hWnd, <span class="keyword">int</span> Msg, <span class="keyword">int</span> wParam, <span class="keyword">int</span> lParam);
+
+		<span class="comment">// An overload of the SendMessage function, this time taking in a StringBuilder as the lParam.</span>
+		<span class="comment">// Through the series we'll use a lot of different SendMessage overloads as SendMessage is one</span>
+		<span class="comment">// of the most fundamental Win32 functions.</span>
+		[DllImport(<span class="string">"User32.dll"</span>)]
+		<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">extern</span> Int32 <span class="title">SendMessage</span>(<span class="keyword">int</span> hWnd, <span class="keyword">int</span> Msg, <span class="keyword">int</span> wParam, StringBuilder lParam);
 
 		<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
 		{
 			<span class="comment">// First, read the handle from the console, remember this has to be in HEX format!</span>
 			<span class="keyword">int</span> handle = <span class="keyword">int</span>.Parse(Console.ReadLine(), NumberStyles.HexNumber);
 
-			<span class="comment">// Now we'll send the WM_SETTEXT message to the window, passing the text</span>
-			<span class="comment">// through the lParam parameter.</span>
-			SendMessage(handle, WM_SETTEXT, <span class="number">0</span>, <span class="string">"http://www.improve.dk"</span>);
+			<span class="comment">// This is a bit tricky. To retrieve the text from a window, we have to know it's length beforehand.</span>
+			<span class="comment">// This is because we have to send a StringBuilder of the correct length as a parameter. If it's too</span>
+			<span class="comment">// small, it won't be able to contain the full text. If it's too large, it's inefficient. When using</span>
+			<span class="comment">// the SendMessage function with the WM_GETTEXTLENGTH message, it returns the length of the</span>
+			<span class="comment">// window text.</span>
+			<span class="keyword">int</span> txtLength = SendMessage(handle, WM_GETTEXTLENGTH, <span class="number">0</span>, <span class="number">0</span>);
 
-			<span class="comment">// And we're done</span>
-			Console.Write(<span class="string">"Text set!"</span>);
+			<span class="comment">// After having retrieved the length of the string, we create a StringBuilder to hold it.</span>
+			StringBuilder sb = <span class="keyword">new</span> StringBuilder(txtLength + <span class="number">1</span>);
+
+			<span class="comment">// Sending the message WM_GETTEXT to the window, passing int he length of the text (the capacity</span>
+			<span class="comment">// of the StringBuilder) as well as a reference to the StringBuilder will result in the</span>
+			<span class="comment">// StringBuilder being filled up with the windows text.</span>
+			SendMessage(handle, WM_GETTEXT, sb.Capacity, sb);
+
+			<span class="comment">// Finally we'll write out the window text by ToString()'ing the StringBuilder.</span>
+			Console.Write(sb.ToString());
 			Console.Read();
 		}
 	}
@@ -137,10 +158,7 @@
 </pre></figure>
 
 <p>And the result:</p>
-<div class="imgwrapper" style=""><div><a href="/set-text-by-handle/win32_3_2_2.jpg" class="fancy"><img src="/set-text-by-handle/win32_3_2_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>Note that we have not navigated to the address, we have only set it!</p>
-<div class="imgwrapper" style=""><div><a href="/set-text-by-handle/win32_3_1_2.jpg" class="fancy"><img src="/set-text-by-handle/win32_3_1_2.jpg" style="max-height: 250px"/></a></div></div>
+<div class="imgwrapper" style=""><div><a href="/getting-text-from-handle/win32_2_2_2.jpg" class="fancy"><img src="/getting-text-from-handle/win32_2_2_2.jpg" style="max-height: 250px"/></a></div></div>
 
 
 				<div style="clear: both"></div>
@@ -307,54 +325,6 @@ namespace Get_process_from_handle
 	</div>
 
 	<div class="title">
-		<h1><a href="/dedicated-to-the-api/" title="Dedicated to the API" rel="bookmark">Dedicated to the API</a></h1>
-		<div class="categories">
-			
-				<a href="/category/.NET/">.NET</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>Unfortunately it’s been quite silent around here for the last couple of months. I want to change that, so why not make a promise?</p>
-<a id="more"></a>
-
-<p>I’ve always been bullied by my wannabe developer friends for memorizing most of the Win32 (XP onwards) API. What they don’t realize is just how useful the API is - how powerful it is!</p>
-<p>For the complete month of April 2007, I will post a new blog each day containing a Win32 API trick including demonstration code. Although my samples will be in C#, this being the Win32 API, it’s actually usable in more or less any language you want.</p>
-<p>I look forward to my missionary work in the name of the holy Win32 API!</p>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Mar</span>
-			<span class="day">29</span>
-		</div>
-		<div class="lower">2007</div>
-	</div>
-
-	<div class="title">
 		<h1><a href="/turning-the-world-upside-down/" title="Turning the World Upside Down" rel="bookmark">Turning the World Upside Down</a></h1>
 		<div class="categories">
 			
@@ -388,6 +358,54 @@ namespace Get_process_from_handle
 <p>See how all the menus are in the top? Usually - excluding gaming and other special applications - our mouse will be working inside a menu, dragging a window, using the Start menu, or in the main content area of a browser/application. Common to most of these are that they all happen at the top of the monitor. As the monitor gets larger, the distance between the top and the bottom becomes greater.</p>
 <p>Having the Start menu at the top really saves a lot of mouse movement. The only negative side that I’ve become aware of is that you can’t just toss the mouse top-right like a maniac and click to close a window - that’ll now activate the system clock. When using multiple monitors, that really isn’t an issue as you wouldn’t be able to do that anyways since your mouse would enther the other monitor.</p>
 <p>The greatest opponent of this efficiency improvement really is… Tradition. I shall not try to hide the fact that it takes a lot of getting used to. After having moved my mouse towards the bottom and hammering a fist in the table for the 100th time, I was almost about to give up. But hang in, for the sake of your carpal tunnel syndrome suffering hand, MOVE THAT START MENU!</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Mar</span>
+			<span class="day">29</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/dedicated-to-the-api/" title="Dedicated to the API" rel="bookmark">Dedicated to the API</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Unfortunately it’s been quite silent around here for the last couple of months. I want to change that, so why not make a promise?</p>
+<a id="more"></a>
+
+<p>I’ve always been bullied by my wannabe developer friends for memorizing most of the Win32 (XP onwards) API. What they don’t realize is just how useful the API is - how powerful it is!</p>
+<p>For the complete month of April 2007, I will post a new blog each day containing a Win32 API trick including demonstration code. Although my samples will be in C#, this being the Win32 API, it’s actually usable in more or less any language you want.</p>
+<p>I look forward to my missionary work in the name of the holy Win32 API!</p>
 
 
 				<div style="clear: both"></div>

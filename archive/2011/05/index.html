@@ -151,13 +151,10 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/reverse-engineering-sql-server-page-headers/" title="Reverse Engineering SQL Server Page Headers" rel="bookmark">Reverse Engineering SQL Server Page Headers</a></h1>
+		<h1><a href="/bridging-the-gap-between-smallint-and-int/" title="Bridging the Gap Between Smallint and Int" rel="bookmark">Bridging the Gap Between Smallint and Int</a></h1>
 		<div class="categories">
 			
-				<a href="/category/.NET/">.NET</a>
-				, 
-			
-				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
+				<a href="/category/SQL Server - Optimization/">SQL Server - Optimization</a>
 				
 			
 		</div>
@@ -169,7 +166,7 @@
 
 		
 
-			<div class="body"><p>One of the first challenges I faced when starting out the development of <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a> was parsing page headers. We all know that <a href="/deciphering-a-sql-server-data-page/">pages are basically split in two parts</a>, the 96 byte header and the 8096 byte body of remaining bytes. Much has been written about headers and Paul Randal (<a href="http://www.sqlskills.com/BLOGS/PAUL/" target="_blank">b</a>|<a href="http://twitter.com/#!/paulrandal" target="_blank">t</a>) has a great post describing the <a href="http://www.sqlskills.com/blogs/paul/post/Inside-the-Storage-Engine-Anatomy-of-a-page.aspx" target="_blank">contents of the header</a> as well. However, though the contents have been described, I’ve been completely unable to find any kind of details on the storage format. What data types are the individual fields, and what’s the order? Oh well, we’ve always got DBCC PAGE.</p>
+			<div class="body"><p>Being a proponent of <a href="/wasted-bytes-add-up-consider-your-data-types-carefully">carefully choosing your data types</a>, I’ve often longed for the <a href="http://dev.mysql.com/doc/refman/5.0/en/numeric-types.html" target="_blank">mediumint data type</a> that MySQL has. Both smallint and int are signed data types, meaning their ranges are –32,768 to 32,767 for smallint and –2,147,483,648 to 2,147,483,647 for int. For most relational db schemas, positive identity values are used, meaning we’re looking at a possible 32,767 vs 2,147,483,647 values for smallint vs int. That’s a humongous difference, and it comes at a storage cost as well – 2 vs 4 bytes per column. If only there was something in between…</p>
 </div>
 		
 		
@@ -189,10 +186,13 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/bridging-the-gap-between-smallint-and-int/" title="Bridging the Gap Between Smallint and Int" rel="bookmark">Bridging the Gap Between Smallint and Int</a></h1>
+		<h1><a href="/reverse-engineering-sql-server-page-headers/" title="Reverse Engineering SQL Server Page Headers" rel="bookmark">Reverse Engineering SQL Server Page Headers</a></h1>
 		<div class="categories">
 			
-				<a href="/category/SQL Server - Optimization/">SQL Server - Optimization</a>
+				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
 				
 			
 		</div>
@@ -204,7 +204,7 @@
 
 		
 
-			<div class="body"><p>Being a proponent of <a href="/wasted-bytes-add-up-consider-your-data-types-carefully">carefully choosing your data types</a>, I’ve often longed for the <a href="http://dev.mysql.com/doc/refman/5.0/en/numeric-types.html" target="_blank">mediumint data type</a> that MySQL has. Both smallint and int are signed data types, meaning their ranges are –32,768 to 32,767 for smallint and –2,147,483,648 to 2,147,483,647 for int. For most relational db schemas, positive identity values are used, meaning we’re looking at a possible 32,767 vs 2,147,483,647 values for smallint vs int. That’s a humongous difference, and it comes at a storage cost as well – 2 vs 4 bytes per column. If only there was something in between…</p>
+			<div class="body"><p>One of the first challenges I faced when starting out the development of <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a> was parsing page headers. We all know that <a href="/deciphering-a-sql-server-data-page/">pages are basically split in two parts</a>, the 96 byte header and the 8096 byte body of remaining bytes. Much has been written about headers and Paul Randal (<a href="http://www.sqlskills.com/BLOGS/PAUL/" target="_blank">b</a>|<a href="http://twitter.com/#!/paulrandal" target="_blank">t</a>) has a great post describing the <a href="http://www.sqlskills.com/blogs/paul/post/Inside-the-Storage-Engine-Anatomy-of-a-page.aspx" target="_blank">contents of the header</a> as well. However, though the contents have been described, I’ve been completely unable to find any kind of details on the storage format. What data types are the individual fields, and what’s the order? Oh well, we’ve always got DBCC PAGE.</p>
 </div>
 		
 		

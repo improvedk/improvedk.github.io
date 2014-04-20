@@ -1006,7 +1006,7 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/the-null-bitmap-is-not-always-present-in-data-records/" title="The Null Bitmap is Not Always Present in Data Records" rel="bookmark">The Null Bitmap is Not Always Present in Data Records</a></h1>
+		<h1><a href="/sparse-column-storage-ndash-the-sparse-vector/" title="Sparse Column Storage &amp; the Sparse Vector" rel="bookmark">Sparse Column Storage &amp; the Sparse Vector</a></h1>
 		<div class="categories">
 			
 				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
@@ -1021,7 +1021,7 @@
 
 		
 
-			<div class="body"><p>While <a href="/sparse-column-storage-ndash-the-sparse-vector/">implementing sparse column support</a> for <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a>, I ran into a special condition that caught me by surprise – a data record with no null bitmap. Even <a href="http://www.sqlskills.com/BLOGS/PAUL/" target="_blank">Paul Randal</a> mentioned that the null bitmap would <em>always</em> be present in data records in his <a href="http://www.sqlskills.com/BLOGS/PAUL/post/A-SQL-Server-DBA-myth-a-day-(630" target="_blank">A SQL Server DBA myth a day: (6/30) three null bitmap myths</a>-three-null-bitmap-myths.aspx) post.</p>
+			<div class="body"><p>In this post I’ll be looking at the internal storage mechanism that supports sparse columns. For an introduction to what sparse columns are and when they ought to be used, <a href="http://msdn.microsoft.com/en-us/library/cc280604.aspx" target="_blank">take a look here</a>.</p>
 </div>
 		
 		
@@ -1041,7 +1041,7 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/sparse-column-storage-ndash-the-sparse-vector/" title="Sparse Column Storage &amp; the Sparse Vector" rel="bookmark">Sparse Column Storage &amp; the Sparse Vector</a></h1>
+		<h1><a href="/the-null-bitmap-is-not-always-present-in-data-records/" title="The Null Bitmap is Not Always Present in Data Records" rel="bookmark">The Null Bitmap is Not Always Present in Data Records</a></h1>
 		<div class="categories">
 			
 				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
@@ -1056,7 +1056,7 @@
 
 		
 
-			<div class="body"><p>In this post I’ll be looking at the internal storage mechanism that supports sparse columns. For an introduction to what sparse columns are and when they ought to be used, <a href="http://msdn.microsoft.com/en-us/library/cc280604.aspx" target="_blank">take a look here</a>.</p>
+			<div class="body"><p>While <a href="/sparse-column-storage-ndash-the-sparse-vector/">implementing sparse column support</a> for <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a>, I ran into a special condition that caught me by surprise – a data record with no null bitmap. Even <a href="http://www.sqlskills.com/BLOGS/PAUL/" target="_blank">Paul Randal</a> mentioned that the null bitmap would <em>always</em> be present in data records in his <a href="http://www.sqlskills.com/BLOGS/PAUL/post/A-SQL-Server-DBA-myth-a-day-(630" target="_blank">A SQL Server DBA myth a day: (6/30) three null bitmap myths</a>-three-null-bitmap-myths.aspx) post.</p>
 </div>
 		
 		
@@ -1111,7 +1111,7 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/creating-a-type-aware-parser-for-the-sys-system_internals_partition_columns-ti-field/" title="Creating a Type Aware Parser for the sys.system_internals_partition_columns.ti Field" rel="bookmark">Creating a Type Aware Parser for the sys.system_internals_partition_columns.ti Field</a></h1>
+		<h1><a href="/exploring-the-sys-system_internals_partition_columns-ti-field/" title="Exploring the sys.system_internals_partition_columns.ti Field" rel="bookmark">Exploring the sys.system_internals_partition_columns.ti Field</a></h1>
 		<div class="categories">
 			
 				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
@@ -1126,7 +1126,7 @@
 
 		
 
-			<div class="body"><p>Based on my findings <a href="/exploring-the-sys-system_internals_partition_columns-ti-field">exploring the sys.system_internals_partition_columns.ti field</a>, I needed parser that could extract the scale, precision, max_length as well as the max_inrow_length fields from it. The tricky part is that those values are stored differently for each individual type, added onto the fact that some types have hardcoded defaults that are not stored in the ti field, even though there’s space for it.</p>
+			<div class="body"><p>Running sp_helptext on the sys.system_internals_partition_columns system view reveals the following internal query:</p>
 </div>
 		
 		
@@ -1146,7 +1146,7 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/exploring-the-sys-system_internals_partition_columns-ti-field/" title="Exploring the sys.system_internals_partition_columns.ti Field" rel="bookmark">Exploring the sys.system_internals_partition_columns.ti Field</a></h1>
+		<h1><a href="/creating-a-type-aware-parser-for-the-sys-system_internals_partition_columns-ti-field/" title="Creating a Type Aware Parser for the sys.system_internals_partition_columns.ti Field" rel="bookmark">Creating a Type Aware Parser for the sys.system_internals_partition_columns.ti Field</a></h1>
 		<div class="categories">
 			
 				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
@@ -1161,7 +1161,7 @@
 
 		
 
-			<div class="body"><p>Running sp_helptext on the sys.system_internals_partition_columns system view reveals the following internal query:</p>
+			<div class="body"><p>Based on my findings <a href="/exploring-the-sys-system_internals_partition_columns-ti-field">exploring the sys.system_internals_partition_columns.ti field</a>, I needed parser that could extract the scale, precision, max_length as well as the max_inrow_length fields from it. The tricky part is that those values are stored differently for each individual type, added onto the fact that some types have hardcoded defaults that are not stored in the ti field, even though there’s space for it.</p>
 </div>
 		
 		
@@ -1607,13 +1607,10 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/reverse-engineering-sql-server-page-headers/" title="Reverse Engineering SQL Server Page Headers" rel="bookmark">Reverse Engineering SQL Server Page Headers</a></h1>
+		<h1><a href="/bridging-the-gap-between-smallint-and-int/" title="Bridging the Gap Between Smallint and Int" rel="bookmark">Bridging the Gap Between Smallint and Int</a></h1>
 		<div class="categories">
 			
-				<a href="/category/.NET/">.NET</a>
-				, 
-			
-				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
+				<a href="/category/SQL Server - Optimization/">SQL Server - Optimization</a>
 				
 			
 		</div>
@@ -1625,7 +1622,7 @@
 
 		
 
-			<div class="body"><p>One of the first challenges I faced when starting out the development of <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a> was parsing page headers. We all know that <a href="/deciphering-a-sql-server-data-page/">pages are basically split in two parts</a>, the 96 byte header and the 8096 byte body of remaining bytes. Much has been written about headers and Paul Randal (<a href="http://www.sqlskills.com/BLOGS/PAUL/" target="_blank">b</a>|<a href="http://twitter.com/#!/paulrandal" target="_blank">t</a>) has a great post describing the <a href="http://www.sqlskills.com/blogs/paul/post/Inside-the-Storage-Engine-Anatomy-of-a-page.aspx" target="_blank">contents of the header</a> as well. However, though the contents have been described, I’ve been completely unable to find any kind of details on the storage format. What data types are the individual fields, and what’s the order? Oh well, we’ve always got DBCC PAGE.</p>
+			<div class="body"><p>Being a proponent of <a href="/wasted-bytes-add-up-consider-your-data-types-carefully">carefully choosing your data types</a>, I’ve often longed for the <a href="http://dev.mysql.com/doc/refman/5.0/en/numeric-types.html" target="_blank">mediumint data type</a> that MySQL has. Both smallint and int are signed data types, meaning their ranges are –32,768 to 32,767 for smallint and –2,147,483,648 to 2,147,483,647 for int. For most relational db schemas, positive identity values are used, meaning we’re looking at a possible 32,767 vs 2,147,483,647 values for smallint vs int. That’s a humongous difference, and it comes at a storage cost as well – 2 vs 4 bytes per column. If only there was something in between…</p>
 </div>
 		
 		
@@ -1645,10 +1642,13 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/bridging-the-gap-between-smallint-and-int/" title="Bridging the Gap Between Smallint and Int" rel="bookmark">Bridging the Gap Between Smallint and Int</a></h1>
+		<h1><a href="/reverse-engineering-sql-server-page-headers/" title="Reverse Engineering SQL Server Page Headers" rel="bookmark">Reverse Engineering SQL Server Page Headers</a></h1>
 		<div class="categories">
 			
-				<a href="/category/SQL Server - Optimization/">SQL Server - Optimization</a>
+				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
 				
 			
 		</div>
@@ -1660,7 +1660,7 @@
 
 		
 
-			<div class="body"><p>Being a proponent of <a href="/wasted-bytes-add-up-consider-your-data-types-carefully">carefully choosing your data types</a>, I’ve often longed for the <a href="http://dev.mysql.com/doc/refman/5.0/en/numeric-types.html" target="_blank">mediumint data type</a> that MySQL has. Both smallint and int are signed data types, meaning their ranges are –32,768 to 32,767 for smallint and –2,147,483,648 to 2,147,483,647 for int. For most relational db schemas, positive identity values are used, meaning we’re looking at a possible 32,767 vs 2,147,483,647 values for smallint vs int. That’s a humongous difference, and it comes at a storage cost as well – 2 vs 4 bytes per column. If only there was something in between…</p>
+			<div class="body"><p>One of the first challenges I faced when starting out the development of <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a> was parsing page headers. We all know that <a href="/deciphering-a-sql-server-data-page/">pages are basically split in two parts</a>, the 96 byte header and the 8096 byte body of remaining bytes. Much has been written about headers and Paul Randal (<a href="http://www.sqlskills.com/BLOGS/PAUL/" target="_blank">b</a>|<a href="http://twitter.com/#!/paulrandal" target="_blank">t</a>) has a great post describing the <a href="http://www.sqlskills.com/blogs/paul/post/Inside-the-Storage-Engine-Anatomy-of-a-page.aspx" target="_blank">contents of the header</a> as well. However, though the contents have been described, I’ve been completely unable to find any kind of details on the storage format. What data types are the individual fields, and what’s the order? Oh well, we’ve always got DBCC PAGE.</p>
 </div>
 		
 		
@@ -2014,10 +2014,10 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/miracle-open-world-2011-follow-up/" title="Miracle Open World 2011 Followup" rel="bookmark">Miracle Open World 2011 Followup</a></h1>
+		<h1><a href="/42-weeks-later/" title="42 Weeks Later" rel="bookmark">42 Weeks Later</a></h1>
 		<div class="categories">
 			
-				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
+				<a href="/category/Miscellaneous/">Miscellaneous</a>
 				
 			
 		</div>
@@ -2029,7 +2029,8 @@
 
 		
 
-			<div class="body"><p>Last week I attended the <a href="http://mow2011.dk/" target="_blank">Miracle Open World 2011 conference</a>. As in the previous years the 80% content, 80% social moniker held true to its reputation. My legs and arms are still sore from carrying four-man rubber rings to the top of the four-story waterslide – not the typical aftermath of a conference. I met a lot of new awesome people and managed to pull of a couple of presentations with decent success as well, judging from the responses I’ve had so far. I’ve included the slides &amp; demo code for the presentations below.</p>
+			<div class="body"><div class="imgwrapper" style=""><div><a href="/42-weeks-later/film_28_weeks_later_2.png" class="fancy"><img src="/42-weeks-later/film_28_weeks_later_2.png" style="max-height: 250px"/></a></div></div>
+
 </div>
 		
 		
@@ -2049,10 +2050,10 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/42-weeks-later/" title="42 Weeks Later" rel="bookmark">42 Weeks Later</a></h1>
+		<h1><a href="/miracle-open-world-2011-follow-up/" title="Miracle Open World 2011 Followup" rel="bookmark">Miracle Open World 2011 Followup</a></h1>
 		<div class="categories">
 			
-				<a href="/category/Miscellaneous/">Miscellaneous</a>
+				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
 				
 			
 		</div>
@@ -2064,8 +2065,7 @@
 
 		
 
-			<div class="body"><div class="imgwrapper" style=""><div><a href="/42-weeks-later/film_28_weeks_later_2.png" class="fancy"><img src="/42-weeks-later/film_28_weeks_later_2.png" style="max-height: 250px"/></a></div></div>
-
+			<div class="body"><p>Last week I attended the <a href="http://mow2011.dk/" target="_blank">Miracle Open World 2011 conference</a>. As in the previous years the 80% content, 80% social moniker held true to its reputation. My legs and arms are still sore from carrying four-man rubber rings to the top of the four-story waterslide – not the typical aftermath of a conference. I met a lot of new awesome people and managed to pull of a couple of presentations with decent success as well, judging from the responses I’ve had so far. I’ve included the slides &amp; demo code for the presentations below.</p>
 </div>
 		
 		
