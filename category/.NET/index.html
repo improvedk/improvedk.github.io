@@ -1,0 +1,3107 @@
+<!DOCTYPE html>
+<html>
+	
+
+<head>
+	<title>.NET | Mark S. Rasmussen</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta charset="UTF-8" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" />
+	<meta name="google-site-verification" content="alt7-wfK3ZujMQ4D0jYNd0yC5LGetGdqBlBmZsqQlVw" />
+	<link rel="alternative" href="http://feeds.feedburner.com/Improvedk" title="Mark S. Rasmussen" type="application/atom+xml">
+	<script src="/js/combined.js"></script>
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+		ga('create', 'UA-2479580-1', 'improve.dk');
+		ga('send', 	'pageview');
+	</script>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+	<body>
+		<div id="headerline"></div>
+	
+		<header>
+			<div class="wrapper">
+				<div id="title">
+					<a href="/">Mark S. Rasmussen</a> <span>improve.dk</span>
+				</div>
+				
+				<nav>
+					<ul class="normal">
+						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li><a href="/about-me/">About Me</a></li>
+					</ul>
+				</nav>
+				
+				<ul id="sharing">
+					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk" id="rssfeed"><img src="/img/rss.png" /></a></li>
+					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
+					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+				</ul>
+
+				<div class="clear"></div>
+				
+				<div id="naviconcontent">
+					<ul class="mobile">
+						<li>
+							Pages
+							<ul class="pages"></ul>
+						</li>
+						<li>
+							Categories
+							<ul class="categories"></ul>
+						</li>
+						<li>
+							Archive
+							<ul class="archive"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+		<div id="mainwrapper">
+			<div id="contentwrapper">
+				<div id="content">
+				
+					
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Nov</span>
+			<span class="day">06</span>
+		</div>
+		<div class="lower">2013</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/sql-server-corruption-recovery-when-all-else-fails/" title="SQL Server Corruption Recovery - When All Else Fails" rel="bookmark">SQL Server Corruption Recovery - When All Else Fails</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
+				, 
+			
+				<a href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				, 
+			
+				<a href="/category/SQL Server/">SQL Server</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>In this post I want to walk through a number of SQL Server corruption recovery techniques for when you’re out of luck, have no backups, and the usual methods don’t work. I’ll be using the <a href="http://msftdbprodsamples.codeplex.com/releases/view/93587" target="_blank">AdventureWorksLT2008R2 sample database</a> as my victim.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Nov</span>
+			<span class="day">05</span>
+		</div>
+		<div class="lower">2013</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/corrupting-databases-purpose-using-orcamdf-corruptor/" title="Corrupting Databases on Purpose Using the OrcaMDF Corruptor" rel="bookmark">Corrupting Databases on Purpose Using the OrcaMDF Corruptor</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
+				, 
+			
+				<a href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				, 
+			
+				<a href="/category/SQL Server/">SQL Server</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Sometimes you must first do evil, to do good. Such is the case when you want to hone your skills in corruption recovery of SQL Server databases.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Nov</span>
+			<span class="day">04</span>
+		</div>
+		<div class="lower">2013</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/orcamdf-rawdatabase-a-swiss-army-knife-for-mdf-files/" title="OrcaMDF RawDatabase - A Swiss Army Knife for MDF Files" rel="bookmark">OrcaMDF RawDatabase - A Swiss Army Knife for MDF Files</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
+				, 
+			
+				<a href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				, 
+			
+				<a href="/category/SQL Server/">SQL Server</a>
+				, 
+			
+				<a href="/category/Tools of the Trade/">Tools of the Trade</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>When I initially started working on <a href="/introducing-orcamdf/">OrcaMDF</a> I had just one goal, to gain a deeper knowledge of MDF file internals than I could through most books available.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Oct</span>
+			<span class="day">28</span>
+		</div>
+		<div class="lower">2013</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/powerpad-powerpoint-presenters-view-for-tablets-phones/" title="PowerPad - Powerpoint Presenters View for Tablets &amp; Phones" rel="bookmark">PowerPad - Powerpoint Presenters View for Tablets &amp; Phones</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
+				, 
+			
+				<a href="/category/Tools of the Trade/">Tools of the Trade</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>I love presenting, especially so when it’s possible for me to do so alongside Powerpoints presenters view. Unfortunately I’m an even bigger fan of <a href="http://technet.microsoft.com/en-us/sysinternals/bb897434.aspx" target="_blank">ZoomIt</a> and I use it extensively when presenting. Why is that an issue? To use ZoomIt effectively, not just in demos but when showing slides as well, I need to duplicate my screen rather than extending it. Duplicating the screen means presenters view is not an option :(</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Oct</span>
+			<span class="day">08</span>
+		</div>
+		<div class="lower">2013</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/optimizing-performance-programmatically-setting-readonlysessionstate/" title="Optimizing Performance by Programmaticaly Setting ReadOnlySessionState" rel="bookmark">Optimizing Performance by Programmaticaly Setting ReadOnlySessionState</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/IIS/">IIS</a>
+				, 
+			
+				<a href="/category/Performance/">Performance</a>
+				, 
+			
+				<a href="/category/Web/">Web</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>One of the main culprits when it comes to ASP.NET concurrency is caused by the fact that default sesion state has been implemented using a pessimistic locking pattern. Basically, any standard handler, whether that be an ASPX page, a generic handler or an ASMX web service, goes through the following steps:</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Sep</span>
+			<span class="day">23</span>
+		</div>
+		<div class="lower">2013</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/verifying-mailgun-webhooks/" title="Verifying Mailgun Webhooks" rel="bookmark">Verifying Mailgun Webhooks</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p><a href="http://www.mailgun.com/" target="_blank">Mailgun</a> has a very neat feature that enables you to basically convert incoming emails to a POST request to a URL of your choice, also known as a webhook. Using this, you can easily have your application respond to email events. However, as this URL/service needs to be publically available, verifying Mailgun webhooks is very important, ensuring requests actually come from Mailgun, and not someone impersonating Mailgun.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">23</span>
+		</div>
+		<div class="lower">2013</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/could-not-load-type-newrelic-agent-core-agentapi/" title="Could Not Load Type &#39;NewRelic.Agent.Core.AgentApi&#39;" rel="bookmark">Could Not Load Type &#39;NewRelic.Agent.Core.AgentApi&#39;</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Recently I’ve begun using <a href="http://newrelic.com/" target="_blank">New Relic</a>, and so far it’s been an excellent experience. About two weeks ago I started using their <a href="https://newrelic.com/docs/dotnet/the-net-agent-api" target="_blank">.NET Agent API</a> to customize some of the data reported by our application to their servers. This makes the data way more valuable to us as we can now selectively ignore certain parts of our application while getting better reporting from other, more critical, parts of the application.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">13</span>
+		</div>
+		<div class="lower">2013</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/orcamdf-is-now-available-on-nuget/" title="OrcaMDF Is Now Available on NuGet" rel="bookmark">OrcaMDF Is Now Available on NuGet</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Thanks to Justin Dearing (<a href="http://www.justaprogrammer.net/" target="_blank">b</a>|<a href="https://twitter.com/zippy1981" target="_blank">t</a>), OrcaMDF is now available on <a href="https://www.nuget.org/packages/OrcaMDF.Core" target="_blank">NuGet</a>!</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">07</span>
+		</div>
+		<div class="lower">2013</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/how-to-identify-which-request-caused-a-runaway-thread-using-windbg/" title="How to Identify Which Request Caused a Runaway Thread, Using Windbg" rel="bookmark">How to Identify Which Request Caused a Runaway Thread, Using Windbg</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/IIS/">IIS</a>
+				, 
+			
+				<a href="/category/Windbg/">Windbg</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>When your w3wp process is stuck at 100% like, <a href="/debugging-in-production-part-1-analyzing-100-cpu-usage-using-windbg/">like when I used a non-thread-safe Dictionary concurrently</a>, you may want to identify what request the runaway thread is actually serving. Let me show you how to identify which request caused a runaway thread, using windbg.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">30</span>
+		</div>
+		<div class="lower">2013</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/debugging-in-production-part-3-thread-safe-dictionaries/" title="Debugging in Production Part 3 - Thread-Safe Dictionaries" rel="bookmark">Debugging in Production Part 3 - Thread-Safe Dictionaries</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/Windbg/">Windbg</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p><a href="/debugging-in-production-part-2-latent-race-condition-bugs">In part 2 we found out that the concurrent access to a generic dictionary triggered a race condition bug</a> that caused threads to get stuck at 100% CPU usage. In this part, I’ll show how easy it is to rewrite the code, using the new thread-safe dictionaries in .NET 4.0, so it’s protected from race condition bugs like the one I encountered.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">15</span>
+		</div>
+		<div class="lower">2013</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/debugging-in-production-part-2-latent-race-condition-bugs/" title="Debugging in Production Part 2 - Latent Race Condition Bugs" rel="bookmark">Debugging in Production Part 2 - Latent Race Condition Bugs</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/IIS/">IIS</a>
+				, 
+			
+				<a href="/category/Tools of the Trade/">Tools of the Trade</a>
+				, 
+			
+				<a href="/category/Windbg/">Windbg</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Having <a href="/debugging-in-production-part-1-analyzing-100-cpu-usage-using-windbg">analyzed the process dump in part 1</a>, let’s take a look at the code we suspect of causing the issue, in particular how race condition bugs can be avoided.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">08</span>
+		</div>
+		<div class="lower">2013</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/debugging-in-production-part-1-analyzing-100-cpu-usage-using-windbg/" title="Debugging in Production Part 1 - Analyzing 100% CPU Usage Using Windbg" rel="bookmark">Debugging in Production Part 1 - Analyzing 100% CPU Usage Using Windbg</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/IIS/">IIS</a>
+				, 
+			
+				<a href="/category/Tools of the Trade/">Tools of the Trade</a>
+				, 
+			
+				<a href="/category/Windbg/">Windbg</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>This is the story of how a simple oversight resulted in a tough to catch bug. As is often the case, it worked on my machine and only manifested itself in production on a live site. In this series we will look at analyzing 100% CPU usage using Windbg.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Feb</span>
+			<span class="day">17</span>
+		</div>
+		<div class="lower">2012</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/linqpad-ndash-the-perfect-playground-for-amazon-web-services/" title="LINQPad - The Perfect Playground for Amazon Web Services" rel="bookmark">LINQPad - The Perfect Playground for Amazon Web Services</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/Amazon Web Services/">Amazon Web Services</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>I’ve previously written on <a href="/how-to-set-up-and-serve-private-content-using-s3">why I don’t want to rely on third party GUIs</a> for managing my AWS services. Assuming I’ll be interacting with AWS through the SDK later on, I much prefer doing the initial setup using the SDK as well, to ensure I fully understand what I’ve done. <a href="/how-to-set-up-and-serve-private-content-using-s3">In</a> <a href="/pushing-the-limits-of-amazon-s3-upload-performance">previous</a> <a href="/optimizing-single-instance-amazon-s3-delete-performance">posts</a>, I’ve shown full console application examples on how to use the SDK for various tasks; however, creating a console application project, compiling and running it can be kind of cumbersome, especially if you’re just doing some quick testing or API exploration.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jan</span>
+			<span class="day">31</span>
+		</div>
+		<div class="lower">2012</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/seemingly-random-exceptions-thrown-from-cachedpathdata-validatepath/" title="Seemingly Random Exceptions Thrown From CachedPathData.ValidatePath" rel="bookmark">Seemingly Random Exceptions Thrown From CachedPathData.ValidatePath</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Several times a day I’d get an error report email noting that the following exception had occurred in our ASP.NET 4.0 application:</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Nov</span>
+			<span class="day">28</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/automated-testing-of-orcamdf-against-multiple-sql-server-versions/" title="Automated Testing of OrcaMDF Against Multiple SQL Server Versions" rel="bookmark">Automated Testing of OrcaMDF Against Multiple SQL Server Versions</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Since I released <a href="/orcamdf-studio-release-feature-recap">OrcaMDF Studio</a>, I’ve gotten aware of some base table differences between SQL Server 2008 and 2005. These differences causes OrcaMDF to fail since it’s coded against 2008 R2 and expect that format.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Nov</span>
+			<span class="day">17</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/optimizing-single-instance-amazon-s3-delete-performance/" title="Optimizing Single Instance Amazon S3 Delete Performance" rel="bookmark">Optimizing Single Instance Amazon S3 Delete Performance</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/Amazon Web Services/">Amazon Web Services</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Once you’ve <a href="/pushing-the-limits-of-amazon-s3-upload-performance">made a mess</a> and you’ve now got millions of objects you need to delete, how do you do that as fast as possible?</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Nov</span>
+			<span class="day">07</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/pushing-the-limits-of-amazon-s3-upload-performance/" title="Pushing the Limits of Amazon S3 Upload Performance" rel="bookmark">Pushing the Limits of Amazon S3 Upload Performance</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/Amazon Web Services/">Amazon Web Services</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Recently I’ve been working on a project where I’ve got millions of relatively small objects, sized between 5kb and 500kb, and they all have to be uploaded to S3. Naturally, doing a synchronous upload of each object, one by one, just doesn’t cut it. We need to upload the objects in parallel to achieve acceptable performance. But what are the optimal parameters when it comes to the number of simultaneous upload threads? Does it depend on the object size? How much of a difference does HTTPS over HTTP make? Let me share what I discovered during my testing.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Oct</span>
+			<span class="day">26</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/how-to-set-up-and-serve-private-content-using-s3/" title="How to Set Up and Serve Private Content Using S3 and Amazon CloudFront" rel="bookmark">How to Set Up and Serve Private Content Using S3 and Amazon CloudFront</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/Amazon Web Services/">Amazon Web Services</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Imagine the scenario – you’ve got customers all over the world all requesting binary files from you. To speed up your delivery, you want to utilize a CDN. Furthermore, all of the files needs to be protected on a specific user session level. Basically, you need to grant access to the specific file when a given user logs in – it’s not enough just to have a “hidden” URL or a URL with an infinitely sharable policy in the query string.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jun</span>
+			<span class="day">21</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/copying-a-sql-server-database-file-thatrsquos-in-use-using/" title="Copying a SQL Server Database File That&#39;s in Use Using Volume Shadow Copy" rel="bookmark">Copying a SQL Server Database File That&#39;s in Use Using Volume Shadow Copy</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>When working on <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a> I usually setup a test database, force a checkpoint and then perform my tests on the MDF file. Problem is, you can’t open the MDF file for reading, nor copy it, as long as the database is online in SQL Server. I could shut down SQL Server temporarily while copying the file, but that quickly becomes quite a hassle.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jun</span>
+			<span class="day">14</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/avoiding-regressions-in-orcamdf-by-system-testing/" title="Avoiding Regressions in OrcaMDF by System Testing" rel="bookmark">Avoiding Regressions in OrcaMDF by System Testing</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				, 
+			
+				<a href="/category/Testing/">Testing</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>As I continue to add new features &amp; support for new data structures in <a href="/introducing-orcamdf">OrcaMDF</a>, the risk of <a href="http://en.wikipedia.org/wiki/Software_regression" target="_blank">regressions</a> increase. Especially so as I’m developing in a largely unknown field, given that I can’t plan for structures and relations that I do not yet know about. To reduce the risk of regressions, testing is an obvious need.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jun</span>
+			<span class="day">01</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/using-fiddler-to-automatically-download-streamed-mp3s/" title="Using Fiddler to Automatically Download Streamed MP3s" rel="bookmark">Using Fiddler to Automatically Download Streamed MP3s</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Eric Lawrence’s <a href="http://www.fiddler2.com/fiddler2/version.asp" target="_blank">Fiddler</a> has many uses. I use it every day for debugging our client/server interaction, caching behavior, etc. What many don’t realize is that Fiddler is also an excellent platform for scripting, enabling you to modify requests and responses as they go out and come back. I made a quick script to automatically download streamed MP3 files as they were played, naming them automatically from the ID3 information contained in them.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">19</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/reverse-engineering-sql-server-page-headers/" title="Reverse Engineering SQL Server Page Headers" rel="bookmark">Reverse Engineering SQL Server Page Headers</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>One of the first challenges I faced when starting out the development of <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a> was parsing page headers. We all know that <a href="/deciphering-a-sql-server-data-page/">pages are basically split in two parts</a>, the 96 byte header and the 8096 byte body of remaining bytes. Much has been written about headers and Paul Randal (<a href="http://www.sqlskills.com/BLOGS/PAUL/" target="_blank">b</a>|<a href="http://twitter.com/#!/paulrandal" target="_blank">t</a>) has a great post describing the <a href="http://www.sqlskills.com/blogs/paul/post/Inside-the-Storage-Engine-Anatomy-of-a-page.aspx" target="_blank">contents of the header</a> as well. However, though the contents have been described, I’ve been completely unable to find any kind of details on the storage format. What data types are the individual fields, and what’s the order? Oh well, we’ve always got DBCC PAGE.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">19</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/checking-which-database-is-stored-in-a-deattached-mdf-file/" title="Checking Which Database is Stored in a Detached MDF File" rel="bookmark">Checking Which Database is Stored in a Detached MDF File</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Inspired by <a href="http://stackoverflow.com/questions/6061510/any-way-to-quickly-tell-which-database-if-any-is-attached-to-a-mdf-file" target="_blank">this</a> question on StackOverflow, I’ve made a quick script to demonstrate how this might be done using <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a>.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">01</span>
+		</div>
+		<div class="lower">2010</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/papercut-vs-smtp4dev-testing-mail-sending-locally/" title="Papercut vs smtp4dev - Testing Mail Sending Locally" rel="bookmark">Papercut vs smtp4dev - Testing Mail Sending Locally</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/Tools of the Trade/">Tools of the Trade</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Testing mail functionality in code using external mail servers has always been a hassle. If the mail manages to dodge antispam and various other mischievous services, it’ll probably take several minutes to receive. On our Exchange servers it’ll typically take 10-15 minutes before a locally sent mail actually arrives back in my inbox. We can do better!</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jun</span>
+			<span class="day">07</span>
+		</div>
+		<div class="lower">2010</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/bundling-image-requests-for-increased-performance/" title="Bundling Image Requests for Increased Performance" rel="bookmark">Bundling Image Requests for Increased Performance</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/AS/Flex/Flash/">AS/Flex/Flash</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>A common scenario in RIA’s is to show a large amount of small pictures on a single page. Let’s say we want to show 100 images in a grid. While the simplest approach is to just put in 100 image objects and load in the images one by one, I believe it can be done smarter…</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Dec</span>
+			<span class="day">09</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/fixing-flash-bugs-by-intercepting-iis-application-request-routing-cookies/" title="Fixing Flash Bugs and Intercepting IIS Application Request Routing Cookies" rel="bookmark">Fixing Flash Bugs and Intercepting IIS Application Request Routing Cookies</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/AS/Flex/Flash/">AS/Flex/Flash</a>
+				, 
+			
+				<a href="/category/IIS/">IIS</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>What does Flash, upload, cookies, IIS load balancing and cookies have to do with each others? More than I’d like :(</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Nov</span>
+			<span class="day">11</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/reading-width-height-of-flash-file/" title="Reading Width &amp; Height of Flash File" rel="bookmark">Reading Width &amp; Height of Flash File</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/AS/Flex/Flash/">AS/Flex/Flash</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Obtaining the movie height &amp; weidth of a Flash file is an easy task using the <a href="http://www.swftools.org/swfdump.html" target="_blank">swfdump</a> tool that comes as part of the <a href="http://www.swftools.org/" target="_blank">swftools</a> package. Here’s an example of how to invoke swfdump from C# and read out the height &amp; width of a given Flash file.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Nov</span>
+			<span class="day">05</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/defending-against-the-improbable/" title="Defending Against the Improbable" rel="bookmark">Defending Against the Improbable</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>As little children we’ve all been taught that it’s better to program defensively than relying on exceptions being thrown. However, sometimes it’s preferably to just hope for the best and catch exceptions if they happen.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Oct</span>
+			<span class="day">21</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/solving-access-denied-errors-using-process-monitor/" title="Solving Access Denied Errors Using Process Monitor" rel="bookmark">Solving Access Denied Errors Using Process Monitor</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/IIS/">IIS</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p><a href="http://stackoverflow.com/questions/809144/could-not-load-file-or-assembly-someproject-or-one-of-its-dependencies-access" target="_blank">Access</a> <a href="http://stackoverflow.com/questions/574411/system-error-5-access-is-denied-when-starting-a-net-service" target="_blank">denied</a> <a href="http://stackoverflow.com/questions/951259/could-not-load-file-or-assembly-or-one-of-its-dependencies-access-is-denied" target="_blank">errors</a> are not <a href="http://stackoverflow.com/questions/1166490/could-not-load-file-or-assembly-applicenses-or-one-of-its-dependencies-access" target="_blank">uncommon</a> when deploying new websites / features that interact with the filesystem. While it might work in local testing, it suddenly doesn’t anymore when deployed. Using <a href="http://technet.microsoft.com/en-us/sysinternals/bb896645.aspx" target="_blank">Process Monitor</a> I’ll show how to easily debug these issues.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Oct</span>
+			<span class="day">14</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/how-to-do-url-rewriting-on-iis-7-properly/" title="How To Do URL Rewriting on IIS 7 Properly" rel="bookmark">How To Do URL Rewriting on IIS 7 Properly</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/IIS/">IIS</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>One of my earlier blog posts, and the all time most popular one, was about <a href="/making-url-rewriting-on-iis7-work-like-iis6/">how to make URL rewriting on IIS 7 work like IIS 6</a>. While my method did provide a means to the goal, it’s humiliatingly far from what I should’ve done. Since the old post is still the most visited post on my blog I feel obligated to write a followup on how to do proper url rewriting in IIS 7.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Sep</span>
+			<span class="day">30</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/writing-a-calculator-in-csharp-using-sablecc/" title="Writing a Calculator in C# Using SableCC" rel="bookmark">Writing a Calculator in C# Using SableCC</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Writing a calculator is a simple task - just add nine buttons labeled 1-9 and add a plus and minus button and we’re almost good to go. In this entry I’m going to write a calculator called SimpleCalc that does not have a GUI, instead it’ll take in an arbitrary expression and calculate the results of it. The input I’ll use as my immediate goal is the following:</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Sep</span>
+			<span class="day">16</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/combining-paths-with-multiple-parts/" title="Combining Paths With Multiple Parts" rel="bookmark">Combining Paths With Multiple Parts</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Whenever you concatenate multiple strings into a path, you really ought to be using the <a href="http://msdn.microsoft.com/en-us/library/system.io.path.aspx" target="_blank">System.IO.Path</a> class’s Combine method. At times you may be concatenating a number of smaller parts of a path instead of just the two that the <a href="http://msdn.microsoft.com/en-us/library/fyy7a5kt.aspx" target="_blank">Path.Combine()</a> method takes. Nested Path.Combine calls quickly become difficult to read and error prone:</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Sep</span>
+			<span class="day">12</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/the-cost-of-latent-logging-code/" title="The Cost of Latent Logging Code" rel="bookmark">The Cost of Latent Logging Code</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Logging is an integral part of most applications, whether it’s for logging performance metrics or causality data. Avoiding performance hits due to logging can be tricky though as we don’t want to spend CPU cycles on the logging infrastructure when logging is disabled, while still keeping the full logging ability when required.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Aug</span>
+			<span class="day">24</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/making-the-aspnet-state-service-work-across-network/" title="Making the ASP.NET State Service Work Across Network" rel="bookmark">Making the ASP.NET State Service Work Across Network</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/IIS/">IIS</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Once you start distributing your ASP.NET website across multiple webservers, you’re going to need a way to share session state. That is, unless your app is stateless, in which case scaling it should be a breeze!</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">08</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/iis7-the-object-identifier-does-not-represent-a-valid-object/" title="The Object Identifier Does Not Represent a Valid Object" rel="bookmark">The Object Identifier Does Not Represent a Valid Object</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/IIS/">IIS</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>When adding sites to IIS7 either by script or by editing the config files directly, you may receive an error in the sites list that says:</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">01</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/evolution-of-the-simple-genetic-algorithm/" title="Evolution of The Simple Genetic Algorithm" rel="bookmark">Evolution of The Simple Genetic Algorithm</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Based on my previous post on how to <a href="http://www.improve.dk/blog/2009/04/29/implementing-a-simple-genetic-algorithm" target="_blank">implement a simple genetic algorithm</a>, I got some great comments pointing out that the algorithm might not be the most pure form of a genetic algorithm. I won’t disagree, though I will point out that evolution also does occur due to mutation alone, so genetic algorithms may come in different forms.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">29</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/implementing-a-simple-genetic-algorithm/" title="Implementing a Simple Genetic Algorithm" rel="bookmark">Implementing a Simple Genetic Algorithm</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>In this blog post I’ll give a quick introduction to what <a href="http://en.wikipedia.org/wiki/Genetic_algorithm" target="_blank">genetic algorithms</a> are and what they can be used for. We’ll implement a genetic algorithm that attempts to guess an RGB color by evolving upon a random set of initial guesses, until it at some point evolves into the correct RGB value.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">01</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/solving-deadlocks-through-locking-hints/" title="Solving Deadlocks Through Locking Hints" rel="bookmark">Solving Deadlocks Through Locking Hints</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/SQL Server - Optimization/">SQL Server - Optimization</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Deadlocks in any database can be a hard beast to weed out, especially since they may hide latently in your code, awaiting that specific moment when they explode. An API website, exposing a series of webservices, had been working fine for months, until I decided to run my client app with a lot more threads than usual.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Feb</span>
+			<span class="day">15</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/utilizing-transactional-ntfs-through-dotnet/" title="Utilizing Transactional NTFS Through .NET" rel="bookmark">Utilizing Transactional NTFS Through .NET</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>We’re used to using transactions when dealing with the database layer. Transactions ensure we can perform multiple queries as one atomic event, either they all succed or they all fail, obeying the rules of <a href="http://en.wikipedia.org/wiki/ACID" target="_blank">ACIDity</a>. Until Vista, performing transactional file operations haven’t been possible.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Nov</span>
+			<span class="day">01</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/implementing-imperative-security-declaratively-using-postsharp/" title="Implementing Imperative Security Declaratively Using PostSharp" rel="bookmark">Implementing Imperative Security Declaratively Using PostSharp</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>At a recent TechTalk I talked about code access security and how to perform declarative and imperative security demands &amp; requests. There’s no doubt declarative security checking is nicer than imperative checking, but not everything can be done declaratively.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Oct</span>
+			<span class="day">16</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/i-dont-like-static-methods/" title="I Don&#39;t Like Static Methods" rel="bookmark">I Don&#39;t Like Static Methods</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Inspired by a recent <a href="http://stackoverflow.com/questions/205689/class-with-single-method-best-approach" target="_blank">question on StackOverflow</a>, I felt like sharing my thoughts on static methods in general.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Oct</span>
+			<span class="day">05</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/using-squid-as-a-reverse-proxy-with-a-dotnet-url-rewriter/" title="Using Squid as a Reverse Proxy With a .NET Url Rewriter" rel="bookmark">Using Squid as a Reverse Proxy With a .NET Url Rewriter</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Once you start receiving visitors from all over the world, a new kind of scaling issue arise. It’s not a matter of adding more servers to the cluster or optimizing code (we’ll assume these factors are perfect), it’s a simple matter of geography and mathematics. Serving code from one end of the world to the other will take time, no matter how quick your servers are handling the request. The speed of light suddenly seems quite slow.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Aug</span>
+			<span class="day">10</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/updating-xmloutput/" title="Updating XmlOutput" rel="bookmark">Updating XmlOutput</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Since I originally posted my XmlOutput class I’ve received lots of great feedback. I’m happy that many of you have found it useful.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jun</span>
+			<span class="day">13</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/providing-custom-assembly-evidence/" title="Providing Custom Assembly Evidence" rel="bookmark">Providing Custom Assembly Evidence</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>I recently <a href="/analyzing-assembly-evidence/">mentioned</a> the possibility of having an assembly provide custom evidence alongside the CLR provided evidence. Let’s see how to do it.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jun</span>
+			<span class="day">11</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/analyzing-assembly-evidence/" title="Analyzing Assembly Evidence" rel="bookmark">Analyzing Assembly Evidence</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>When the CLR loads an assembly and needs to determine the appropriate permission set to apply, it’s based on various evidence. Assembly evidence tells the CLR about the origins of the assembly, the zone it’s loaded from and the file hash of the actual assembly file - these are just some of the more common evidence types the CLR uses, there are a lot more that are rarely used. Any object can be a piece of evidence, the CLR will only react on well known evidence types though.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jun</span>
+			<span class="day">02</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/using-idispoable-to-write-indented-text/" title="Using IDisposable to Write Indented Text" rel="bookmark">Using IDisposable to Write Indented Text</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>I often need to output indented text in one way of the other, it could be HTML, XML, source code etc (please look beyond the actual problem domain - I’d enver write XML this way, it’s just an example). Usually that involved me writing tab characters manually (or by calling a function that returned the current indentation string), cluttering the actual output. An example might look like this:</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">13</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/generic-dijkstras-algorithm/" title="Generic Dijkstra&#39;s Algorithm" rel="bookmark">Generic Dijkstra&#39;s Algorithm</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Through various projects, I’ve had to do some shortest-path finding in a connected graph. An efficient and straight-forward way to do this is using <a href="http://en.wikipedia.org/wiki/Dijkstra&#39;s_algorithm" target="_blank">Dijkstra’s Algorithm</a>. Notice that it’ll only work for graphs with non negative path weights, like 2D maps for instance. While I’ve used the algorithm on several occasions, it’s only now that I’ve rewritten it in generic form</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">02</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/mapping-datareader-to-objects-using-reflection-emit/" title="Mapping Datareader to Objects Using Reflection.Emit" rel="bookmark">Mapping Datareader to Objects Using Reflection.Emit</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>I’ve previously written of how to automatically <a href="/automatically-mapping-datatable-to-objects/">map a DataTable into a strongly typed collection of objects</a>. There’s a problem though, <a href="/performance-comparison-reading-data-from-the-database-strongly-typed/">it’s not fast</a>… I wanted to improve on it, and this is what I ended up with.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">30</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/performance-comparison-reading-data-from-the-database-strongly-typed/" title="Performance Comparison - Reading Data From the Database Strongly Typed" rel="bookmark">Performance Comparison - Reading Data From the Database Strongly Typed</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>I’m a big fan of strongly typed database querying as well as returning strong typed results. Due to the nature of static languages, you’ll get compile time checking of all our tables and columns. You can easily rename columns as you can be sure all your (internal) references are accounted for.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">16</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/profiling-code-the-easy-way/" title="Profiling Code the Easy Way" rel="bookmark">Profiling Code the Easy Way</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>I often do code profiling, usually involving a stopwatch and some boilerplate code. I decided to make a quick’n’simple class that’ll help me get rid of some of that code and concentrate on the actual code being profiled.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">16</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/securing-dotnet-code/" title="Securing .NET Code" rel="bookmark">Securing .NET Code</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Time flies fast. Back in 2006, during my time as an <a href="http://en.wikipedia.org/wiki/Microsoft_Student_Partners" target="_blank">MSP</a>, I made a series of presentations on securing intellectual property in .NET code, resulting in my <a href="/securing-dotnet-code-article/">Securing .NET Code</a> article. Although it’s about two years old, most points are still valid today, unfortunately.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">07</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/spawning-threads-in-aspnet-can-be-dangerous/" title="Spawning Threads in ASP.NET Can Be Dangerous" rel="bookmark">Spawning Threads in ASP.NET Can Be Dangerous</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>In my <a href="/response-transmitfile-close-will-kill-your-application/">earlier blog post</a> about the dangers of using Response.TransmitFile, I gave an example of a workaround involving spawning a new thread in the ASP.NET page. While this does solve the issue at hand, it presents us with a new way to kill our application even quicker than last.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Mar</span>
+			<span class="day">29</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/xmloutput-vs-xmlserializer-performance/" title="XmlOutput vs XmlSerializer Performance" rel="bookmark">XmlOutput vs XmlSerializer Performance</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>I got quite a lot of comments for my <a href="/xmldocument-fluent-interface/">XmlDocument fluent interface</a>, and I’m very glad I did. I’m always open towards new ways to solve problems, and I got a couple of suggestions to my post that I afterwards experimented with. One of those is using the XmlSerializer to serialize strongly typed classes (or structs - performance is the same) into XML. <a href="http://www.vonsharp.net/" target="_blank">Jon von Gillern</a> originally suggested it, but <a href="http://www.u2u.info/Blogs/Kris" target="_blank">Kris Vandermotten</a> made me want to test it out.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Mar</span>
+			<span class="day">29</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/response-transmitfile-close-will-kill-your-application/" title="Response.TransmitFile + Close Will Kill Your Application" rel="bookmark">Response.TransmitFile + Close Will Kill Your Application</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Just before last weekend I noticed that a website I’m responsible for started spitting out “Server is busy” messages, not something you want to see on a website with millions of visitors per day. The quickfix was to recycle the application pool, and thus I solved the symptoms by setting a 15 mins recycle cycle on all the application pools. Not exactly optimal, but sometimes pissing your pants is the way to go.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Mar</span>
+			<span class="day">13</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/csharp-string-enumerations/" title="C# String Enumerations" rel="bookmark">C# String Enumerations</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Switches are rarely nice in an architectural aspect, but they are often required none the less. One of the ways we can reduce the risk of errors as well as increase readability is to use enumeration values instead of constants. Unfortunately this only works for numeric types, we cannot create a string enumeration. Here’s a workaround.  This is a typical console application, taking in an input value (stored in the input variable) and switching on the content:</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Mar</span>
+			<span class="day">10</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/controlling-sqlconnection-timeouts/" title="Controlling SqlConnection Timeouts" rel="bookmark">Controlling SqlConnection Timeouts</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>When performing queries against a SQL Server database, there are a couple of methods readily available. However, an option is missing.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Mar</span>
+			<span class="day">08</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/using-network-load-balancing-for-availability-and-scalability/" title="Using Network Load Balancing for Availability &amp; Scalability" rel="bookmark">Using Network Load Balancing for Availability &amp; Scalability</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>There are two primary reasons for venturing into the realms of clustering/load balancing - availability &amp; scalability. In this post I’ll give a quick demo of how to setup Windows Network Load Balancing (NLB) on Server 2003 and how it affects the availability of a web application.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Mar</span>
+			<span class="day">02</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/setting-up-and-testing-active-directory-failover/" title="Setting Up and Testing Active Directory Failover" rel="bookmark">Setting Up and Testing Active Directory Failover</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/Windows/">Windows</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>I spend a lot of time architecting for scalability, availability and security during my daily work. Currently I’ve got a distributed system consisting of several windows services communicating across machines using WCF and authenticating through Active Directory.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Nov</span>
+			<span class="day">19</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/automatically-mapping-datatable-to-objects/" title="Automatically Mapping Datatable to Objects" rel="bookmark">Automatically Mapping Datatable to Objects</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>I often need to transfer data from my business layer to my presentation layers in a strongly typed way. In this example I’ll use the following very struct and corresponding DataTable to represent the data I need to transfer:</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Oct</span>
+			<span class="day">20</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/xmldocument-fluent-interface/" title="XmlDocument Fluent Interface" rel="bookmark">XmlDocument Fluent Interface</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>I do a lot of backend programming for Flash frontends. That basically means a lot of ASPX pages that simply return some XML and accept some incoming XML for parameters. Most of the UI logic ends up getting cluttered with manual XML stringbuilding, so I saw this as an obvious opportunity to play around with a fluent interfaces.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Oct</span>
+			<span class="day">09</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/accessing-my-privates/" title="Accessing My Privates, Scope vs Encapsulation" rel="bookmark">Accessing My Privates, Scope vs Encapsulation</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Recently I was developing a couple of simple ORM classes that had me confused.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Oct</span>
+			<span class="day">08</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/handling-dbnulls/" title="Handling DBNulls" rel="bookmark">Handling DBNulls</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Reading and writing values to the DB has always been a bit cumbersome when you had to take care of nullable types and DBNull values. Here’s a way to make it easy.  Based on <a href="http://aspalliance.com/852" target="_blank">this post by Peter Johnson</a> and <a href="http://www.falafel.com/community/blogs/techbits/archive/2006/10/13/Casting-DBNull-Gracefully-and-Elegantly-Using-Generics.aspx" target="_blank">this post by Adam Anderson</a> I gathered a couple of ideas and combined them to make a completely generic class that will handle DBNulls for both reads and writes, as well as handling nullable types.  Let me present the code, I’ll go over it afterwards:</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jun</span>
+			<span class="day">10</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/creating-a-dotnet-bootstrapped-installer-using-nsis/" title="Creating a .NET Bootstrapped Installer Using NSIS" rel="bookmark">Creating a .NET Bootstrapped Installer Using NSIS</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>If you have ever deployed .NET windows applications, you have without doubt tried the Visual Studio Install project type. The Install project will create .MSI install applications for you, they’re great for basic installations, but nothing more than that. The .NET bootstrapper is quite lacking, at times it won’t be able to find the framework download file as it’s changed it’s location, at other times it’s not able to download it. And finally, if it does determine that the user needs the framework, it’s shown in an ugly uncustomizable GUI.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">14</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/cascading-windows/" title="Cascading Windows Using PInvoke" rel="bookmark">Cascading Windows Using PInvoke</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>In Photoshop we often work with multiple windows open. They can be cascaded to more easily be able to view the different windows and tell them apart. There’s an API function that does the same to any windows you specify, you can even define the rectangle where they should be cascaded within.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">13</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/animating-windows/" title="Animating Windows Using PInvoke" rel="bookmark">Animating Windows Using PInvoke</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Let’s be a bit more graphic. This time I’ll show you how to use the Windows API to make your forms fade in/out, slide in from the side or do various other animations. For this example we’ll have to use a Windows Forms project as we have to utilize a Form object in the example.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">12</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/activating-windows/" title="Activating Windows Using PInvoke" rel="bookmark">Activating Windows Using PInvoke</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Now we’ll see how to activate windows and sending them to the foreground. I will be using the <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">WindowFinder class</a> that I introduced in the blog <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">Finding specific windows</a>.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">11</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/minimizing-and-maximizing-windows/" title="Minimizing and Maximizing Windows Using PInvoke" rel="bookmark">Minimizing and Maximizing Windows Using PInvoke</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>This time I will show how to maximize and minimize windows. I will be using the <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">WindowFinder class</a> that I introduced in the blog <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">Finding specific windows</a>.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">11</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/getting-key-state/" title="Getting Key State Using PInvoke" rel="bookmark">Getting Key State Using PInvoke</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Here’s an example of how to retrieve the state of any keyboard key.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">09</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/modifying-window-location-and-size/" title="Modifying Window Location and Size Using PInvoke" rel="bookmark">Modifying Window Location and Size Using PInvoke</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Last time we saw how to obtain a windows location and size. This time I’ll show how to change a windows size and location. I will be using the <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">WindowFinder class</a> that I introduced in the blog <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">Finding specific windows</a>.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">09</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/getting-window-location-and-size/" title="Getting Window Location and Size Using PInvoke" rel="bookmark">Getting Window Location and Size Using PInvoke</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>This time I’ll show how to obtain the size and location of a window. I will be using the <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">WindowFinder class</a> that I introduced in the blog <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">Finding specific windows</a>.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">07</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/finding-specific-windows/" title="Finding Specific Windows Using PInvoke" rel="bookmark">Finding Specific Windows Using PInvoke</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Last time I made an example of how to enumerate windows. This time I present to you a class that greatly simplifies the process of searching for specific windows, types of windows, windows belonging to a specific process, having a specific text. You can search for any number of these parameters at the same time, using regular expressions for all string matches to provide optimal flexibility.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">06</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/sending-keypresses-to-a-window/" title="Sending Keypresses to a Window Using PInvoke" rel="bookmark">Sending Keypresses to a Window Using PInvoke</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Now to complete the toolset required to make a great spyware / browser hijacking application, we’ll make Internet Explorer navigate to the address we set.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">06</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/enumerating-windows/" title="Enumerating Windows Using PInvoke" rel="bookmark">Enumerating Windows Using PInvoke</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Until now we’ve seen how to retrieve basic properties of windows as well as how to interact with them by sending keypresses. Up until now we’ve had to find the handle by using Winspector or a similar program. This time I’ll present a way of finding the handles programmatically.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">04</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/getting-text-from-handle/" title="Getting Text From Window Handle Using PInvoke" rel="bookmark">Getting Text From Window Handle Using PInvoke</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>This time we want to retrieve the text from a given window, represented by a handle. Like last time, open an Internet Explorer instance. Now open Winspector and select the address field, ensure that it is the address field itself (class = Edit) and not the ComboBox that you select.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">04</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/set-text-by-handle/" title="Set Text By Window Handle Using PInvoke" rel="bookmark">Set Text By Window Handle Using PInvoke</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>This time we won’t be reading the text from a window, we’ll be setting it.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">03</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/getting-a-process-from-a-handle/" title="Getting a Process From a Handle" rel="bookmark">Getting a Process From a Handle</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>So we have a handle, what process does it belong to? Our goal is to obtain a .NET System.Diagnostics.Process object that corresponds to the owner process of the handle we input.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">02</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/the-basics/" title="The Basics" rel="bookmark">The Basics</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>First of all, to manipulate and use the Win32 API, we must know about the system itself, the windows, the controls and so forth. Visual Studio comes bundled with Spy++ which enables us to identity the various windows and controls of application, but honestly, it’s pretty bad. Instead you should <a href="http://www.windows-spy.com/" target="_blank">download Winspector</a>.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Mar</span>
+			<span class="day">29</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/dedicated-to-the-api/" title="Dedicated to the API" rel="bookmark">Dedicated to the API</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Unfortunately it’s been quite silent around here for the last couple of months. I want to change that, so why not make a promise?</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Dec</span>
+			<span class="day">26</span>
+		</div>
+		<div class="lower">2006</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/executing-assembly-dynamically-in-a-strongly-typed-way/" title="Executing Assembly Dynamically In a Strongly Typed Way" rel="bookmark">Executing Assembly Dynamically In a Strongly Typed Way</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>During a recent plugin based project that I worked upon, I had to dynamically load assemblies and instantiate objects from those assemblies. Usually that’d require a lot of typecasting and nasty code, but thanks to generics we can make it a lot smoother.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Dec</span>
+			<span class="day">16</span>
+		</div>
+		<div class="lower">2006</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/creating-a-short-link-internet-explorer-addin/" title="Creating a &quot;Shorten Link&quot; Internet Explorer Addin" rel="bookmark">Creating a &quot;Shorten Link&quot; Internet Explorer Addin</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>You probably already know of the short link services that are around, <a href="http://makeashorterlink.com/index.php" target="_blank">www.makeashorterlink.com</a> for instance. While the idea behind these sites are indeed good, I personally find it quite cumbersome to actually create the short links when I’m typing a forum post somewhere. In this post I’ll give an example of a short link system that enables one to easily create short links while typing in Internet Explorer, using an Internet Explorer addon that conveniently places itself in the context menu whenever we right click on some text and a .NET webservice that handles the short link functionality.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Oct</span>
+			<span class="day">02</span>
+		</div>
+		<div class="lower">2006</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/securing-dotnet-code-article/" title="Securing .NET Code" rel="bookmark">Securing .NET Code</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p><em>When you write your code, compile it, and distribute the exe/dll’s, is your source safe? We’re not talking about protection against buffer overruns, SQL injection and various other code hacking techniques, we’re talking protection of the source code itself, protection of intellectual properties.</em></p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+
+				</div>
+			</div>
+
+			<div id="asides">
+				<div class="categories aside">
+					<span class="sectiontitle">CATEGORIES</span>
+					<ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/category/.NET/">.NET</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/AS/Flex/Flash/">AS/Flex/Flash</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Amazon Web Services/">Amazon Web Services</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Computer Science/">Computer Science</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Conferences and Presenting/">Conferences and Presenting</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/IIS/">IIS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Life/">Life</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Miscellaneous/">Miscellaneous</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Poker/">Poker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Community/">SQL Server - Community</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Data Types/">SQL Server - Data Types</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Internals/">SQL Server - Internals</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Optimization/">SQL Server - Optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/SQL Server - Tricks/">SQL Server - Tricks</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Testing/">Testing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Tools of the Trade/">Tools of the Trade</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Umbraco/">Umbraco</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Visual Studio/">Visual Studio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windbg/">Windbg</a></li><li class="tag-list-item"><a class="tag-list-link" href="/category/Windows/">Windows</a></li></ul>
+
+					
+				</div>
+
+				<div class="archive aside">
+					<span class="sectiontitle">ARCHIVE</span>
+					<ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archive/2014">2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2013">2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2012">2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2011">2011</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2010">2010</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2009">2009</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2008">2008</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2007">2007</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archive/2006">2006</a></li></ul>
+				</div>
+			</div>
+
+			<div class="clear"></div>
+		</div>
+		
+		<footer>
+			<div class="wrapper">Copyright &copy; 2014 Mark S. Rasmussen</div>
+		</footer>
+
+		<script type="text/javascript">
+			$(function () {
+				// Show mobile menu
+				$("li.navicon").click(function () {
+					if ($("header ul.mobile a").length == 0) {
+						// Pages
+						$mobilePages = $("div#naviconcontent ul.pages");
+						$("header nav ul.normal > li").not(".navicon").each(function (i, el) {
+							$mobilePages.append($(el).clone());
+						});
+
+						// Categories
+						$mobileCategories = $("div#naviconcontent ul.categories");
+						$("div#asides div.categories > ul > li").each(function (i, el) {
+							$mobileCategories.append($(el).clone());
+						});
+
+						// Archive
+						$mobileArchive = $("div#naviconcontent ul.archive");
+						$("div#asides div.archive > ul > li").each(function (i, el) {
+							$mobileArchive.append($(el).clone());
+						});
+					};
+
+					$("header ul.mobile").toggle();
+				});
+
+				// Fancybox setup
+				$("a.fancy").fancybox({
+					hideOnContentClick: true,
+					overlayShow: true
+				});
+			});
+		</script>
+	</body>
+</html>

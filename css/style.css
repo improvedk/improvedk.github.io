@@ -437,6 +437,9 @@ footer div.wrapper {
   header nav ul li.navicon {
     display: block !important;
   }
+  header #rssfeed {
+    display: none;
+  }
   header div#title {
     padding: 10px 0 10px 0 !important;
   }

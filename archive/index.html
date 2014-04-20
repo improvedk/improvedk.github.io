@@ -2656,41 +2656,6 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/the-8-byte-record-that-was-9-bytes-while-making-no-sense/" title="The 8 Byte Record That Was 9 Bytes While Making No Sense" rel="bookmark">The 8 Byte Record That Was 9 Bytes While Making No Sense</a></h1>
-		<div class="categories">
-			
-				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-
-			<div class="body"><p>Warning: this is a <em>select is (most likely) not broken, it’s just not working as I’d expect</em>. It may very well be that I’m just overlooking something, in which case I hope someone will correct me :)</p>
-</div>
-		
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Jul</span>
-			<span class="day">16</span>
-		</div>
-		<div class="lower">2011</div>
-	</div>
-
-	<div class="title">
 		<h1><a href="/depending-on-how-itrsquos-added-spare-bits-in-the-null/" title="The Garbage Null Bitmap and Why You Can&#39;t Rely on It Solely" rel="bookmark">The Garbage Null Bitmap and Why You Can&#39;t Rely on It Solely</a></h1>
 		<div class="categories">
 			
@@ -2720,13 +2685,13 @@
 	<div class="datebox">
 		<div class="upper">
 			<span class="month">Jul</span>
-			<span class="day">15</span>
+			<span class="day">16</span>
 		</div>
 		<div class="lower">2011</div>
 	</div>
 
 	<div class="title">
-		<h1><a href="/sparse-column-storage-ndash-the-sparse-vector/" title="Sparse Column Storage &amp; the Sparse Vector" rel="bookmark">Sparse Column Storage &amp; the Sparse Vector</a></h1>
+		<h1><a href="/the-8-byte-record-that-was-9-bytes-while-making-no-sense/" title="The 8 Byte Record That Was 9 Bytes While Making No Sense" rel="bookmark">The 8 Byte Record That Was 9 Bytes While Making No Sense</a></h1>
 		<div class="categories">
 			
 				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
@@ -2741,7 +2706,42 @@
 
 		
 
-			<div class="body"><p>In this post I’ll be looking at the internal storage mechanism that supports sparse columns. For an introduction to what sparse columns are and when they ought to be used, <a href="http://msdn.microsoft.com/en-us/library/cc280604.aspx" target="_blank">take a look here</a>.</p>
+			<div class="body"><p>Warning: this is a <em>select is (most likely) not broken, it’s just not working as I’d expect</em>. It may very well be that I’m just overlooking something, in which case I hope someone will correct me :)</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">15</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/the-null-bitmap-is-not-always-present-in-data-records/" title="The Null Bitmap is Not Always Present in Data Records" rel="bookmark">The Null Bitmap is Not Always Present in Data Records</a></h1>
+		<div class="categories">
+			
+				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>While <a href="/sparse-column-storage-ndash-the-sparse-vector/">implementing sparse column support</a> for <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a>, I ran into a special condition that caught me by surprise – a data record with no null bitmap. Even <a href="http://www.sqlskills.com/BLOGS/PAUL/" target="_blank">Paul Randal</a> mentioned that the null bitmap would <em>always</em> be present in data records in his <a href="http://www.sqlskills.com/BLOGS/PAUL/post/A-SQL-Server-DBA-myth-a-day-(630" target="_blank">A SQL Server DBA myth a day: (6/30) three null bitmap myths</a>-three-null-bitmap-myths.aspx) post.</p>
 </div>
 		
 		
@@ -2796,7 +2796,7 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/the-null-bitmap-is-not-always-present-in-data-records/" title="The Null Bitmap is Not Always Present in Data Records" rel="bookmark">The Null Bitmap is Not Always Present in Data Records</a></h1>
+		<h1><a href="/sparse-column-storage-ndash-the-sparse-vector/" title="Sparse Column Storage &amp; the Sparse Vector" rel="bookmark">Sparse Column Storage &amp; the Sparse Vector</a></h1>
 		<div class="categories">
 			
 				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
@@ -2811,7 +2811,7 @@
 
 		
 
-			<div class="body"><p>While <a href="/sparse-column-storage-ndash-the-sparse-vector/">implementing sparse column support</a> for <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a>, I ran into a special condition that caught me by surprise – a data record with no null bitmap. Even <a href="http://www.sqlskills.com/BLOGS/PAUL/" target="_blank">Paul Randal</a> mentioned that the null bitmap would <em>always</em> be present in data records in his <a href="http://www.sqlskills.com/BLOGS/PAUL/post/A-SQL-Server-DBA-myth-a-day-(630" target="_blank">A SQL Server DBA myth a day: (6/30) three null bitmap myths</a>-three-null-bitmap-myths.aspx) post.</p>
+			<div class="body"><p>In this post I’ll be looking at the internal storage mechanism that supports sparse columns. For an introduction to what sparse columns are and when they ought to be used, <a href="http://msdn.microsoft.com/en-us/library/cc280604.aspx" target="_blank">take a look here</a>.</p>
 </div>
 		
 		
@@ -3365,13 +3365,10 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/checking-which-database-is-stored-in-a-deattached-mdf-file/" title="Checking Which Database is Stored in a Detached MDF File" rel="bookmark">Checking Which Database is Stored in a Detached MDF File</a></h1>
+		<h1><a href="/bridging-the-gap-between-smallint-and-int/" title="Bridging the Gap Between Smallint and Int" rel="bookmark">Bridging the Gap Between Smallint and Int</a></h1>
 		<div class="categories">
 			
-				<a href="/category/.NET/">.NET</a>
-				, 
-			
-				<a href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				<a href="/category/SQL Server - Optimization/">SQL Server - Optimization</a>
 				
 			
 		</div>
@@ -3383,7 +3380,7 @@
 
 		
 
-			<div class="body"><p>Inspired by <a href="http://stackoverflow.com/questions/6061510/any-way-to-quickly-tell-which-database-if-any-is-attached-to-a-mdf-file" target="_blank">this</a> question on StackOverflow, I’ve made a quick script to demonstrate how this might be done using <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a>.</p>
+			<div class="body"><p>Being a proponent of <a href="/wasted-bytes-add-up-consider-your-data-types-carefully">carefully choosing your data types</a>, I’ve often longed for the <a href="http://dev.mysql.com/doc/refman/5.0/en/numeric-types.html" target="_blank">mediumint data type</a> that MySQL has. Both smallint and int are signed data types, meaning their ranges are –32,768 to 32,767 for smallint and –2,147,483,648 to 2,147,483,647 for int. For most relational db schemas, positive identity values are used, meaning we’re looking at a possible 32,767 vs 2,147,483,647 values for smallint vs int. That’s a humongous difference, and it comes at a storage cost as well – 2 vs 4 bytes per column. If only there was something in between…</p>
 </div>
 		
 		
@@ -3403,10 +3400,13 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/bridging-the-gap-between-smallint-and-int/" title="Bridging the Gap Between Smallint and Int" rel="bookmark">Bridging the Gap Between Smallint and Int</a></h1>
+		<h1><a href="/checking-which-database-is-stored-in-a-deattached-mdf-file/" title="Checking Which Database is Stored in a Detached MDF File" rel="bookmark">Checking Which Database is Stored in a Detached MDF File</a></h1>
 		<div class="categories">
 			
-				<a href="/category/SQL Server - Optimization/">SQL Server - Optimization</a>
+				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
 				
 			
 		</div>
@@ -3418,7 +3418,7 @@
 
 		
 
-			<div class="body"><p>Being a proponent of <a href="/wasted-bytes-add-up-consider-your-data-types-carefully">carefully choosing your data types</a>, I’ve often longed for the <a href="http://dev.mysql.com/doc/refman/5.0/en/numeric-types.html" target="_blank">mediumint data type</a> that MySQL has. Both smallint and int are signed data types, meaning their ranges are –32,768 to 32,767 for smallint and –2,147,483,648 to 2,147,483,647 for int. For most relational db schemas, positive identity values are used, meaning we’re looking at a possible 32,767 vs 2,147,483,647 values for smallint vs int. That’s a humongous difference, and it comes at a storage cost as well – 2 vs 4 bytes per column. If only there was something in between…</p>
+			<div class="body"><p>Inspired by <a href="http://stackoverflow.com/questions/6061510/any-way-to-quickly-tell-which-database-if-any-is-attached-to-a-mdf-file" target="_blank">this</a> question on StackOverflow, I’ve made a quick script to demonstrate how this might be done using <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a>.</p>
 </div>
 		
 		
@@ -5349,11 +5349,8 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/twitter/" title="Twitter" rel="bookmark">Twitter</a></h1>
+		<h1><a href="/book-how-i-raised-myself-from-failure-to-success-in-selling/" title="How I Raised Myself from Failure to Success in Selling" rel="bookmark">How I Raised Myself from Failure to Success in Selling</a></h1>
 		<div class="categories">
-			
-				<a href="/category/Life/">Life</a>
-				, 
 			
 				<a href="/category/Miscellaneous/">Miscellaneous</a>
 				
@@ -5367,7 +5364,8 @@
 
 		
 
-			<div class="body"></div>
+			<div class="body"><p>Having recently read <a href="http://www.amazon.com/Pragmatic-Programmer-Journeyman-Master/dp/020161622X/ref=pd_bbs_sr_1?ie=UTF8&amp;s=books&amp;qid=1218331941&amp;sr=8-1" target="_blank">The Pragmatic Programmer</a> and <a href="http://www.amazon.com/Working-Effectively-Legacy-Robert-Martin/dp/0131177052" target="_blank">Working Effectively with Legacy Code</a> (both books are amazing - and neither need further review or description as they are globally appreciated as classics), I was feeling ready to read something non-development related, just to get back on my feet again.</p>
+</div>
 		
 		
 
@@ -5421,8 +5419,11 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/book-how-i-raised-myself-from-failure-to-success-in-selling/" title="How I Raised Myself from Failure to Success in Selling" rel="bookmark">How I Raised Myself from Failure to Success in Selling</a></h1>
+		<h1><a href="/twitter/" title="Twitter" rel="bookmark">Twitter</a></h1>
 		<div class="categories">
+			
+				<a href="/category/Life/">Life</a>
+				, 
 			
 				<a href="/category/Miscellaneous/">Miscellaneous</a>
 				
@@ -5436,8 +5437,7 @@
 
 		
 
-			<div class="body"><p>Having recently read <a href="http://www.amazon.com/Pragmatic-Programmer-Journeyman-Master/dp/020161622X/ref=pd_bbs_sr_1?ie=UTF8&amp;s=books&amp;qid=1218331941&amp;sr=8-1" target="_blank">The Pragmatic Programmer</a> and <a href="http://www.amazon.com/Working-Effectively-Legacy-Robert-Martin/dp/0131177052" target="_blank">Working Effectively with Legacy Code</a> (both books are amazing - and neither need further review or description as they are globally appreciated as classics), I was feeling ready to read something non-development related, just to get back on my feet again.</p>
-</div>
+			<div class="body"></div>
 		
 		
 
@@ -5806,13 +5806,10 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/securing-dotnet-code/" title="Securing .NET Code" rel="bookmark">Securing .NET Code</a></h1>
+		<h1><a href="/profiling-code-the-easy-way/" title="Profiling Code the Easy Way" rel="bookmark">Profiling Code the Easy Way</a></h1>
 		<div class="categories">
 			
 				<a href="/category/.NET/">.NET</a>
-				, 
-			
-				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
 				
 			
 		</div>
@@ -5824,7 +5821,7 @@
 
 		
 
-			<div class="body"><p>Time flies fast. Back in 2006, during my time as an <a href="http://en.wikipedia.org/wiki/Microsoft_Student_Partners" target="_blank">MSP</a>, I made a series of presentations on securing intellectual property in .NET code, resulting in my <a href="/securing-dotnet-code-article/">Securing .NET Code</a> article. Although it’s about two years old, most points are still valid today, unfortunately.</p>
+			<div class="body"><p>I often do code profiling, usually involving a stopwatch and some boilerplate code. I decided to make a quick’n’simple class that’ll help me get rid of some of that code and concentrate on the actual code being profiled.</p>
 </div>
 		
 		
@@ -5844,10 +5841,13 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/profiling-code-the-easy-way/" title="Profiling Code the Easy Way" rel="bookmark">Profiling Code the Easy Way</a></h1>
+		<h1><a href="/securing-dotnet-code/" title="Securing .NET Code" rel="bookmark">Securing .NET Code</a></h1>
 		<div class="categories">
 			
 				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
 				
 			
 		</div>
@@ -5859,7 +5859,7 @@
 
 		
 
-			<div class="body"><p>I often do code profiling, usually involving a stopwatch and some boilerplate code. I decided to make a quick’n’simple class that’ll help me get rid of some of that code and concentrate on the actual code being profiled.</p>
+			<div class="body"><p>Time flies fast. Back in 2006, during my time as an <a href="http://en.wikipedia.org/wiki/Microsoft_Student_Partners" target="_blank">MSP</a>, I made a series of presentations on securing intellectual property in .NET code, resulting in my <a href="/securing-dotnet-code-article/">Securing .NET Code</a> article. Although it’s about two years old, most points are still valid today, unfortunately.</p>
 </div>
 		
 		
@@ -5949,7 +5949,7 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/response-transmitfile-close-will-kill-your-application/" title="Response.TransmitFile + Close Will Kill Your Application" rel="bookmark">Response.TransmitFile + Close Will Kill Your Application</a></h1>
+		<h1><a href="/xmloutput-vs-xmlserializer-performance/" title="XmlOutput vs XmlSerializer Performance" rel="bookmark">XmlOutput vs XmlSerializer Performance</a></h1>
 		<div class="categories">
 			
 				<a href="/category/.NET/">.NET</a>
@@ -5964,7 +5964,7 @@
 
 		
 
-			<div class="body"><p>Just before last weekend I noticed that a website I’m responsible for started spitting out “Server is busy” messages, not something you want to see on a website with millions of visitors per day. The quickfix was to recycle the application pool, and thus I solved the symptoms by setting a 15 mins recycle cycle on all the application pools. Not exactly optimal, but sometimes pissing your pants is the way to go.</p>
+			<div class="body"><p>I got quite a lot of comments for my <a href="/xmldocument-fluent-interface/">XmlDocument fluent interface</a>, and I’m very glad I did. I’m always open towards new ways to solve problems, and I got a couple of suggestions to my post that I afterwards experimented with. One of those is using the XmlSerializer to serialize strongly typed classes (or structs - performance is the same) into XML. <a href="http://www.vonsharp.net/" target="_blank">Jon von Gillern</a> originally suggested it, but <a href="http://www.u2u.info/Blogs/Kris" target="_blank">Kris Vandermotten</a> made me want to test it out.</p>
 </div>
 		
 		
@@ -5984,7 +5984,7 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/xmloutput-vs-xmlserializer-performance/" title="XmlOutput vs XmlSerializer Performance" rel="bookmark">XmlOutput vs XmlSerializer Performance</a></h1>
+		<h1><a href="/response-transmitfile-close-will-kill-your-application/" title="Response.TransmitFile + Close Will Kill Your Application" rel="bookmark">Response.TransmitFile + Close Will Kill Your Application</a></h1>
 		<div class="categories">
 			
 				<a href="/category/.NET/">.NET</a>
@@ -5999,7 +5999,7 @@
 
 		
 
-			<div class="body"><p>I got quite a lot of comments for my <a href="/xmldocument-fluent-interface/">XmlDocument fluent interface</a>, and I’m very glad I did. I’m always open towards new ways to solve problems, and I got a couple of suggestions to my post that I afterwards experimented with. One of those is using the XmlSerializer to serialize strongly typed classes (or structs - performance is the same) into XML. <a href="http://www.vonsharp.net/" target="_blank">Jon von Gillern</a> originally suggested it, but <a href="http://www.u2u.info/Blogs/Kris" target="_blank">Kris Vandermotten</a> made me want to test it out.</p>
+			<div class="body"><p>Just before last weekend I noticed that a website I’m responsible for started spitting out “Server is busy” messages, not something you want to see on a website with millions of visitors per day. The quickfix was to recycle the application pool, and thus I solved the symptoms by setting a 15 mins recycle cycle on all the application pools. Not exactly optimal, but sometimes pissing your pants is the way to go.</p>
 </div>
 		
 		
@@ -6653,7 +6653,7 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/getting-key-state/" title="Getting Key State Using PInvoke" rel="bookmark">Getting Key State Using PInvoke</a></h1>
+		<h1><a href="/minimizing-and-maximizing-windows/" title="Minimizing and Maximizing Windows Using PInvoke" rel="bookmark">Minimizing and Maximizing Windows Using PInvoke</a></h1>
 		<div class="categories">
 			
 				<a href="/category/.NET/">.NET</a>
@@ -6668,7 +6668,7 @@
 
 		
 
-			<div class="body"><p>Here’s an example of how to retrieve the state of any keyboard key.</p>
+			<div class="body"><p>This time I will show how to maximize and minimize windows. I will be using the <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">WindowFinder class</a> that I introduced in the blog <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">Finding specific windows</a>.</p>
 </div>
 		
 		
@@ -6688,7 +6688,7 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/minimizing-and-maximizing-windows/" title="Minimizing and Maximizing Windows Using PInvoke" rel="bookmark">Minimizing and Maximizing Windows Using PInvoke</a></h1>
+		<h1><a href="/getting-key-state/" title="Getting Key State Using PInvoke" rel="bookmark">Getting Key State Using PInvoke</a></h1>
 		<div class="categories">
 			
 				<a href="/category/.NET/">.NET</a>
@@ -6703,7 +6703,7 @@
 
 		
 
-			<div class="body"><p>This time I will show how to maximize and minimize windows. I will be using the <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">WindowFinder class</a> that I introduced in the blog <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">Finding specific windows</a>.</p>
+			<div class="body"><p>Here’s an example of how to retrieve the state of any keyboard key.</p>
 </div>
 		
 		
@@ -6828,7 +6828,7 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/sending-keypresses-to-a-window/" title="Sending Keypresses to a Window Using PInvoke" rel="bookmark">Sending Keypresses to a Window Using PInvoke</a></h1>
+		<h1><a href="/enumerating-windows/" title="Enumerating Windows Using PInvoke" rel="bookmark">Enumerating Windows Using PInvoke</a></h1>
 		<div class="categories">
 			
 				<a href="/category/.NET/">.NET</a>
@@ -6843,7 +6843,7 @@
 
 		
 
-			<div class="body"><p>Now to complete the toolset required to make a great spyware / browser hijacking application, we’ll make Internet Explorer navigate to the address we set.</p>
+			<div class="body"><p>Until now we’ve seen how to retrieve basic properties of windows as well as how to interact with them by sending keypresses. Up until now we’ve had to find the handle by using Winspector or a similar program. This time I’ll present a way of finding the handles programmatically.</p>
 </div>
 		
 		
@@ -6863,7 +6863,7 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/enumerating-windows/" title="Enumerating Windows Using PInvoke" rel="bookmark">Enumerating Windows Using PInvoke</a></h1>
+		<h1><a href="/sending-keypresses-to-a-window/" title="Sending Keypresses to a Window Using PInvoke" rel="bookmark">Sending Keypresses to a Window Using PInvoke</a></h1>
 		<div class="categories">
 			
 				<a href="/category/.NET/">.NET</a>
@@ -6878,7 +6878,7 @@
 
 		
 
-			<div class="body"><p>Until now we’ve seen how to retrieve basic properties of windows as well as how to interact with them by sending keypresses. Up until now we’ve had to find the handle by using Winspector or a similar program. This time I’ll present a way of finding the handles programmatically.</p>
+			<div class="body"><p>Now to complete the toolset required to make a great spyware / browser hijacking application, we’ll make Internet Explorer navigate to the address we set.</p>
 </div>
 		
 		
@@ -7392,7 +7392,7 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/arriving-in-vegas/" title="Arriving in Vegas" rel="bookmark">Arriving in Vegas</a></h1>
+		<h1><a href="/day-1/" title="Day 1" rel="bookmark">Day 1</a></h1>
 		<div class="categories">
 			
 				<a href="/category/Poker/">Poker</a>
@@ -7407,8 +7407,7 @@
 
 		
 
-			<div class="body"><p>Honeeey, I’m home!</p>
-<p>It’s good to be back. After all, it’s been about 4 months since I were here last, that’s simply too long time!</p>
+			<div class="body"><p>Since I woke up at 6 AM this morning I decided to just stay in bed and watch The Prestige through the hotel movie system.</p>
 </div>
 		
 		
@@ -7428,7 +7427,7 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/day-1/" title="Day 1" rel="bookmark">Day 1</a></h1>
+		<h1><a href="/arriving-in-vegas/" title="Arriving in Vegas" rel="bookmark">Arriving in Vegas</a></h1>
 		<div class="categories">
 			
 				<a href="/category/Poker/">Poker</a>
@@ -7443,7 +7442,8 @@
 
 		
 
-			<div class="body"><p>Since I woke up at 6 AM this morning I decided to just stay in bed and watch The Prestige through the hotel movie system.</p>
+			<div class="body"><p>Honeeey, I’m home!</p>
+<p>It’s good to be back. After all, it’s been about 4 months since I were here last, that’s simply too long time!</p>
 </div>
 		
 		
@@ -8023,10 +8023,10 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/hooters/" title="Hooters!" rel="bookmark">Hooters!</a></h1>
+		<h1><a href="/negativeev/" title="-EV" rel="bookmark">-EV</a></h1>
 		<div class="categories">
 			
-				<a href="/category/Life/">Life</a>
+				<a href="/category/Poker/">Poker</a>
 				
 			
 		</div>
@@ -8038,7 +8038,7 @@
 
 		
 
-			<div class="body"><p>Today there was to be no gambling… A day I never thought was possible. After I got up at around 5 PM I went with Morten to the Hooters hotel &amp; casino to dine and look around. The Hooters girls are in a class of their own, they’re much nicer than most of the Spearmint girls, I simply have to stay at this hotel at some point!</p>
+			<div class="body"><p>Today we wanted to try a buffet, not something I’ve done a lot of over here (except the Aladdin buffet which wasn’t really that good). Me and three others went to the Wynn, a rather new and very grand hotel to test their buffet. Compared to the Aladdin this one was far superior. Only downside is that their speciality was seafood, which isn’t exactly my kinda thing. Anyways, it was great food and a great scenery!</p>
 </div>
 		
 		
@@ -8058,10 +8058,10 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/negativeev/" title="-EV" rel="bookmark">-EV</a></h1>
+		<h1><a href="/hooters/" title="Hooters!" rel="bookmark">Hooters!</a></h1>
 		<div class="categories">
 			
-				<a href="/category/Poker/">Poker</a>
+				<a href="/category/Life/">Life</a>
 				
 			
 		</div>
@@ -8073,7 +8073,7 @@
 
 		
 
-			<div class="body"><p>Today we wanted to try a buffet, not something I’ve done a lot of over here (except the Aladdin buffet which wasn’t really that good). Me and three others went to the Wynn, a rather new and very grand hotel to test their buffet. Compared to the Aladdin this one was far superior. Only downside is that their speciality was seafood, which isn’t exactly my kinda thing. Anyways, it was great food and a great scenery!</p>
+			<div class="body"><p>Today there was to be no gambling… A day I never thought was possible. After I got up at around 5 PM I went with Morten to the Hooters hotel &amp; casino to dine and look around. The Hooters girls are in a class of their own, they’re much nicer than most of the Spearmint girls, I simply have to stay at this hotel at some point!</p>
 </div>
 		
 		
@@ -8408,41 +8408,6 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/santana/" title="Santana" rel="bookmark">Santana</a></h1>
-		<div class="categories">
-			
-				<a href="/category/Life/">Life</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-
-			<div class="body"><p>When I went to bed yesterday (after the Main Event) at around 7 AM, I didn’t think of setting my clock. I mean, I didn’t have to get up before around 5-6 PM, I’d be long awake before that.</p>
-</div>
-		
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Jul</span>
-			<span class="day">30</span>
-		</div>
-		<div class="lower">2006</div>
-	</div>
-
-	<div class="title">
 		<h1><a href="/mainevent2006/" title="Main Event!" rel="bookmark">Main Event!</a></h1>
 		<div class="categories">
 			
@@ -8494,6 +8459,41 @@
 		
 
 			<div class="body"><p>After Santana I went to Rio with Abuello to see if we could get an update on how Mika (Miwala) was doing in the Main Event, and Danes in general. While we didn’t find Mika (later on I found out he busted earlier on to a nasty rivered flush vs. rivered full house hand), I did meet Hostrup (Carl) waiting for cash game entry. I signed up for the $2/5 NL game also.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">30</span>
+		</div>
+		<div class="lower">2006</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/santana/" title="Santana" rel="bookmark">Santana</a></h1>
+		<div class="categories">
+			
+				<a href="/category/Life/">Life</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>When I went to bed yesterday (after the Main Event) at around 7 AM, I didn’t think of setting my clock. I mean, I didn’t have to get up before around 5-6 PM, I’d be long awake before that.</p>
 </div>
 		
 		
@@ -8583,6 +8583,41 @@
 	</div>
 
 	<div class="title">
+		<h1><a href="/grandcanyon/" title="Grand Canyon Trip" rel="bookmark">Grand Canyon Trip</a></h1>
+		<div class="categories">
+			
+				<a href="/category/Life/">Life</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>So today we decided to take a trip to the Grand Canyon just outside Las Vegas. I’ve been to the Grand Canyon once before on an earlier trip when I was seven, but honestly I couldn’t remember it that well besides it being hot as hell and, well, grand.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">26</span>
+		</div>
+		<div class="lower">2006</div>
+	</div>
+
+	<div class="title">
 		<h1><a href="/wsop37/" title="$1500 NLHE WSOP Event" rel="bookmark">$1500 NLHE WSOP Event</a></h1>
 		<div class="categories">
 			
@@ -8636,41 +8671,6 @@
 		
 
 			<div class="body"><p>So I finally arrived at Vegas!</p>
-</div>
-		
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Jul</span>
-			<span class="day">26</span>
-		</div>
-		<div class="lower">2006</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/grandcanyon/" title="Grand Canyon Trip" rel="bookmark">Grand Canyon Trip</a></h1>
-		<div class="categories">
-			
-				<a href="/category/Life/">Life</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-
-			<div class="body"><p>So today we decided to take a trip to the Grand Canyon just outside Las Vegas. I’ve been to the Grand Canyon once before on an earlier trip when I was seven, but honestly I couldn’t remember it that well besides it being hot as hell and, well, grand.</p>
 </div>
 		
 		
