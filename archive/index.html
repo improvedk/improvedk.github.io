@@ -2761,7 +2761,7 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/identifying-complex-columns-in-records/" title="Identifying Complex Columns in Records" rel="bookmark">Identifying Complex Columns in Records</a></h1>
+		<h1><a href="/sparse-column-storage-ndash-the-sparse-vector/" title="Sparse Column Storage &amp; the Sparse Vector" rel="bookmark">Sparse Column Storage &amp; the Sparse Vector</a></h1>
 		<div class="categories">
 			
 				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
@@ -2776,7 +2776,7 @@
 
 		
 
-			<div class="body"><p><em>For an introduction to the anatomy of records, I suggest you read </em><a href="http://www.sqlskills.com/blogs/paul/post/Inside-the-Storage-Engine-Anatomy-of-a-record.aspx" target="_blank"><em>this post</em></a><em> by </em><a href="http://www.sqlskills.com/BLOGS/PAUL/" target="_blank"><em>Paul Randal</em></a><em>.</em></p>
+			<div class="body"><p>In this post I’ll be looking at the internal storage mechanism that supports sparse columns. For an introduction to what sparse columns are and when they ought to be used, <a href="http://msdn.microsoft.com/en-us/library/cc280604.aspx" target="_blank">take a look here</a>.</p>
 </div>
 		
 		
@@ -2796,7 +2796,7 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/sparse-column-storage-ndash-the-sparse-vector/" title="Sparse Column Storage &amp; the Sparse Vector" rel="bookmark">Sparse Column Storage &amp; the Sparse Vector</a></h1>
+		<h1><a href="/identifying-complex-columns-in-records/" title="Identifying Complex Columns in Records" rel="bookmark">Identifying Complex Columns in Records</a></h1>
 		<div class="categories">
 			
 				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
@@ -2811,7 +2811,7 @@
 
 		
 
-			<div class="body"><p>In this post I’ll be looking at the internal storage mechanism that supports sparse columns. For an introduction to what sparse columns are and when they ought to be used, <a href="http://msdn.microsoft.com/en-us/library/cc280604.aspx" target="_blank">take a look here</a>.</p>
+			<div class="body"><p><em>For an introduction to the anatomy of records, I suggest you read </em><a href="http://www.sqlskills.com/blogs/paul/post/Inside-the-Storage-Engine-Anatomy-of-a-record.aspx" target="_blank"><em>this post</em></a><em> by </em><a href="http://www.sqlskills.com/BLOGS/PAUL/" target="_blank"><em>Paul Randal</em></a><em>.</em></p>
 </div>
 		
 		
@@ -3587,41 +3587,6 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/my-pass-summit-2011-abstracts/" title="My PASS Summit 2011 Abstracts" rel="bookmark">My PASS Summit 2011 Abstracts</a></h1>
-		<div class="categories">
-			
-				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-
-			<div class="body"><p>Last year I went on a marathon conference trip, starting out in LA at <a href="http://2010.max.adobe.com/" target="_blank">Adobe Max</a>, continuing on to <a href="http://qconsf.com/sf2010/" target="_blank">QCon</a> in San Francisco before finally ending up in lovely Seattle for the <a href="http://www.sqlpass.org/summit/na2010/" target="_blank">PASS Summit</a>.</p>
-</div>
-		
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">May</span>
-			<span class="day">03</span>
-		</div>
-		<div class="lower">2011</div>
-	</div>
-
-	<div class="title">
 		<h1><a href="/introducing-orcamdf/" title="Introducing OrcaMDF" rel="bookmark">Introducing OrcaMDF</a></h1>
 		<div class="categories">
 			
@@ -3645,6 +3610,41 @@
 <p>I was invited to speak at <a href="http://mow2011.dk/" target="_blank">MOW2011</a> for the SQL Server track. Last year I got good reviews for my presentation on <a href="Dissecting_PDF_Documents_1.pdf">Dissecting PDF Documents</a>, a deep dive into the file format of PDF files. Wanting to stay in the same grove, I decided to take a look at the MDF format as it’s somewhat closer to SQL Server DBA’s than PDF files. Having almost worn my <a href="http://www.amazon.com/Microsoft%C2%AE-SQL-Server%C2%AE-2008-Internals/dp/0735626243" target="_blank">SQL Server 2008 Internals</a> book down from reading, I’ve always been interested in the internals, though I still felt like I was lacking a lot of knowledge.</p>
 <h2 id="A_parser_is_born">A parser is born</h2>
 <p>For my demos at MOW I wanted to at least read the records from a data page, just like the output from DBCC Page. The basic page format is well documented, and it’s not the first time I’ve taken a <a href="/deciphering-a-sql-server-data-page">deeper look</a> at pages. Surprisingly quickly, I had record parsing from data pages functioning using a hardcoded schema. Parsing a single page is fun, but really, I’d like to get all the data from a table. Restricting myself to just consider clustered tables made it simpler as it’d just be a matter of following the linked list of pages from start to end. However, that meant I’d have to parse the header as well. There’s some good information out there on the <a href="http://sqlskills.com/blogs/paul/post/Inside-the-Storage-Engine-Anatomy-of-a-page.aspx" target="_blank">anatomy of pages</a>, but everything I could find had a distinct lack of information on the actual header structure and field types.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">03</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/my-pass-summit-2011-abstracts/" title="My PASS Summit 2011 Abstracts" rel="bookmark">My PASS Summit 2011 Abstracts</a></h1>
+		<div class="categories">
+			
+				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Last year I went on a marathon conference trip, starting out in LA at <a href="http://2010.max.adobe.com/" target="_blank">Adobe Max</a>, continuing on to <a href="http://qconsf.com/sf2010/" target="_blank">QCon</a> in San Francisco before finally ending up in lovely Seattle for the <a href="http://www.sqlpass.org/summit/na2010/" target="_blank">PASS Summit</a>.</p>
 </div>
 		
 		
@@ -3734,10 +3734,10 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/42-weeks-later/" title="42 Weeks Later" rel="bookmark">42 Weeks Later</a></h1>
+		<h1><a href="/miracle-open-world-2011-follow-up/" title="Miracle Open World 2011 Followup" rel="bookmark">Miracle Open World 2011 Followup</a></h1>
 		<div class="categories">
 			
-				<a href="/category/Miscellaneous/">Miscellaneous</a>
+				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
 				
 			
 		</div>
@@ -3749,8 +3749,7 @@
 
 		
 
-			<div class="body"><div class="imgwrapper" style=""><div><a href="/42-weeks-later/film_28_weeks_later_2.png" class="fancy"><img src="/42-weeks-later/film_28_weeks_later_2.png" style="max-height: 250px"/></a></div></div>
-
+			<div class="body"><p>Last week I attended the <a href="http://mow2011.dk/" target="_blank">Miracle Open World 2011 conference</a>. As in the previous years the 80% content, 80% social moniker held true to its reputation. My legs and arms are still sore from carrying four-man rubber rings to the top of the four-story waterslide – not the typical aftermath of a conference. I met a lot of new awesome people and managed to pull of a couple of presentations with decent success as well, judging from the responses I’ve had so far. I’ve included the slides &amp; demo code for the presentations below.</p>
 </div>
 		
 		
@@ -3770,10 +3769,10 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/miracle-open-world-2011-follow-up/" title="Miracle Open World 2011 Followup" rel="bookmark">Miracle Open World 2011 Followup</a></h1>
+		<h1><a href="/42-weeks-later/" title="42 Weeks Later" rel="bookmark">42 Weeks Later</a></h1>
 		<div class="categories">
 			
-				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
+				<a href="/category/Miscellaneous/">Miscellaneous</a>
 				
 			
 		</div>
@@ -3785,7 +3784,8 @@
 
 		
 
-			<div class="body"><p>Last week I attended the <a href="http://mow2011.dk/" target="_blank">Miracle Open World 2011 conference</a>. As in the previous years the 80% content, 80% social moniker held true to its reputation. My legs and arms are still sore from carrying four-man rubber rings to the top of the four-story waterslide – not the typical aftermath of a conference. I met a lot of new awesome people and managed to pull of a couple of presentations with decent success as well, judging from the responses I’ve had so far. I’ve included the slides &amp; demo code for the presentations below.</p>
+			<div class="body"><div class="imgwrapper" style=""><div><a href="/42-weeks-later/film_28_weeks_later_2.png" class="fancy"><img src="/42-weeks-later/film_28_weeks_later_2.png" style="max-height: 250px"/></a></div></div>
+
 </div>
 		
 		
@@ -5349,8 +5349,11 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/book-how-i-raised-myself-from-failure-to-success-in-selling/" title="How I Raised Myself from Failure to Success in Selling" rel="bookmark">How I Raised Myself from Failure to Success in Selling</a></h1>
+		<h1><a href="/twitter/" title="Twitter" rel="bookmark">Twitter</a></h1>
 		<div class="categories">
+			
+				<a href="/category/Life/">Life</a>
+				, 
 			
 				<a href="/category/Miscellaneous/">Miscellaneous</a>
 				
@@ -5364,8 +5367,7 @@
 
 		
 
-			<div class="body"><p>Having recently read <a href="http://www.amazon.com/Pragmatic-Programmer-Journeyman-Master/dp/020161622X/ref=pd_bbs_sr_1?ie=UTF8&amp;s=books&amp;qid=1218331941&amp;sr=8-1" target="_blank">The Pragmatic Programmer</a> and <a href="http://www.amazon.com/Working-Effectively-Legacy-Robert-Martin/dp/0131177052" target="_blank">Working Effectively with Legacy Code</a> (both books are amazing - and neither need further review or description as they are globally appreciated as classics), I was feeling ready to read something non-development related, just to get back on my feet again.</p>
-</div>
+			<div class="body"></div>
 		
 		
 
@@ -5419,11 +5421,8 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/twitter/" title="Twitter" rel="bookmark">Twitter</a></h1>
+		<h1><a href="/book-how-i-raised-myself-from-failure-to-success-in-selling/" title="How I Raised Myself from Failure to Success in Selling" rel="bookmark">How I Raised Myself from Failure to Success in Selling</a></h1>
 		<div class="categories">
-			
-				<a href="/category/Life/">Life</a>
-				, 
 			
 				<a href="/category/Miscellaneous/">Miscellaneous</a>
 				
@@ -5437,7 +5436,8 @@
 
 		
 
-			<div class="body"></div>
+			<div class="body"><p>Having recently read <a href="http://www.amazon.com/Pragmatic-Programmer-Journeyman-Master/dp/020161622X/ref=pd_bbs_sr_1?ie=UTF8&amp;s=books&amp;qid=1218331941&amp;sr=8-1" target="_blank">The Pragmatic Programmer</a> and <a href="http://www.amazon.com/Working-Effectively-Legacy-Robert-Martin/dp/0131177052" target="_blank">Working Effectively with Legacy Code</a> (both books are amazing - and neither need further review or description as they are globally appreciated as classics), I was feeling ready to read something non-development related, just to get back on my feet again.</p>
+</div>
 		
 		
 
@@ -5491,10 +5491,10 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/dotnet-security-techtalk/" title=".NET Security TechTalk" rel="bookmark">.NET Security TechTalk</a></h1>
+		<h1><a href="/providing-custom-assembly-evidence/" title="Providing Custom Assembly Evidence" rel="bookmark">Providing Custom Assembly Evidence</a></h1>
 		<div class="categories">
 			
-				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
+				<a href="/category/.NET/">.NET</a>
 				
 			
 		</div>
@@ -5506,7 +5506,7 @@
 
 		
 
-			<div class="body"><p>I will be hosting two TechTalks on security in .NET, at Microsoft Denmark in August. The TechTalks will be held in DANISH.</p>
+			<div class="body"><p>I recently <a href="/analyzing-assembly-evidence/">mentioned</a> the possibility of having an assembly provide custom evidence alongside the CLR provided evidence. Let’s see how to do it.</p>
 </div>
 		
 		
@@ -5526,10 +5526,10 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/providing-custom-assembly-evidence/" title="Providing Custom Assembly Evidence" rel="bookmark">Providing Custom Assembly Evidence</a></h1>
+		<h1><a href="/dotnet-security-techtalk/" title=".NET Security TechTalk" rel="bookmark">.NET Security TechTalk</a></h1>
 		<div class="categories">
 			
-				<a href="/category/.NET/">.NET</a>
+				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
 				
 			
 		</div>
@@ -5541,7 +5541,7 @@
 
 		
 
-			<div class="body"><p>I recently <a href="/analyzing-assembly-evidence/">mentioned</a> the possibility of having an assembly provide custom evidence alongside the CLR provided evidence. Let’s see how to do it.</p>
+			<div class="body"><p>I will be hosting two TechTalks on security in .NET, at Microsoft Denmark in August. The TechTalks will be held in DANISH.</p>
 </div>
 		
 		
@@ -5949,7 +5949,7 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/xmloutput-vs-xmlserializer-performance/" title="XmlOutput vs XmlSerializer Performance" rel="bookmark">XmlOutput vs XmlSerializer Performance</a></h1>
+		<h1><a href="/response-transmitfile-close-will-kill-your-application/" title="Response.TransmitFile + Close Will Kill Your Application" rel="bookmark">Response.TransmitFile + Close Will Kill Your Application</a></h1>
 		<div class="categories">
 			
 				<a href="/category/.NET/">.NET</a>
@@ -5964,7 +5964,7 @@
 
 		
 
-			<div class="body"><p>I got quite a lot of comments for my <a href="/xmldocument-fluent-interface/">XmlDocument fluent interface</a>, and I’m very glad I did. I’m always open towards new ways to solve problems, and I got a couple of suggestions to my post that I afterwards experimented with. One of those is using the XmlSerializer to serialize strongly typed classes (or structs - performance is the same) into XML. <a href="http://www.vonsharp.net/" target="_blank">Jon von Gillern</a> originally suggested it, but <a href="http://www.u2u.info/Blogs/Kris" target="_blank">Kris Vandermotten</a> made me want to test it out.</p>
+			<div class="body"><p>Just before last weekend I noticed that a website I’m responsible for started spitting out “Server is busy” messages, not something you want to see on a website with millions of visitors per day. The quickfix was to recycle the application pool, and thus I solved the symptoms by setting a 15 mins recycle cycle on all the application pools. Not exactly optimal, but sometimes pissing your pants is the way to go.</p>
 </div>
 		
 		
@@ -5984,7 +5984,7 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/response-transmitfile-close-will-kill-your-application/" title="Response.TransmitFile + Close Will Kill Your Application" rel="bookmark">Response.TransmitFile + Close Will Kill Your Application</a></h1>
+		<h1><a href="/xmloutput-vs-xmlserializer-performance/" title="XmlOutput vs XmlSerializer Performance" rel="bookmark">XmlOutput vs XmlSerializer Performance</a></h1>
 		<div class="categories">
 			
 				<a href="/category/.NET/">.NET</a>
@@ -5999,7 +5999,7 @@
 
 		
 
-			<div class="body"><p>Just before last weekend I noticed that a website I’m responsible for started spitting out “Server is busy” messages, not something you want to see on a website with millions of visitors per day. The quickfix was to recycle the application pool, and thus I solved the symptoms by setting a 15 mins recycle cycle on all the application pools. Not exactly optimal, but sometimes pissing your pants is the way to go.</p>
+			<div class="body"><p>I got quite a lot of comments for my <a href="/xmldocument-fluent-interface/">XmlDocument fluent interface</a>, and I’m very glad I did. I’m always open towards new ways to solve problems, and I got a couple of suggestions to my post that I afterwards experimented with. One of those is using the XmlSerializer to serialize strongly typed classes (or structs - performance is the same) into XML. <a href="http://www.vonsharp.net/" target="_blank">Jon von Gillern</a> originally suggested it, but <a href="http://www.u2u.info/Blogs/Kris" target="_blank">Kris Vandermotten</a> made me want to test it out.</p>
 </div>
 		
 		
@@ -6653,7 +6653,7 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/minimizing-and-maximizing-windows/" title="Minimizing and Maximizing Windows Using PInvoke" rel="bookmark">Minimizing and Maximizing Windows Using PInvoke</a></h1>
+		<h1><a href="/getting-key-state/" title="Getting Key State Using PInvoke" rel="bookmark">Getting Key State Using PInvoke</a></h1>
 		<div class="categories">
 			
 				<a href="/category/.NET/">.NET</a>
@@ -6668,7 +6668,7 @@
 
 		
 
-			<div class="body"><p>This time I will show how to maximize and minimize windows. I will be using the <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">WindowFinder class</a> that I introduced in the blog <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">Finding specific windows</a>.</p>
+			<div class="body"><p>Here’s an example of how to retrieve the state of any keyboard key.</p>
 </div>
 		
 		
@@ -6688,7 +6688,7 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/getting-key-state/" title="Getting Key State Using PInvoke" rel="bookmark">Getting Key State Using PInvoke</a></h1>
+		<h1><a href="/minimizing-and-maximizing-windows/" title="Minimizing and Maximizing Windows Using PInvoke" rel="bookmark">Minimizing and Maximizing Windows Using PInvoke</a></h1>
 		<div class="categories">
 			
 				<a href="/category/.NET/">.NET</a>
@@ -6703,7 +6703,7 @@
 
 		
 
-			<div class="body"><p>Here’s an example of how to retrieve the state of any keyboard key.</p>
+			<div class="body"><p>This time I will show how to maximize and minimize windows. I will be using the <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">WindowFinder class</a> that I introduced in the blog <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">Finding specific windows</a>.</p>
 </div>
 		
 		
@@ -7357,7 +7357,7 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/royal-flush-baby/" title="Royal Flush Baby!" rel="bookmark">Royal Flush Baby!</a></h1>
+		<h1><a href="/arriving-in-vegas/" title="Arriving in Vegas" rel="bookmark">Arriving in Vegas</a></h1>
 		<div class="categories">
 			
 				<a href="/category/Poker/">Poker</a>
@@ -7372,7 +7372,8 @@
 
 		
 
-			<div class="body"><p>I wanted to log a lot of poker playing hours today. At about 12 PM I went to the MGM Grand, a room that I’d never visited. After playing there for about 5-6 hours (please don’t ask how it went, I got butchered), I’ve got mixed feelings about the room.</p>
+			<div class="body"><p>Honeeey, I’m home!</p>
+<p>It’s good to be back. After all, it’s been about 4 months since I were here last, that’s simply too long time!</p>
 </div>
 		
 		
@@ -7427,7 +7428,7 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/arriving-in-vegas/" title="Arriving in Vegas" rel="bookmark">Arriving in Vegas</a></h1>
+		<h1><a href="/royal-flush-baby/" title="Royal Flush Baby!" rel="bookmark">Royal Flush Baby!</a></h1>
 		<div class="categories">
 			
 				<a href="/category/Poker/">Poker</a>
@@ -7442,8 +7443,7 @@
 
 		
 
-			<div class="body"><p>Honeeey, I’m home!</p>
-<p>It’s good to be back. After all, it’s been about 4 months since I were here last, that’s simply too long time!</p>
+			<div class="body"><p>I wanted to log a lot of poker playing hours today. At about 12 PM I went to the MGM Grand, a room that I’d never visited. After playing there for about 5-6 hours (please don’t ask how it went, I got butchered), I’ve got mixed feelings about the room.</p>
 </div>
 		
 		
@@ -7743,10 +7743,10 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/running-ie6-and-ie7-at-the-same-time/" title="Running IE6 and IE7 at the Same Time" rel="bookmark">Running IE6 and IE7 at the Same Time</a></h1>
+		<h1><a href="/setpoint-volume-control-in-vista/" title="SetPoint Volume Control In Vista" rel="bookmark">SetPoint Volume Control In Vista</a></h1>
 		<div class="categories">
 			
-				<a href="/category/Tools of the Trade/">Tools of the Trade</a>
+				<a href="/category/Windows/">Windows</a>
 				
 			
 		</div>
@@ -7758,7 +7758,7 @@
 
 		
 
-			<div class="body"><p>Ever since IE7 came out developers have had the problem of whether they should upgrade or not. If they chose to upgrade, they wouldn’t be able to test their sites in IE6 any longer as installing IE7 would uninstall IE6. There are 3rd party hacks that allow both versions to be installed at the same time, but they will not simulate a true IE6 / IE7 environment.</p>
+			<div class="body"><p>It seems Logitech has some pretty functional SetPoint drivers out for Vista already (SetPoint is the all-purpose driver software for all their keyboards and mice).</p>
 </div>
 		
 		
@@ -7778,10 +7778,10 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/setpoint-volume-control-in-vista/" title="SetPoint Volume Control In Vista" rel="bookmark">SetPoint Volume Control In Vista</a></h1>
+		<h1><a href="/running-ie6-and-ie7-at-the-same-time/" title="Running IE6 and IE7 at the Same Time" rel="bookmark">Running IE6 and IE7 at the Same Time</a></h1>
 		<div class="categories">
 			
-				<a href="/category/Windows/">Windows</a>
+				<a href="/category/Tools of the Trade/">Tools of the Trade</a>
 				
 			
 		</div>
@@ -7793,7 +7793,7 @@
 
 		
 
-			<div class="body"><p>It seems Logitech has some pretty functional SetPoint drivers out for Vista already (SetPoint is the all-purpose driver software for all their keyboards and mice).</p>
+			<div class="body"><p>Ever since IE7 came out developers have had the problem of whether they should upgrade or not. If they chose to upgrade, they wouldn’t be able to test their sites in IE6 any longer as installing IE7 would uninstall IE6. There are 3rd party hacks that allow both versions to be installed at the same time, but they will not simulate a true IE6 / IE7 environment.</p>
 </div>
 		
 		
@@ -8023,10 +8023,10 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/negativeev/" title="-EV" rel="bookmark">-EV</a></h1>
+		<h1><a href="/hooters/" title="Hooters!" rel="bookmark">Hooters!</a></h1>
 		<div class="categories">
 			
-				<a href="/category/Poker/">Poker</a>
+				<a href="/category/Life/">Life</a>
 				
 			
 		</div>
@@ -8038,7 +8038,7 @@
 
 		
 
-			<div class="body"><p>Today we wanted to try a buffet, not something I’ve done a lot of over here (except the Aladdin buffet which wasn’t really that good). Me and three others went to the Wynn, a rather new and very grand hotel to test their buffet. Compared to the Aladdin this one was far superior. Only downside is that their speciality was seafood, which isn’t exactly my kinda thing. Anyways, it was great food and a great scenery!</p>
+			<div class="body"><p>Today there was to be no gambling… A day I never thought was possible. After I got up at around 5 PM I went with Morten to the Hooters hotel &amp; casino to dine and look around. The Hooters girls are in a class of their own, they’re much nicer than most of the Spearmint girls, I simply have to stay at this hotel at some point!</p>
 </div>
 		
 		
@@ -8058,10 +8058,10 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/hooters/" title="Hooters!" rel="bookmark">Hooters!</a></h1>
+		<h1><a href="/negativeev/" title="-EV" rel="bookmark">-EV</a></h1>
 		<div class="categories">
 			
-				<a href="/category/Life/">Life</a>
+				<a href="/category/Poker/">Poker</a>
 				
 			
 		</div>
@@ -8073,7 +8073,7 @@
 
 		
 
-			<div class="body"><p>Today there was to be no gambling… A day I never thought was possible. After I got up at around 5 PM I went with Morten to the Hooters hotel &amp; casino to dine and look around. The Hooters girls are in a class of their own, they’re much nicer than most of the Spearmint girls, I simply have to stay at this hotel at some point!</p>
+			<div class="body"><p>Today we wanted to try a buffet, not something I’ve done a lot of over here (except the Aladdin buffet which wasn’t really that good). Me and three others went to the Wynn, a rather new and very grand hotel to test their buffet. Compared to the Aladdin this one was far superior. Only downside is that their speciality was seafood, which isn’t exactly my kinda thing. Anyways, it was great food and a great scenery!</p>
 </div>
 		
 		
@@ -8268,10 +8268,10 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/stripwalk/" title="Stripwalk" rel="bookmark">Stripwalk</a></h1>
+		<h1><a href="/mainevent2/" title="Main Event Day 2" rel="bookmark">Main Event Day 2</a></h1>
 		<div class="categories">
 			
-				<a href="/category/Life/">Life</a>
+				<a href="/category/Poker/">Poker</a>
 				
 			
 		</div>
@@ -8283,7 +8283,7 @@
 
 		
 
-			<div class="body"><p>Today I got up relatively early at about 1 PM. Before I knew of it, it had somehow become 7 PM, and several of us were starting to become quite hungry. We weren’t really in the mood for the usual fast food, and neither of use were turned on by the local sushi bar. Instead we went a couple hundred meters down Eastern Avenue to a local placed called ‘The T-Bird’. The scenery was a classical 60’s highway truckerstop place. It was kinda sad as it really looked like it was stuck in the 60’s.</p>
+			<div class="body"><p><em>I made it!</em></p>
 </div>
 		
 		
@@ -8303,10 +8303,10 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/mainevent2/" title="Main Event Day 2" rel="bookmark">Main Event Day 2</a></h1>
+		<h1><a href="/stripwalk/" title="Stripwalk" rel="bookmark">Stripwalk</a></h1>
 		<div class="categories">
 			
-				<a href="/category/Poker/">Poker</a>
+				<a href="/category/Life/">Life</a>
 				
 			
 		</div>
@@ -8318,7 +8318,7 @@
 
 		
 
-			<div class="body"><p><em>I made it!</em></p>
+			<div class="body"><p>Today I got up relatively early at about 1 PM. Before I knew of it, it had somehow become 7 PM, and several of us were starting to become quite hungry. We weren’t really in the mood for the usual fast food, and neither of use were turned on by the local sushi bar. Instead we went a couple hundred meters down Eastern Avenue to a local placed called ‘The T-Bird’. The scenery was a classical 60’s highway truckerstop place. It was kinda sad as it really looked like it was stuck in the 60’s.</p>
 </div>
 		
 		
@@ -8583,41 +8583,6 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/grandcanyon/" title="Grand Canyon Trip" rel="bookmark">Grand Canyon Trip</a></h1>
-		<div class="categories">
-			
-				<a href="/category/Life/">Life</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-
-			<div class="body"><p>So today we decided to take a trip to the Grand Canyon just outside Las Vegas. I’ve been to the Grand Canyon once before on an earlier trip when I was seven, but honestly I couldn’t remember it that well besides it being hot as hell and, well, grand.</p>
-</div>
-		
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Jul</span>
-			<span class="day">26</span>
-		</div>
-		<div class="lower">2006</div>
-	</div>
-
-	<div class="title">
 		<h1><a href="/wsop37/" title="$1500 NLHE WSOP Event" rel="bookmark">$1500 NLHE WSOP Event</a></h1>
 		<div class="categories">
 			
@@ -8671,6 +8636,41 @@
 		
 
 			<div class="body"><p>So I finally arrived at Vegas!</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">26</span>
+		</div>
+		<div class="lower">2006</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/grandcanyon/" title="Grand Canyon Trip" rel="bookmark">Grand Canyon Trip</a></h1>
+		<div class="categories">
+			
+				<a href="/category/Life/">Life</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>So today we decided to take a trip to the Grand Canyon just outside Las Vegas. I’ve been to the Grand Canyon once before on an earlier trip when I was seven, but honestly I couldn’t remember it that well besides it being hot as hell and, well, grand.</p>
 </div>
 		
 		

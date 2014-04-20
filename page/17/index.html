@@ -231,161 +231,6 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/xmloutput-vs-xmlserializer-performance/" title="XmlOutput vs XmlSerializer Performance" rel="bookmark">XmlOutput vs XmlSerializer Performance</a></h1>
-		<div class="categories">
-			
-				<a href="/category/.NET/">.NET</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>I got quite a lot of comments for my <a href="/xmldocument-fluent-interface/">XmlDocument fluent interface</a>, and I’m very glad I did. I’m always open towards new ways to solve problems, and I got a couple of suggestions to my post that I afterwards experimented with. One of those is using the XmlSerializer to serialize strongly typed classes (or structs - performance is the same) into XML. <a href="http://www.vonsharp.net/" target="_blank">Jon von Gillern</a> originally suggested it, but <a href="http://www.u2u.info/Blogs/Kris" target="_blank">Kris Vandermotten</a> made me want to test it out.</p>
-<a id="more"></a>
-
-<p>There are two aspects of these solutions, one is readability &amp; maintanability, the other is pure performance. I said that my XmlDocument wrapper would be a lot faster than the serialization way using Reflection, but Kris wasn’t so sure. Admittedly, I hadn’t tested it out, so I though I might actually be wrong in that assumption. Let the testing commence.</p>
-<p>I’ll be using my User XML snippet as an example. This is how the XML is generated using my API:</p>
-<figure class="highlight csharp"><pre>XmlOutput xo = new XmlOutput()
-	<span class="preprocessor">.XmlDeclaration</span>()
-	<span class="preprocessor">.Node</span>(<span class="string">"root"</span>)<span class="preprocessor">.Within</span>()
-		<span class="preprocessor">.Node</span>(<span class="string">"user"</span>)<span class="preprocessor">.Within</span>()
-			<span class="preprocessor">.Node</span>(<span class="string">"username"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"orca"</span>)
-			<span class="preprocessor">.Node</span>(<span class="string">"realname"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Mark S. Rasmussen"</span>)
-			<span class="preprocessor">.Node</span>(<span class="string">"description"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"I'll handle any escaping (like &lt; & &gt; for example) needs automagically."</span>)
-			<span class="preprocessor">.Node</span>(<span class="string">"articles"</span>)<span class="preprocessor">.Within</span>()
-				<span class="preprocessor">.Node</span>(<span class="string">"article"</span>)<span class="preprocessor">.Attribute</span>(<span class="string">"id"</span>, <span class="string">"25"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Handling DBNulls"</span>)
-				<span class="preprocessor">.Node</span>(<span class="string">"article"</span>)<span class="preprocessor">.Attribute</span>(<span class="string">"id"</span>, <span class="string">"26"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Accessing my privates"</span>)
-				<span class="preprocessor">.EndWithin</span>()
-			<span class="preprocessor">.Node</span>(<span class="string">"hobbies"</span>)<span class="preprocessor">.Within</span>()
-				<span class="preprocessor">.Node</span>(<span class="string">"hobby"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Fishing"</span>)
-				<span class="preprocessor">.Node</span>(<span class="string">"hobby"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Photography"</span>)
-				<span class="preprocessor">.Node</span>(<span class="string">"hobby"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Work"</span>)<span class="comment">;</span>
-
-string output = xo<span class="preprocessor">.GetOuterXml</span>()<span class="comment">;</span>
-</pre></figure>
-
-<p>Note that I just retrieve the complete XML in a string, I don’t print or save this, it’s just to get a valid comparison point. This is how we’ll generate the same code using the XmlSerializer:</p>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> User
-{
-	<span class="keyword">public</span> <span class="keyword">string</span> Username;
-	<span class="keyword">public</span> <span class="keyword">string</span> Realname;
-	<span class="keyword">public</span> <span class="keyword">string</span> Description;
-	<span class="keyword">public</span> List&lt;Article&gt; Articles;
-	<span class="keyword">public</span> List&lt;Hobby&gt; Hobbies;
-}
-
-<span class="keyword">public</span> <span class="keyword">class</span> Article
-{
-	[XmlAttribute]
-	<span class="keyword">public</span> <span class="keyword">int</span> ID;
-
-	[XmlText]
-	<span class="keyword">public</span> <span class="keyword">string</span> Content;
-}
-
-<span class="keyword">public</span> <span class="keyword">class</span> Hobby
-{
-	[XmlText]
-	<span class="keyword">public</span> <span class="keyword">string</span> Content;
-}
-</pre></figure>
-
-
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">string</span> <span class="title">ConvertToXml</span>(<span class="keyword">object</span> item)
-{
-	XmlSerializer xmlser = <span class="keyword">new</span> XmlSerializer(item.GetType());
-
-	<span class="keyword">using</span> (MemoryStream ms = <span class="keyword">new</span> MemoryStream())
-	{
-		xmlser.Serialize(ms, item);
-		UTF8Encoding textconverter = <span class="keyword">new</span> UTF8Encoding();
-		<span class="keyword">return</span> textconverter.GetString(ms.ToArray());
-	}
-}
-</pre></figure>
-
-
-<figure class="highlight csharp"><pre>User user = new User()<span class="comment">;</span>
-user<span class="preprocessor">.Username</span> = <span class="string">"orca"</span><span class="comment">;</span>
-user<span class="preprocessor">.Realname</span> = <span class="string">"Mark S. Rasmussen"</span><span class="comment">;</span>
-user<span class="preprocessor">.Description</span> = <span class="string">"I'll handle any escaping (like &lt; & &gt; for example) needs automagically."</span><span class="comment">;</span>
-
-user<span class="preprocessor">.Articles</span> = new List&lt;Article&gt;()<span class="comment">;</span>
-user<span class="preprocessor">.Articles</span><span class="preprocessor">.Add</span>(new Article() { ID = <span class="number">25</span>, Content = <span class="string">"Handling DBNulls"</span> })<span class="comment">;</span>
-user<span class="preprocessor">.Articles</span><span class="preprocessor">.Add</span>(new Article() { ID = <span class="number">26</span>, Content = <span class="string">"Accessing my privates"</span>})<span class="comment">;</span>
-
-user<span class="preprocessor">.Hobbies</span> = new List&lt;Hobby&gt;()<span class="comment">;</span>
-user<span class="preprocessor">.Hobbies</span><span class="preprocessor">.Add</span>(new Hobby() { Content = <span class="string">"Fishing"</span> })<span class="comment">;</span>
-user<span class="preprocessor">.Hobbies</span><span class="preprocessor">.Add</span>(new Hobby() { Content = <span class="string">"Photography"</span> })<span class="comment">;</span>
-user<span class="preprocessor">.Hobbies</span><span class="preprocessor">.Add</span>(new Hobby() { Content = <span class="string">"Work"</span> })<span class="comment">;</span>
-
-string output = ConvertToXml(user)<span class="comment">;</span>
-</pre></figure>
-
-<p>Note that only the last codesnippet is the one being looped, the other two are simply one-time helpers to actually create the XML. I have run the tests in a number of iterations to get a total code time, furthermore, I’ve run each of the iteration tests 10 times to calculate the average execution time. This is the basic code to run the tests:</p>
-<figure class="highlight csharp"><pre>sw.Reset();
-<span class="constant">iterationTime</span> = 0;
-for (int testIteration = 0; testIteration &lt; testIterations; testIteration++)
-{
-	sw.Start();
-	for (int i = 0; i &lt; iterations; i++)
-	{
-		// Perform XML creation
-	}
-	sw.Stop();
-	iterationTime += sw.ElapsedMilliseconds;
-	Console.WriteLine(sw.ElapsedMilliseconds);
-
-	sw.Reset();
-}
-Console.WriteLine("Total XmlSerializer: " + iterationTime / testIterations);
-</pre></figure>
-
-<p>And finally, the results (times in ms on a base 10 logarithmic scale):</p>
-<div class="imgwrapper" style=""><div><a href="/xmloutput-vs-xmlserializer-performance/xmloutputspeed_2.jpg" class="fancy"><img src="/xmloutput-vs-xmlserializer-performance/xmloutputspeed_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>As expected, the XmlSerializer is somewhat slower on the low iteration numbers, this is due to the initial code emits XmlSerializer will do, as Kris also mentioned. This is also the reason XmlSerializer is actually speeding up as the iterations go up, the initial compilation is meaning less and less. XmlOutput has a rather linear use of time. Never the less, the initial compilation time is neglible as it’s only the first request that has this performance hit (and we could sgen followed by ngen this to avoid it). Thus, if we simply reset the timer after the first iteration, this is the new graph we get (note that we can’t plot the 1st iteration as a value of 0 cannot be plotted on the logarithmic scale):</p>
-<div class="imgwrapper" style=""><div><a href="/xmloutput-vs-xmlserializer-performance/xmloutputspeed2_2.jpg" class="fancy"><img src="/xmloutput-vs-xmlserializer-performance/xmloutputspeed2_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>This time XmlSerializer behaves a lot more linearly like XmlOutput, but it’s still several factors slower than XmlOutput. In conclusion, speed does not seem to be the advantage of XmlSerializer. Depending on your scenario, using strongly typed classes might be more appropriate, but I really believe this is scenario dependent and thus I’ll leave that out of the discussion.</p>
-<h2 id="Downloads">Downloads</h2>
-<p><a href="SerializationBenchmark.zip">SerializationBenchmark.zip - Sample code</a></p>
-<h2 id="Update">Update</h2>
-<p>I misread Kris’ comment about sgen, I read it as ngen. I’ve removed my comment regarding this. To be fair, I’ve redone the performance tests, using sgen on the assembly during compilation. And I must say, it certainly does improve the performance somewhat of the serializer, though still not enough to compete with XmlOutput/XmlDocument.</p>
-<div class="imgwrapper" style=""><div><a href="/xmloutput-vs-xmlserializer-performance/xmloutputspeed3_2.jpg" class="fancy"><img src="/xmloutput-vs-xmlserializer-performance/xmloutputspeed3_2.jpg" style="max-height: 250px"/></a></div></div>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Mar</span>
-			<span class="day">29</span>
-		</div>
-		<div class="lower">2008</div>
-	</div>
-
-	<div class="title">
 		<h1><a href="/response-transmitfile-close-will-kill-your-application/" title="Response.TransmitFile + Close Will Kill Your Application" rel="bookmark">Response.TransmitFile + Close Will Kill Your Application</a></h1>
 		<div class="categories">
 			
@@ -749,6 +594,161 @@ static void log_thread_proc()
 
 <h2 id="Downloads">Downloads</h2>
 <p><a href="ResponseCloseTest.zip">ResponseCloseTest.zip - Sample code</a></p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Mar</span>
+			<span class="day">29</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/xmloutput-vs-xmlserializer-performance/" title="XmlOutput vs XmlSerializer Performance" rel="bookmark">XmlOutput vs XmlSerializer Performance</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I got quite a lot of comments for my <a href="/xmldocument-fluent-interface/">XmlDocument fluent interface</a>, and I’m very glad I did. I’m always open towards new ways to solve problems, and I got a couple of suggestions to my post that I afterwards experimented with. One of those is using the XmlSerializer to serialize strongly typed classes (or structs - performance is the same) into XML. <a href="http://www.vonsharp.net/" target="_blank">Jon von Gillern</a> originally suggested it, but <a href="http://www.u2u.info/Blogs/Kris" target="_blank">Kris Vandermotten</a> made me want to test it out.</p>
+<a id="more"></a>
+
+<p>There are two aspects of these solutions, one is readability &amp; maintanability, the other is pure performance. I said that my XmlDocument wrapper would be a lot faster than the serialization way using Reflection, but Kris wasn’t so sure. Admittedly, I hadn’t tested it out, so I though I might actually be wrong in that assumption. Let the testing commence.</p>
+<p>I’ll be using my User XML snippet as an example. This is how the XML is generated using my API:</p>
+<figure class="highlight csharp"><pre>XmlOutput xo = new XmlOutput()
+	<span class="preprocessor">.XmlDeclaration</span>()
+	<span class="preprocessor">.Node</span>(<span class="string">"root"</span>)<span class="preprocessor">.Within</span>()
+		<span class="preprocessor">.Node</span>(<span class="string">"user"</span>)<span class="preprocessor">.Within</span>()
+			<span class="preprocessor">.Node</span>(<span class="string">"username"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"orca"</span>)
+			<span class="preprocessor">.Node</span>(<span class="string">"realname"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Mark S. Rasmussen"</span>)
+			<span class="preprocessor">.Node</span>(<span class="string">"description"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"I'll handle any escaping (like &lt; & &gt; for example) needs automagically."</span>)
+			<span class="preprocessor">.Node</span>(<span class="string">"articles"</span>)<span class="preprocessor">.Within</span>()
+				<span class="preprocessor">.Node</span>(<span class="string">"article"</span>)<span class="preprocessor">.Attribute</span>(<span class="string">"id"</span>, <span class="string">"25"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Handling DBNulls"</span>)
+				<span class="preprocessor">.Node</span>(<span class="string">"article"</span>)<span class="preprocessor">.Attribute</span>(<span class="string">"id"</span>, <span class="string">"26"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Accessing my privates"</span>)
+				<span class="preprocessor">.EndWithin</span>()
+			<span class="preprocessor">.Node</span>(<span class="string">"hobbies"</span>)<span class="preprocessor">.Within</span>()
+				<span class="preprocessor">.Node</span>(<span class="string">"hobby"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Fishing"</span>)
+				<span class="preprocessor">.Node</span>(<span class="string">"hobby"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Photography"</span>)
+				<span class="preprocessor">.Node</span>(<span class="string">"hobby"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Work"</span>)<span class="comment">;</span>
+
+string output = xo<span class="preprocessor">.GetOuterXml</span>()<span class="comment">;</span>
+</pre></figure>
+
+<p>Note that I just retrieve the complete XML in a string, I don’t print or save this, it’s just to get a valid comparison point. This is how we’ll generate the same code using the XmlSerializer:</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> User
+{
+	<span class="keyword">public</span> <span class="keyword">string</span> Username;
+	<span class="keyword">public</span> <span class="keyword">string</span> Realname;
+	<span class="keyword">public</span> <span class="keyword">string</span> Description;
+	<span class="keyword">public</span> List&lt;Article&gt; Articles;
+	<span class="keyword">public</span> List&lt;Hobby&gt; Hobbies;
+}
+
+<span class="keyword">public</span> <span class="keyword">class</span> Article
+{
+	[XmlAttribute]
+	<span class="keyword">public</span> <span class="keyword">int</span> ID;
+
+	[XmlText]
+	<span class="keyword">public</span> <span class="keyword">string</span> Content;
+}
+
+<span class="keyword">public</span> <span class="keyword">class</span> Hobby
+{
+	[XmlText]
+	<span class="keyword">public</span> <span class="keyword">string</span> Content;
+}
+</pre></figure>
+
+
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">string</span> <span class="title">ConvertToXml</span>(<span class="keyword">object</span> item)
+{
+	XmlSerializer xmlser = <span class="keyword">new</span> XmlSerializer(item.GetType());
+
+	<span class="keyword">using</span> (MemoryStream ms = <span class="keyword">new</span> MemoryStream())
+	{
+		xmlser.Serialize(ms, item);
+		UTF8Encoding textconverter = <span class="keyword">new</span> UTF8Encoding();
+		<span class="keyword">return</span> textconverter.GetString(ms.ToArray());
+	}
+}
+</pre></figure>
+
+
+<figure class="highlight csharp"><pre>User user = new User()<span class="comment">;</span>
+user<span class="preprocessor">.Username</span> = <span class="string">"orca"</span><span class="comment">;</span>
+user<span class="preprocessor">.Realname</span> = <span class="string">"Mark S. Rasmussen"</span><span class="comment">;</span>
+user<span class="preprocessor">.Description</span> = <span class="string">"I'll handle any escaping (like &lt; & &gt; for example) needs automagically."</span><span class="comment">;</span>
+
+user<span class="preprocessor">.Articles</span> = new List&lt;Article&gt;()<span class="comment">;</span>
+user<span class="preprocessor">.Articles</span><span class="preprocessor">.Add</span>(new Article() { ID = <span class="number">25</span>, Content = <span class="string">"Handling DBNulls"</span> })<span class="comment">;</span>
+user<span class="preprocessor">.Articles</span><span class="preprocessor">.Add</span>(new Article() { ID = <span class="number">26</span>, Content = <span class="string">"Accessing my privates"</span>})<span class="comment">;</span>
+
+user<span class="preprocessor">.Hobbies</span> = new List&lt;Hobby&gt;()<span class="comment">;</span>
+user<span class="preprocessor">.Hobbies</span><span class="preprocessor">.Add</span>(new Hobby() { Content = <span class="string">"Fishing"</span> })<span class="comment">;</span>
+user<span class="preprocessor">.Hobbies</span><span class="preprocessor">.Add</span>(new Hobby() { Content = <span class="string">"Photography"</span> })<span class="comment">;</span>
+user<span class="preprocessor">.Hobbies</span><span class="preprocessor">.Add</span>(new Hobby() { Content = <span class="string">"Work"</span> })<span class="comment">;</span>
+
+string output = ConvertToXml(user)<span class="comment">;</span>
+</pre></figure>
+
+<p>Note that only the last codesnippet is the one being looped, the other two are simply one-time helpers to actually create the XML. I have run the tests in a number of iterations to get a total code time, furthermore, I’ve run each of the iteration tests 10 times to calculate the average execution time. This is the basic code to run the tests:</p>
+<figure class="highlight csharp"><pre>sw.Reset();
+<span class="constant">iterationTime</span> = 0;
+for (int testIteration = 0; testIteration &lt; testIterations; testIteration++)
+{
+	sw.Start();
+	for (int i = 0; i &lt; iterations; i++)
+	{
+		// Perform XML creation
+	}
+	sw.Stop();
+	iterationTime += sw.ElapsedMilliseconds;
+	Console.WriteLine(sw.ElapsedMilliseconds);
+
+	sw.Reset();
+}
+Console.WriteLine("Total XmlSerializer: " + iterationTime / testIterations);
+</pre></figure>
+
+<p>And finally, the results (times in ms on a base 10 logarithmic scale):</p>
+<div class="imgwrapper" style=""><div><a href="/xmloutput-vs-xmlserializer-performance/xmloutputspeed_2.jpg" class="fancy"><img src="/xmloutput-vs-xmlserializer-performance/xmloutputspeed_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>As expected, the XmlSerializer is somewhat slower on the low iteration numbers, this is due to the initial code emits XmlSerializer will do, as Kris also mentioned. This is also the reason XmlSerializer is actually speeding up as the iterations go up, the initial compilation is meaning less and less. XmlOutput has a rather linear use of time. Never the less, the initial compilation time is neglible as it’s only the first request that has this performance hit (and we could sgen followed by ngen this to avoid it). Thus, if we simply reset the timer after the first iteration, this is the new graph we get (note that we can’t plot the 1st iteration as a value of 0 cannot be plotted on the logarithmic scale):</p>
+<div class="imgwrapper" style=""><div><a href="/xmloutput-vs-xmlserializer-performance/xmloutputspeed2_2.jpg" class="fancy"><img src="/xmloutput-vs-xmlserializer-performance/xmloutputspeed2_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>This time XmlSerializer behaves a lot more linearly like XmlOutput, but it’s still several factors slower than XmlOutput. In conclusion, speed does not seem to be the advantage of XmlSerializer. Depending on your scenario, using strongly typed classes might be more appropriate, but I really believe this is scenario dependent and thus I’ll leave that out of the discussion.</p>
+<h2 id="Downloads">Downloads</h2>
+<p><a href="SerializationBenchmark.zip">SerializationBenchmark.zip - Sample code</a></p>
+<h2 id="Update">Update</h2>
+<p>I misread Kris’ comment about sgen, I read it as ngen. I’ve removed my comment regarding this. To be fair, I’ve redone the performance tests, using sgen on the assembly during compilation. And I must say, it certainly does improve the performance somewhat of the serializer, though still not enough to compete with XmlOutput/XmlDocument.</p>
+<div class="imgwrapper" style=""><div><a href="/xmloutput-vs-xmlserializer-performance/xmloutputspeed3_2.jpg" class="fancy"><img src="/xmloutput-vs-xmlserializer-performance/xmloutputspeed3_2.jpg" style="max-height: 250px"/></a></div></div>
 
 
 				<div style="clear: both"></div>
