@@ -882,10 +882,13 @@ DBCC PAGE (Test, 1, 114, 3)
 	</div>
 
 	<div class="title">
-		<h1><a href="/bridging-the-gap-between-smallint-and-int/" title="Bridging the Gap Between Smallint and Int" rel="bookmark">Bridging the Gap Between Smallint and Int</a></h1>
+		<h1><a href="/reverse-engineering-sql-server-page-headers/" title="Reverse Engineering SQL Server Page Headers" rel="bookmark">Reverse Engineering SQL Server Page Headers</a></h1>
 		<div class="categories">
 			
-				<a href="/category/SQL Server - Optimization/">SQL Server - Optimization</a>
+				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
 				
 			
 		</div>
@@ -899,112 +902,138 @@ DBCC PAGE (Test, 1, 114, 3)
 		
 			<div class="body">
 			
-				<p>Being a proponent of <a href="/wasted-bytes-add-up-consider-your-data-types-carefully">carefully choosing your data types</a>, I’ve often longed for the <a href="http://dev.mysql.com/doc/refman/5.0/en/numeric-types.html" target="_blank">mediumint data type</a> that MySQL has. Both smallint and int are signed data types, meaning their ranges are –32,768 to 32,767 for smallint and –2,147,483,648 to 2,147,483,647 for int. For most relational db schemas, positive identity values are used, meaning we’re looking at a possible 32,767 vs 2,147,483,647 values for smallint vs int. That’s a humongous difference, and it comes at a storage cost as well – 2 vs 4 bytes per column. If only there was something in between…</p>
+				<p>One of the first challenges I faced when starting out the development of <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a> was parsing page headers. We all know that <a href="/deciphering-a-sql-server-data-page/">pages are basically split in two parts</a>, the 96 byte header and the 8096 byte body of remaining bytes. Much has been written about headers and Paul Randal (<a href="http://www.sqlskills.com/BLOGS/PAUL/" target="_blank">b</a>|<a href="http://twitter.com/#!/paulrandal" target="_blank">t</a>) has a great post describing the <a href="http://www.sqlskills.com/blogs/paul/post/Inside-the-Storage-Engine-Anatomy-of-a-page.aspx" target="_blank">contents of the header</a> as well. However, though the contents have been described, I’ve been completely unable to find any kind of details on the storage format. What data types are the individual fields, and what’s the order? Oh well, we’ve always got DBCC PAGE.</p>
 <a id="more"></a>
 
-<h2 id="You_say_mediumint,_I_say_binary(3)">You say mediumint, I say binary(3)</h2>
-<p>While there’s no native mediumint data type in SQL Server, there is a binary data type. Internally it’s basically just a byte array, just as any other data type. An int is just a binary(4) with some custom processing on top of it, smallint being a binary(2) and nvarchar being a binary(length * 2). What that means is there’s no stopping us from saving whatever bytes we want into a binary(3) column, including numbers. Using the following sample table:</p>
-<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> ThreeByteInt
-(
-	MediumInt binary(<span class="number">3</span>),
-	Filler <span class="keyword">char</span>(<span class="number">20</span>) <span class="keyword">NULL</span>
-)
-
-<span class="keyword">CREATE</span> CLUSTERED INDEX CX_ThreeByteInt <span class="keyword">ON</span> ThreeByteInt (MediumInt)</span>
+<p>Firing up DBCC PAGE, I scoured for a random data page whose header I could dump, in this case page (1:101):</p>
+<figure class="highlight sql"><pre>DBCC TRACEON (3604)
+DBCC PAGE (TextTest, 1, 101, 2)
 </pre></figure>
 
-<p>We can insert values through SQL either using byte constants or using numbers as normal:</p>
-<figure class="highlight sql"><pre><span class="operator"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> ThreeByteInt (MediumInt) <span class="keyword">VALUES</span> (<span class="number">0xC9DF48</span>)
-<span class="keyword">INSERT</span> <span class="keyword">INTO</span> ThreeByteInt (MediumInt) <span class="keyword">VALUES</span> (<span class="number">0x000000</span>)
-<span class="keyword">INSERT</span> <span class="keyword">INTO</span> ThreeByteInt (MediumInt) <span class="keyword">VALUES</span> (<span class="number">0xFFFFFF</span>)
-<span class="keyword">INSERT</span> <span class="keyword">INTO</span> ThreeByteInt (MediumInt) <span class="keyword">VALUES</span> (<span class="number">13229896</span>)
-<span class="keyword">INSERT</span> <span class="keyword">INTO</span> ThreeByteInt (MediumInt) <span class="keyword">VALUES</span> (<span class="number">1500</span>)
-<span class="keyword">INSERT</span> <span class="keyword">INTO</span> ThreeByteInt (MediumInt) <span class="keyword">VALUES</span> (<span class="number">0</span>)
-<span class="keyword">INSERT</span> <span class="keyword">INTO</span> ThreeByteInt (MediumInt) <span class="keyword">VALUES</span> (<span class="number">16777215</span>)</span>
+<p>The result comes in two parts, first we’ve got the header contents as DBCC PAGE kindly parses for us, while the second part is a dump of the 96 bytes that make up the header data:</p>
+<div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_2.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_2.png" style="max-height: 250px"/></a></div></div>
+
+<p>Armed with this, the hunt begins! What we’re looking for is a match between the parsed values and the bytes in the header. To make it easy, we need to spot some unique values so we don’t get a lot of ambiguity in where the value might be stored. Starting out with m_freeCnt, we see it has a value of 4066. The body size is 8060 bytes so it’s clear that the number can’t be a tinyint. It wouldn’t make sense to make it an int as that supporst way larger values than we need. An educated guess would be that m_freeCnt is probably stored as a smallint, leaving plenty of space for the 0-8060 range we need.</p>
+<p>Now, 4066 represented in hex is 0x0FE2. Byte swapped, that becomes 0xE20F, and what do you know, we have a match!</p>
+<div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_4.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_4.png" style="max-height: 250px"/></a></div></div>
+
+<p>And thus we have identified the first field of our header:</p>
+<figure class="highlight csharp"><pre>/*
+	Bytes	Content
+	-----	-------
+	00-27	?
+	28-29	FreeCnt (smallint)
+	30-95	?
+*/
 </pre></figure>
 
-<p>And querying works like normal as well:</p>
-<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> ThreeByteInt</span>
+<p>Continuing the search we see that m_freeData = 3895. In hex that’s 0x0F37 and 0x370F when swapped. And voilá, that’s stored right next to m_freeCnt:</p>
+<div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_6.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_6.png" style="max-height: 250px"/></a></div></div>
+
+<p>Continuing on with this technique, we can map all the distinct header values where there’s no ambiguity as to where they’re stored. But what about a field like m_level? It has the same value as m_xactReserved, m_reservedCnt, m_ghostRecCnt, etc. How do we know which one of those zero values is really m_level? And how do we find out what the data type is? It could be anything from a tinyint to bigint!</p>
+<p>Time to bring out the big guns! We’ll start out by shutting down MSSQL / SQL Server:</p>
+<div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_8.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_8.png" style="max-height: 250px"/></a></div></div>
+
+<p>Then we’ll open up the .mdf file in Visual Studio:</p>
+<div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_10.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_10.png" style="max-height: 250px"/></a></div></div>
+
+<p>This’ll open up the file in hex editor mode, allowing direct access to all the yummy data! As we know the page id was 101, we need to jump to byte offset 101 * 8192 = 827,392 to get to the first byte of page 101:</p>
+<div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_12.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_12.png" style="max-height: 250px"/></a></div></div>
+
+<p>Looking at these bytes we see that they’re identical to our header contents, thus confirming we’ve jumped to the correct offset:</p>
+<div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_16.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_16.png" style="max-height: 250px"/></a></div></div>
+
+<p>Now I’m going to ask you to do something that will make sheep loving people cry – write some gibberish in there and save the file! Please <strong>do not</strong> do this to a database with any kind of important data in it. Before:</p>
+<div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_18.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_18.png" style="max-height: 250px"/></a></div></div>
+
+<p>After:</p>
+<div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_22.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_22.png" style="max-height: 250px"/></a></div></div>
+
+<p>Oh the horrors! Now restart MSSQL / SQL Server and rerun the DBCC PAGE query from before:</p>
+<figure class="highlight sql"><pre>DBCC TRACEON (3604)
+DBCC PAGE (TextTest, 1, 101, 2)
 </pre></figure>
 
-<div class="imgwrapper" style=""><div><a href="/bridging-the-gap-between-smallint-and-int/image_23.png" class="fancy"><img src="/bridging-the-gap-between-smallint-and-int/image_23.png" style="max-height: 250px"/></a></div></div>
+<p>And notice the header we get as a result:</p>
+<div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_24.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_24.png" style="max-height: 250px"/></a></div></div>
 
-<h2 id="Scans_ahoy!">Scans ahoy!</h2>
-<p>However, take a look at the plans for these two queries:</p>
-<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> ThreeByteInt <span class="keyword">WHERE</span> MediumInt = <span class="number">1500</span>
-<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> ThreeByteInt <span class="keyword">WHERE</span> MediumInt = <span class="number">0x0005DC</span></span>
+<p>Several values have changed! m_xactReserved had an ambiguous value of 0 before, now it’s at 30,806. Converting that to byte swapped hex we get a value of 0x5678. Looking at the header, we’ve now pinpointed yet another field and datatype (smallint):</p>
+<div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_26.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_26.png" style="max-height: 250px"/></a></div></div>
+
+<p>And thus we can update our header reference table:</p>
+<figure class="highlight csharp"><pre>/*
+	Bytes	Content
+	-----	-------
+	00-27	?
+	28-29	FreeCnt (smallint)
+	30-49	?
+	50-51	XactReserved (smallint)
+	30-95	?
+*/
 </pre></figure>
 
-<div class="imgwrapper" style=""><div><a href="/bridging-the-gap-between-smallint-and-int/image_41.png" class="fancy"><img src="/bridging-the-gap-between-smallint-and-int/image_41.png" style="max-height: 250px"/></a></div></div>
+<p>Continuing down this path, messing up the header, correlating messed up values with values parsed by DBCC PAGE, it’s possible to locate all the fields and their corresponding data types. If you see the following message, you know you’ve messed it up properly:</p>
+<div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_28.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_28.png" style="max-height: 250px"/></a></div></div>
 
-<p>They both contain a predicate looking for a value of 1500, one written as an integer constant, the other as a hex constant. One is causing a scan, the other is using a seek. Taking a closer look at the scan reveals an IMPLICIT_CONVERT which renders are index useless and thus causing the scan:</p>
-<div class="imgwrapper" style=""><div><a href="/bridging-the-gap-between-smallint-and-int/image_61.png" class="fancy"><img src="/bridging-the-gap-between-smallint-and-int/image_61.png" style="max-height: 250px"/></a></div></div>
-
-<p>The easiest way of avoiding this is just to replace the implicit conversion with an explicit cast in the query:</p>
-<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> ThreeByteInt <span class="keyword">WHERE</span> MediumInt = <span class="keyword">CAST</span>(<span class="number">1500</span> <span class="keyword">as</span> binary(<span class="number">3</span>))</span>
+<p>You should be proud of yourself. No go clean up the mess you’ve made!</p>
+<p>Jumping forward, I’ve compiled a reference to the page header structure:</p>
+<figure class="highlight csharp"><pre>/*
+	Bytes	Content
+	-----	-------
+	00	HeaderVersion (tinyint)
+	01	Type (tinyint)
+	02	TypeFlagBits (tinyint)
+	03	Level (tinyint)
+	04-05	FlagBits (smallint)
+	06-07	IndexID (smallint)
+	08-11	PreviousPageID (int)
+	12-13	PreviousFileID (smallint)
+	14-15	Pminlen (smallint)
+	16-19	NextPageID (int)
+	20-21	NextPageFileID (smallint)
+	22-23	SlotCnt (smallint)
+	24-27	ObjectID (int)
+	28-29	FreeCnt (smallint)
+	30-31	FreeData (smallint)
+	32-35	PageID (int)
+	36-37	FileID (smallint)
+	38-39	ReservedCnt (smallint)
+	40-43	Lsn1 (int)
+	44-47	Lsn2 (int)
+	48-49	Lsn3 (smallint)
+	50-51	XactReserved (smallint)
+	52-55	XdesIDPart2 (int)
+	56-57	XdesIDPart1 (smallint)
+	58-59	GhostRecCnt (smallint)
+	60-95	?
+*/
 </pre></figure>
 
-<div class="imgwrapper" style=""><div><a href="/bridging-the-gap-between-smallint-and-int/image_81.png" class="fancy"><img src="/bridging-the-gap-between-smallint-and-int/image_81.png" style="max-height: 250px"/></a></div></div>
-
-<h2 id="Unsigned_integers_&amp;_overflow">Unsigned integers &amp; overflow</h2>
-<p>Whereas smallint, int and bigint are all signed integer types (the ability to have negative values), tinyint is not. Tinyint is able to store values in the 0-255 range. Had it been a signed type, it would be able to handle values in the –128 to 127 range. Just like tinyint, binary(3)/mediumint is an unsigned type, giving us a range of 0 to 16,777,215.</p>
-<p>Most developers &amp; DBAs have experienced <a href="http://en.wikipedia.org/wiki/Integer_overflow" target="_blank">integer overflow</a> at some point, usually causing havoc in the application. In short, an overflow occurs when you assign a value larger or smaller than what the data type can handle. In our case, that might be –1 or 16,777,216. We can easily demonstrate what’s happening by casting an integer to binary(3) and back to int again like so:</p>
-<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
-	<span class="keyword">CAST</span>(<span class="keyword">CAST</span>(<span class="number">16777214</span> <span class="keyword">AS</span> binary(<span class="number">3</span>)) <span class="keyword">AS</span> <span class="keyword">int</span>),
-	<span class="keyword">CAST</span>(<span class="keyword">CAST</span>(<span class="number">16777215</span> <span class="keyword">AS</span> binary(<span class="number">3</span>)) <span class="keyword">AS</span> <span class="keyword">int</span>),
-	<span class="keyword">CAST</span>(<span class="keyword">CAST</span>(<span class="number">16777216</span> <span class="keyword">AS</span> binary(<span class="number">3</span>)) <span class="keyword">AS</span> <span class="keyword">int</span>)
-
-<span class="keyword">UNION</span> <span class="keyword">ALL</span>
-
-<span class="keyword">SELECT</span>
-	<span class="keyword">CAST</span>(<span class="keyword">CAST</span>(-<span class="number">1</span> <span class="keyword">AS</span> binary(<span class="number">3</span>)) <span class="keyword">AS</span> <span class="keyword">int</span>),
-	<span class="keyword">CAST</span>(<span class="keyword">CAST</span>(<span class="number">0</span> <span class="keyword">AS</span> binary(<span class="number">3</span>)) <span class="keyword">AS</span> <span class="keyword">int</span>),
-	<span class="keyword">CAST</span>(<span class="keyword">CAST</span>(<span class="number">1</span> <span class="keyword">AS</span> binary(<span class="number">3</span>)) <span class="keyword">AS</span> <span class="keyword">int</span>)
-
-<span class="keyword">UNION</span> <span class="keyword">ALL</span>
-
-<span class="keyword">SELECT</span>
-	<span class="keyword">CAST</span>(<span class="keyword">CAST</span>(<span class="number">33554430</span> <span class="keyword">AS</span> binary(<span class="number">3</span>)) <span class="keyword">AS</span> <span class="keyword">int</span>),
-	<span class="keyword">CAST</span>(<span class="keyword">CAST</span>(<span class="number">33554431</span> <span class="keyword">AS</span> binary(<span class="number">3</span>)) <span class="keyword">AS</span> <span class="keyword">int</span>),
-	<span class="keyword">CAST</span>(<span class="keyword">CAST</span>(<span class="number">33554432</span> <span class="keyword">AS</span> binary(<span class="number">3</span>)) <span class="keyword">AS</span> <span class="keyword">int</span>)</span>
+<p>I’m not sure what lies in the remaining bytes of the header as DBCC PAGE doesn’t seem to parse stuff there, and it seems to be zeroed out for all pages I’ve tested. I’m assuming it’s reserved bytes for future usage. Once we’ve got the format, parsing becomes a simple task of reading each field, field by field:</p>
+<figure class="highlight csharp"><pre>HeaderVersion = header[<span class="number">0</span>]<span class="comment">;</span>
+Type = (PageType)header[<span class="number">1</span>]<span class="comment">;</span>
+TypeFlagBits = header[<span class="number">2</span>]<span class="comment">;</span>
+Level = header[<span class="number">3</span>]<span class="comment">;</span>
+FlagBits = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">4</span>)<span class="comment">;</span>
+IndexID = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">6</span>)<span class="comment">;</span>
+PreviousPage = new PagePointer(BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">12</span>), BitConverter<span class="preprocessor">.ToInt</span>32(header, <span class="number">8</span>))<span class="comment">;</span>
+Pminlen = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">14</span>)<span class="comment">;</span>
+NextPage = new PagePointer(BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">20</span>), BitConverter<span class="preprocessor">.ToInt</span>32(header, <span class="number">16</span>))<span class="comment">;</span>
+SlotCnt = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">22</span>)<span class="comment">;</span>
+ObjectID = BitConverter<span class="preprocessor">.ToInt</span>32(header, <span class="number">24</span>)<span class="comment">;</span>
+FreeCnt = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">28</span>)<span class="comment">;</span>
+FreeData = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">30</span>)<span class="comment">;</span>
+Pointer = new PagePointer(BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">36</span>), BitConverter<span class="preprocessor">.ToInt</span>32(header, <span class="number">32</span>))<span class="comment">;</span>
+ReservedCnt = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">38</span>)<span class="comment">;</span>
+Lsn = <span class="string">"("</span> + BitConverter<span class="preprocessor">.ToInt</span>32(header, <span class="number">40</span>) + <span class="string">":"</span> + BitConverter<span class="preprocessor">.ToInt</span>32(header, <span class="number">44</span>) + <span class="string">":"</span> + BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">48</span>) + <span class="string">")"</span><span class="comment">;</span>
+XactReserved = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">50</span>)<span class="comment">;</span>
+XdesID = <span class="string">"("</span> + BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">56</span>) + <span class="string">":"</span> + BitConverter<span class="preprocessor">.ToInt</span>32(header, <span class="number">52</span>) + <span class="string">")"</span><span class="comment">;</span>
+GhostRecCnt = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">58</span>)<span class="comment">;</span>
 </pre></figure>
 
-<div class="imgwrapper" style=""><div><a href="/bridging-the-gap-between-smallint-and-int/image_101.png" class="fancy"><img src="/bridging-the-gap-between-smallint-and-int/image_101.png" style="max-height: 250px"/></a></div></div>
-
-<h2 id="Working_with_binary(3)_on_the_client_side">Working with binary(3) on the client side</h2>
-<p>Now that we’ve got our mediumint data type, all we need is to be able to insert &amp; query data from the client.</p>
-<p>Inserting is easy – just send values is as integers and it’ll be converted as appropriate – just make sure to check for over/underflows as necessary:</p>
-<figure class="highlight csharp"><pre>using(var conn = new SqlConnection("Data Source=.;Initial Catalog=MediumIntTest;Integrated Security=SSPI;"))
-{
-	var <span class="operator"><span class="keyword">insert</span> = new SqlCommand(<span class="string">"INSERT INTO ThreeByteInt (MediumInt) VALUES (@MediumInt)"</span>);</span>
-	<span class="operator"><span class="keyword">insert</span>.Parameters.<span class="keyword">Add</span>(<span class="string">"@MediumInt"</span>, SqlDbType.<span class="keyword">Int</span>).<span class="keyword">Value</span> = <span class="number">439848</span>;</span>
-	<span class="operator"><span class="keyword">insert</span>.<span class="keyword">Connection</span> = conn;</span>
-
-	conn.Open();
-	<span class="operator"><span class="keyword">insert</span>.ExecuteNonQuery();</span>
-	conn.Close();
-}
-</pre></figure>
-
-<p>Querying requires slightly more effort. We’ll still pass in the value as an integer, but we’ll have to perform a CAST in the query to avoid scans. We could also pass the value in as a three byte array, but provided we have access to the query text, it’s easier to perform the conversion there. Furthermore there’s no standard three byte integer type in C#, so we’ll have do perform some ugly magic to convert the three bytes into a normal .NET integer:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span>(<span class="keyword">var</span> conn = <span class="keyword">new</span> SqlConnection(<span class="string">"Data Source=.;Initial Catalog=MediumIntTest;Integrated Security=SSPI;"</span>))
-{
-	<span class="keyword">var</span> <span class="keyword">select</span> = <span class="keyword">new</span> SqlCommand(<span class="string">"SELECT MediumInt FROM ThreeByteInt WHERE MediumInt = CAST(@MediumInt AS binary(3))"</span>);
-	<span class="keyword">select</span>.Parameters.Add(<span class="string">"@MediumInt"</span>, SqlDbType.Int).Value = <span class="number">439848</span>;
-	<span class="keyword">select</span>.Connection = conn;
-
-	conn.Open();
-	<span class="keyword">byte</span>[] bytes = (<span class="keyword">byte</span>[])<span class="keyword">select</span>.ExecuteScalar();
-	<span class="keyword">int</span> result = BitConverter.ToInt32(<span class="keyword">new</span> <span class="keyword">byte</span>[] { bytes[<span class="number">2</span>], bytes[<span class="number">1</span>], bytes[<span class="number">0</span>], <span class="number">0</span> }, <span class="number">0</span>);
-	conn.Close();
-
-	Console.WriteLine(result);
-}
-</pre></figure>
-
-<h2 id="Summing_it_up">Summing it up</h2>
-<p>As I’ve shown, we can easily create our own mediumint data type, just as we can create a 5 byte integer, 6 byte… Well, you get it. However, there are obviously some trade offs in that you’ll have to manage this data type yourself. While you can query it more or less like a normal data type, you have to be wary of scans. Finally, retrieving values will require some extra work, though that could easily be abstracted away in a custom type.</p>
-<p>So should you do it? Probably not. Saving a single byte per column will gain you very little, unless you have a humongous table, especially so if you have a lot of columns that fit in between the smallint and int value range. For those humongous archival tables, this might just be a way to shave an extra byte off per <em>mediumint</em> column.</p>
+<p>You can also see the <a href="https://github.com/improvedk/OrcaMDF/blob/master/src/OrcaMDF.Core/Engine/Pages/PageHeader.cs" target="_blank">full source of the header parsing at GitHub</a>.</p>
+<h2 id="Wan’t_more?">Wan’t more?</h2>
+<p>If this isn’t enough for you, you should go and <a href="http://www.sqlpass.org/summit/2011/Speakers/SessionPreferencing.aspx?spid=245&amp;p=1&amp;preferred=False" target="_blank">vote for one or more of my OrcaMDF related sessions</a> at the PASS Summit.</p>
 
 
 				<div style="clear: both"></div>
