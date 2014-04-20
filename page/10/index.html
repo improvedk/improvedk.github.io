@@ -81,85 +81,6 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/checking-which-database-is-stored-in-a-deattached-mdf-file/" title="Checking Which Database is Stored in a Detached MDF File" rel="bookmark">Checking Which Database is Stored in a Detached MDF File</a></h1>
-		<div class="categories">
-			
-				<a href="/category/.NET/">.NET</a>
-				, 
-			
-				<a href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>Inspired by <a href="http://stackoverflow.com/questions/6061510/any-way-to-quickly-tell-which-database-if-any-is-attached-to-a-mdf-file" target="_blank">this</a> question on StackOverflow, I’ve made a quick script to demonstrate how this might be done using <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a>.</p>
-<a id="more"></a>
-
-<p>In this example I’m looping all .mdf files in my local SQL Server data directory. Each one is loaded using OrcaMDF, the boot page is fetched and finally the database name is printed:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
-<span class="keyword">using</span> System.IO;
-<span class="keyword">using</span> OrcaMDF.Core.Engine;
-
-<span class="class"><span class="keyword">namespace</span> <span class="title">OrcaMDF</span>.<span class="title">Adhoc</span>
-{</span>
-    <span class="class"><span class="keyword">class</span> <span class="title">Program</span>
-    {</span>
-        <span class="keyword">static</span> <span class="keyword">void</span> Main()
-        {
-			<span class="keyword">foreach</span> (<span class="keyword">string</span> mdfPath in Directory.GetFiles(@<span class="string">"C:\Program Files\Microsoft SQL Server\MSSQL10_50.MSSQLSERVER\MSSQL\DATA"</span>))
-			{
-				if (!mdfPath.ToLower().EndsWith(<span class="string">".mdf"</span>))
-					continue;
-
-				<span class="keyword">using</span> (<span class="keyword">var</span> file = <span class="keyword">new</span> MdfFile(mdfPath))
-				{
-					<span class="keyword">var</span> bootPage = file.GetBootPage();
-					Console.WriteLine(bootPage.DatabaseName);
-				}
-			}
-        }
-    }
-}
-</pre></figure>
-
-<p>And the following is the output we get:</p>
-<div class="imgwrapper" style=""><div><a href="/checking-which-database-is-stored-in-a-deattached-mdf-file/image_21.png" class="fancy"><img src="/checking-which-database-is-stored-in-a-deattached-mdf-file/image_21.png" style="max-height: 250px"/></a></div></div>
-
-<p>Which, coincidentally, matches up to the databases I’ve got attached to my local SQL Server. At this point we could match this list up to the one we’d get from sys.databases and see which files didn’t have a matching database, and thus weed out the non-attached mdf files from our data directory.</p>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">May</span>
-			<span class="day">19</span>
-		</div>
-		<div class="lower">2011</div>
-	</div>
-
-	<div class="title">
 		<h1><a href="/bridging-the-gap-between-smallint-and-int/" title="Bridging the Gap Between Smallint and Int" rel="bookmark">Bridging the Gap Between Smallint and Int</a></h1>
 		<div class="categories">
 			
@@ -283,6 +204,85 @@
 <h2 id="Summing_it_up">Summing it up</h2>
 <p>As I’ve shown, we can easily create our own mediumint data type, just as we can create a 5 byte integer, 6 byte… Well, you get it. However, there are obviously some trade offs in that you’ll have to manage this data type yourself. While you can query it more or less like a normal data type, you have to be wary of scans. Finally, retrieving values will require some extra work, though that could easily be abstracted away in a custom type.</p>
 <p>So should you do it? Probably not. Saving a single byte per column will gain you very little, unless you have a humongous table, especially so if you have a lot of columns that fit in between the smallint and int value range. For those humongous archival tables, this might just be a way to shave an extra byte off per <em>mediumint</em> column.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">19</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/checking-which-database-is-stored-in-a-deattached-mdf-file/" title="Checking Which Database is Stored in a Detached MDF File" rel="bookmark">Checking Which Database is Stored in a Detached MDF File</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Inspired by <a href="http://stackoverflow.com/questions/6061510/any-way-to-quickly-tell-which-database-if-any-is-attached-to-a-mdf-file" target="_blank">this</a> question on StackOverflow, I’ve made a quick script to demonstrate how this might be done using <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a>.</p>
+<a id="more"></a>
+
+<p>In this example I’m looping all .mdf files in my local SQL Server data directory. Each one is loaded using OrcaMDF, the boot page is fetched and finally the database name is printed:</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.IO;
+<span class="keyword">using</span> OrcaMDF.Core.Engine;
+
+<span class="class"><span class="keyword">namespace</span> <span class="title">OrcaMDF</span>.<span class="title">Adhoc</span>
+{</span>
+    <span class="class"><span class="keyword">class</span> <span class="title">Program</span>
+    {</span>
+        <span class="keyword">static</span> <span class="keyword">void</span> Main()
+        {
+			<span class="keyword">foreach</span> (<span class="keyword">string</span> mdfPath in Directory.GetFiles(@<span class="string">"C:\Program Files\Microsoft SQL Server\MSSQL10_50.MSSQLSERVER\MSSQL\DATA"</span>))
+			{
+				if (!mdfPath.ToLower().EndsWith(<span class="string">".mdf"</span>))
+					continue;
+
+				<span class="keyword">using</span> (<span class="keyword">var</span> file = <span class="keyword">new</span> MdfFile(mdfPath))
+				{
+					<span class="keyword">var</span> bootPage = file.GetBootPage();
+					Console.WriteLine(bootPage.DatabaseName);
+				}
+			}
+        }
+    }
+}
+</pre></figure>
+
+<p>And the following is the output we get:</p>
+<div class="imgwrapper" style=""><div><a href="/checking-which-database-is-stored-in-a-deattached-mdf-file/image_21.png" class="fancy"><img src="/checking-which-database-is-stored-in-a-deattached-mdf-file/image_21.png" style="max-height: 250px"/></a></div></div>
+
+<p>Which, coincidentally, matches up to the databases I’ve got attached to my local SQL Server. At this point we could match this list up to the one we’d get from sys.databases and see which files didn’t have a matching database, and thus weed out the non-attached mdf files from our data directory.</p>
 
 
 				<div style="clear: both"></div>
@@ -986,67 +986,6 @@ WHILE @Cnt &lt; <span class="number">100000</span> <span class="keyword">BEGIN</
 	</div>
 
 	<div class="title">
-		<h1><a href="/my-pass-summit-2011-abstracts/" title="My PASS Summit 2011 Abstracts" rel="bookmark">My PASS Summit 2011 Abstracts</a></h1>
-		<div class="categories">
-			
-				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>Last year I went on a marathon conference trip, starting out in LA at <a href="http://2010.max.adobe.com/" target="_blank">Adobe Max</a>, continuing on to <a href="http://qconsf.com/sf2010/" target="_blank">QCon</a> in San Francisco before finally ending up in lovely Seattle for the <a href="http://www.sqlpass.org/summit/na2010/" target="_blank">PASS Summit</a>.</p>
-<a id="more"></a>
-
-<div class="imgwrapper" style=""><div><a href="/my-pass-summit-2011-abstracts/71624_444201957306_724027306_5893683_5375463_n_2.jpg" class="fancy"><img src="/my-pass-summit-2011-abstracts/71624_444201957306_724027306_5893683_5375463_n_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>Of the three, the one I’ll definitely be returning to this year is the PASS Summit. Last year I had the honor of getting a nice neon green “FIRST-TIMER” snippet on my badge, a snippet I wore with honor. This year however, I’m aiming for the Alumni snippet, and perhaps even the speaker snippet by submitting a couple of abstracts.</p>
-<p>As I’ve been somewhat busy with <a href="/introducing-orcamdf">OrcaMDF</a> in my spare time recently, both of my abstracts use OrcaMDF as the origin for going into the internals. I really hope I get a chance to present about this as I’m super psyched about it :)</p>
-<h2 id="Knowing_the_Internals_–_Who_Needs_SQL_Server_Anyway?">Knowing the Internals – Who Needs SQL Server Anyway?</h2>
-<p>You’re stuck on a remote island with just a laptop and your main database .MDF file. The boss calls and asks you to retrieve some data, but alas, you forgot to install SQL Server on your laptop. Luckily you have a HEX editor by your side!</p>
-<p>In this level 500 deep dive session we will go into the intimate details of the MDF file format. Think using DBCC Page is pushing it? Think again! As a learning experiment, I’ve created an open source parser for MDF files, called OrcaMDF. Using the OrcaMDF parser I’ll go through the primary storage mechanisms, how to parse page headers, boot pages, internal system tables, data &amp; index records, b-tree structures as well as the supporting IAM, GAM, SGAM &amp; PFS pages.</p>
-<p>Has your database suffered an unrecoverable disk corruption? This session might just be your way out! Using a corrupt &amp; unattachable MDF file, I’ll demo how to recover as much data as possible. This session is not for the faint of heart, there will be bytes!</p>
-<h3 id="Why_&amp;_What?">Why &amp; What?</h3>
-<p>I originally gave this presentation at <a href="http://mow2011.dk/mow2011.aspx" target="_blank">Miracle Open World 2011</a> and got some great feedback. Fueled by positive feedback I continued the development and am now at the point where I have so much content I considered doing a 3½ hour session instead. By attending this session you will not only see diagrams of internal structures on slides, you’ll actually see C# code demonstrated that parses &amp; utilizes them!</p>
-<h2 id="Demystifying_Database_Metadata">Demystifying Database Metadata</h2>
-<p>You know how to query sys.tables, sys.columns and perhaps even sys.system_internals_allocation_units to discover the metadata contents of a database. But where are these views getting their data from, and how do the core system tables relate?</p>
-<p>Based on my work with OrcaMDF, an open source C# parser for MDF files, I will demonstrate how to parse the internal system tables. Using just the boot page as origin, we’ll discover how to traverse the chain of references that ultimately end up in references to the actual system table data, from where we can parse the data records.</p>
-<p>Once we’ve got the system table data, I’ll demonstrate how to correlate the different tables to end up with the data we see in common system views.</p>
-<h3 id="Why_&amp;_What?-1">Why &amp; What?</h3>
-<p>As I continued the development of OrcaMDF I used the various system views extensively – sys.objects, tables, columns, indexes, internals_allocation_units etc. However, as development moved forward and I needed to parse that metadata myself, I had to look into the underlying tables – sysallocunits, sysschobjs, sysrowsets, sysrowsetcolumns. Join this session and let’s enter the realm of the hidden metadata and let’s explore it together!</p>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">May</span>
-			<span class="day">03</span>
-		</div>
-		<div class="lower">2011</div>
-	</div>
-
-	<div class="title">
 		<h1><a href="/introducing-orcamdf/" title="Introducing OrcaMDF" rel="bookmark">Introducing OrcaMDF</a></h1>
 		<div class="categories">
 			
@@ -1105,6 +1044,67 @@ WHILE @Cnt &lt; <span class="number">100000</span> <span class="keyword">BEGIN</
 <p>By opening up the code to everybody, this should provide some solid teaching and learning opportunities by looking at samples of how to actually parse the contents and not just read &amp; talk about it.</p>
 <h2 id="Alright,_alright,_show_me_the_codez!">Alright, alright, show me the codez!</h2>
 <p>All source code is <a href="https://github.com/improvedk/OrcaMDF" target="_blank">available on GitHub</a> under the GPLv3 license. Feel free to fork, watch or comment. The only thing I ask for is that you respect the license. If you end up trying out the code or actually using it, please let me know – I’d love to hear about it. Want to follow the latest developments – why don’t you <a href="http://twitter.com/#!/improvedk" target="_blank">come over and say hi</a>?</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">03</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/my-pass-summit-2011-abstracts/" title="My PASS Summit 2011 Abstracts" rel="bookmark">My PASS Summit 2011 Abstracts</a></h1>
+		<div class="categories">
+			
+				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Last year I went on a marathon conference trip, starting out in LA at <a href="http://2010.max.adobe.com/" target="_blank">Adobe Max</a>, continuing on to <a href="http://qconsf.com/sf2010/" target="_blank">QCon</a> in San Francisco before finally ending up in lovely Seattle for the <a href="http://www.sqlpass.org/summit/na2010/" target="_blank">PASS Summit</a>.</p>
+<a id="more"></a>
+
+<div class="imgwrapper" style=""><div><a href="/my-pass-summit-2011-abstracts/71624_444201957306_724027306_5893683_5375463_n_2.jpg" class="fancy"><img src="/my-pass-summit-2011-abstracts/71624_444201957306_724027306_5893683_5375463_n_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Of the three, the one I’ll definitely be returning to this year is the PASS Summit. Last year I had the honor of getting a nice neon green “FIRST-TIMER” snippet on my badge, a snippet I wore with honor. This year however, I’m aiming for the Alumni snippet, and perhaps even the speaker snippet by submitting a couple of abstracts.</p>
+<p>As I’ve been somewhat busy with <a href="/introducing-orcamdf">OrcaMDF</a> in my spare time recently, both of my abstracts use OrcaMDF as the origin for going into the internals. I really hope I get a chance to present about this as I’m super psyched about it :)</p>
+<h2 id="Knowing_the_Internals_–_Who_Needs_SQL_Server_Anyway?">Knowing the Internals – Who Needs SQL Server Anyway?</h2>
+<p>You’re stuck on a remote island with just a laptop and your main database .MDF file. The boss calls and asks you to retrieve some data, but alas, you forgot to install SQL Server on your laptop. Luckily you have a HEX editor by your side!</p>
+<p>In this level 500 deep dive session we will go into the intimate details of the MDF file format. Think using DBCC Page is pushing it? Think again! As a learning experiment, I’ve created an open source parser for MDF files, called OrcaMDF. Using the OrcaMDF parser I’ll go through the primary storage mechanisms, how to parse page headers, boot pages, internal system tables, data &amp; index records, b-tree structures as well as the supporting IAM, GAM, SGAM &amp; PFS pages.</p>
+<p>Has your database suffered an unrecoverable disk corruption? This session might just be your way out! Using a corrupt &amp; unattachable MDF file, I’ll demo how to recover as much data as possible. This session is not for the faint of heart, there will be bytes!</p>
+<h3 id="Why_&amp;_What?">Why &amp; What?</h3>
+<p>I originally gave this presentation at <a href="http://mow2011.dk/mow2011.aspx" target="_blank">Miracle Open World 2011</a> and got some great feedback. Fueled by positive feedback I continued the development and am now at the point where I have so much content I considered doing a 3½ hour session instead. By attending this session you will not only see diagrams of internal structures on slides, you’ll actually see C# code demonstrated that parses &amp; utilizes them!</p>
+<h2 id="Demystifying_Database_Metadata">Demystifying Database Metadata</h2>
+<p>You know how to query sys.tables, sys.columns and perhaps even sys.system_internals_allocation_units to discover the metadata contents of a database. But where are these views getting their data from, and how do the core system tables relate?</p>
+<p>Based on my work with OrcaMDF, an open source C# parser for MDF files, I will demonstrate how to parse the internal system tables. Using just the boot page as origin, we’ll discover how to traverse the chain of references that ultimately end up in references to the actual system table data, from where we can parse the data records.</p>
+<p>Once we’ve got the system table data, I’ll demonstrate how to correlate the different tables to end up with the data we see in common system views.</p>
+<h3 id="Why_&amp;_What?-1">Why &amp; What?</h3>
+<p>As I continued the development of OrcaMDF I used the various system views extensively – sys.objects, tables, columns, indexes, internals_allocation_units etc. However, as development moved forward and I needed to parse that metadata myself, I had to look into the underlying tables – sysallocunits, sysschobjs, sysrowsets, sysrowsetcolumns. Join this session and let’s enter the realm of the hidden metadata and let’s explore it together!</p>
 
 
 				<div style="clear: both"></div>
