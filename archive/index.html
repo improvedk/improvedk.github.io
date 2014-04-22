@@ -75,6 +75,40 @@
 	<div class="datebox">
 		<div class="upper">
 			<span class="month">Apr</span>
+			<span class="day">21</span>
+		</div>
+		<div class="lower">2014</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/redirecting-old-permalinks-on-statically-generated-blogs/" title="Redirecting Old Permalinks on Statically Generated Blogs" rel="bookmark">Redirecting Old Permalinks on Statically Generated Blogs</a></h1>
+		<div class="categories">
+			
+				<a href="/category/Miscellaneous/">Miscellaneous</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"></div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
 			<span class="day">19</span>
 		</div>
 		<div class="lower">2014</div>
@@ -2726,41 +2760,6 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/the-null-bitmap-is-not-always-present-in-data-records/" title="The Null Bitmap is Not Always Present in Data Records" rel="bookmark">The Null Bitmap is Not Always Present in Data Records</a></h1>
-		<div class="categories">
-			
-				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-
-			<div class="body"><p>While <a href="/sparse-column-storage-ndash-the-sparse-vector/">implementing sparse column support</a> for <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a>, I ran into a special condition that caught me by surprise – a data record with no null bitmap. Even <a href="http://www.sqlskills.com/BLOGS/PAUL/" target="_blank">Paul Randal</a> mentioned that the null bitmap would <em>always</em> be present in data records in his <a href="http://www.sqlskills.com/BLOGS/PAUL/post/A-SQL-Server-DBA-myth-a-day-(630" target="_blank">A SQL Server DBA myth a day: (6/30) three null bitmap myths</a>-three-null-bitmap-myths.aspx) post.</p>
-</div>
-		
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Jul</span>
-			<span class="day">15</span>
-		</div>
-		<div class="lower">2011</div>
-	</div>
-
-	<div class="title">
 		<h1><a href="/sparse-column-storage-ndash-the-sparse-vector/" title="Sparse Column Storage &amp; the Sparse Vector" rel="bookmark">Sparse Column Storage &amp; the Sparse Vector</a></h1>
 		<div class="categories">
 			
@@ -2825,13 +2824,13 @@
 	<div class="datebox">
 		<div class="upper">
 			<span class="month">Jul</span>
-			<span class="day">13</span>
+			<span class="day">15</span>
 		</div>
 		<div class="lower">2011</div>
 	</div>
 
 	<div class="title">
-		<h1><a href="/exploring-the-sys-system_internals_partition_columns-ti-field/" title="Exploring the sys.system_internals_partition_columns.ti Field" rel="bookmark">Exploring the sys.system_internals_partition_columns.ti Field</a></h1>
+		<h1><a href="/the-null-bitmap-is-not-always-present-in-data-records/" title="The Null Bitmap is Not Always Present in Data Records" rel="bookmark">The Null Bitmap is Not Always Present in Data Records</a></h1>
 		<div class="categories">
 			
 				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
@@ -2846,7 +2845,7 @@
 
 		
 
-			<div class="body"><p>Running sp_helptext on the sys.system_internals_partition_columns system view reveals the following internal query:</p>
+			<div class="body"><p>While <a href="/sparse-column-storage-ndash-the-sparse-vector/">implementing sparse column support</a> for <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a>, I ran into a special condition that caught me by surprise – a data record with no null bitmap. Even <a href="http://www.sqlskills.com/BLOGS/PAUL/" target="_blank">Paul Randal</a> mentioned that the null bitmap would <em>always</em> be present in data records in his <a href="http://www.sqlskills.com/BLOGS/PAUL/post/A-SQL-Server-DBA-myth-a-day-(630" target="_blank">A SQL Server DBA myth a day: (6/30) three null bitmap myths</a>-three-null-bitmap-myths.aspx) post.</p>
 </div>
 		
 		
@@ -2882,6 +2881,41 @@
 		
 
 			<div class="body"><p>Based on my findings <a href="/exploring-the-sys-system_internals_partition_columns-ti-field">exploring the sys.system_internals_partition_columns.ti field</a>, I needed parser that could extract the scale, precision, max_length as well as the max_inrow_length fields from it. The tricky part is that those values are stored differently for each individual type, added onto the fact that some types have hardcoded defaults that are not stored in the ti field, even though there’s space for it.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">13</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/exploring-the-sys-system_internals_partition_columns-ti-field/" title="Exploring the sys.system_internals_partition_columns.ti Field" rel="bookmark">Exploring the sys.system_internals_partition_columns.ti Field</a></h1>
+		<div class="categories">
+			
+				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Running sp_helptext on the sys.system_internals_partition_columns system view reveals the following internal query:</p>
 </div>
 		
 		
@@ -3327,13 +3361,13 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/reverse-engineering-sql-server-page-headers/" title="Reverse Engineering SQL Server Page Headers" rel="bookmark">Reverse Engineering SQL Server Page Headers</a></h1>
+		<h1><a href="/checking-which-database-is-stored-in-a-deattached-mdf-file/" title="Checking Which Database is Stored in a Detached MDF File" rel="bookmark">Checking Which Database is Stored in a Detached MDF File</a></h1>
 		<div class="categories">
 			
 				<a href="/category/.NET/">.NET</a>
 				, 
 			
-				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
+				<a href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
 				
 			
 		</div>
@@ -3345,7 +3379,7 @@
 
 		
 
-			<div class="body"><p>One of the first challenges I faced when starting out the development of <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a> was parsing page headers. We all know that <a href="/deciphering-a-sql-server-data-page/">pages are basically split in two parts</a>, the 96 byte header and the 8096 byte body of remaining bytes. Much has been written about headers and Paul Randal (<a href="http://www.sqlskills.com/BLOGS/PAUL/" target="_blank">b</a>|<a href="http://twitter.com/#!/paulrandal" target="_blank">t</a>) has a great post describing the <a href="http://www.sqlskills.com/blogs/paul/post/Inside-the-Storage-Engine-Anatomy-of-a-page.aspx" target="_blank">contents of the header</a> as well. However, though the contents have been described, I’ve been completely unable to find any kind of details on the storage format. What data types are the individual fields, and what’s the order? Oh well, we’ve always got DBCC PAGE.</p>
+			<div class="body"><p>Inspired by <a href="http://stackoverflow.com/questions/6061510/any-way-to-quickly-tell-which-database-if-any-is-attached-to-a-mdf-file" target="_blank">this</a> question on StackOverflow, I’ve made a quick script to demonstrate how this might be done using <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a>.</p>
 </div>
 		
 		
@@ -3400,13 +3434,13 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/checking-which-database-is-stored-in-a-deattached-mdf-file/" title="Checking Which Database is Stored in a Detached MDF File" rel="bookmark">Checking Which Database is Stored in a Detached MDF File</a></h1>
+		<h1><a href="/reverse-engineering-sql-server-page-headers/" title="Reverse Engineering SQL Server Page Headers" rel="bookmark">Reverse Engineering SQL Server Page Headers</a></h1>
 		<div class="categories">
 			
 				<a href="/category/.NET/">.NET</a>
 				, 
 			
-				<a href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
 				
 			
 		</div>
@@ -3418,7 +3452,7 @@
 
 		
 
-			<div class="body"><p>Inspired by <a href="http://stackoverflow.com/questions/6061510/any-way-to-quickly-tell-which-database-if-any-is-attached-to-a-mdf-file" target="_blank">this</a> question on StackOverflow, I’ve made a quick script to demonstrate how this might be done using <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a>.</p>
+			<div class="body"><p>One of the first challenges I faced when starting out the development of <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a> was parsing page headers. We all know that <a href="/deciphering-a-sql-server-data-page/">pages are basically split in two parts</a>, the 96 byte header and the 8096 byte body of remaining bytes. Much has been written about headers and Paul Randal (<a href="http://www.sqlskills.com/BLOGS/PAUL/" target="_blank">b</a>|<a href="http://twitter.com/#!/paulrandal" target="_blank">t</a>) has a great post describing the <a href="http://www.sqlskills.com/blogs/paul/post/Inside-the-Storage-Engine-Anatomy-of-a-page.aspx" target="_blank">contents of the header</a> as well. However, though the contents have been described, I’ve been completely unable to find any kind of details on the storage format. What data types are the individual fields, and what’s the order? Oh well, we’ve always got DBCC PAGE.</p>
 </div>
 		
 		
@@ -3529,7 +3563,7 @@
 
 		
 
-			<div class="body"><p>There are several different date related data types in SQL Server. Currently <a href="introducing-orcamdf">OrcaMDF</a> supports the three most common types: <a href="http://msdn.microsoft.com/en-us/library/bb630352.aspx" target="_blank">date</a>, <a href="http://msdn.microsoft.com/en-us/library/ms187819.aspx" target="_blank">datetime</a> &amp; <a href="http://msdn.microsoft.com/en-us/library/ms182418.aspx" target="_blank">smalldatetime</a>.</p>
+			<div class="body"><p>There are several different date related data types in SQL Server. Currently <a href="/introducing-orcamdf">OrcaMDF</a> supports the three most common types: <a href="http://msdn.microsoft.com/en-us/library/bb630352.aspx" target="_blank">date</a>, <a href="http://msdn.microsoft.com/en-us/library/ms187819.aspx" target="_blank">datetime</a> &amp; <a href="http://msdn.microsoft.com/en-us/library/ms182418.aspx" target="_blank">smalldatetime</a>.</p>
 </div>
 		
 		
@@ -3587,6 +3621,41 @@
 	</div>
 
 	<div class="title">
+		<h1><a href="/my-pass-summit-2011-abstracts/" title="My PASS Summit 2011 Abstracts" rel="bookmark">My PASS Summit 2011 Abstracts</a></h1>
+		<div class="categories">
+			
+				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Last year I went on a marathon conference trip, starting out in LA at <a href="http://2010.max.adobe.com/" target="_blank">Adobe Max</a>, continuing on to <a href="http://qconsf.com/sf2010/" target="_blank">QCon</a> in San Francisco before finally ending up in lovely Seattle for the <a href="http://www.sqlpass.org/summit/na2010/" target="_blank">PASS Summit</a>.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">03</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
 		<h1><a href="/introducing-orcamdf/" title="Introducing OrcaMDF" rel="bookmark">Introducing OrcaMDF</a></h1>
 		<div class="categories">
 			
@@ -3610,41 +3679,6 @@
 <p>I was invited to speak at <a href="http://mow2011.dk/" target="_blank">MOW2011</a> for the SQL Server track. Last year I got good reviews for my presentation on <a href="Dissecting_PDF_Documents_1.pdf">Dissecting PDF Documents</a>, a deep dive into the file format of PDF files. Wanting to stay in the same grove, I decided to take a look at the MDF format as it’s somewhat closer to SQL Server DBA’s than PDF files. Having almost worn my <a href="http://www.amazon.com/Microsoft%C2%AE-SQL-Server%C2%AE-2008-Internals/dp/0735626243" target="_blank">SQL Server 2008 Internals</a> book down from reading, I’ve always been interested in the internals, though I still felt like I was lacking a lot of knowledge.</p>
 <h2 id="A_parser_is_born">A parser is born</h2>
 <p>For my demos at MOW I wanted to at least read the records from a data page, just like the output from DBCC Page. The basic page format is well documented, and it’s not the first time I’ve taken a <a href="/deciphering-a-sql-server-data-page">deeper look</a> at pages. Surprisingly quickly, I had record parsing from data pages functioning using a hardcoded schema. Parsing a single page is fun, but really, I’d like to get all the data from a table. Restricting myself to just consider clustered tables made it simpler as it’d just be a matter of following the linked list of pages from start to end. However, that meant I’d have to parse the header as well. There’s some good information out there on the <a href="http://sqlskills.com/blogs/paul/post/Inside-the-Storage-Engine-Anatomy-of-a-page.aspx" target="_blank">anatomy of pages</a>, but everything I could find had a distinct lack of information on the actual header structure and field types.</p>
-</div>
-		
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">May</span>
-			<span class="day">03</span>
-		</div>
-		<div class="lower">2011</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/my-pass-summit-2011-abstracts/" title="My PASS Summit 2011 Abstracts" rel="bookmark">My PASS Summit 2011 Abstracts</a></h1>
-		<div class="categories">
-			
-				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-
-			<div class="body"><p>Last year I went on a marathon conference trip, starting out in LA at <a href="http://2010.max.adobe.com/" target="_blank">Adobe Max</a>, continuing on to <a href="http://qconsf.com/sf2010/" target="_blank">QCon</a> in San Francisco before finally ending up in lovely Seattle for the <a href="http://www.sqlpass.org/summit/na2010/" target="_blank">PASS Summit</a>.</p>
 </div>
 		
 		
@@ -5349,6 +5383,41 @@
 	</div>
 
 	<div class="title">
+		<h1><a href="/book-how-i-raised-myself-from-failure-to-success-in-selling/" title="How I Raised Myself from Failure to Success in Selling" rel="bookmark">How I Raised Myself from Failure to Success in Selling</a></h1>
+		<div class="categories">
+			
+				<a href="/category/Miscellaneous/">Miscellaneous</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Having recently read <a href="http://www.amazon.com/Pragmatic-Programmer-Journeyman-Master/dp/020161622X/ref=pd_bbs_sr_1?ie=UTF8&amp;s=books&amp;qid=1218331941&amp;sr=8-1" target="_blank">The Pragmatic Programmer</a> and <a href="http://www.amazon.com/Working-Effectively-Legacy-Robert-Martin/dp/0131177052" target="_blank">Working Effectively with Legacy Code</a> (both books are amazing - and neither need further review or description as they are globally appreciated as classics), I was feeling ready to read something non-development related, just to get back on my feet again.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Aug</span>
+			<span class="day">10</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
 		<h1><a href="/twitter/" title="Twitter" rel="bookmark">Twitter</a></h1>
 		<div class="categories">
 			
@@ -5368,41 +5437,6 @@
 		
 
 			<div class="body"></div>
-		
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Aug</span>
-			<span class="day">10</span>
-		</div>
-		<div class="lower">2008</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/book-how-i-raised-myself-from-failure-to-success-in-selling/" title="How I Raised Myself from Failure to Success in Selling" rel="bookmark">How I Raised Myself from Failure to Success in Selling</a></h1>
-		<div class="categories">
-			
-				<a href="/category/Miscellaneous/">Miscellaneous</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-
-			<div class="body"><p>Having recently read <a href="http://www.amazon.com/Pragmatic-Programmer-Journeyman-Master/dp/020161622X/ref=pd_bbs_sr_1?ie=UTF8&amp;s=books&amp;qid=1218331941&amp;sr=8-1" target="_blank">The Pragmatic Programmer</a> and <a href="http://www.amazon.com/Working-Effectively-Legacy-Robert-Martin/dp/0131177052" target="_blank">Working Effectively with Legacy Code</a> (both books are amazing - and neither need further review or description as they are globally appreciated as classics), I was feeling ready to read something non-development related, just to get back on my feet again.</p>
-</div>
 		
 		
 
@@ -5491,10 +5525,10 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/providing-custom-assembly-evidence/" title="Providing Custom Assembly Evidence" rel="bookmark">Providing Custom Assembly Evidence</a></h1>
+		<h1><a href="/dotnet-security-techtalk/" title=".NET Security TechTalk" rel="bookmark">.NET Security TechTalk</a></h1>
 		<div class="categories">
 			
-				<a href="/category/.NET/">.NET</a>
+				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
 				
 			
 		</div>
@@ -5506,7 +5540,7 @@
 
 		
 
-			<div class="body"><p>I recently <a href="/analyzing-assembly-evidence/">mentioned</a> the possibility of having an assembly provide custom evidence alongside the CLR provided evidence. Let’s see how to do it.</p>
+			<div class="body"><p>I will be hosting two TechTalks on security in .NET, at Microsoft Denmark in August. The TechTalks will be held in DANISH.</p>
 </div>
 		
 		
@@ -5526,10 +5560,10 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/dotnet-security-techtalk/" title=".NET Security TechTalk" rel="bookmark">.NET Security TechTalk</a></h1>
+		<h1><a href="/providing-custom-assembly-evidence/" title="Providing Custom Assembly Evidence" rel="bookmark">Providing Custom Assembly Evidence</a></h1>
 		<div class="categories">
 			
-				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
+				<a href="/category/.NET/">.NET</a>
 				
 			
 		</div>
@@ -5541,7 +5575,7 @@
 
 		
 
-			<div class="body"><p>I will be hosting two TechTalks on security in .NET, at Microsoft Denmark in August. The TechTalks will be held in DANISH.</p>
+			<div class="body"><p>I recently <a href="/analyzing-assembly-evidence/">mentioned</a> the possibility of having an assembly provide custom evidence alongside the CLR provided evidence. Let’s see how to do it.</p>
 </div>
 		
 		
@@ -5949,7 +5983,7 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/response-transmitfile-close-will-kill-your-application/" title="Response.TransmitFile + Close Will Kill Your Application" rel="bookmark">Response.TransmitFile + Close Will Kill Your Application</a></h1>
+		<h1><a href="/xmloutput-vs-xmlserializer-performance/" title="XmlOutput vs XmlSerializer Performance" rel="bookmark">XmlOutput vs XmlSerializer Performance</a></h1>
 		<div class="categories">
 			
 				<a href="/category/.NET/">.NET</a>
@@ -5964,7 +5998,7 @@
 
 		
 
-			<div class="body"><p>Just before last weekend I noticed that a website I’m responsible for started spitting out “Server is busy” messages, not something you want to see on a website with millions of visitors per day. The quickfix was to recycle the application pool, and thus I solved the symptoms by setting a 15 mins recycle cycle on all the application pools. Not exactly optimal, but sometimes pissing your pants is the way to go.</p>
+			<div class="body"><p>I got quite a lot of comments for my <a href="/xmldocument-fluent-interface/">XmlDocument fluent interface</a>, and I’m very glad I did. I’m always open towards new ways to solve problems, and I got a couple of suggestions to my post that I afterwards experimented with. One of those is using the XmlSerializer to serialize strongly typed classes (or structs - performance is the same) into XML. <a href="http://www.vonsharp.net/" target="_blank">Jon von Gillern</a> originally suggested it, but <a href="http://www.u2u.info/Blogs/Kris" target="_blank">Kris Vandermotten</a> made me want to test it out.</p>
 </div>
 		
 		
@@ -5984,7 +6018,7 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/xmloutput-vs-xmlserializer-performance/" title="XmlOutput vs XmlSerializer Performance" rel="bookmark">XmlOutput vs XmlSerializer Performance</a></h1>
+		<h1><a href="/response-transmitfile-close-will-kill-your-application/" title="Response.TransmitFile + Close Will Kill Your Application" rel="bookmark">Response.TransmitFile + Close Will Kill Your Application</a></h1>
 		<div class="categories">
 			
 				<a href="/category/.NET/">.NET</a>
@@ -5999,7 +6033,7 @@
 
 		
 
-			<div class="body"><p>I got quite a lot of comments for my <a href="/xmldocument-fluent-interface/">XmlDocument fluent interface</a>, and I’m very glad I did. I’m always open towards new ways to solve problems, and I got a couple of suggestions to my post that I afterwards experimented with. One of those is using the XmlSerializer to serialize strongly typed classes (or structs - performance is the same) into XML. <a href="http://www.vonsharp.net/" target="_blank">Jon von Gillern</a> originally suggested it, but <a href="http://www.u2u.info/Blogs/Kris" target="_blank">Kris Vandermotten</a> made me want to test it out.</p>
+			<div class="body"><p>Just before last weekend I noticed that a website I’m responsible for started spitting out “Server is busy” messages, not something you want to see on a website with millions of visitors per day. The quickfix was to recycle the application pool, and thus I solved the symptoms by setting a 15 mins recycle cycle on all the application pools. Not exactly optimal, but sometimes pissing your pants is the way to go.</p>
 </div>
 		
 		
@@ -6723,7 +6757,7 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/modifying-window-location-and-size/" title="Modifying Window Location and Size Using PInvoke" rel="bookmark">Modifying Window Location and Size Using PInvoke</a></h1>
+		<h1><a href="/getting-window-location-and-size/" title="Getting Window Location and Size Using PInvoke" rel="bookmark">Getting Window Location and Size Using PInvoke</a></h1>
 		<div class="categories">
 			
 				<a href="/category/.NET/">.NET</a>
@@ -6738,7 +6772,7 @@
 
 		
 
-			<div class="body"><p>Last time we saw how to obtain a windows location and size. This time I’ll show how to change a windows size and location. I will be using the <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">WindowFinder class</a> that I introduced in the blog <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">Finding specific windows</a>.</p>
+			<div class="body"><p>This time I’ll show how to obtain the size and location of a window. I will be using the <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">WindowFinder class</a> that I introduced in the blog <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">Finding specific windows</a>.</p>
 </div>
 		
 		
@@ -6758,7 +6792,7 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/getting-window-location-and-size/" title="Getting Window Location and Size Using PInvoke" rel="bookmark">Getting Window Location and Size Using PInvoke</a></h1>
+		<h1><a href="/modifying-window-location-and-size/" title="Modifying Window Location and Size Using PInvoke" rel="bookmark">Modifying Window Location and Size Using PInvoke</a></h1>
 		<div class="categories">
 			
 				<a href="/category/.NET/">.NET</a>
@@ -6773,7 +6807,7 @@
 
 		
 
-			<div class="body"><p>This time I’ll show how to obtain the size and location of a window. I will be using the <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">WindowFinder class</a> that I introduced in the blog <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">Finding specific windows</a>.</p>
+			<div class="body"><p>Last time we saw how to obtain a windows location and size. This time I’ll show how to change a windows size and location. I will be using the <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">WindowFinder class</a> that I introduced in the blog <a href="http://www.improve.dk/blog/2007/04/07/finding-specific-windows" target="_blank">Finding specific windows</a>.</p>
 </div>
 		
 		
@@ -6828,41 +6862,6 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/enumerating-windows/" title="Enumerating Windows Using PInvoke" rel="bookmark">Enumerating Windows Using PInvoke</a></h1>
-		<div class="categories">
-			
-				<a href="/category/.NET/">.NET</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-
-			<div class="body"><p>Until now we’ve seen how to retrieve basic properties of windows as well as how to interact with them by sending keypresses. Up until now we’ve had to find the handle by using Winspector or a similar program. This time I’ll present a way of finding the handles programmatically.</p>
-</div>
-		
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Apr</span>
-			<span class="day">06</span>
-		</div>
-		<div class="lower">2007</div>
-	</div>
-
-	<div class="title">
 		<h1><a href="/sending-keypresses-to-a-window/" title="Sending Keypresses to a Window Using PInvoke" rel="bookmark">Sending Keypresses to a Window Using PInvoke</a></h1>
 		<div class="categories">
 			
@@ -6892,13 +6891,13 @@
 	<div class="datebox">
 		<div class="upper">
 			<span class="month">Apr</span>
-			<span class="day">04</span>
+			<span class="day">06</span>
 		</div>
 		<div class="lower">2007</div>
 	</div>
 
 	<div class="title">
-		<h1><a href="/getting-text-from-handle/" title="Getting Text From Window Handle Using PInvoke" rel="bookmark">Getting Text From Window Handle Using PInvoke</a></h1>
+		<h1><a href="/enumerating-windows/" title="Enumerating Windows Using PInvoke" rel="bookmark">Enumerating Windows Using PInvoke</a></h1>
 		<div class="categories">
 			
 				<a href="/category/.NET/">.NET</a>
@@ -6913,7 +6912,7 @@
 
 		
 
-			<div class="body"><p>This time we want to retrieve the text from a given window, represented by a handle. Like last time, open an Internet Explorer instance. Now open Winspector and select the address field, ensure that it is the address field itself (class = Edit) and not the ComboBox that you select.</p>
+			<div class="body"><p>Until now we’ve seen how to retrieve basic properties of windows as well as how to interact with them by sending keypresses. Up until now we’ve had to find the handle by using Winspector or a similar program. This time I’ll present a way of finding the handles programmatically.</p>
 </div>
 		
 		
@@ -6949,6 +6948,41 @@
 		
 
 			<div class="body"><p>This time we won’t be reading the text from a window, we’ll be setting it.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">04</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/getting-text-from-handle/" title="Getting Text From Window Handle Using PInvoke" rel="bookmark">Getting Text From Window Handle Using PInvoke</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>This time we want to retrieve the text from a given window, represented by a handle. Like last time, open an Internet Explorer instance. Now open Winspector and select the address field, ensure that it is the address field itself (class = Edit) and not the ComboBox that you select.</p>
 </div>
 		
 		
@@ -7357,7 +7391,7 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/day-1/" title="Day 1" rel="bookmark">Day 1</a></h1>
+		<h1><a href="/royal-flush-baby/" title="Royal Flush Baby!" rel="bookmark">Royal Flush Baby!</a></h1>
 		<div class="categories">
 			
 				<a href="/category/Poker/">Poker</a>
@@ -7372,7 +7406,7 @@
 
 		
 
-			<div class="body"><p>Since I woke up at 6 AM this morning I decided to just stay in bed and watch The Prestige through the hotel movie system.</p>
+			<div class="body"><p>I wanted to log a lot of poker playing hours today. At about 12 PM I went to the MGM Grand, a room that I’d never visited. After playing there for about 5-6 hours (please don’t ask how it went, I got butchered), I’ve got mixed feelings about the room.</p>
 </div>
 		
 		
@@ -7392,7 +7426,7 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/royal-flush-baby/" title="Royal Flush Baby!" rel="bookmark">Royal Flush Baby!</a></h1>
+		<h1><a href="/day-1/" title="Day 1" rel="bookmark">Day 1</a></h1>
 		<div class="categories">
 			
 				<a href="/category/Poker/">Poker</a>
@@ -7407,7 +7441,7 @@
 
 		
 
-			<div class="body"><p>I wanted to log a lot of poker playing hours today. At about 12 PM I went to the MGM Grand, a room that I’d never visited. After playing there for about 5-6 hours (please don’t ask how it went, I got butchered), I’ve got mixed feelings about the room.</p>
+			<div class="body"><p>Since I woke up at 6 AM this morning I decided to just stay in bed and watch The Prestige through the hotel movie system.</p>
 </div>
 		
 		
@@ -7708,6 +7742,41 @@
 	</div>
 
 	<div class="title">
+		<h1><a href="/installing-office-2007-on-vista/" title="Installing Office 2007 on Vista" rel="bookmark">Installing Office 2007 on Vista</a></h1>
+		<div class="categories">
+			
+				<a href="/category/Windows/">Windows</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Ok, so I’d promised myself that I would at least give it a month before I’d install Vista on my desktop computer as I simply will not be able to cope with having major problems here. For work purposes I simply have to have a functional desktop computer.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Dec</span>
+			<span class="day">04</span>
+		</div>
+		<div class="lower">2006</div>
+	</div>
+
+	<div class="title">
 		<h1><a href="/setpoint-volume-control-in-vista/" title="SetPoint Volume Control In Vista" rel="bookmark">SetPoint Volume Control In Vista</a></h1>
 		<div class="categories">
 			
@@ -7759,41 +7828,6 @@
 		
 
 			<div class="body"><p>Ever since IE7 came out developers have had the problem of whether they should upgrade or not. If they chose to upgrade, they wouldn’t be able to test their sites in IE6 any longer as installing IE7 would uninstall IE6. There are 3rd party hacks that allow both versions to be installed at the same time, but they will not simulate a true IE6 / IE7 environment.</p>
-</div>
-		
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Dec</span>
-			<span class="day">04</span>
-		</div>
-		<div class="lower">2006</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/installing-office-2007-on-vista/" title="Installing Office 2007 on Vista" rel="bookmark">Installing Office 2007 on Vista</a></h1>
-		<div class="categories">
-			
-				<a href="/category/Windows/">Windows</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-
-			<div class="body"><p>Ok, so I’d promised myself that I would at least give it a month before I’d install Vista on my desktop computer as I simply will not be able to cope with having major problems here. For work purposes I simply have to have a functional desktop computer.</p>
 </div>
 		
 		
@@ -8408,6 +8442,41 @@
 	</div>
 
 	<div class="title">
+		<h1><a href="/mainevent2006/" title="Main Event!" rel="bookmark">Main Event!</a></h1>
+		<div class="categories">
+			
+				<a href="/category/Poker/">Poker</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Today was the big day. Today was the day that I was going to play the WSOP 2006 Main Event with a $10k buy in!</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">30</span>
+		</div>
+		<div class="lower">2006</div>
+	</div>
+
+	<div class="title">
 		<h1><a href="/cashsession3/" title="Cash Session" rel="bookmark">Cash Session</a></h1>
 		<div class="categories">
 			
@@ -8459,41 +8528,6 @@
 		
 
 			<div class="body"><p>When I went to bed yesterday (after the Main Event) at around 7 AM, I didn’t think of setting my clock. I mean, I didn’t have to get up before around 5-6 PM, I’d be long awake before that.</p>
-</div>
-		
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Jul</span>
-			<span class="day">30</span>
-		</div>
-		<div class="lower">2006</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/mainevent2006/" title="Main Event!" rel="bookmark">Main Event!</a></h1>
-		<div class="categories">
-			
-				<a href="/category/Poker/">Poker</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-
-			<div class="body"><p>Today was the big day. Today was the day that I was going to play the WSOP 2006 Main Event with a $10k buy in!</p>
 </div>
 		
 		
@@ -8655,10 +8689,10 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/cashsession1/" title="Cash Session" rel="bookmark">Cash Session</a></h1>
+		<h1><a href="/grandcanyon/" title="Grand Canyon Trip" rel="bookmark">Grand Canyon Trip</a></h1>
 		<div class="categories">
 			
-				<a href="/category/Poker/">Poker</a>
+				<a href="/category/Life/">Life</a>
 				
 			
 		</div>
@@ -8670,7 +8704,7 @@
 
 		
 
-			<div class="body"><p>So I finally got into my first ever real poker cash game at a casino. My main game is without doubt tournaments, I rarely play cash games as I don’t think they’re nearly as interesting, also I’m far worse at cash games than at tournaments. When I do get into cash games online, I usually play the NL25 games at Party, I’ve had lots of problems beating even NL50/100.</p>
+			<div class="body"><p>So today we decided to take a trip to the Grand Canyon just outside Las Vegas. I’ve been to the Grand Canyon once before on an earlier trip when I was seven, but honestly I couldn’t remember it that well besides it being hot as hell and, well, grand.</p>
 </div>
 		
 		
@@ -8690,10 +8724,10 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/grandcanyon/" title="Grand Canyon Trip" rel="bookmark">Grand Canyon Trip</a></h1>
+		<h1><a href="/cashsession1/" title="Cash Session" rel="bookmark">Cash Session</a></h1>
 		<div class="categories">
 			
-				<a href="/category/Life/">Life</a>
+				<a href="/category/Poker/">Poker</a>
 				
 			
 		</div>
@@ -8705,7 +8739,7 @@
 
 		
 
-			<div class="body"><p>So today we decided to take a trip to the Grand Canyon just outside Las Vegas. I’ve been to the Grand Canyon once before on an earlier trip when I was seven, but honestly I couldn’t remember it that well besides it being hot as hell and, well, grand.</p>
+			<div class="body"><p>So I finally got into my first ever real poker cash game at a casino. My main game is without doubt tournaments, I rarely play cash games as I don’t think they’re nearly as interesting, also I’m far worse at cash games than at tournaments. When I do get into cash games online, I usually play the NL25 games at Party, I’ve had lots of problems beating even NL50/100.</p>
 </div>
 		
 		

@@ -74,6 +74,196 @@
 	<article>
 	<div class="datebox">
 		<div class="upper">
+			<span class="month">Jun</span>
+			<span class="day">04</span>
+		</div>
+		<div class="lower">2013</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/analyzing-bsod-minidump-files-using-windbg/" title="Analyzing BSOD Minidump Files Using Windbg" rel="bookmark">Analyzing BSOD Minidump Files Using Windbg</a></h1>
+		<div class="categories">
+			
+				<a href="/category/Windbg/">Windbg</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Unfortunately, once in a while, computers fail. If you’re running Windows you’ve probably witnessed the dreaded <a href="http://en.wikipedia.org/wiki/Blue_Screen_of_Death" target="_blank">Blue Screen of Death</a>, commonly referred to as a BSOD. Once the BSOD occurs, some machines will immediately restart, before you’ve got a chance to actually see what happened. Other times users will just report that the BSOD happened, without noting anything down about what the message actually said. In this post I’ll show you how analyzing BSOD minidump files using <a href="http://en.wikipedia.org/wiki/WinDbg" target="_blank">Windbg</a> will enable you to find the cause of the BSOD after the fact.</p>
+<a id="more"></a>
+
+
+<h2 id="Enabling_Dump_Files">Enabling Dump Files</h2>
+<p>By default, never Windows installs will automatically create minidump files once a BSOD occurs. Once restarted, you should be able to see a .dmp file here:</p>
+<figure class="highlight"><pre>C:<span class="command">\Windows</span><span class="command">\Minidump</span>
+</pre></figure>
+
+<p>If you don’t see any .dmp files there, or if the directory doesn’t exist, you may have to tell Windows to create minidump files when the BSOD occurs. To do so, press the <strong>Win+Break</strong> keys to open up the System control panel. Now click <strong>Advanced system settings</strong> in the left menu. Once there, go to the <strong>Advanced</strong> tab and click the <strong>Settings…</strong> button under the <strong>Startup and Recovery</strong> section. Now make sure the <strong>Write debugging information</strong> setting is set to <strong>anything but “none”</strong>:</p>
+<div class="imgwrapper" style=""><div><a href="/analyzing-bsod-minidump-files-using-windbg/Capture.png" class="fancy"><img src="/analyzing-bsod-minidump-files-using-windbg/Capture.png" style="max-height: 250px"/></a></div></div>
+
+
+<h2 id="Analyzing_BSOD_Minidump_Files_Using_Windbg">Analyzing BSOD Minidump Files Using Windbg</h2>
+<p>Once a dump file has been created, you can analyze it using Windbg. Start by opening Windbg and pressing the <strong>Ctrl+D</strong> keys. Now select the .dmp file you want to analyze and click <strong>Open</strong>. This should yield something like this:</p>
+<figure class="highlight"><pre>Microsoft (R) Windows Debugger Version 6.12.0002.633 AMD64
+Copyright (c) Microsoft Corporation. All rights reserved.
+
+
+Loading Dump File [C:\Windows\Minidump\040813-15974-01.dmp]
+Mini Kernel Dump File: Only registers and stack trace are available
+
+Symbol search path is: symsrv<span class="emphasis">*symsrv.dll*</span>c:\symbols*http://msdl.microsoft.com/download/symbols
+Executable search path is: 
+Windows 7 Kernel Version 7601 (Service Pack 1) MP (12 procs) Free x64
+Product: WinNt, suite: TerminalServer SingleUserTS
+Built by: 7601.18044.amd64fre.win7sp1_gdr.130104-1431
+Machine Name:
+Kernel base = 0xfffff800<span class="code">`0300c000 PsLoadedModuleList = 0xfffff800`</span>03250670
+Debug session time: Mon Apr  8 22:17:47.016 2013 (UTC + 2:00)
+System Uptime: 0 days 1:36:19.860
+Loading Kernel Symbols
+...............................................................
+................................................................
+........................
+Loading User Symbols
+Loading unloaded module list
+...............
+<span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="emphasis">***</span>*
+<span class="bullet">*                                                                             </span>*
+<span class="bullet">*                        </span>Bugcheck Analysis                                    *
+<span class="bullet">*                                                                             </span>*
+<span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="emphasis">***</span>*
+
+Use !analyze -v to get detailed debugging information.
+
+BugCheck FE, {4, fffffa803c3c89e0, fffffa803102e230, fffffa803e765010}
+
+Probably caused by : FiioE17.sys ( FiioE17+1d21 )
+
+Followup: MachineOwner
+</pre></figure>
+
+<p>Already this tells us a couple of things - your OS details, when exactly the problem occurred as well as what module probably caused the issue (FiioE17.sys in this case). Also, it tells you how to proceed:</p>
+<blockquote>
+<p>Use !analyze -v to get detailed debugging information.</p>
+</blockquote>
+<p>As suggested, let’s try and run the !analyze -v command:</p>
+<figure class="highlight"><pre>11: kd&gt; !analyze -v
+<span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="emphasis">***</span>*
+<span class="bullet">*                                                                             </span>*
+<span class="bullet">*                        </span>Bugcheck Analysis                                    *
+<span class="bullet">*                                                                             </span>*
+<span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="emphasis">***</span>*
+
+BUGCODE<span class="emphasis">_USB_</span>DRIVER (fe)
+USB Driver bugcheck, first parameter is USB bugcheck code.
+Arguments:
+Arg1: 0000000000000004, IRP<span class="emphasis">_URB_</span>DOUBLE_SUBMIT The caller has submitted an irp
+<span class="code">	that is already pending in the USB bus driver.</span>
+Arg2: fffffa803c3c89e0, Address of IRP
+Arg3: fffffa803102e230, Address of URB
+Arg4: fffffa803e765010
+
+<span class="header">Debugging Details:
+------------------</span>
+
+CUSTOMER<span class="emphasis">_CRASH_</span>COUNT:  1
+
+DEFAULT<span class="emphasis">_BUCKET_</span>ID:  VISTA<span class="emphasis">_DRIVER_</span>FAULT
+
+BUGCHECK_STR:  0xFE
+
+PROCESS_NAME:  audiodg.exe
+
+CURRENT_IRQL:  2
+
+LAST<span class="emphasis">_CONTROL_</span>TRANSFER:  from fffff88008326f4b to fffff80003081c40
+
+STACK_TEXT:  
+fffff880<span class="code">`0e482fd8 fffff880`</span>08326f4b : 00000000<span class="code">`000000fe 00000000`</span>00000004 fffffa80<span class="code">`3c3c89e0 fffffa80`</span>3102e230 : nt!KeBugCheckEx
+fffff880<span class="code">`0e482fe0 fffff880`</span>0833244a : fffffa80<span class="code">`3ae97002 fffffa80`</span>3b8caad0 00000000<span class="code">`00000000 fffffa80`</span>3ae97050 : USBPORT!USBPORT<span class="emphasis">_Core_</span>DetectActiveUrb+0x127
+fffff880<span class="code">`0e483030 fffff880`</span>0833ae74 : fffffa80<span class="code">`3c3c89e0 fffffa80`</span>3af7000a fffffa80<span class="code">`3c3c89e0 fffffa80`</span>3102e230 : USBPORT!USBPORT_ProcessURB+0xad6
+fffff880<span class="code">`0e4830e0 fffff880`</span>08314af4 : 00000000<span class="code">`00000000 fffffa80`</span>3af7b050 fffffa80<span class="code">`3e5d1720 fffffa80`</span>3c3c89e0 : USBPORT!USBPORT_PdoInternalDeviceControlIrp+0x138
+fffff880<span class="code">`0e483120 fffff880`</span>00fa97a7 : fffffa80<span class="code">`3c3c89e0 fffffa80`</span>31192040 fffffa80<span class="code">`3c3c89e0 fffffa80`</span>3c3c89e0 : USBPORT!USBPORT_Dispatch+0x1dc
+fffff880<span class="code">`0e483160 fffff880`</span>00fb1789 : fffff880<span class="code">`00fcfb50 fffffa80`</span>3d944ed1 fffffa80<span class="code">`3c3c8d38 fffffa80`</span>3c3c8d38 : ACPI!ACPIDispatchForwardIrp+0x37
+fffff880<span class="code">`0e483190 fffff880`</span>00fa9a3f : fffff880<span class="code">`00fcfb50 fffffa80`</span>316a7a90 fffffa80<span class="code">`3c3c89e0 fffffa80`</span>3ab6c050 : ACPI!ACPIIrpDispatchDeviceControl+0x75
+fffff880<span class="code">`0e4831c0 fffff880`</span>088ca566 : 00000000<span class="code">`00000000 00000000`</span>00000004 fffffa80<span class="code">`3ab6c050 fffffa80`</span>3c2bd440 : ACPI!ACPIDispatchIrp+0x12b
+fffff880<span class="code">`0e483240 fffff880`</span>088fad8f : 00000000<span class="code">`00000000 00000000`</span>00000000 fffffa80<span class="code">`3c2bd440 00000000`</span>00000000 : usbhub!UsbhFdoUrbPdoFilter+0xde
+fffff880<span class="code">`0e483270 fffff880`</span>088c8fb7 : fffffa80<span class="code">`3c3c89e0 fffffa80`</span>3a976ce0 fffffa80<span class="code">`3c3c89e0 fffffa80`</span>3c3c89e0 : usbhub!UsbhPdoInternalDeviceControl+0x373
+fffff880<span class="code">`0e4832c0 fffff880`</span>00fa97a7 : fffffa80<span class="code">`3c3c89e0 fffff800`</span>031b630d fffffa80<span class="code">`3b7be100 00000000`</span>00000801 : usbhub!UsbhGenDispatch+0x57
+fffff880<span class="code">`0e4832f0 fffff880`</span>00fb1789 : fffff880<span class="code">`00fcfb50 00000000`</span>00000001 fffffa80<span class="code">`3c393b58 fffffa80`</span>3c3c8d38 : ACPI!ACPIDispatchForwardIrp+0x37
+fffff880<span class="code">`0e483320 fffff880`</span>00fa9a3f : fffff880<span class="code">`00fcfb50 fffffa80`</span>316a8a90 fffffa80<span class="code">`3c3c89e0 fffffa80`</span>3c393b58 : ACPI!ACPIIrpDispatchDeviceControl+0x75
+fffff880<span class="code">`0e483350 fffff880`</span>08c9bec4 : 00000000<span class="code">`00000000 fffffa80`</span>3c326938 fffffa80<span class="code">`3c393b58 00000000`</span>00000000 : ACPI!ACPIDispatchIrp+0x12b
+fffff880<span class="code">`0e4833d0 fffff880`</span>08c98812 : fffffa80<span class="code">`3c393b58 fffffa80`</span>3c3c89e0 fffffa80<span class="code">`00000324 fffffa80`</span>3c3c89e0 : usbccgp!UsbcForwardIrp+0x30
+fffff880<span class="code">`0e483400 fffff880`</span>08c98aba : fffffa80<span class="code">`3c326838 00000000`</span>00220003 fffffa80<span class="code">`3c3c89e0 fffffa80`</span>3c393b58 : usbccgp!DispatchPdoUrb+0xfa
+fffff880<span class="code">`0e483440 fffff880`</span>08c9672e : 00000000<span class="code">`0000000f fffffa80`</span>3c393b50 fffffa80<span class="code">`3c393b58 fffffa80`</span>3c3c89e0 : usbccgp!DispatchPdoInternalDeviceControl+0x17a
+fffff880<span class="code">`0e483470 fffff880`</span>08cb3d21 : fffffa80<span class="code">`3c393a00 fffffa80`</span>3c3c8901 fffffa80<span class="code">`3c3c8900 00000000`</span>00000000 : usbccgp!USBC_Dispatch+0x2de
+fffff880<span class="code">`0e4834f0 fffffa80`</span>3c393a00 : fffffa80<span class="code">`3c3c8901 fffffa80`</span>3c3c8900 00000000<span class="code">`00000000 fffffa80`</span>3c373010 : FiioE17+0x1d21
+fffff880<span class="code">`0e4834f8 fffffa80`</span>3c3c8901 : fffffa80<span class="code">`3c3c8900 00000000`</span>00000000 fffffa80<span class="code">`3c373010 00000000`</span>00000000 : 0xfffffa80`3c393a00
+fffff880<span class="code">`0e483500 fffffa80`</span>3c3c8900 : 00000000<span class="code">`00000000 fffffa80`</span>3c373010 00000000<span class="code">`00000000 fffffa80`</span>3c3b7f30 : 0xfffffa80`3c3c8901
+fffff880<span class="code">`0e483508 00000000`</span>00000000 : fffffa80<span class="code">`3c373010 00000000`</span>00000000 fffffa80<span class="code">`3c3b7f30 fffff880`</span>08cb47fd : 0xfffffa80`3c3c8900
+
+
+STACK_COMMAND:  kb
+
+FOLLOWUP_IP: 
+FiioE17+1d21
+fffff880`08cb3d21 ??              ???
+
+SYMBOL<span class="emphasis">_STACK_</span>INDEX:  12
+
+SYMBOL_NAME:  FiioE17+1d21
+
+FOLLOWUP_NAME:  MachineOwner
+
+MODULE_NAME: FiioE17
+
+IMAGE_NAME:  FiioE17.sys
+
+DEBUG<span class="emphasis">_FLR_</span>IMAGE_TIMESTAMP:  50b30686
+
+FAILURE<span class="emphasis">_BUCKET_</span>ID:  X64<span class="emphasis">_0xFE_</span>FiioE17+1d21
+
+BUCKET<span class="emphasis">_ID:  X64_</span>0xFE_FiioE17+1d21
+
+Followup: MachineOwner
+</pre></figure>
+
+<p>This tells us a number of interesting things:</p>
+<ul>
+<li>The BSOD error was: <strong>BUGCODE_USB_DRIVER</strong></li>
+<li>This is the error caused by the driver: IRP_URB_DOUBLE_SUBMIT <strong>The caller has submitted an irp that is already pending in the USB bus driver</strong>.</li>
+<li>The process that invoked the error: <strong>audiodg.exe</strong></li>
+<li>The stack trace of the active thread on which the error occurred. Note that Windbg can’t find the right symbols as this is a proprietary driver with no public symbols. Even so, to the developer of said driver, the above details will help immensely.</li>
+<li>The driver name: <strong>FiioE17.sys</strong></li>
+</ul>
+<p>With the above options, you’ve got a lot of details that can be sent to the developer, hopefully enabling him/her/them to fix the issue. For now, I’ll have to unplug my <a href="http://www.amazon.com/FiiO-Headphone-Amplifier-Docking-Interface/dp/B0070UFMOW" target="_blank">Fiio E17 USB DAC</a> :(</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
 			<span class="month">May</span>
 			<span class="day">28</span>
 		</div>
@@ -1027,66 +1217,6 @@ iPaper<span class="preprocessor">.BL</span><span class="preprocessor">.Backend</
 
 <p>Interestingly, all of the threads are stuck inside internal methods in the base class library Dictionary class. All of them are invoked from the user SettingDescriptionCache class, though from different methods.</p>
 <p>Stay tuned for <a href="/debugging-in-production-part-2-latent-race-condition-bugs/">part 2 where we’ll dive into the user code and determine what’s happening</a>!</p>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Feb</span>
-			<span class="day">27</span>
-		</div>
-		<div class="lower">2013</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/native-chrome-flash-player-disabled-by-itself/" title="Native Chrome Flash Player Disabled by Itself All of a Sudden" rel="bookmark">Native Chrome Flash Player Disabled by Itself All of a Sudden</a></h1>
-		<div class="categories">
-			
-				<a href="/category/Miscellaneous/">Miscellaneous</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>At my job we’ve got a product that relies heavily on Flash. The last couple of days I’ve had a number of users complain that, all of a sudden, they couldn’t view Flash content any more. Common for all of them were their browser - Chrome. It would seem that, somehow, the native Chrome Flash player got disabled by itself all of a sudden.</p>
-<a id="more"></a>
-
-<p>What’s especially unusual about this is that Chrome has a built-in Flash player, so if anyone, Chrome users should be able to view Flash content. Digging deeper I found that the built-in Flash player extension had been disabled. To check if that’s the case, see here:</p>
-<figure class="highlight sql"><pre>Chrome Settings =&gt; Show advanced settings... =&gt; Privacy =&gt; Content settings... =&gt; Plug-ins =&gt; Disable individual plug-ins...
-</pre></figure>
-
-<div class="imgwrapper" style=""><div><a href="/native-chrome-flash-player-disabled-by-itself/Flash.png" class="fancy"><img src="/native-chrome-flash-player-disabled-by-itself/Flash.png" style="max-height: 250px"/></a></div></div>
-
-<p>By just clicking “Enable”, everything is working again. But how did it get disabled? This is such a convoluted place to find that I know the users haven’t done so themselves. Looking at Twitter, it seems we’re not alone in seeing this:</p>
-<p><a href="https://twitter.com/AnandaWoW/status/306751670258388992" target="_blank">https://twitter.com/AnandaWoW/status/306751670258388992</a></p>
-<p><a href="https://twitter.com/RachofSuburbia/status/306426446438617088" target="_blank">https://twitter.com/RachofSuburbia/status/306426446438617088</a></p>
-<p><a href="https://twitter.com/linnysvault/status/306420799550660608" target="_blank">https://twitter.com/linnysvault/status/306420799550660608</a></p>
-<p><a href="https://twitter.com/Astracius/status/306351364710219776" target="_blank">https://twitter.com/Astracius/status/306351364710219776</a></p>
-<p><a href="https://twitter.com/junctionette/status/306230350131130370" target="_blank">https://twitter.com/junctionette/status/306230350131130370</a></p>
-<p><a href="https://twitter.com/envyonthetoast/status/306210978201219073" target="_blank">https://twitter.com/envyonthetoast/status/306210978201219073</a></p>
-<p>… I think you get the picture. It seems that all of our users had just had their Flash player auto update itself. I’m wondering, could the Internet Explorer Flash plugin perhaps updated itself and, by mistake, disabled the Chrome plugin? If the built-in Chrome Flash player is disabled, Chrome will try to use the regular Flash plugin. However, the Internet Explorer version won’t work in Chrome, so that won’t work.</p>
-<p>Anyone else experienced this? Any tips on what’s causing it? The fix is simple, but I’d really like to understand what’s causing this, as well as knowing how widespread the issue is.</p>
 
 
 				<div style="clear: both"></div>

@@ -4,7 +4,7 @@
   
   <link href="/atom.xml" rel="self"/>
   <link href="http://improve.dk/"/>
-  <updated>2014-04-20T19:52:34.835Z</updated>
+  <updated>2014-04-22T10:51:17.601Z</updated>
   <id>http://improve.dk/</id>
   
   <author>
@@ -15,11 +15,116 @@
   <generator uri="http://zespia.tw/hexo/">Hexo</generator>
   
   <entry>
+    <title><![CDATA[Redirecting Old Permalinks on Statically Generated Blogs]]></title>
+    <link href="http://improve.dk/redirecting-old-permalinks-on-statically-generated-blogs/"/>
+    <id>http://improve.dk/redirecting-old-permalinks-on-statically-generated-blogs/</id>
+    <published>2014-04-20T23:56:12.000Z</published>
+    <updated>2014-04-22T10:39:15.000Z</updated>
+    <content type="html"><![CDATA[<p>Having <a href="/migrating-from-wordpress-to-hexo/">just migrated from Wordpress to Hexo</a>, I quickly realized I forgot something. I forgot to redirect my old permalinks to the new ones…</p>
+<h2 id="Permalinks_Aren’t_Necessarily_Permanent">Permalinks Aren’t Necessarily Permanent</h2>
+<p>A permalink ought to live for the duration of your content, and most importantly, never change. However, having been through a number of different blog engines, not all of them support the same permalink structures, and might not even support redirecting old ones. As such, throgh the years my posts have ended up with multiple permalinks:</p>
+<ul>
+<li><a href="http://improve.dk/archive/2008/03/23/sql-server-mirroring-a-practical-approach.aspx">http://improve.dk/archive/2008/03/23/sql-server-mirroring-a-practical-approach.aspx</a></li>
+<li><a href="http://improve.dk/blog/2008/03/23/sql-server-mirroring-a-practical-approach/">http://improve.dk/blog/2008/03/23/sql-server-mirroring-a-practical-approach/</a></li>
+<li><a href="http://improve.dk/sql-server-mirroring-a-practical-approach/">http://improve.dk/sql-server-mirroring-a-practical-approach/</a></li>
+</ul>
+<p>As you can see, I’ve dropped both the /archive/ and the /blog/ prefixes, as well as the dates. Redirecting old incoming links to the new ones was easy enough when I ran Wordpress on Apache. All it requires were a couple of lines in the .htaccess file:</p>
+<figure class="highlight"><pre><span class="comment"># Redirect old permalink structure</span>
+<span class="tag">&lt;IfModule mod_rewrite.c&gt;</span>
+	<span class="keyword"><span class="common">RewriteEngine</span></span> <span class="literal">On</span>
+	<span class="keyword"><span class="common">RewriteRule</span></span> ^archive/([0-9]{4})/([0-9]{2})/([0-9]{2})/([^\.]+)\.aspx$ http://improve.dk/<span class="number">$4</span>/<span class="sqbracket"> [NC,R=301,L]</span>
+	<span class="keyword"><span class="common">RewriteRule</span></span> ^blog/([0-9]{4})/([0-9]{2})/([0-9]{2})/([^\.]+)$ http://improve.dk/<span class="number">$4</span>/<span class="sqbracket"> [NC,R=301,L]</span>
+<span class="tag">&lt;/IfModule&gt;</span>
+</pre></figure>
+
+<h2 id="Static_Woes">Static Woes</h2>
+<p>Since I’ve migrated to <a href="http://hexo.io" target="_blank">Hexo</a> it’s not as simple, unfortunately. I no longer host my site on Apache, but on <a href="https://pages.github.com/" target="_blank">GitHub Pages</a>. GitHub Pages only allow static files to be served, so I’m no longer able to utilize the .htaccess rewriting rules. There’s also no server-side functionality available, so I can’t even manually send out a 302-redirect, needed to preserve my incoming links SEO value.</p>
+<p>What I ended up doing was to write a small script that would parse my Wordpress backup file and then recreate the /blog/ and /archive/ directories, as if the posts were actually stored there:</p>
+<figure class="highlight csharp"><pre><span class="built_in">string</span> template <span class="subst">=</span> @<span class="string">"layout: false
+---
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+	&lt;head&gt;
+		&lt;title&gt;Redirecting to [Title]&lt;/title&gt;
+  		&lt;link rel="</span><span class="string">"canonical"</span><span class="string">" href="</span><span class="string">"[Permalink]"</span><span class="string">"/&gt;
+		&lt;meta http-equiv="</span><span class="string">"content-type"</span><span class="string">" content="</span><span class="string">"text/html; charset=utf-8"</span><span class="string">" /&gt;
+		&lt;meta http-equiv="</span><span class="string">"refresh"</span><span class="string">" content="</span><span class="string">"0;url=[Permalink]"</span><span class="string">" /&gt;
+	&lt;/head&gt;
+	&lt;body&gt;
+		Redirecting to &lt;a href="</span><span class="string">"[Permalink]"</span><span class="string">"&gt;[Title]&lt;/a&gt;...
+	&lt;/body&gt;
+&lt;/html&gt;"</span>;
+
+<span class="literal">void</span> Main()
+{
+	<span class="built_in">var</span> outputPath <span class="subst">=</span> @<span class="string">"D:\Projects\improve.dk (GIT)\source\";
+	var xmlPath = @"</span>D:<span class="subst">\</span>Projects<span class="subst">\</span>improve<span class="built_in">.</span>dk (GIT)<span class="subst">\</span>marksrasmussen<span class="attribute">-blog</span><span class="built_in">.</span>wordpress<span class="number">.2014</span><span class="subst">-</span><span class="number">03</span><span class="subst">-</span><span class="number">08.</span><span class="built_in">xml</span><span class="string">";
+	var xml = File.ReadAllText(xmlPath);
+	var xd = new XmlDocument();
+	xd.LoadXml(xml);
+	
+	var nsmgr = new XmlNamespaceManager(xd.NameTable);
+	nsmgr.AddNamespace("</span>content<span class="string">", "</span>http:<span class="comment">//purl.org/rss/1.0/modules/content/");</span>
+	nsmgr<span class="built_in">.</span>AddNamespace(<span class="string">"wp"</span>, <span class="string">"http://wordpress.org/export/1.2/"</span>);
+	
+	foreach (XmlNode item <span class="keyword">in</span> xd<span class="built_in">.</span>SelectNodes(<span class="string">"//item"</span>))
+	{
+		<span class="built_in">var</span> title <span class="subst">=</span> item<span class="built_in">.</span>SelectSingleNode(<span class="string">"title"</span>)<span class="built_in">.</span>InnerText;
+		<span class="built_in">var</span> <span class="built_in">date</span> <span class="subst">=</span> Convert<span class="built_in">.</span>ToDateTime(item<span class="built_in">.</span>SelectSingleNode(<span class="string">"pubDate"</span>)<span class="built_in">.</span>InnerText);
+		<span class="built_in">var</span> slug <span class="subst">=</span> item<span class="built_in">.</span>SelectSingleNode(<span class="string">"wp:post_name"</span>, nsmgr)<span class="built_in">.</span>InnerText;
+		
+		<span class="built_in">var</span> indexHtml <span class="subst">=</span> template
+			<span class="built_in">.</span>Replace(<span class="string">"[Permalink]"</span>, <span class="string">"http://improve.dk/"</span> <span class="subst">+</span> slug <span class="subst">+</span> <span class="string">"/"</span>)
+			<span class="built_in">.</span>Replace(<span class="string">"[Title]"</span>, HttpUtility<span class="built_in">.</span>HtmlEncode(title));
+		
+		<span class="comment">// First create the /archive/ entry</span>
+		<span class="built_in">var</span> outputFolder <span class="subst">=</span> Path<span class="built_in">.</span>Combine(outputPath, <span class="string">"archive"</span>, <span class="built_in">date</span><span class="built_in">.</span>Year<span class="built_in">.</span>ToString(), <span class="built_in">date</span><span class="built_in">.</span>Month<span class="built_in">.</span>ToString()<span class="built_in">.</span>PadLeft(<span class="number">2</span>, <span class="string">'0'</span>), <span class="built_in">date</span><span class="built_in">.</span>Day<span class="built_in">.</span>ToString()<span class="built_in">.</span>PadLeft(<span class="number">2</span>, <span class="string">'0'</span>), slug <span class="subst">+</span> <span class="string">".aspx"</span>);
+		<span class="built_in">var</span> indexPath <span class="subst">=</span> Path<span class="built_in">.</span>Combine(outputFolder, <span class="string">"index.html"</span>);
+		Directory<span class="built_in">.</span>CreateDirectory(outputFolder);
+		File<span class="built_in">.</span>WriteAllText(indexPath, indexHtml);
+		
+		<span class="comment">// Then the /blog/ entry</span>
+		outputFolder <span class="subst">=</span> Path<span class="built_in">.</span>Combine(outputPath, <span class="string">"blog"</span>, <span class="built_in">date</span><span class="built_in">.</span>Year<span class="built_in">.</span>ToString(), <span class="built_in">date</span><span class="built_in">.</span>Month<span class="built_in">.</span>ToString()<span class="built_in">.</span>PadLeft(<span class="number">2</span>, <span class="string">'0'</span>), <span class="built_in">date</span><span class="built_in">.</span>Day<span class="built_in">.</span>ToString()<span class="built_in">.</span>PadLeft(<span class="number">2</span>, <span class="string">'0'</span>), slug);
+		indexPath <span class="subst">=</span> Path<span class="built_in">.</span>Combine(outputFolder, <span class="string">"index.html"</span>);
+		Directory<span class="built_in">.</span>CreateDirectory(outputFolder);
+		File<span class="built_in">.</span>WriteAllText(indexPath, indexHtml);
+	}
+}
+</pre></figure>
+
+<p>Now the post stored directly in the root, while placeholders have been put in place in the old /blog/ and /archive/ directories. The placeholder code is very simple:</p>
+<figure class="highlight html"><pre>layout: false
+---
+<span class="doctype">&lt;!DOCTYPE html&gt;</span>
+<span class="tag">&lt;<span class="title">html</span>&gt;</span>
+	<span class="tag">&lt;<span class="title">head</span>&gt;</span>
+		<span class="tag">&lt;<span class="title">title</span>&gt;</span>Redirecting to TxF presentation materials<span class="tag">&lt;/<span class="title">title</span>&gt;</span>
+  		<span class="tag">&lt;<span class="title">link</span> <span class="attribute">rel</span>=<span class="value">"canonical"</span> <span class="attribute">href</span>=<span class="value">"http://improve.dk/txf-presentation-materials/"</span>/&gt;</span>
+		<span class="tag">&lt;<span class="title">meta</span> <span class="attribute">http-equiv</span>=<span class="value">"content-type"</span> <span class="attribute">content</span>=<span class="value">"text/html; charset=utf-8"</span> /&gt;</span>
+		<span class="tag">&lt;<span class="title">meta</span> <span class="attribute">http-equiv</span>=<span class="value">"refresh"</span> <span class="attribute">content</span>=<span class="value">"0;url=http://improve.dk/txf-presentation-materials/"</span> /&gt;</span>
+	<span class="tag">&lt;/<span class="title">head</span>&gt;</span>
+	<span class="tag">&lt;<span class="title">body</span>&gt;</span>
+		Redirecting to <span class="tag">&lt;<span class="title">a</span> <span class="attribute">href</span>=<span class="value">"http://improve.dk/txf-presentation-materials/"</span>&gt;</span>TxF presentation materials<span class="tag">&lt;/<span class="title">a</span>&gt;</span>...
+	<span class="tag">&lt;/<span class="title">body</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">html</span>&gt;</span>
+</pre></figure>
+
+<p>It’s simply a small script that contains a meta refresh tag that sends the user on to the new URL. By utilizing the ´rel=”canonical”` meta tag, I ensure that this retains the SEO value as if I had performed a 302 redirect.</p>
+<h2 id="Going_Forward">Going Forward</h2>
+<p>Creating the placeholder files is a one-off task, seeing as I’ll only ever need to redirect posts that precede the time when I changed my URL structure to contain neither the /blog/ and /archive/ prefixes, nor the dates. All posts from the beginning of 2013 were published using the current URL scheme, which I intend to keep for the foreseeable future.</p>
+]]></content>
+    
+    
+      <category term="Miscellaneous" scheme="http://improve.dk/category/Miscellaneous/"/>
+    
+  </entry>
+  
+  <entry>
     <title><![CDATA[Migrating from Wordpress to Hexo]]></title>
     <link href="http://improve.dk/migrating-from-wordpress-to-hexo/"/>
     <id>http://improve.dk/migrating-from-wordpress-to-hexo/</id>
     <published>2014-04-19T00:00:00.000Z</published>
-    <updated>2014-04-19T18:39:46.000Z</updated>
+    <updated>2014-04-22T10:39:11.000Z</updated>
     <content type="html"><![CDATA[<p>It’s this time of the year again - the time to migrate from one blog engine to another.</p>
 <a id="more"></a>
 
@@ -140,7 +245,7 @@ hexo.extend.filter.register(<span class="string">'pre'</span>, <span class="func
     <link href="http://improve.dk/presenting-sql-saturday-275/"/>
     <id>http://improve.dk/presenting-sql-saturday-275/</id>
     <published>2014-02-04T00:00:00.000Z</published>
-    <updated>2014-04-19T18:39:46.000Z</updated>
+    <updated>2014-04-22T10:39:11.000Z</updated>
     <content type="html"><![CDATA[<p>I’m happy to announce that I’ll be presenting at <a href="http://sqlsaturday.com/275/" target="_blank">SQLSaturday #275</a> in Copenhagen on March 29th!</p>
 <a id="more"></a>
 
@@ -166,7 +271,7 @@ hexo.extend.filter.register(<span class="string">'pre'</span>, <span class="func
     <link href="http://improve.dk/sql-server-corruption-recovery-when-all-else-fails/"/>
     <id>http://improve.dk/sql-server-corruption-recovery-when-all-else-fails/</id>
     <published>2013-11-06T00:00:00.000Z</published>
-    <updated>2014-04-16T20:33:49.000Z</updated>
+    <updated>2014-04-22T10:39:11.000Z</updated>
     <content type="html"><![CDATA[<p>In this post I want to walk through a number of SQL Server corruption recovery techniques for when you’re out of luck, have no backups, and the usual methods don’t work. I’ll be using the <a href="http://msftdbprodsamples.codeplex.com/releases/view/93587" target="_blank">AdventureWorksLT2008R2 sample database</a> as my victim.</p>
 <a id="more"></a>
 
@@ -638,7 +743,7 @@ rows<span class="preprocessor">.Select</span>(<span class="built_in">x</span> =&
     <link href="http://improve.dk/corrupting-databases-purpose-using-orcamdf-corruptor/"/>
     <id>http://improve.dk/corrupting-databases-purpose-using-orcamdf-corruptor/</id>
     <published>2013-11-05T00:00:00.000Z</published>
-    <updated>2014-03-16T19:40:45.000Z</updated>
+    <updated>2014-04-22T10:39:11.000Z</updated>
     <content type="html"><![CDATA[<p>Sometimes you must first do evil, to do good. Such is the case when you want to hone your skills in corruption recovery of SQL Server databases.</p>
 <a id="more"></a>
 
@@ -689,7 +794,7 @@ Console<span class="preprocessor">.WriteLine</span>(string<span class="preproces
     <link href="http://improve.dk/orcamdf-rawdatabase-a-swiss-army-knife-for-mdf-files/"/>
     <id>http://improve.dk/orcamdf-rawdatabase-a-swiss-army-knife-for-mdf-files/</id>
     <published>2013-11-04T00:00:00.000Z</published>
-    <updated>2014-03-16T19:40:11.000Z</updated>
+    <updated>2014-04-22T10:39:11.000Z</updated>
     <content type="html"><![CDATA[<p>When I initially started working on <a href="/introducing-orcamdf/">OrcaMDF</a> I had just one goal, to gain a deeper knowledge of MDF file internals than I could through most books available.</p>
 <a id="more"></a>
 
@@ -845,7 +950,7 @@ rows<span class="preprocessor">.Select</span>(<span class="built_in">x</span> =&
     <link href="http://improve.dk/powerpad-powerpoint-presenters-view-for-tablets-phones/"/>
     <id>http://improve.dk/powerpad-powerpoint-presenters-view-for-tablets-phones/</id>
     <published>2013-10-28T00:00:00.000Z</published>
-    <updated>2014-04-16T19:35:04.000Z</updated>
+    <updated>2014-04-22T10:39:11.000Z</updated>
     <content type="html"><![CDATA[<p>I love presenting, especially so when it’s possible for me to do so alongside Powerpoints presenters view. Unfortunately I’m an even bigger fan of <a href="http://technet.microsoft.com/en-us/sysinternals/bb897434.aspx" target="_blank">ZoomIt</a> and I use it extensively when presenting. Why is that an issue? To use ZoomIt effectively, not just in demos but when showing slides as well, I need to duplicate my screen rather than extending it. Duplicating the screen means presenters view is not an option :(</p>
 <a id="more"></a>
 
@@ -880,7 +985,7 @@ rows<span class="preprocessor">.Select</span>(<span class="built_in">x</span> =&
     <link href="http://improve.dk/announcing-tribalsql/"/>
     <id>http://improve.dk/announcing-tribalsql/</id>
     <published>2013-10-23T00:00:00.000Z</published>
-    <updated>2014-04-16T17:32:15.000Z</updated>
+    <updated>2014-04-22T10:39:11.000Z</updated>
     <content type="html"><![CDATA[<p>I’m slightly late to announce this, but better late than never!</p>
 <a id="more"></a>
 
@@ -907,7 +1012,7 @@ rows<span class="preprocessor">.Select</span>(<span class="built_in">x</span> =&
     <link href="http://improve.dk/optimizing-performance-programmatically-setting-readonlysessionstate/"/>
     <id>http://improve.dk/optimizing-performance-programmatically-setting-readonlysessionstate/</id>
     <published>2013-10-08T00:00:00.000Z</published>
-    <updated>2014-03-16T19:38:28.000Z</updated>
+    <updated>2014-04-22T10:39:11.000Z</updated>
     <content type="html"><![CDATA[<p>One of the main culprits when it comes to ASP.NET concurrency is caused by the fact that default sesion state has been implemented using a pessimistic locking pattern. Basically, any standard handler, whether that be an ASPX page, a generic handler or an ASMX web service, goes through the following steps:</p>
 <a id="more"></a>
 
@@ -1035,7 +1140,7 @@ rows<span class="preprocessor">.Select</span>(<span class="built_in">x</span> =&
     <link href="http://improve.dk/verifying-mailgun-webhooks/"/>
     <id>http://improve.dk/verifying-mailgun-webhooks/</id>
     <published>2013-09-23T00:00:00.000Z</published>
-    <updated>2014-03-16T19:37:53.000Z</updated>
+    <updated>2014-04-22T10:39:11.000Z</updated>
     <content type="html"><![CDATA[<p><a href="http://www.mailgun.com/" target="_blank">Mailgun</a> has a very neat feature that enables you to basically convert incoming emails to a POST request to a URL of your choice, also known as a webhook. Using this, you can easily have your application respond to email events. However, as this URL/service needs to be publically available, verifying Mailgun webhooks is very important, ensuring requests actually come from Mailgun, and not someone impersonating Mailgun.</p>
 <a id="more"></a>
 
@@ -1081,7 +1186,7 @@ rows<span class="preprocessor">.Select</span>(<span class="built_in">x</span> =&
     <link href="http://improve.dk/analyzing-bsod-minidump-files-using-windbg/"/>
     <id>http://improve.dk/analyzing-bsod-minidump-files-using-windbg/</id>
     <published>2013-06-04T00:00:00.000Z</published>
-    <updated>2014-03-16T19:36:01.000Z</updated>
+    <updated>2014-04-22T10:39:11.000Z</updated>
     <content type="html"><![CDATA[<p>Unfortunately, once in a while, computers fail. If you’re running Windows you’ve probably witnessed the dreaded <a href="http://en.wikipedia.org/wiki/Blue_Screen_of_Death" target="_blank">Blue Screen of Death</a>, commonly referred to as a BSOD. Once the BSOD occurs, some machines will immediately restart, before you’ve got a chance to actually see what happened. Other times users will just report that the BSOD happened, without noting anything down about what the message actually said. In this post I’ll show you how analyzing BSOD minidump files using <a href="http://en.wikipedia.org/wiki/WinDbg" target="_blank">Windbg</a> will enable you to find the cause of the BSOD after the fact.</p>
 <a id="more"></a>
 
@@ -1243,7 +1348,7 @@ Followup: MachineOwner
     <link href="http://improve.dk/speaking-at-sql-pass-summit-2013/"/>
     <id>http://improve.dk/speaking-at-sql-pass-summit-2013/</id>
     <published>2013-05-28T00:00:00.000Z</published>
-    <updated>2014-04-16T19:34:59.000Z</updated>
+    <updated>2014-04-22T10:39:11.000Z</updated>
     <content type="html"><![CDATA[<p>I’m delighted to announce that <a href="http://www.sqlpass.org/summit/2013/Sessions/SpeakerDetails.aspx?spid=245" target="_blank">I’ll be speaking</a> at this years <a href="http://www.sqlpass.org/summit/2013/" target="_blank">SQL PASS Summit in Charlotte, North Carolina</a>. Having submitted several times before, unsuccessfully, I’m really happy to have made the cut this year. Looking at the <a href="http://www.sqlpass.org/summit/2013/Sessions.aspx" target="_blank">lineup of speakers</a>, I take great pride in being given the opportunity.</p>
 <a id="more"></a>
 
@@ -1274,7 +1379,7 @@ Followup: MachineOwner
     <link href="http://improve.dk/could-not-load-type-newrelic-agent-core-agentapi/"/>
     <id>http://improve.dk/could-not-load-type-newrelic-agent-core-agentapi/</id>
     <published>2013-05-23T00:00:00.000Z</published>
-    <updated>2014-03-16T19:37:44.000Z</updated>
+    <updated>2014-04-22T10:39:11.000Z</updated>
     <content type="html"><![CDATA[<p>Recently I’ve begun using <a href="http://newrelic.com/" target="_blank">New Relic</a>, and so far it’s been an excellent experience. About two weeks ago I started using their <a href="https://newrelic.com/docs/dotnet/the-net-agent-api" target="_blank">.NET Agent API</a> to customize some of the data reported by our application to their servers. This makes the data way more valuable to us as we can now selectively ignore certain parts of our application while getting better reporting from other, more critical, parts of the application.</p>
 <a id="more"></a>
 
@@ -1307,7 +1412,7 @@ Followup: MachineOwner
     <link href="http://improve.dk/partial-dns-forwarding-using-individual-windows-dns-zones/"/>
     <id>http://improve.dk/partial-dns-forwarding-using-individual-windows-dns-zones/</id>
     <published>2013-05-21T00:00:00.000Z</published>
-    <updated>2014-03-16T19:30:45.000Z</updated>
+    <updated>2014-04-22T10:39:11.000Z</updated>
     <content type="html"><![CDATA[<p>At our office, all machines are using a local Windows DNS server for their outgoing DNS queries. This allows us to make internal zones like .ipaperlan that points to all of our internal systems, while setting up the DNS server to forward all unknown queries to Google DNS. One feature I’m missing in the standard Windows DNS server is the option to partially forward individual zones. However, there is a workaround that will allow you to setup partial DNS forwarding using individual Windows DNS zones.</p>
 <a id="more"></a>
 
@@ -1351,7 +1456,7 @@ Followup: MachineOwner
     <link href="http://improve.dk/orcamdf-is-now-available-on-nuget/"/>
     <id>http://improve.dk/orcamdf-is-now-available-on-nuget/</id>
     <published>2013-05-13T00:00:00.000Z</published>
-    <updated>2014-03-16T19:36:31.000Z</updated>
+    <updated>2014-04-22T10:39:11.000Z</updated>
     <content type="html"><![CDATA[<p>Thanks to Justin Dearing (<a href="http://www.justaprogrammer.net/" target="_blank">b</a>|<a href="https://twitter.com/zippy1981" target="_blank">t</a>), OrcaMDF is now available on <a href="https://www.nuget.org/packages/OrcaMDF.Core" target="_blank">NuGet</a>!</p>
 <a id="more"></a>
 
@@ -1414,7 +1519,7 @@ Followup: MachineOwner
     <link href="http://improve.dk/how-to-identify-which-request-caused-a-runaway-thread-using-windbg/"/>
     <id>http://improve.dk/how-to-identify-which-request-caused-a-runaway-thread-using-windbg/</id>
     <published>2013-05-07T00:00:00.000Z</published>
-    <updated>2014-03-16T19:35:10.000Z</updated>
+    <updated>2014-04-22T10:39:11.000Z</updated>
     <content type="html"><![CDATA[<p>When your w3wp process is stuck at 100% like, <a href="/debugging-in-production-part-1-analyzing-100-cpu-usage-using-windbg/">like when I used a non-thread-safe Dictionary concurrently</a>, you may want to identify what request the runaway thread is actually serving. Let me show you how to identify which request caused a runaway thread, using windbg.</p>
 <a id="more"></a>
 
@@ -1693,7 +1798,7 @@ OS Thread Id: <span class="number">0x14930</span> (<span class="number">20</span
     <link href="http://improve.dk/debugging-in-production-part-3-thread-safe-dictionaries/"/>
     <id>http://improve.dk/debugging-in-production-part-3-thread-safe-dictionaries/</id>
     <published>2013-04-30T00:00:00.000Z</published>
-    <updated>2014-03-16T19:34:20.000Z</updated>
+    <updated>2014-04-22T10:39:11.000Z</updated>
     <content type="html"><![CDATA[<p><a href="/debugging-in-production-part-2-latent-race-condition-bugs">In part 2 we found out that the concurrent access to a generic dictionary triggered a race condition bug</a> that caused threads to get stuck at 100% CPU usage. In this part, I’ll show how easy it is to rewrite the code, using the new thread-safe dictionaries in .NET 4.0, so it’s protected from race condition bugs like the one I encountered.</p>
 <a id="more"></a>
 
@@ -1746,7 +1851,7 @@ OS Thread Id: <span class="number">0x14930</span> (<span class="number">20</span
     <link href="http://improve.dk/debugging-in-production-part-2-latent-race-condition-bugs/"/>
     <id>http://improve.dk/debugging-in-production-part-2-latent-race-condition-bugs/</id>
     <published>2013-04-15T00:00:00.000Z</published>
-    <updated>2014-03-16T19:33:50.000Z</updated>
+    <updated>2014-04-22T10:39:11.000Z</updated>
     <content type="html"><![CDATA[<p>Having <a href="/debugging-in-production-part-1-analyzing-100-cpu-usage-using-windbg">analyzed the process dump in part 1</a>, let’s take a look at the code we suspect of causing the issue, in particular how race condition bugs can be avoided.</p>
 <a id="more"></a>
 
@@ -1823,7 +1928,7 @@ OS Thread Id: <span class="number">0x14930</span> (<span class="number">20</span
     <link href="http://improve.dk/last-chance-to-register-for-sqlsaturday-196-in-copenhagen/"/>
     <id>http://improve.dk/last-chance-to-register-for-sqlsaturday-196-in-copenhagen/</id>
     <published>2013-04-09T00:00:00.000Z</published>
-    <updated>2014-03-16T19:36:11.000Z</updated>
+    <updated>2014-04-22T10:39:11.000Z</updated>
     <content type="html"><![CDATA[<p>In just a couple of weeks <a href="http://www.sqlsaturday.com/196/eventhome.aspx" target="_blank">SQLSaturday #196</a> will be happening on April 20th in Copenhagen, Denmark. This is a <strong>free</strong> day smack-filled with great speakers, many of them international! <a href="http://www.sqlsaturday.com/196/schedule.aspx" target="_blank">Just check out the schedule.</a></p>
 <a id="more"></a>
 
@@ -1842,7 +1947,7 @@ OS Thread Id: <span class="number">0x14930</span> (<span class="number">20</span
     <link href="http://improve.dk/debugging-in-production-part-1-analyzing-100-cpu-usage-using-windbg/"/>
     <id>http://improve.dk/debugging-in-production-part-1-analyzing-100-cpu-usage-using-windbg/</id>
     <published>2013-04-08T00:00:00.000Z</published>
-    <updated>2014-03-16T19:32:00.000Z</updated>
+    <updated>2014-04-22T10:39:11.000Z</updated>
     <content type="html"><![CDATA[<p>This is the story of how a simple oversight resulted in a tough to catch bug. As is often the case, it worked on my machine and only manifested itself in production on a live site. In this series we will look at analyzing 100% CPU usage using Windbg.</p>
 <a id="more"></a>
 
@@ -1943,38 +2048,6 @@ iPaper<span class="preprocessor">.BL</span><span class="preprocessor">.Backend</
       <category term="Tools of the Trade" scheme="http://improve.dk/category/Tools%20of%20the%20Trade/"/>
     
       <category term="Windbg" scheme="http://improve.dk/category/Windbg/"/>
-    
-  </entry>
-  
-  <entry>
-    <title><![CDATA[Native Chrome Flash Player Disabled by Itself All of a Sudden]]></title>
-    <link href="http://improve.dk/native-chrome-flash-player-disabled-by-itself/"/>
-    <id>http://improve.dk/native-chrome-flash-player-disabled-by-itself/</id>
-    <published>2013-02-27T00:00:00.000Z</published>
-    <updated>2014-03-16T19:30:33.000Z</updated>
-    <content type="html"><![CDATA[<p>At my job we’ve got a product that relies heavily on Flash. The last couple of days I’ve had a number of users complain that, all of a sudden, they couldn’t view Flash content any more. Common for all of them were their browser - Chrome. It would seem that, somehow, the native Chrome Flash player got disabled by itself all of a sudden.</p>
-<a id="more"></a>
-
-<p>What’s especially unusual about this is that Chrome has a built-in Flash player, so if anyone, Chrome users should be able to view Flash content. Digging deeper I found that the built-in Flash player extension had been disabled. To check if that’s the case, see here:</p>
-<figure class="highlight sql"><pre>Chrome Settings =&gt; Show advanced settings... =&gt; Privacy =&gt; Content settings... =&gt; Plug-ins =&gt; Disable individual plug-ins...
-</pre></figure>
-
-<div class="imgwrapper" style=""><div><a href="/native-chrome-flash-player-disabled-by-itself/Flash.png" class="fancy"><img src="/native-chrome-flash-player-disabled-by-itself/Flash.png" style="max-height: 250px"/></a></div></div>
-
-<p>By just clicking “Enable”, everything is working again. But how did it get disabled? This is such a convoluted place to find that I know the users haven’t done so themselves. Looking at Twitter, it seems we’re not alone in seeing this:</p>
-<p><a href="https://twitter.com/AnandaWoW/status/306751670258388992" target="_blank">https://twitter.com/AnandaWoW/status/306751670258388992</a></p>
-<p><a href="https://twitter.com/RachofSuburbia/status/306426446438617088" target="_blank">https://twitter.com/RachofSuburbia/status/306426446438617088</a></p>
-<p><a href="https://twitter.com/linnysvault/status/306420799550660608" target="_blank">https://twitter.com/linnysvault/status/306420799550660608</a></p>
-<p><a href="https://twitter.com/Astracius/status/306351364710219776" target="_blank">https://twitter.com/Astracius/status/306351364710219776</a></p>
-<p><a href="https://twitter.com/junctionette/status/306230350131130370" target="_blank">https://twitter.com/junctionette/status/306230350131130370</a></p>
-<p><a href="https://twitter.com/envyonthetoast/status/306210978201219073" target="_blank">https://twitter.com/envyonthetoast/status/306210978201219073</a></p>
-<p>… I think you get the picture. It seems that all of our users had just had their Flash player auto update itself. I’m wondering, could the Internet Explorer Flash plugin perhaps updated itself and, by mistake, disabled the Chrome plugin? If the built-in Chrome Flash player is disabled, Chrome will try to use the regular Flash plugin. However, the Internet Explorer version won’t work in Chrome, so that won’t work.</p>
-<p>Anyone else experienced this? Any tips on what’s causing it? The fix is simple, but I’d really like to understand what’s causing this, as well as knowing how widespread the issue is.</p>
-]]></content>
-    <summary type="html"><![CDATA[<p>At my job we’ve got a product that relies heavily on Flash. The last couple of days I’ve had a number of users complain that, all of a sudden, they couldn’t view Flash content any more. Common for all of them were their browser - Chrome. It would seem that, somehow, the native Chrome Flash player got disabled by itself all of a sudden.</p>
-]]></summary>
-    
-      <category term="Miscellaneous" scheme="http://improve.dk/category/Miscellaneous/"/>
     
   </entry>
   

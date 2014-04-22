@@ -75,6 +75,392 @@
 	<div class="datebox">
 		<div class="upper">
 			<span class="month">Apr</span>
+			<span class="day">29</span>
+		</div>
+		<div class="lower">2009</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/implementing-a-simple-genetic-algorithm/" title="Implementing a Simple Genetic Algorithm" rel="bookmark">Implementing a Simple Genetic Algorithm</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>In this blog post I’ll give a quick introduction to what <a href="http://en.wikipedia.org/wiki/Genetic_algorithm" target="_blank">genetic algorithms</a> are and what they can be used for. We’ll implement a genetic algorithm that attempts to guess an RGB color by evolving upon a random set of initial guesses, until it at some point evolves into the correct RGB value.</p>
+<a id="more"></a>
+
+<h2 id="What_are_genetic_algorithms?">What are genetic algorithms?</h2>
+<p>Contrary to other types of algorithms, genetic algorithms do not have a clear path of improvement for solution candidiates, and it’s not an exhaustive search. A genetic algorithm requires a few base components:</p>
+<ul>
+<li>A representation of a candidate solutions.</li>
+<li>A way of calculating the correctness of a candidate solution, commonly referred to as the fitness function.</li>
+<li>A mutation function that changes a candidate solution slightly, in an attempt to obtain a better candidate.</li>
+</ul>
+<p>There are many different ways of implementing genetic algorithms, and there are usually many variables to adjust in a genetic algorithm. How large should the initial population be? How many solutions survives each generation? How do the survivors reproduce? In reproduction, does each survivor give birth to a single child, or multiple? As is noticeable from the terminology, genetic algorithms closely simulate biology.</p>
+<h2 id="The_building_blocks">The building blocks</h2>
+<p>What we’re trying to accomplish with this demo implementation, is to guess a random RGB value. The RGB values are stored in what is basically a triple class. The only added functionality is an override of the ToString function to make it easier for us to print the solution candidates.</p>
+<figure class="highlight csharp"><pre>class Rgb
+{
+	<span class="keyword">internal</span> <span class="keyword">int</span> R { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	<span class="keyword">internal</span> <span class="keyword">int</span> G { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	<span class="keyword">internal</span> <span class="keyword">int</span> B { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+
+	<span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">string</span> <span class="title">ToString</span>()
+	{
+		<span class="keyword">return</span> <span class="keyword">string</span>.Format(<span class="string">"({0}, {1}, {2})"</span>, R, G, B);
+	}
+}
+</pre></figure>
+
+<p>Next up, we have an interface that represents a basic chromosome. In this implementation, a chromosome is basically a candidate solution. The chromosome is also the type that implements the fitness function, to evaluate it’s own correctness. The fitness is returned as an arbitrary double value, the higher the value the better a candidate. The ChromosomeValue property is the actual value being tested - in this case, an instance of Rgb.</p>
+<figure class="highlight csharp"><pre><span class="keyword">interface</span> IChromosome&lt;T&gt;
+{
+	<span class="keyword">double</span> Fitness { <span class="keyword">get</span>; }
+	T ChromosomeValue { <span class="keyword">get</span>; }
+}
+</pre></figure>
+
+<h2 id="Template_based_genetic_algorithm">Template based genetic algorithm</h2>
+<p>I’ve implemented the genetic algorithm using the <a href="http://www.dofactory.com/Patterns/PatternTemplate.aspx" target="_blank">template pattern</a> for easy customization and implementation of the algorithm. The algorithm itself is an abstract generic class. This means we have to subtype it before we can use it, a requirement due to the abstract template based implementation.</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> GeneticAlgorithm&lt;T&gt;
+</pre></figure>
+
+<p>There’s a number of properties that are rather self explanatory, given the commenting.</p>
+<figure class="highlight csharp"><pre><span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> This is the amount of chromosomes that will be in the population at any generation.</span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+<span class="keyword">protected</span> <span class="keyword">int</span> ChromosomePopulationSize;
+
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> This is the number of chromosomes that survive each generation, after which they're mutated.</span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+<span class="keyword">protected</span> <span class="keyword">int</span> GenerationSurvivorCount;
+
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> This list holdes the chromosomes of the current population.</span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+<span class="keyword">protected</span> IList&lt;IChromosome&lt;T&gt;&gt; ChromosomePopulation;
+
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> This is the current generation number. Incremented each time a new generation is made.</span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+<span class="keyword">public</span> <span class="keyword">int</span> CurrentGenerationNumber;
+
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> This is the current generation population.</span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+<span class="keyword">public</span> IEnumerable&lt;IChromosome&lt;T&gt;&gt; CurrentGenerationPopulation
+{
+	<span class="keyword">get</span> { <span class="keyword">return</span> ChromosomePopulation.AsEnumerable(); }
+}
+</pre></figure>
+
+<p>The constructor takes in two parameters, the size of the population at any given generation, as well as the number of survivors when an evolution is performed - and a new generation is created, based on the survivors of the old generation.</p>
+<p>Lastly, we set the current generation as generation number 1, and then we call createInitialChromosomes to instantiate the initial generation 1 population.</p>
+<figure class="highlight csharp"><pre><span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> Initializes the genetic algorithm by evolving the initial generation of chromosomes.</span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="chromosomePopulationSize"&gt;</span>The size of any generation.<span class="xmlDocTag">&lt;/param&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="generationSurvivorCount"&gt;</span>The number of chromosomes to survive the evolution of a generation.<span class="xmlDocTag">&lt;/param&gt;</span></span>
+<span class="keyword">public</span> <span class="title">GeneticAlgorithm</span>(<span class="keyword">int</span> populationSize, <span class="keyword">int</span> generationSurvivorCount)
+{
+	<span class="keyword">if</span> (generationSurvivorCount &gt;= populationSize)
+		<span class="keyword">throw</span> <span class="keyword">new</span> ArgumentException(<span class="string">"The survival count of a generation must be smaller than the population size. Otherwise the population will become stagnant"</span>);
+
+	<span class="keyword">if</span> (generationSurvivorCount &lt; <span class="number">2</span>)
+		<span class="keyword">throw</span> <span class="keyword">new</span> ArgumentException(<span class="string">"Where would we be today if either Adam or Eve were alone?"</span>);
+
+	ChromosomePopulationSize = populationSize;
+	GenerationSurvivorCount = generationSurvivorCount;
+
+	<span class="comment">// Create initial population and set generation</span>
+	CurrentGenerationNumber = <span class="number">1</span>;
+	createInitialChromosomes();
+}
+</pre></figure>
+
+<p>The createInitialChromosome initializes the ChromosomePopulation list, and then it’ll continue adding new chromosomes to it until the current population reaches the specified ChromosomePopulationSize. The initial random chromosomes are returned from the CreateInitialRandomChromosome function.</p>
+<figure class="highlight csharp"><pre><span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> Creates the initial population of random chromosomes.</span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+<span class="keyword">private</span> <span class="keyword">void</span> <span class="title">createInitialChromosomes</span>()
+{
+	ChromosomePopulation = <span class="keyword">new</span> List&lt;IChromosome&lt;T&gt;&gt;();
+
+	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; ChromosomePopulationSize; i++)
+		ChromosomePopulation.Add(CreateInitialRandomChromosome());
+}
+</pre></figure>
+
+<p>There are three abstract methods that must be implemented by any subclass, CreateInitialRandomChromosome being one of them. I’ll go over the actual implementations later on.</p>
+<figure class="highlight csharp"><pre><span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> Creates an arbitrary number of mutated chromosomes, based on the input chromosome.</span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+<span class="keyword">protected</span> <span class="keyword">abstract</span> IEnumerable&lt;IChromosome&lt;T&gt;&gt; <span class="title">Mutate</span>(IChromosome&lt;T&gt; chromosome);
+
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> Creates a single random chromosome for the initial chromosome population.</span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+<span class="keyword">protected</span> <span class="keyword">abstract</span> IChromosome&lt;T&gt; <span class="title">CreateInitialRandomChromosome</span>();
+
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> Selects the surviving chromosomes of the current generation.</span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>Returns a list of survivors of the current generation.<span class="xmlDocTag">&lt;/returns&gt;</span></span>
+<span class="keyword">protected</span> <span class="keyword">abstract</span> IEnumerable&lt;IChromosome&lt;T&gt;&gt; <span class="title">GetGenerationSurvivors</span>();
+</pre></figure>
+
+<p>The last method that’s implemented in the abstract GeneticAlgorithm class is PerformEvolution. PerformEvolution will create a new population for the next generation. First the survivors of the old generation are selected by calling the GetGenerationSurvivors method, which is to be implemented by a subclass. All survivors of the old generation are automatically added to the new generation population.</p>
+<p>Then we’ll select a random survivor based on an weighted average of their fitness. The randomly selected survivor will be mutated, and the result of the mutation is added to the new generation population. The Mutate function may return an arbitrary number of results, so technically a single survivor could be the parent of all children in the new generation.</p>
+<p>Finally we set the current population and increment the generation number.</p>
+<figure class="highlight csharp"><pre><span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> Performs an evolution by picking up the generation survivors and mutating them.</span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">PerformEvolution</span>()
+{
+	IList&lt;IChromosome&lt;T&gt;&gt; newGeneration = <span class="keyword">new</span> List&lt;IChromosome&lt;T&gt;&gt;();
+
+	<span class="comment">// Get the survivors of the last generation</span>
+	IEnumerable&lt;IChromosome&lt;T&gt;&gt; survivors = GetGenerationSurvivors();
+
+	<span class="comment">// Add the survivors of the previous generation</span>
+	<span class="keyword">foreach</span> (<span class="keyword">var</span> survivor <span class="keyword">in</span> survivors)
+		newGeneration.Add(survivor);
+
+	<span class="comment">// Until the population is full, add a new mutation of any two survivors, selected by weighted random based on their fitness.</span>
+	Random rnd = <span class="keyword">new</span> Random();
+
+	<span class="keyword">while</span> (newGeneration.Count &lt; ChromosomePopulationSize)
+	{
+		<span class="comment">// Get two random survivors, weighted random sort based on fitness</span>
+		<span class="keyword">var</span> randomSurvivor = survivors
+			.OrderBy(c =&gt; rnd.NextDouble() * c.Fitness)
+			.First();
+
+		<span class="keyword">foreach</span> (<span class="keyword">var</span> offspring <span class="keyword">in</span> Mutate(randomSurvivor))
+		{
+			<span class="keyword">if</span> (newGeneration.Count == ChromosomePopulationSize)
+				<span class="keyword">break</span>;
+
+			newGeneration.Add(offspring);
+		}
+	}
+
+	<span class="comment">// Overwrite current population</span>
+	ChromosomePopulation = newGeneration;
+
+	<span class="comment">// Increment the current generation</span>
+	CurrentGenerationNumber++;
+}
+</pre></figure>
+
+<h2 id="The_rgb_guessing_implementation">The rgb guessing implementation</h2>
+<p>The actual implementation is a class inheriting from GeneticAlgorithm, specifying Rgb as the generic type we’ll be working with.</p>
+<figure class="highlight csharp"><pre><span class="class"><span class="keyword">class</span> <span class="title">RgbGuesser</span> : <span class="title">GeneticAlgorithm</span><span class="inheritance">&lt;<span class="parent">Rgb</span></span>&gt;</span>
+</pre></figure>
+
+<p>The constructor just calls the base class directly, specifying the population size to be 100, and that there should be 10 survivors of each generation.</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="title">RgbGuesser</span>()
+	: <span class="title">base</span>(100, 10)
+{ }
+</pre></figure>
+
+<p>The CreateInitialRandomChromosome method just returns a new Rgb instance with random R, G and B vlaues between 1 and 255.</p>
+<figure class="highlight csharp"><pre><span class="keyword">protected</span> <span class="keyword">override</span> IChromosome&lt;Rgb&gt; <span class="title">CreateInitialRandomChromosome</span>()
+{
+	<span class="keyword">return</span> <span class="keyword">new</span> RgbChromosome(random.Next(<span class="number">1</span>, <span class="number">256</span>), random.Next(<span class="number">1</span>, <span class="number">256</span>), random.Next(<span class="number">1</span>, <span class="number">256</span>));
+}
+</pre></figure>
+
+<p>I’ve implemented an optimization that makes sure the most fit candidate chromosome is always included in the survivors of each generation. This’ll make sure we’ll never have a new generation with a worse candidate solution that the last.</p>
+<p>After returning the top candidate, we then return the remaining candidates based on a weighted random selection of the remaining population. The reason why we’re not just returning the “top GenerationSurvivorCount” chromosomes is to avoid <a href="http://en.wikipedia.org/wiki/Genetic_algorithm" target="_blank">premature convergence</a>. Premature convergence is basically a fancy way to describe inbreeding. When our gene pool diversity is limited, so is the range of candidates that may come out of it. It’s not a really big issue in the RGB guessing implementation, but premature convergence can be a big issue in other implementations - especially depending on the mutation implementation.</p>
+<figure class="highlight csharp"><pre><span class="keyword">protected</span> <span class="keyword">override</span> IEnumerable&lt;IChromosome&lt;Rgb&gt;&gt; <span class="title">GetGenerationSurvivors</span>()
+{
+	<span class="comment">// Return the best chromosome</span>
+	<span class="keyword">var</span> topChromosome = <span class="keyword">this</span>.ChromosomePopulation
+		.OrderByDescending(c =&gt; c.Fitness)
+		.First();
+
+	<span class="comment">// Return the remaining chromosomes from the pool</span>
+	<span class="keyword">var</span> survivors = <span class="keyword">this</span>.ChromosomePopulation
+		.Where(c =&gt; c != topChromosome)
+		.OrderByDescending(c =&gt; random.NextDouble() * c.Fitness)
+		.Take(<span class="keyword">this</span>.GenerationSurvivorCount - <span class="number">1</span>);
+
+	<span class="keyword">yield</span> <span class="keyword">return</span> topChromosome;
+
+	<span class="keyword">foreach</span> (<span class="keyword">var</span> survivor <span class="keyword">in</span> survivors)
+		<span class="keyword">yield</span> <span class="keyword">return</span> survivor;
+}
+</pre></figure>
+
+<p>The final method to implement is the Mutate method. This is the one that’s responsible for mutating a survivor into a new candidate solution that’ll hopefully be better than the last. The implementation is really simple. We just make a new RgbChromosome and set it’s R, G and B values to the same value as the parent chromosome, added a random value between -5 and 5. The Math.Max and Math.Min juggling is to avoid negative and 255+ values.</p>
+<figure class="highlight csharp"><pre>protected override IEnumerable&lt;IChromosome&lt;Rgb&gt;&gt; Mutate(IChromosome&lt;Rgb&gt; chromosome)
+{
+	RgbChromosome mutation = new RgbChromosome(chromosome<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.R</span>, chromosome<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.G</span>, chromosome<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.B</span>)<span class="comment">;</span>
+	mutation<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.R</span> = Math<span class="preprocessor">.Min</span>(<span class="number">255</span>, Math<span class="preprocessor">.Max</span>(<span class="number">0</span>, mutation<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.R</span> + random<span class="preprocessor">.Next</span>(-<span class="number">5</span>, <span class="number">6</span>)))<span class="comment">;</span>
+	mutation<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.G</span> = Math<span class="preprocessor">.Min</span>(<span class="number">255</span>, Math<span class="preprocessor">.Max</span>(<span class="number">0</span>, mutation<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.G</span> + random<span class="preprocessor">.Next</span>(-<span class="number">5</span>, <span class="number">6</span>)))<span class="comment">;</span>
+	mutation<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.B</span> = Math<span class="preprocessor">.Min</span>(<span class="number">255</span>, Math<span class="preprocessor">.Max</span>(<span class="number">0</span>, mutation<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.B</span> + random<span class="preprocessor">.Next</span>(-<span class="number">5</span>, <span class="number">6</span>)))<span class="comment">;</span>
+
+	yield return mutation<span class="comment">;</span>
+}
+</pre></figure>
+
+<h2 id="The_RgbChromosome">The RgbChromosome</h2>
+<p>The final class is the one implementing the IChromosome interface.</p>
+<figure class="highlight csharp"><pre><span class="class"><span class="keyword">class</span> <span class="title">RgbChromosome</span> : <span class="title">IChromosome</span><span class="inheritance">&lt;<span class="parent">Rgb</span></span>&gt;</span>
+</pre></figure>
+
+<p>In this case I’ve hardcoded a target RGB value that we wish to guess. Note that this is only for demonstrations sake - usually in genetic algorithms we don’t know the “answer” and will therefor have to base the fitness function on a set of rules that evaluate the fitness of the candidate.</p>
+<figure class="highlight csharp"><pre><span class="keyword">private</span> <span class="built_in">Rgb</span> targetRgb = <span class="keyword">new</span> <span class="built_in">Rgb</span> { R = <span class="number">127</span>, G = <span class="number">240</span>, B = <span class="number">50</span> };
+</pre></figure>
+
+<p>The fitness function calculates the total difference in RGB values and subtracts that from the maximum difference. As a result, we get a fitness value with lower values indicating a worse solution.</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">double</span> Fitness
+{
+	<span class="keyword">get</span>
+	{
+		<span class="keyword">int</span> maxDiff = <span class="number">255</span> * <span class="number">3</span>;
+
+		<span class="keyword">int</span> rDiff = Math.Abs(chromosome.R - targetRgb.R);
+		<span class="keyword">int</span> gDiff = Math.Abs(chromosome.G - targetRgb.G);
+		<span class="keyword">int</span> bDiff = Math.Abs(chromosome.B - targetRgb.B);
+		<span class="keyword">int</span> totalDiff = rDiff + gDiff + bDiff;
+
+		<span class="keyword">return</span> maxDiff - totalDiff;
+	}
+}
+</pre></figure>
+
+<p>Here is the full IChromosome implementation:</p>
+<figure class="highlight csharp"><pre>class RgbChromosome : IChromosome&lt;Rgb&gt;
+{
+	<span class="keyword">private</span> Rgb targetRgb = <span class="keyword">new</span> Rgb { R = <span class="number">127</span>, G = <span class="number">240</span>, B = <span class="number">50</span> };
+	<span class="keyword">private</span> Rgb chromosome;
+
+	<span class="keyword">public</span> <span class="title">RgbChromosome</span>(<span class="keyword">int</span> r, <span class="keyword">int</span> g, <span class="keyword">int</span> b)
+	{
+		<span class="keyword">this</span>.chromosome = <span class="keyword">new</span> Rgb { R = r, G = g, B = b };
+	}
+
+	<span class="keyword">public</span> <span class="keyword">double</span> Fitness
+	{
+		<span class="keyword">get</span>
+		{
+			<span class="keyword">int</span> maxDiff = <span class="number">255</span> * <span class="number">3</span>;
+
+			<span class="keyword">int</span> rDiff = Math.Abs(chromosome.R - targetRgb.R);
+			<span class="keyword">int</span> gDiff = Math.Abs(chromosome.G - targetRgb.G);
+			<span class="keyword">int</span> bDiff = Math.Abs(chromosome.B - targetRgb.B);
+			<span class="keyword">int</span> totalDiff = rDiff + gDiff + bDiff;
+
+			<span class="keyword">return</span> maxDiff - totalDiff;
+		}
+	}
+
+	<span class="keyword">public</span> Rgb ChromosomeValue
+	{
+		<span class="keyword">get</span> { <span class="keyword">return</span> chromosome; }
+	}
+}
+</pre></figure>
+
+<h2 id="Running_the_algorithm">Running the algorithm</h2>
+<p>Running the algorithm is as simple as instantiating a new RgbGuesser and then calling PerformEvolution on it repeatedly. Note that there’s no built in stop criteria in the algorithm, so it’ll continue to evolve the candidates even though a perfect candidate may already have been evolved. This I’ve introduced a simple check to see whether a perfect candidate exists:</p>
+<figure class="highlight csharp"><pre>if (topChromosomes<span class="preprocessor">.Where</span>(c =&gt; c<span class="preprocessor">.Fitness</span> == <span class="number">255</span> * <span class="number">3</span>)<span class="preprocessor">.Count</span>() &gt; <span class="number">0</span>)
+</pre></figure>
+
+<p>The full code can be seen below:</p>
+<figure class="highlight csharp"><pre>// Setup RgbGuesser
+RgbGuesser rgbGuesser = new RgbGuesser()<span class="comment">;</span>
+
+// For each generation, write the generation number + top <span class="number">5</span> chromosomes + fitness
+for (int i = <span class="number">1</span><span class="comment">; i &lt; 100000; i++)</span>
+{
+	Console<span class="preprocessor">.WriteLine</span>(<span class="string">"Generation: "</span> + rgbGuesser<span class="preprocessor">.CurrentGenerationNumber</span>)<span class="comment">;</span>
+	Console<span class="preprocessor">.WriteLine</span>(<span class="string">"-----"</span>)<span class="comment">;</span>
+
+	// Get top <span class="number">5</span> chromosomes
+	var topChromosomes = rgbGuesser<span class="preprocessor">.CurrentGenerationPopulation</span>
+		<span class="preprocessor">.OrderByDescending</span>(c =&gt; c<span class="preprocessor">.Fitness</span>)
+		<span class="preprocessor">.Take</span>(<span class="number">5</span>)<span class="comment">;</span>
+
+	// Get bottom <span class="number">5</span> chromosomes
+	var bottomChromosomes = rgbGuesser<span class="preprocessor">.CurrentGenerationPopulation</span>
+		<span class="preprocessor">.OrderBy</span>(c =&gt; c<span class="preprocessor">.Fitness</span>)
+		<span class="preprocessor">.Take</span>(<span class="number">5</span>)<span class="comment">;</span>
+
+	if (topChromosomes<span class="preprocessor">.Where</span>(c =&gt; c<span class="preprocessor">.Fitness</span> == <span class="number">255</span> * <span class="number">3</span>)<span class="preprocessor">.Count</span>() &gt; <span class="number">0</span>)
+	{
+		Console<span class="preprocessor">.WriteLine</span>()<span class="comment">;</span>
+		Console<span class="preprocessor">.WriteLine</span>()<span class="comment">;</span>
+		Console<span class="preprocessor">.WriteLine</span>()<span class="comment">;</span>
+		Console<span class="preprocessor">.WriteLine</span>(<span class="string">"### Perfect match found at generation "</span> + rgbGuesser<span class="preprocessor">.CurrentGenerationNumber</span> + <span class="string">"!"</span>)<span class="comment">;</span>
+		Console<span class="preprocessor">.Read</span>()<span class="comment">;</span>
+		return<span class="comment">;</span>
+	}
+
+	// Print <span class="keyword">out</span> top <span class="number">5</span> <span class="keyword">and</span> bottom <span class="number">5</span> chromosomes
+	foreach (var chromosome <span class="keyword">in</span> topChromosomes)
+		Console<span class="preprocessor">.WriteLine</span>(Convert<span class="preprocessor">.ToInt</span>32(chromosome<span class="preprocessor">.Fitness</span>)<span class="preprocessor">.ToString</span>()<span class="preprocessor">.PadLeft</span>(<span class="number">3</span>) + <span class="string">": "</span> + chromosome<span class="preprocessor">.ChromosomeValue</span>)<span class="comment">;</span>
+	Console<span class="preprocessor">.WriteLine</span>(<span class="string">"-----"</span>)<span class="comment">;</span>
+	foreach (var chromosome <span class="keyword">in</span> bottomChromosomes<span class="preprocessor">.OrderByDescending</span>(c =&gt; c<span class="preprocessor">.Fitness</span>))
+		Console<span class="preprocessor">.WriteLine</span>(Convert<span class="preprocessor">.ToInt</span>32(chromosome<span class="preprocessor">.Fitness</span>)<span class="preprocessor">.ToString</span>()<span class="preprocessor">.PadLeft</span>(<span class="number">3</span>) + <span class="string">": "</span> + chromosome<span class="preprocessor">.ChromosomeValue</span>)<span class="comment">;</span>
+
+	Console<span class="preprocessor">.WriteLine</span>()<span class="comment">;</span>
+	Console<span class="preprocessor">.WriteLine</span>()<span class="comment">;</span>
+
+	// Homage to Charles Darwin
+	rgbGuesser<span class="preprocessor">.PerformEvolution</span>()<span class="comment">;</span>
+}
+
+Console<span class="preprocessor">.WriteLine</span>(<span class="string">"Done"</span>)<span class="comment">;</span>
+Console<span class="preprocessor">.ReadLine</span>()<span class="comment">;</span>
+</pre></figure>
+
+<p>Running the application should eventually result in a perfect candidate being found. If you’re lucky, you’ll find it at generation 42 :)</p>
+<div class="imgwrapper" style=""><div><a href="/implementing-a-simple-genetic-algorithm/genetic_run_2.jpg" class="fancy"><img src="/implementing-a-simple-genetic-algorithm/genetic_run_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Doing_the_numbers">Doing the numbers</h2>
+<p>There are different ways of guessing an RGB value. We could just randomly guess until we hit the correct one - with a probability of 1/(255^3).</p>
+<p>We could also iterate over all 255^3 solutions, eventually hitting one. Provided the target is completely random, we should hit it after 50% of the solutions have been tested - that is, after just about 8 million tests.</p>
+<p>Another more clever approach, given the fitness function would be to just increment each RGB value once and fine the point at which an increment results in a lower score - then we’ve solved one of the RGB values. Using this approach, we can solve the problem in just 255*3 number of tries at most. But really, that’s no fun!</p>
+<p>Based on a quick series of tests, 50 seems to be the average max generation we’ll have to hit before we’ve guess the correct RGB value. That’s 50 generations of 100 candidates, for a total candidate count of 5000 - somewhat less than the random guessing and iterative solutions. To conclude - in this case, a genetic algorithm is far from the optimal solution, but it’s an interesting way of approaching hard-to-define problems that may not have a single optimal solution that can be calculated within a certain time restraint. In those cases genetic algorithms can be a great way of approximating a close-to-perfect solution.</p>
+<h2 id="Update">Update</h2>
+<p>Based on some of the comments I’ve received, I’ve posted an <a href="http://www.improve.dk/blog/2009/05/01/evolution-of-the-simple-genetic-algorithm" target="_blank">update to the genetic algorithm</a> to make it more “genetic”.</p>
+<h2 id="Downloads">Downloads</h2>
+<p>Sample solution code:<br><a href="GeneticTesting.zip">GeneticTesting.zip</a></p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
 			<span class="day">24</span>
 		</div>
 		<div class="lower">2009</div>
@@ -1394,56 +1780,6 @@ namespace TxFTest
 <p>Note that the KTM transaction is able to participate in a distributed transaction using the MS DTC service. That means we can both perform database and file operations inside of a transaction scope and have all of them performed ACIDically.</p>
 <p>Using transactions comes at a cost - performance. Since the system has to guarantee the ACID properties are respected, there will be administrative overhead as well as the possibility of extra disk activity. Whenever we modify an existing file, the original file is left untouched until the new file has been written to disk, otherwise we might risk destryoying the original file if the computer were to crash halfways through a write procedure.</p>
 <p>There are of course <a href="http://msdn.microsoft.com/en-us/library/aa365738(VS.85" target="_blank">limitations in TxF</a>.aspx), as there are in all good things. Most notably it’ll only work for local volumes, you can’t use TxF on file shares as it’s not supported by the CIFS/SMB protocols.</p>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Jan</span>
-			<span class="day">22</span>
-		</div>
-		<div class="lower">2009</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/techtalk-optimizing-sql-server-2005/" title="TechTalk: Optimizing SQL Server 2005" rel="bookmark">TechTalk: Optimizing SQL Server 2005</a></h1>
-		<div class="categories">
-			
-				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>I held a TechTalk on optimizing SQL Server 2005 on the 21st of January. I think it went well so I’m looking forward to the evaluations - please fill them out :)</p>
-<a id="more"></a>
-
-<p>I have put up the slides, code and test database backup for you to download.</p>
-<p><a href="Optimizing_SQL_Server_2005.zip">Optimizing_SQL_Server_2005.zip - Slides + code</a><br><a href="Test.zip">Test.zip - DB Backup</a></p>
-<p>Note that the slides are in <strong>Danish</strong> - sorry non-danes.</p>
-<p>As I mentioned at the end of the TechTalk, I barely made it through all of my slides, and that’s even after I sacrificed a lot of the topics &amp; depth I wanted to talk about. Depending on the evaluations I get back, I’ll probably be announcing a part 2 on this topic later on.</p>
-<p>The tool I used to generate test data was Red Gate’s <a href="http://www.red-gate.com/products/SQL_Data_Generator/index.htm" target="_blank">SQL Data Generator</a>. It’s a great tool for quickly making a large set of test data so you can analyze the actual benefits of a properly indexed table.</p>
 
 
 				<div style="clear: both"></div>

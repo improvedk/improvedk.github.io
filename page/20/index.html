@@ -160,6 +160,109 @@
 	<div class="datebox">
 		<div class="upper">
 			<span class="month">Apr</span>
+			<span class="day">04</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/getting-text-from-handle/" title="Getting Text From Window Handle Using PInvoke" rel="bookmark">Getting Text From Window Handle Using PInvoke</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>This time we want to retrieve the text from a given window, represented by a handle. Like last time, open an Internet Explorer instance. Now open Winspector and select the address field, ensure that it is the address field itself (class = Edit) and not the ComboBox that you select.</p>
+<a id="more"></a>
+
+<div class="imgwrapper" style=""><div><a href="/getting-text-from-handle/win32_2_1_2.jpg" class="fancy"><img src="/getting-text-from-handle/win32_2_1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Collections.Generic;
+<span class="keyword">using</span> System.Text;
+<span class="keyword">using</span> System.Runtime.InteropServices;
+<span class="keyword">using</span> System.Globalization;
+
+namespace Get_text_from_handle
+{
+	class Program
+	{
+		<span class="comment">// These are two Win32 constants that we'll need, they'll be explained later.</span>
+		<span class="keyword">const</span> <span class="keyword">int</span> WM_GETTEXT		= <span class="number">0x000D</span>;
+		<span class="keyword">const</span> <span class="keyword">int</span> WM_GETTEXTLENGTH = <span class="number">0x000E</span>;
+
+		<span class="comment">// The SendMessage function sends a Win32 message to the specified handle, it takes three</span>
+		<span class="comment">// ints as parameters, the message to send, and to optional parameters (pass 0 if not required).</span>
+		[DllImport(<span class="string">"User32.dll"</span>)]
+		<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">extern</span> Int32 <span class="title">SendMessage</span>(<span class="keyword">int</span> hWnd, <span class="keyword">int</span> Msg, <span class="keyword">int</span> wParam, <span class="keyword">int</span> lParam);
+
+		<span class="comment">// An overload of the SendMessage function, this time taking in a StringBuilder as the lParam.</span>
+		<span class="comment">// Through the series we'll use a lot of different SendMessage overloads as SendMessage is one</span>
+		<span class="comment">// of the most fundamental Win32 functions.</span>
+		[DllImport(<span class="string">"User32.dll"</span>)]
+		<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">extern</span> Int32 <span class="title">SendMessage</span>(<span class="keyword">int</span> hWnd, <span class="keyword">int</span> Msg, <span class="keyword">int</span> wParam, StringBuilder lParam);
+
+		<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
+		{
+			<span class="comment">// First, read the handle from the console, remember this has to be in HEX format!</span>
+			<span class="keyword">int</span> handle = <span class="keyword">int</span>.Parse(Console.ReadLine(), NumberStyles.HexNumber);
+
+			<span class="comment">// This is a bit tricky. To retrieve the text from a window, we have to know it's length beforehand.</span>
+			<span class="comment">// This is because we have to send a StringBuilder of the correct length as a parameter. If it's too</span>
+			<span class="comment">// small, it won't be able to contain the full text. If it's too large, it's inefficient. When using</span>
+			<span class="comment">// the SendMessage function with the WM_GETTEXTLENGTH message, it returns the length of the</span>
+			<span class="comment">// window text.</span>
+			<span class="keyword">int</span> txtLength = SendMessage(handle, WM_GETTEXTLENGTH, <span class="number">0</span>, <span class="number">0</span>);
+
+			<span class="comment">// After having retrieved the length of the string, we create a StringBuilder to hold it.</span>
+			StringBuilder sb = <span class="keyword">new</span> StringBuilder(txtLength + <span class="number">1</span>);
+
+			<span class="comment">// Sending the message WM_GETTEXT to the window, passing int he length of the text (the capacity</span>
+			<span class="comment">// of the StringBuilder) as well as a reference to the StringBuilder will result in the</span>
+			<span class="comment">// StringBuilder being filled up with the windows text.</span>
+			SendMessage(handle, WM_GETTEXT, sb.Capacity, sb);
+
+			<span class="comment">// Finally we'll write out the window text by ToString()'ing the StringBuilder.</span>
+			Console.Write(sb.ToString());
+			Console.Read();
+		}
+	}
+}
+</pre></figure>
+
+<p>And the result:</p>
+<div class="imgwrapper" style=""><div><a href="/getting-text-from-handle/win32_2_2_2.jpg" class="fancy"><img src="/getting-text-from-handle/win32_2_2_2.jpg" style="max-height: 250px"/></a></div></div>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
 			<span class="day">03</span>
 		</div>
 		<div class="lower">2007</div>
@@ -620,191 +723,6 @@ namespace Get_process_from_handle
 <p>IF thought I was joking when I called them and told my age and car. While trying to reason with them that I weren’t joking, they hung up.</p>
 <h2 id="Conclusion">Conclusion</h2>
 <p>All in all, calling around to the various insurance companies took me a total of about two hours. The result of those two hours is that I went from $16.337 per year all the way down to $4.345 per year. That’s a saving of $11.992, giving me an hourly wage of about $6.000, that’s not too shabby!</p>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Jan</span>
-			<span class="day">28</span>
-		</div>
-		<div class="lower">2007</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/ces-2007-pictures/" title="CES 2007 Pictures" rel="bookmark">CES 2007 Pictures</a></h1>
-		<div class="categories">
-			
-				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>A series of pictures I took at the 2007 CES show.</p>
-<p>Microsoft didn’t exactly hide itself at the CES, you could see Vista icons, banners, stickers and posters everywhere!</p>
-<a id="more"></a>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces1_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces1_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces2_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces2_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces3_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces3_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces4_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces4_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>Honda showcased it’s famous ASIMO robot, pronounced very much like the awesome-o robot from South Park.</p>
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces5_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces5_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces6_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces6_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>The whole north hall was full of custom car manufacturer showoffs and ICE equipment.</p>
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces7_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces7_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces8_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces8_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces9_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces9_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces10_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces10_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces11_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces11_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces12_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces12_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces13_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces13_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces14_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces14_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces15_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces15_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces16_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces16_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces17_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces17_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces18_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces18_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces19_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces19_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces20_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces20_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces21_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces21_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces22_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces22_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces23_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces23_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces24_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces24_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces25_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces25_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces26_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces26_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces27_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces27_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces28_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces28_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces29_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces29_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces30_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces30_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces31_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces31_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces32_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces32_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces33_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces33_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>The finish of this car was incredibly cool, unfortunately it’s absolutely impossible to maintain.</p>
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces34_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces34_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces35_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces35_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces36_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces36_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces37_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces37_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces38_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces38_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces39_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces39_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces40_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces40_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces41_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces41_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>Without doubt, the most impressive woofer system on show was the dual 22” Jackhammer Escalade, featured by Pimp my Ride’s Mad Mike.</p>
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces42_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces42_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces43_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces43_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces44_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces44_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces45_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces45_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces46_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces46_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces47_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces47_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces48_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces48_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>By placing your hand in between the censors, you could control a cursor on the screen.</p>
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces49_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces49_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>The Microsoft booth / hall.</p>
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces50_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces50_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces51_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces51_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>LG’s combined Blu-ray &amp; HD player.</p>
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces52_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces52_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>Do not underestimate the deadly power of vending machines!</p>
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces53_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces53_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces54_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces54_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>Hellgate London, oh the joy of trying it. Can’t wait until it releases!</p>
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces55_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces55_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>Hmm, I don’t really know what this booth was about.</p>
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces56_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces56_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces57_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces57_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>Intels F1 simulator.</p>
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces58_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces58_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>An LCD monitor mounted on a glass plate, almost invisible wires.</p>
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces59_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces59_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces60_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces60_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>Sharp/Aquos’ 108” LCD. There was a thinly veiled line down through the middle, revealing that it’s probably just two smaller panels stitched together.</p>
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces61_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces61_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces62_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces62_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>Panasonics monitor booth.</p>
-<div class="imgwrapper" style=""><div><a href="/ces-2007-pictures/ces63_2.jpg" class="fancy"><img src="/ces-2007-pictures/ces63_2.jpg" style="max-height: 250px"/></a></div></div>
 
 
 				<div style="clear: both"></div>

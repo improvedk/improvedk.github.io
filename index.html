@@ -75,6 +75,140 @@
 	<div class="datebox">
 		<div class="upper">
 			<span class="month">Apr</span>
+			<span class="day">21</span>
+		</div>
+		<div class="lower">2014</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/redirecting-old-permalinks-on-statically-generated-blogs/" title="Redirecting Old Permalinks on Statically Generated Blogs" rel="bookmark">Redirecting Old Permalinks on Statically Generated Blogs</a></h1>
+		<div class="categories">
+			
+				<a href="/category/Miscellaneous/">Miscellaneous</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Having <a href="/migrating-from-wordpress-to-hexo/">just migrated from Wordpress to Hexo</a>, I quickly realized I forgot something. I forgot to redirect my old permalinks to the new ones…</p>
+<h2 id="Permalinks_Aren’t_Necessarily_Permanent">Permalinks Aren’t Necessarily Permanent</h2>
+<p>A permalink ought to live for the duration of your content, and most importantly, never change. However, having been through a number of different blog engines, not all of them support the same permalink structures, and might not even support redirecting old ones. As such, throgh the years my posts have ended up with multiple permalinks:</p>
+<ul>
+<li><a href="http://improve.dk/archive/2008/03/23/sql-server-mirroring-a-practical-approach.aspx">http://improve.dk/archive/2008/03/23/sql-server-mirroring-a-practical-approach.aspx</a></li>
+<li><a href="http://improve.dk/blog/2008/03/23/sql-server-mirroring-a-practical-approach/">http://improve.dk/blog/2008/03/23/sql-server-mirroring-a-practical-approach/</a></li>
+<li><a href="http://improve.dk/sql-server-mirroring-a-practical-approach/">http://improve.dk/sql-server-mirroring-a-practical-approach/</a></li>
+</ul>
+<p>As you can see, I’ve dropped both the /archive/ and the /blog/ prefixes, as well as the dates. Redirecting old incoming links to the new ones was easy enough when I ran Wordpress on Apache. All it requires were a couple of lines in the .htaccess file:</p>
+<figure class="highlight"><pre><span class="comment"># Redirect old permalink structure</span>
+<span class="tag">&lt;IfModule mod_rewrite.c&gt;</span>
+	<span class="keyword"><span class="common">RewriteEngine</span></span> <span class="literal">On</span>
+	<span class="keyword"><span class="common">RewriteRule</span></span> ^archive/([0-9]{4})/([0-9]{2})/([0-9]{2})/([^\.]+)\.aspx$ http://improve.dk/<span class="number">$4</span>/<span class="sqbracket"> [NC,R=301,L]</span>
+	<span class="keyword"><span class="common">RewriteRule</span></span> ^blog/([0-9]{4})/([0-9]{2})/([0-9]{2})/([^\.]+)$ http://improve.dk/<span class="number">$4</span>/<span class="sqbracket"> [NC,R=301,L]</span>
+<span class="tag">&lt;/IfModule&gt;</span>
+</pre></figure>
+
+<h2 id="Static_Woes">Static Woes</h2>
+<p>Since I’ve migrated to <a href="http://hexo.io" target="_blank">Hexo</a> it’s not as simple, unfortunately. I no longer host my site on Apache, but on <a href="https://pages.github.com/" target="_blank">GitHub Pages</a>. GitHub Pages only allow static files to be served, so I’m no longer able to utilize the .htaccess rewriting rules. There’s also no server-side functionality available, so I can’t even manually send out a 302-redirect, needed to preserve my incoming links SEO value.</p>
+<p>What I ended up doing was to write a small script that would parse my Wordpress backup file and then recreate the /blog/ and /archive/ directories, as if the posts were actually stored there:</p>
+<figure class="highlight csharp"><pre><span class="built_in">string</span> template <span class="subst">=</span> @<span class="string">"layout: false
+---
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+	&lt;head&gt;
+		&lt;title&gt;Redirecting to [Title]&lt;/title&gt;
+  		&lt;link rel="</span><span class="string">"canonical"</span><span class="string">" href="</span><span class="string">"[Permalink]"</span><span class="string">"/&gt;
+		&lt;meta http-equiv="</span><span class="string">"content-type"</span><span class="string">" content="</span><span class="string">"text/html; charset=utf-8"</span><span class="string">" /&gt;
+		&lt;meta http-equiv="</span><span class="string">"refresh"</span><span class="string">" content="</span><span class="string">"0;url=[Permalink]"</span><span class="string">" /&gt;
+	&lt;/head&gt;
+	&lt;body&gt;
+		Redirecting to &lt;a href="</span><span class="string">"[Permalink]"</span><span class="string">"&gt;[Title]&lt;/a&gt;...
+	&lt;/body&gt;
+&lt;/html&gt;"</span>;
+
+<span class="literal">void</span> Main()
+{
+	<span class="built_in">var</span> outputPath <span class="subst">=</span> @<span class="string">"D:\Projects\improve.dk (GIT)\source\";
+	var xmlPath = @"</span>D:<span class="subst">\</span>Projects<span class="subst">\</span>improve<span class="built_in">.</span>dk (GIT)<span class="subst">\</span>marksrasmussen<span class="attribute">-blog</span><span class="built_in">.</span>wordpress<span class="number">.2014</span><span class="subst">-</span><span class="number">03</span><span class="subst">-</span><span class="number">08.</span><span class="built_in">xml</span><span class="string">";
+	var xml = File.ReadAllText(xmlPath);
+	var xd = new XmlDocument();
+	xd.LoadXml(xml);
+	
+	var nsmgr = new XmlNamespaceManager(xd.NameTable);
+	nsmgr.AddNamespace("</span>content<span class="string">", "</span>http:<span class="comment">//purl.org/rss/1.0/modules/content/");</span>
+	nsmgr<span class="built_in">.</span>AddNamespace(<span class="string">"wp"</span>, <span class="string">"http://wordpress.org/export/1.2/"</span>);
+	
+	foreach (XmlNode item <span class="keyword">in</span> xd<span class="built_in">.</span>SelectNodes(<span class="string">"//item"</span>))
+	{
+		<span class="built_in">var</span> title <span class="subst">=</span> item<span class="built_in">.</span>SelectSingleNode(<span class="string">"title"</span>)<span class="built_in">.</span>InnerText;
+		<span class="built_in">var</span> <span class="built_in">date</span> <span class="subst">=</span> Convert<span class="built_in">.</span>ToDateTime(item<span class="built_in">.</span>SelectSingleNode(<span class="string">"pubDate"</span>)<span class="built_in">.</span>InnerText);
+		<span class="built_in">var</span> slug <span class="subst">=</span> item<span class="built_in">.</span>SelectSingleNode(<span class="string">"wp:post_name"</span>, nsmgr)<span class="built_in">.</span>InnerText;
+		
+		<span class="built_in">var</span> indexHtml <span class="subst">=</span> template
+			<span class="built_in">.</span>Replace(<span class="string">"[Permalink]"</span>, <span class="string">"http://improve.dk/"</span> <span class="subst">+</span> slug <span class="subst">+</span> <span class="string">"/"</span>)
+			<span class="built_in">.</span>Replace(<span class="string">"[Title]"</span>, HttpUtility<span class="built_in">.</span>HtmlEncode(title));
+		
+		<span class="comment">// First create the /archive/ entry</span>
+		<span class="built_in">var</span> outputFolder <span class="subst">=</span> Path<span class="built_in">.</span>Combine(outputPath, <span class="string">"archive"</span>, <span class="built_in">date</span><span class="built_in">.</span>Year<span class="built_in">.</span>ToString(), <span class="built_in">date</span><span class="built_in">.</span>Month<span class="built_in">.</span>ToString()<span class="built_in">.</span>PadLeft(<span class="number">2</span>, <span class="string">'0'</span>), <span class="built_in">date</span><span class="built_in">.</span>Day<span class="built_in">.</span>ToString()<span class="built_in">.</span>PadLeft(<span class="number">2</span>, <span class="string">'0'</span>), slug <span class="subst">+</span> <span class="string">".aspx"</span>);
+		<span class="built_in">var</span> indexPath <span class="subst">=</span> Path<span class="built_in">.</span>Combine(outputFolder, <span class="string">"index.html"</span>);
+		Directory<span class="built_in">.</span>CreateDirectory(outputFolder);
+		File<span class="built_in">.</span>WriteAllText(indexPath, indexHtml);
+		
+		<span class="comment">// Then the /blog/ entry</span>
+		outputFolder <span class="subst">=</span> Path<span class="built_in">.</span>Combine(outputPath, <span class="string">"blog"</span>, <span class="built_in">date</span><span class="built_in">.</span>Year<span class="built_in">.</span>ToString(), <span class="built_in">date</span><span class="built_in">.</span>Month<span class="built_in">.</span>ToString()<span class="built_in">.</span>PadLeft(<span class="number">2</span>, <span class="string">'0'</span>), <span class="built_in">date</span><span class="built_in">.</span>Day<span class="built_in">.</span>ToString()<span class="built_in">.</span>PadLeft(<span class="number">2</span>, <span class="string">'0'</span>), slug);
+		indexPath <span class="subst">=</span> Path<span class="built_in">.</span>Combine(outputFolder, <span class="string">"index.html"</span>);
+		Directory<span class="built_in">.</span>CreateDirectory(outputFolder);
+		File<span class="built_in">.</span>WriteAllText(indexPath, indexHtml);
+	}
+}
+</pre></figure>
+
+<p>Now the post stored directly in the root, while placeholders have been put in place in the old /blog/ and /archive/ directories. The placeholder code is very simple:</p>
+<figure class="highlight html"><pre>layout: false
+---
+<span class="doctype">&lt;!DOCTYPE html&gt;</span>
+<span class="tag">&lt;<span class="title">html</span>&gt;</span>
+	<span class="tag">&lt;<span class="title">head</span>&gt;</span>
+		<span class="tag">&lt;<span class="title">title</span>&gt;</span>Redirecting to TxF presentation materials<span class="tag">&lt;/<span class="title">title</span>&gt;</span>
+  		<span class="tag">&lt;<span class="title">link</span> <span class="attribute">rel</span>=<span class="value">"canonical"</span> <span class="attribute">href</span>=<span class="value">"http://improve.dk/txf-presentation-materials/"</span>/&gt;</span>
+		<span class="tag">&lt;<span class="title">meta</span> <span class="attribute">http-equiv</span>=<span class="value">"content-type"</span> <span class="attribute">content</span>=<span class="value">"text/html; charset=utf-8"</span> /&gt;</span>
+		<span class="tag">&lt;<span class="title">meta</span> <span class="attribute">http-equiv</span>=<span class="value">"refresh"</span> <span class="attribute">content</span>=<span class="value">"0;url=http://improve.dk/txf-presentation-materials/"</span> /&gt;</span>
+	<span class="tag">&lt;/<span class="title">head</span>&gt;</span>
+	<span class="tag">&lt;<span class="title">body</span>&gt;</span>
+		Redirecting to <span class="tag">&lt;<span class="title">a</span> <span class="attribute">href</span>=<span class="value">"http://improve.dk/txf-presentation-materials/"</span>&gt;</span>TxF presentation materials<span class="tag">&lt;/<span class="title">a</span>&gt;</span>...
+	<span class="tag">&lt;/<span class="title">body</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">html</span>&gt;</span>
+</pre></figure>
+
+<p>It’s simply a small script that contains a meta refresh tag that sends the user on to the new URL. By utilizing the ´rel=”canonical”` meta tag, I ensure that this retains the SEO value as if I had performed a 302 redirect.</p>
+<h2 id="Going_Forward">Going Forward</h2>
+<p>Creating the placeholder files is a one-off task, seeing as I’ll only ever need to redirect posts that precede the time when I changed my URL structure to contain neither the /blog/ and /archive/ prefixes, nor the dates. All posts from the beginning of 2013 were published using the current URL scheme, which I intend to keep for the foreseeable future.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
 			<span class="day">19</span>
 		</div>
 		<div class="lower">2014</div>
@@ -1389,196 +1523,6 @@ rows<span class="preprocessor">.Select</span>(<span class="built_in">x</span> =&
 </pre></figure>
 
 <p>As the <a href="http://documentation.mailgun.com/user_manual.html#securing-webhooks" target="_blank">manual says</a> you simply need to calculate a SHA256 HMAC of the concatenated timestamp and token values, after which you can verify that it matches the Mailgun provided signature. The key is the private API key, retrievable from the Mailgun control panel.</p>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Jun</span>
-			<span class="day">04</span>
-		</div>
-		<div class="lower">2013</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/analyzing-bsod-minidump-files-using-windbg/" title="Analyzing BSOD Minidump Files Using Windbg" rel="bookmark">Analyzing BSOD Minidump Files Using Windbg</a></h1>
-		<div class="categories">
-			
-				<a href="/category/Windbg/">Windbg</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>Unfortunately, once in a while, computers fail. If you’re running Windows you’ve probably witnessed the dreaded <a href="http://en.wikipedia.org/wiki/Blue_Screen_of_Death" target="_blank">Blue Screen of Death</a>, commonly referred to as a BSOD. Once the BSOD occurs, some machines will immediately restart, before you’ve got a chance to actually see what happened. Other times users will just report that the BSOD happened, without noting anything down about what the message actually said. In this post I’ll show you how analyzing BSOD minidump files using <a href="http://en.wikipedia.org/wiki/WinDbg" target="_blank">Windbg</a> will enable you to find the cause of the BSOD after the fact.</p>
-<a id="more"></a>
-
-
-<h2 id="Enabling_Dump_Files">Enabling Dump Files</h2>
-<p>By default, never Windows installs will automatically create minidump files once a BSOD occurs. Once restarted, you should be able to see a .dmp file here:</p>
-<figure class="highlight"><pre>C:<span class="command">\Windows</span><span class="command">\Minidump</span>
-</pre></figure>
-
-<p>If you don’t see any .dmp files there, or if the directory doesn’t exist, you may have to tell Windows to create minidump files when the BSOD occurs. To do so, press the <strong>Win+Break</strong> keys to open up the System control panel. Now click <strong>Advanced system settings</strong> in the left menu. Once there, go to the <strong>Advanced</strong> tab and click the <strong>Settings…</strong> button under the <strong>Startup and Recovery</strong> section. Now make sure the <strong>Write debugging information</strong> setting is set to <strong>anything but “none”</strong>:</p>
-<div class="imgwrapper" style=""><div><a href="/analyzing-bsod-minidump-files-using-windbg/Capture.png" class="fancy"><img src="/analyzing-bsod-minidump-files-using-windbg/Capture.png" style="max-height: 250px"/></a></div></div>
-
-
-<h2 id="Analyzing_BSOD_Minidump_Files_Using_Windbg">Analyzing BSOD Minidump Files Using Windbg</h2>
-<p>Once a dump file has been created, you can analyze it using Windbg. Start by opening Windbg and pressing the <strong>Ctrl+D</strong> keys. Now select the .dmp file you want to analyze and click <strong>Open</strong>. This should yield something like this:</p>
-<figure class="highlight"><pre>Microsoft (R) Windows Debugger Version 6.12.0002.633 AMD64
-Copyright (c) Microsoft Corporation. All rights reserved.
-
-
-Loading Dump File [C:\Windows\Minidump\040813-15974-01.dmp]
-Mini Kernel Dump File: Only registers and stack trace are available
-
-Symbol search path is: symsrv<span class="emphasis">*symsrv.dll*</span>c:\symbols*http://msdl.microsoft.com/download/symbols
-Executable search path is: 
-Windows 7 Kernel Version 7601 (Service Pack 1) MP (12 procs) Free x64
-Product: WinNt, suite: TerminalServer SingleUserTS
-Built by: 7601.18044.amd64fre.win7sp1_gdr.130104-1431
-Machine Name:
-Kernel base = 0xfffff800<span class="code">`0300c000 PsLoadedModuleList = 0xfffff800`</span>03250670
-Debug session time: Mon Apr  8 22:17:47.016 2013 (UTC + 2:00)
-System Uptime: 0 days 1:36:19.860
-Loading Kernel Symbols
-...............................................................
-................................................................
-........................
-Loading User Symbols
-Loading unloaded module list
-...............
-<span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="emphasis">***</span>*
-<span class="bullet">*                                                                             </span>*
-<span class="bullet">*                        </span>Bugcheck Analysis                                    *
-<span class="bullet">*                                                                             </span>*
-<span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="emphasis">***</span>*
-
-Use !analyze -v to get detailed debugging information.
-
-BugCheck FE, {4, fffffa803c3c89e0, fffffa803102e230, fffffa803e765010}
-
-Probably caused by : FiioE17.sys ( FiioE17+1d21 )
-
-Followup: MachineOwner
-</pre></figure>
-
-<p>Already this tells us a couple of things - your OS details, when exactly the problem occurred as well as what module probably caused the issue (FiioE17.sys in this case). Also, it tells you how to proceed:</p>
-<blockquote>
-<p>Use !analyze -v to get detailed debugging information.</p>
-</blockquote>
-<p>As suggested, let’s try and run the !analyze -v command:</p>
-<figure class="highlight"><pre>11: kd&gt; !analyze -v
-<span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="emphasis">***</span>*
-<span class="bullet">*                                                                             </span>*
-<span class="bullet">*                        </span>Bugcheck Analysis                                    *
-<span class="bullet">*                                                                             </span>*
-<span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="strong">*****</span><span class="emphasis">***</span>*
-
-BUGCODE<span class="emphasis">_USB_</span>DRIVER (fe)
-USB Driver bugcheck, first parameter is USB bugcheck code.
-Arguments:
-Arg1: 0000000000000004, IRP<span class="emphasis">_URB_</span>DOUBLE_SUBMIT The caller has submitted an irp
-<span class="code">	that is already pending in the USB bus driver.</span>
-Arg2: fffffa803c3c89e0, Address of IRP
-Arg3: fffffa803102e230, Address of URB
-Arg4: fffffa803e765010
-
-<span class="header">Debugging Details:
-------------------</span>
-
-CUSTOMER<span class="emphasis">_CRASH_</span>COUNT:  1
-
-DEFAULT<span class="emphasis">_BUCKET_</span>ID:  VISTA<span class="emphasis">_DRIVER_</span>FAULT
-
-BUGCHECK_STR:  0xFE
-
-PROCESS_NAME:  audiodg.exe
-
-CURRENT_IRQL:  2
-
-LAST<span class="emphasis">_CONTROL_</span>TRANSFER:  from fffff88008326f4b to fffff80003081c40
-
-STACK_TEXT:  
-fffff880<span class="code">`0e482fd8 fffff880`</span>08326f4b : 00000000<span class="code">`000000fe 00000000`</span>00000004 fffffa80<span class="code">`3c3c89e0 fffffa80`</span>3102e230 : nt!KeBugCheckEx
-fffff880<span class="code">`0e482fe0 fffff880`</span>0833244a : fffffa80<span class="code">`3ae97002 fffffa80`</span>3b8caad0 00000000<span class="code">`00000000 fffffa80`</span>3ae97050 : USBPORT!USBPORT<span class="emphasis">_Core_</span>DetectActiveUrb+0x127
-fffff880<span class="code">`0e483030 fffff880`</span>0833ae74 : fffffa80<span class="code">`3c3c89e0 fffffa80`</span>3af7000a fffffa80<span class="code">`3c3c89e0 fffffa80`</span>3102e230 : USBPORT!USBPORT_ProcessURB+0xad6
-fffff880<span class="code">`0e4830e0 fffff880`</span>08314af4 : 00000000<span class="code">`00000000 fffffa80`</span>3af7b050 fffffa80<span class="code">`3e5d1720 fffffa80`</span>3c3c89e0 : USBPORT!USBPORT_PdoInternalDeviceControlIrp+0x138
-fffff880<span class="code">`0e483120 fffff880`</span>00fa97a7 : fffffa80<span class="code">`3c3c89e0 fffffa80`</span>31192040 fffffa80<span class="code">`3c3c89e0 fffffa80`</span>3c3c89e0 : USBPORT!USBPORT_Dispatch+0x1dc
-fffff880<span class="code">`0e483160 fffff880`</span>00fb1789 : fffff880<span class="code">`00fcfb50 fffffa80`</span>3d944ed1 fffffa80<span class="code">`3c3c8d38 fffffa80`</span>3c3c8d38 : ACPI!ACPIDispatchForwardIrp+0x37
-fffff880<span class="code">`0e483190 fffff880`</span>00fa9a3f : fffff880<span class="code">`00fcfb50 fffffa80`</span>316a7a90 fffffa80<span class="code">`3c3c89e0 fffffa80`</span>3ab6c050 : ACPI!ACPIIrpDispatchDeviceControl+0x75
-fffff880<span class="code">`0e4831c0 fffff880`</span>088ca566 : 00000000<span class="code">`00000000 00000000`</span>00000004 fffffa80<span class="code">`3ab6c050 fffffa80`</span>3c2bd440 : ACPI!ACPIDispatchIrp+0x12b
-fffff880<span class="code">`0e483240 fffff880`</span>088fad8f : 00000000<span class="code">`00000000 00000000`</span>00000000 fffffa80<span class="code">`3c2bd440 00000000`</span>00000000 : usbhub!UsbhFdoUrbPdoFilter+0xde
-fffff880<span class="code">`0e483270 fffff880`</span>088c8fb7 : fffffa80<span class="code">`3c3c89e0 fffffa80`</span>3a976ce0 fffffa80<span class="code">`3c3c89e0 fffffa80`</span>3c3c89e0 : usbhub!UsbhPdoInternalDeviceControl+0x373
-fffff880<span class="code">`0e4832c0 fffff880`</span>00fa97a7 : fffffa80<span class="code">`3c3c89e0 fffff800`</span>031b630d fffffa80<span class="code">`3b7be100 00000000`</span>00000801 : usbhub!UsbhGenDispatch+0x57
-fffff880<span class="code">`0e4832f0 fffff880`</span>00fb1789 : fffff880<span class="code">`00fcfb50 00000000`</span>00000001 fffffa80<span class="code">`3c393b58 fffffa80`</span>3c3c8d38 : ACPI!ACPIDispatchForwardIrp+0x37
-fffff880<span class="code">`0e483320 fffff880`</span>00fa9a3f : fffff880<span class="code">`00fcfb50 fffffa80`</span>316a8a90 fffffa80<span class="code">`3c3c89e0 fffffa80`</span>3c393b58 : ACPI!ACPIIrpDispatchDeviceControl+0x75
-fffff880<span class="code">`0e483350 fffff880`</span>08c9bec4 : 00000000<span class="code">`00000000 fffffa80`</span>3c326938 fffffa80<span class="code">`3c393b58 00000000`</span>00000000 : ACPI!ACPIDispatchIrp+0x12b
-fffff880<span class="code">`0e4833d0 fffff880`</span>08c98812 : fffffa80<span class="code">`3c393b58 fffffa80`</span>3c3c89e0 fffffa80<span class="code">`00000324 fffffa80`</span>3c3c89e0 : usbccgp!UsbcForwardIrp+0x30
-fffff880<span class="code">`0e483400 fffff880`</span>08c98aba : fffffa80<span class="code">`3c326838 00000000`</span>00220003 fffffa80<span class="code">`3c3c89e0 fffffa80`</span>3c393b58 : usbccgp!DispatchPdoUrb+0xfa
-fffff880<span class="code">`0e483440 fffff880`</span>08c9672e : 00000000<span class="code">`0000000f fffffa80`</span>3c393b50 fffffa80<span class="code">`3c393b58 fffffa80`</span>3c3c89e0 : usbccgp!DispatchPdoInternalDeviceControl+0x17a
-fffff880<span class="code">`0e483470 fffff880`</span>08cb3d21 : fffffa80<span class="code">`3c393a00 fffffa80`</span>3c3c8901 fffffa80<span class="code">`3c3c8900 00000000`</span>00000000 : usbccgp!USBC_Dispatch+0x2de
-fffff880<span class="code">`0e4834f0 fffffa80`</span>3c393a00 : fffffa80<span class="code">`3c3c8901 fffffa80`</span>3c3c8900 00000000<span class="code">`00000000 fffffa80`</span>3c373010 : FiioE17+0x1d21
-fffff880<span class="code">`0e4834f8 fffffa80`</span>3c3c8901 : fffffa80<span class="code">`3c3c8900 00000000`</span>00000000 fffffa80<span class="code">`3c373010 00000000`</span>00000000 : 0xfffffa80`3c393a00
-fffff880<span class="code">`0e483500 fffffa80`</span>3c3c8900 : 00000000<span class="code">`00000000 fffffa80`</span>3c373010 00000000<span class="code">`00000000 fffffa80`</span>3c3b7f30 : 0xfffffa80`3c3c8901
-fffff880<span class="code">`0e483508 00000000`</span>00000000 : fffffa80<span class="code">`3c373010 00000000`</span>00000000 fffffa80<span class="code">`3c3b7f30 fffff880`</span>08cb47fd : 0xfffffa80`3c3c8900
-
-
-STACK_COMMAND:  kb
-
-FOLLOWUP_IP: 
-FiioE17+1d21
-fffff880`08cb3d21 ??              ???
-
-SYMBOL<span class="emphasis">_STACK_</span>INDEX:  12
-
-SYMBOL_NAME:  FiioE17+1d21
-
-FOLLOWUP_NAME:  MachineOwner
-
-MODULE_NAME: FiioE17
-
-IMAGE_NAME:  FiioE17.sys
-
-DEBUG<span class="emphasis">_FLR_</span>IMAGE_TIMESTAMP:  50b30686
-
-FAILURE<span class="emphasis">_BUCKET_</span>ID:  X64<span class="emphasis">_0xFE_</span>FiioE17+1d21
-
-BUCKET<span class="emphasis">_ID:  X64_</span>0xFE_FiioE17+1d21
-
-Followup: MachineOwner
-</pre></figure>
-
-<p>This tells us a number of interesting things:</p>
-<ul>
-<li>The BSOD error was: <strong>BUGCODE_USB_DRIVER</strong></li>
-<li>This is the error caused by the driver: IRP_URB_DOUBLE_SUBMIT <strong>The caller has submitted an irp that is already pending in the USB bus driver</strong>.</li>
-<li>The process that invoked the error: <strong>audiodg.exe</strong></li>
-<li>The stack trace of the active thread on which the error occurred. Note that Windbg can’t find the right symbols as this is a proprietary driver with no public symbols. Even so, to the developer of said driver, the above details will help immensely.</li>
-<li>The driver name: <strong>FiioE17.sys</strong></li>
-</ul>
-<p>With the above options, you’ve got a lot of details that can be sent to the developer, hopefully enabling him/her/them to fix the issue. For now, I’ll have to unplug my <a href="http://www.amazon.com/FiiO-Headphone-Amplifier-Docking-Interface/dp/B0070UFMOW" target="_blank">Fiio E17 USB DAC</a> :(</p>
 
 
 				<div style="clear: both"></div>

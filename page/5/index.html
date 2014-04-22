@@ -75,6 +75,92 @@
 	<div class="datebox">
 		<div class="upper">
 			<span class="month">Feb</span>
+			<span class="day">07</span>
+		</div>
+		<div class="lower">2012</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/orcamdf-row-compression-support/" title="OrcaMDF Row Compression Support" rel="bookmark">OrcaMDF Row Compression Support</a></h1>
+		<div class="categories">
+			
+				<a href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>After two months of on and off work, I finally merged the <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a> compression branch into master. This means OrcaMDF now officially supports data row compression!</p>
+<a id="more"></a>
+
+<h2 id="Supported_data_types">Supported data types</h2>
+<p>Implementing row compression required me to modify nearly all existing data types as compression changes the way they’re stored. Integers are <a href="/the-anatomy-of-row-amp-page-compressed-integers">compressed</a>, decimals are <a href="/how-are-vardecimals-stored">variable length</a> and variable length values are generally truncated instead of padded with 0’s. All previous data types implemented in OrcaMDF supports row compression, just as I’ve added a few. The current list of supported data types is as follows:</p>
+<ul>
+<li>bigint</li>
+<li>binary</li>
+<li>bit</li>
+<li>char</li>
+<li>date</li>
+<li>datetime</li>
+<li>mal/numeric (including vardecimal, both with and without row compression)</li>
+<li>image</li>
+<li>int</li>
+<li>money</li>
+<li>nchar</li>
+<li>ntext</li>
+<li>nvarchar</li>
+<li>smallint</li>
+<li>smallmoney</li>
+<li>text</li>
+<li>time</li>
+<li>uniqueidentifier</li>
+<li>varbinary</li>
+<li>varchar</li>
+</ul>
+<h2 id="Unicode_compression">Unicode compression</h2>
+<p>Nchar and nvarchar proved to be slightly more tricky than the rest as they use the <a href="http://unicode.org/reports/tr6/" target="_blank">SCSU</a> unicode compression format. I found a single <a href="http://gautam-m.blogspot.com/2010/09/standard-compression-scheme-for-unicode.html" target="_blank">.NET implementation of SCSU</a>, but while I was allowed to use the code, it didn’t come with a license and that’s a no go when I want to embed it in OrcaMDF. Furthermore had a lot of Java artifacts lying around (relying on goto for instance) that I didn’t fancy. I chose to implement my own SCSU decompression based on the reference implementation provided by Unicode, Inc. I’ve only implemented decompression to end up with a very slim and simple SCSU decompressor.</p>
+<p>I’ll be posting a blog on the decompressor itself as it has some value as a standalone class outside of OrcaMDF.</p>
+<h2 id="Architecture_changes">Architecture changes</h2>
+<p>I started out thinking I’d be able to finish off compression support within a week or two, after all, it was <a href="http://www.amazon.com/Microsoft%C2%AE-SQL-Server%C2%AE-2008-Internals/dp/0735626243" target="_blank">rather well documented</a>. It didn’t take long before it dawned upon me, just how many changes implementing compression would require. The record parser would obviously need to know whether the page was compressed or not. But where would it know that from? Previously all it got was a page pointer, now I had to lookup the compression (which varies by partition) metadata and make sure it was passed along all the way from the DataScanner to the page parser, to the record parser and onwards to the data type parsers.</p>
+<p>I’ve had to implement multiple abstractions on top of the regular parsers to abstract away whether the records were stored in a compressed or non compressed format. Overall it’s resulted in a better architecture, but it took a lot more work than expected. Actually parsing the compressed record format was the smallest part of the ordeal – the documentation was spot on and it’s a simple format. The data types however, that took some more work until I had the format figured out.</p>
+<h2 id="Taking_it_for_a_spin">Taking it for a spin</h2>
+<p>As always, the <a href="https://github.com/improvedk/OrcaMDF" target="_blank">code is available at Github</a>, feel free to take a look! If you’re not the coding type, I’ve also uploaded the <a href="https://github.com/improvedk/OrcaMDF/downloads" target="_blank">binary download</a> (dated 2012-02-06) of the OrcaMDF Studio, a GUI built on top of OrcaMDF.</p>
+<h2 id="Stats">Stats</h2>
+<p>Being a lover of numbers myself, I love looking at statistics. Here’s a couple of random stats from OrcaMDF:</p>
+<ul>
+<li>123 commits, the first one being made on April 15th 2011 – that’s almost a year ago!</li>
+<li>~11.700 lines of C# code (excluding blanks).</li>
+<li>~1000 lines of comments.</li>
+<li>~35% of the code is dedicated to testing, with a test suite comprising of over 200 tests.</li>
+<li><a href="https://www.ohloh.net/p/OrcaMDF" target="_blank">Ohloh</a> estimates OrcaMDF has a development cost of $144,090 – makes me wonder if not my time would be better spent elsewhere…</li>
+</ul>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Feb</span>
 			<span class="day">06</span>
 		</div>
 		<div class="lower">2012</div>
@@ -1035,92 +1121,6 @@ Bin: 1<span style="background-color: #dfce04;">1000010</span> <span style="color
 <p>As for SQLBits X, not going is simply not an option. SQLBits 9 was awesome, and I’ve really been looking forward to going again, whether I’m speaking or not. As such, I’ll be flying out of Vegas in the evening of March 29th, arriving in London on the 30th of March, just in time to catch day two and three of SQLBits X.</p>
 <p>I’m really looking forward to presenting at SQLConnections, and I’m equally excited to meet a lot of good friends again at both Connections and SQLBits X!</p>
 <p>PS – If anyone wants to share rooms at either Connections or SQLBits, <a href="https://twitter.com/improvedk" target="_blank">let me know</a>!</p>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Dec</span>
-			<span class="day">05</span>
-		</div>
-		<div class="lower">2011</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/sqlbits-9-session-evaluation/" title="SQLBits 9 Session Evaluation" rel="bookmark">SQLBits 9 Session Evaluation</a></h1>
-		<div class="categories">
-			
-				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>I’d heard many rumors about the excellent SQLBits session evaluation results that speakers are sent. Knowing the SSRS geeks on the SQLBits team, I’d expect nothing short of data &amp; graph filled reports – and I’m glad to say they didn’t disappoint!</p>
-<a id="more"></a>
-
-<p>Besides my <a href="/presenting-a-precon-at-sqlbits">precon</a>, I presented my <a href="http://sqlbits.com/Sessions/Event9/Knowing_the_Internals_Who_Needs_SQL_Server_Anyway" target="_blank">Knowing the Internals, Who Needs SQL Server Anyway</a> session. Before I start – thanks to all of you who attended my session(s), and especially thanks to those of you who filled out the feedback forms! Unfortunately the A/V people had some troubles with the microphone, so the video cuts off after about 10 minutes. Hopefully my SQLRally Nordic presentation will be made public – if/when it does, I’ll post it here.</p>
-<h2 id="The_results">The results</h2>
-<p>Looking at the overall results, I’m extremely pleased to see that I’m pretty much top rated for the demos, expectations and overall categories. While my knowledge trumps all the other ratings I received, someone clearly set the bar extremely high there – I suspect it might be <a href="http://blog.kejser.org/" target="_blank">Thomas Kejser</a> as his session was simply out of this world. Note that the graph is kind of misleading as the scale goes from 1-9, not 10.</p>
-<div class="imgwrapper" style=""><div><a href="/sqlbits-9-session-evaluation/image_4.png" class="fancy"><img src="/sqlbits-9-session-evaluation/image_4.png" style="max-height: 250px"/></a></div></div>
-
-<h2 id="Score_distribution">Score distribution</h2>
-<p>Looking at the score distribution, I got a single 4 and a single 5, while the rest is 7+ with a heavy bias on 8’s and 9’s – can’t be anything but extremely satisfied. That being said – I’d love to weed out that single 4 &amp; 5, thankfully they’ve included comments with their feedback.</p>
-<div class="imgwrapper" style=""><div><a href="/sqlbits-9-session-evaluation/image_6.png" class="fancy"><img src="/sqlbits-9-session-evaluation/image_6.png" style="max-height: 250px"/></a></div></div>
-
-<h2 id="Comments">Comments</h2>
-<p>I’ve listed all of the comments I got, including the average score for that comment (on a scale of 1-9). There were 20 evaluations in total, and out of those, 14 were commented. I, as all speakers, really appreciate the comments, whether to critique or praise – thank you!</p>
-<blockquote>
-<p>9 - Excellent content, great overview of what can be achieved.</p>
-<p>9 – Was a lot to cover in one hour but Mark did a fantasic job, has really inspired me to learn a lot more.</p>
-<p>9 – Very impressive!</p>
-<p>9 – Thanks for sharing. This wasn’t the most useful but a great deep dive into SQL internals and did inspire which I think is the purpose of a 1 hour session.</p>
-<p>9 – Far too much spare time on your hands! Enjoyed it though, makes you think about how you store data and use the correct data types.</p>
-<p>9 – While overwhelming at times this was probably my favourite session of SQLBits, It was a very insightful look at the computing principles that make SQL Server work. Considering the very technical content Mark did an excellent job of explaining his thought processes. The slides were very clear and the demos when stopping SQL Server, modifying the file in a Hex editor and then restarting to see the updated stats really joined everything together.</p>
-<p>9 – One of the presentations of the few days for me. Whilst the material was probably a little bit too detailed for any practical use I may currently have, it’s great to watch someone with great presentation skills (rare for a lot of techies?), sense of humour and a genuine enthusiasm for the work/hobby he is undertaking.</p>
-<p>9 – Very impressive session. Technical level of the session was very high (as stated at the start). Watched Klaus Aschenbrenner’s internals session from previous SQL bits and felt this was a good pre-cursor. Will definitely be downloading OrcaMDF.</p>
-<p>8.66 – My favourite talk of the conference. Absolutley superb.</p>
-<p>8.5 – Mark handled a topic with many grey areas with consummate ease. Lots of undocumented detail, quite incredible perseverance with a topic that is largely a black box.</p>
-<p>8.5 – Excellent session - wished id have done the Full day thursday!!!! Marks knowledge in the subjects was second to none!!</p>
-<p>8 – Very interesting session. Not entirely useful yet, but I can believe that by continuing to reverse engineering the file format this would be very useful knowledge to have.</p>
-<p>7.66 – Really interesting stuff. Possibly not immediately usable in the work place, but it’s good background information.</p>
-<p>7.5 – Tough choice between this one and around the world session. Only negative was a bit heavy on the slides but this is a tough topic to demo in 1 hour so maximum respect for pulling this off. Also, it was made clear that the session was to inspire and not teach. He had to push through the session quickly to make the hour and Mark did it well.</p>
-</blockquote>
-<h2 id="Conclusions">Conclusions</h2>
-<p><em>This session is not meant to teach, but to inspire.</em></p>
-<p>That’s how I started out my session, and with good reason. Originally I held a 45 minute session at Miracle Open World earlier this year, which laid the foundation for my precon and session at SQLBits. While developing my precon, I suddenly ended up with a lot of material, way too much to present in just a single hour. I had to compress it somehow, so I basically had two choices – ditch 90% of the material, or ditch just 20% of the material and speed through the rest. I opted for the latter.</p>
-<p>I made the choice that I’d rather give people the same experience that I had at my first SQL Server conference, several years ago. I went to a basic internals session, and suddenly it dawned upon me, how SQL Server wasn’t magic – it’s merely a bunch of deterministic rules for juggling with bytes on disk. Since then, I’ve been on a quest of learning how to SQL Server catches its fish, rather than just eating the fish it provides.</p>
-<p>While I can’t deem any of the comments or ratings as negative, the only critique I got was on the direct practical usability of the content, as well as the amount of material presented in one hour. For both of those, I fully recognize what’s being said. As a result, some of my SQLBits X submissions are sessions that go in-depth on specific topics, that I’d otherwise just skimmed in my last session:</p>
-<ul>
-<li><a href="http://sqlbits.com/Sessions/Event10/OrcaMDF-Real_Life_Usage" target="_blank">OrcaMDF – Real Life Usage</a></li>
-<li><a href="http://sqlbits.com/Sessions/Event10/Creating_the_Optimal_Schema_for_Storage_Efficiency" target="_blank">Creating the Optimal Schema for Storage Efficiency</a></li>
-<li><a href="http://sqlbits.com/Sessions/Event10/Storing_Character_Data_Optimally" target="_blank">Storing Character Data Optimally</a></li>
-<li><a href="http://sqlbits.com/Sessions/Event10/Optimizing_Performance_Using_Page_and_Row_Compression" target="_blank">Optimizing Performance Using Page and Row Compression</a></li>
-<li><a href="http://sqlbits.com/Sessions/Event10/Revealing_the_Magic" target="_blank">Revealing the Magic</a></li>
-</ul>
-<p>Revealing the Magic is the same session as Knowing the Internals – Who Needs SQL Server Anyways? I’ve renamed it to better reflect what my purpose with the session is – to reveal the magic. To hopefully provide that revelation of what SQL Server really is, once we hit the disk.</p>
-<p>I look forward to an excellent 2012 with, hopefully, a lot of presentations to come!</p>
 
 
 				<div style="clear: both"></div>

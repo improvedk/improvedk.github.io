@@ -912,44 +912,6 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/checking-which-database-is-stored-in-a-deattached-mdf-file/" title="Checking Which Database is Stored in a Detached MDF File" rel="bookmark">Checking Which Database is Stored in a Detached MDF File</a></h1>
-		<div class="categories">
-			
-				<a href="/category/.NET/">.NET</a>
-				, 
-			
-				<a href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-
-			<div class="body"><p>Inspired by <a href="http://stackoverflow.com/questions/6061510/any-way-to-quickly-tell-which-database-if-any-is-attached-to-a-mdf-file" target="_blank">this</a> question on StackOverflow, I’ve made a quick script to demonstrate how this might be done using <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a>.</p>
-</div>
-		
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">May</span>
-			<span class="day">19</span>
-		</div>
-		<div class="lower">2011</div>
-	</div>
-
-	<div class="title">
 		<h1><a href="/reverse-engineering-sql-server-page-headers/" title="Reverse Engineering SQL Server Page Headers" rel="bookmark">Reverse Engineering SQL Server Page Headers</a></h1>
 		<div class="categories">
 			
@@ -969,6 +931,44 @@
 		
 
 			<div class="body"><p>One of the first challenges I faced when starting out the development of <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a> was parsing page headers. We all know that <a href="/deciphering-a-sql-server-data-page/">pages are basically split in two parts</a>, the 96 byte header and the 8096 byte body of remaining bytes. Much has been written about headers and Paul Randal (<a href="http://www.sqlskills.com/BLOGS/PAUL/" target="_blank">b</a>|<a href="http://twitter.com/#!/paulrandal" target="_blank">t</a>) has a great post describing the <a href="http://www.sqlskills.com/blogs/paul/post/Inside-the-Storage-Engine-Anatomy-of-a-page.aspx" target="_blank">contents of the header</a> as well. However, though the contents have been described, I’ve been completely unable to find any kind of details on the storage format. What data types are the individual fields, and what’s the order? Oh well, we’ve always got DBCC PAGE.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">19</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/checking-which-database-is-stored-in-a-deattached-mdf-file/" title="Checking Which Database is Stored in a Detached MDF File" rel="bookmark">Checking Which Database is Stored in a Detached MDF File</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Inspired by <a href="http://stackoverflow.com/questions/6061510/any-way-to-quickly-tell-which-database-if-any-is-attached-to-a-mdf-file" target="_blank">this</a> question on StackOverflow, I’ve made a quick script to demonstrate how this might be done using <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a>.</p>
 </div>
 		
 		
@@ -2774,7 +2774,7 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/getting-text-from-handle/" title="Getting Text From Window Handle Using PInvoke" rel="bookmark">Getting Text From Window Handle Using PInvoke</a></h1>
+		<h1><a href="/set-text-by-handle/" title="Set Text By Window Handle Using PInvoke" rel="bookmark">Set Text By Window Handle Using PInvoke</a></h1>
 		<div class="categories">
 			
 				<a href="/category/.NET/">.NET</a>
@@ -2789,7 +2789,7 @@
 
 		
 
-			<div class="body"><p>This time we want to retrieve the text from a given window, represented by a handle. Like last time, open an Internet Explorer instance. Now open Winspector and select the address field, ensure that it is the address field itself (class = Edit) and not the ComboBox that you select.</p>
+			<div class="body"><p>This time we won’t be reading the text from a window, we’ll be setting it.</p>
 </div>
 		
 		
@@ -2809,7 +2809,7 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/set-text-by-handle/" title="Set Text By Window Handle Using PInvoke" rel="bookmark">Set Text By Window Handle Using PInvoke</a></h1>
+		<h1><a href="/getting-text-from-handle/" title="Getting Text From Window Handle Using PInvoke" rel="bookmark">Getting Text From Window Handle Using PInvoke</a></h1>
 		<div class="categories">
 			
 				<a href="/category/.NET/">.NET</a>
@@ -2824,7 +2824,7 @@
 
 		
 
-			<div class="body"><p>This time we won’t be reading the text from a window, we’ll be setting it.</p>
+			<div class="body"><p>This time we want to retrieve the text from a given window, represented by a handle. Like last time, open an Internet Explorer instance. Now open Winspector and select the address field, ensure that it is the address field itself (class = Edit) and not the ComboBox that you select.</p>
 </div>
 		
 		

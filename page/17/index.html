@@ -75,6 +75,190 @@
 	<div class="datebox">
 		<div class="upper">
 			<span class="month">Apr</span>
+			<span class="day">16</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/profiling-code-the-easy-way/" title="Profiling Code the Easy Way" rel="bookmark">Profiling Code the Easy Way</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I often do code profiling, usually involving a stopwatch and some boilerplate code. I decided to make a quick’n’simple class that’ll help me get rid of some of that code and concentrate on the actual code being profiled.</p>
+<a id="more"></a>
+
+<p>There are just four functions in the class, all overload variations. In a nutshell, they’ll allow you to profile a single action with &amp; without warmup, multiple iterations and multiple iterations run i parallel. The code is more or less self explanable so I’ll just throw it out there:</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Collections.Generic;
+<span class="keyword">using</span> System.Diagnostics;
+<span class="keyword">using</span> System.Threading;
+
+namespace CodeProfiler
+{
+	<span class="keyword">public</span> <span class="keyword">class</span> CodeProfiler
+	{
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> Measures the runtime of an action once</span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="action"&gt;</span>The action to profile<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="warmup"&gt;</span>Whether the action should be run once before the actual measurement<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>The total runtime<span class="xmlDocTag">&lt;/returns&gt;</span></span>
+		<span class="keyword">public</span> <span class="keyword">static</span> TimeSpan <span class="title">ProfileAction</span>(Action action, <span class="keyword">bool</span> warmup)
+		{
+			<span class="keyword">if</span> (warmup)
+				action();
+
+			Stopwatch sw = <span class="keyword">new</span> Stopwatch();
+			sw.Start();
+			action();
+			sw.Stop();
+			<span class="keyword">return</span> sw.Elapsed;
+		}
+
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> Measures the runtime of an action once, will run the action before to warm up</span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="action"&gt;</span>The action to profile<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>The total runtime<span class="xmlDocTag">&lt;/returns&gt;</span></span>
+		<span class="keyword">public</span> <span class="keyword">static</span> TimeSpan <span class="title">ProfileAction</span>(Action action)
+		{
+			<span class="keyword">return</span> ProfileAction(action, <span class="keyword">true</span>);
+		}
+
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> Measures the total runtime of performing the specified action multiple times</span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="action"&gt;</span>The action to profile<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="iterations"&gt;</span>The number of iterations the action should be performed<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>The total runtime<span class="xmlDocTag">&lt;/returns&gt;</span></span>
+		<span class="keyword">public</span> <span class="keyword">static</span> TimeSpan <span class="title">ProfileAction</span>(Action action, <span class="keyword">int</span> iterations)
+		{
+			TimeSpan total = <span class="keyword">new</span> TimeSpan();
+
+			<span class="comment">// Perform single warmup</span>
+			action();
+
+			<span class="comment">// Profile iterations</span>
+			<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; iterations; i++)
+				total = total.Add(ProfileAction(action, <span class="keyword">false</span>));
+
+			<span class="keyword">return</span> total;
+		}
+
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> Measures the total runtime of performing the specified action using multiple threads</span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="action"&gt;</span>The action to profile<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="iterations"&gt;</span>The total number of iterations that should be profiled<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="dop"&gt;</span>The number of simultaneous threads that should be used<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>The total runtime<span class="xmlDocTag">&lt;/returns&gt;</span></span>
+		<span class="keyword">public</span> <span class="keyword">static</span> TimeSpan <span class="title">ProfileAction</span>(Action action, <span class="keyword">int</span> iterations, <span class="keyword">int</span> dop)
+		{
+			<span class="keyword">object</span> locker = <span class="keyword">new</span> <span class="keyword">object</span>();
+			List&lt;Thread&gt; threads = <span class="keyword">new</span> List&lt;Thread&gt;(iterations);
+
+			<span class="comment">// Warmup</span>
+			action();
+
+			<span class="comment">// Create profiling threads</span>
+			<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; dop; i++)
+			{
+				Thread t = <span class="keyword">new</span> Thread(<span class="keyword">delegate</span>()
+				{
+					<span class="keyword">while</span> (<span class="keyword">true</span>)
+					{
+						<span class="keyword">lock</span> (locker)
+						{
+							<span class="keyword">if</span> (iterations &gt; <span class="number">0</span>)
+								iterations--;
+							<span class="keyword">else</span>
+								<span class="keyword">break</span>;
+						}
+
+						action();
+					}
+				});
+				threads.Add(t);
+			}
+
+			Stopwatch sw = <span class="keyword">new</span> Stopwatch();
+			sw.Start();
+
+			<span class="comment">// Start profiling threads</span>
+			threads.ForEach(t =&gt; t.Start());
+
+			<span class="comment">// Wait for all threads to stop</span>
+			threads.ForEach(t =&gt; t.Join());
+
+			sw.Stop();
+
+			<span class="keyword">return</span> sw.Elapsed;
+		}
+	}
+}
+</pre></figure>
+
+<p>Using the CodeProfiler class, it’s easy for us to do code profiling, including measuring the effects of parallelization. Here’s an example of calculating the square root of the numbers 1 through 10 million 100 times, using 1-16 simultaneous threads. FYI I’m runing on a quad core machine.</p>
+<figure class="highlight csharp"><pre>using System;
+
+namespace CodeProfiler
+{
+	class Program
+	{
+		static void Main(string[] args)
+		{
+			Action action = () =&gt;
+			{
+				for (int i = 0; i &lt; 10000000; i++)
+					Math.Sqrt(i);
+			};
+
+			for(int i=1; i&lt;=16; i++)
+				Console.WriteLine(i + <span class="string">" thread(s):t"</span> + CodeProfiler.ProfileAction(action, 100, i));
+
+			Console.Read();
+		}
+	}
+}
+</pre></figure>
+
+<p>And the result as expected, the performance panning out when threads &gt;= cores. Using more threads than there is cores will usually not result in added performance, just increased context switching which is not desirable. Here’s the resulting execution times with seconds on the Y axis and number of threads on the X axis.</p>
+<div class="imgwrapper" style=""><div><a href="/profiling-code-the-easy-way/codeprofilergraph_2.jpg" class="fancy"><img src="/profiling-code-the-easy-way/codeprofilergraph_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/profiling-code-the-easy-way/codeprofilercmd_2.jpg" class="fancy"><img src="/profiling-code-the-easy-way/codeprofilercmd_2.jpg" style="max-height: 250px"/></a></div></div>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
 			<span class="day">07</span>
 		</div>
 		<div class="lower">2008</div>
@@ -206,6 +390,161 @@
 <p>In <a href="http://www.velocityreviews.com/forums/t101885-aspnet-performance-counters-not-updating.html" target="_blank">some</a> <a href="http://www.velocityreviews.com/forums/t70137-re-aspnet-performance-counters-are-all-zero-.html" target="_blank">cases</a> it might be due to lack of permissions on the performance counter registry keys.</p>
 <p>In my case it’s because I was running Server 2003 x64, but my IIS was running in 32 bit mode (due to a couple of reasons, mainly lack of x64 support in some 3rd party components). When you run the IIS worker processes in 32 bit mode, the performance counters that are used are part of the SysWow64 scheme. The problem with this is that the usual Performance Monitor application will not read these 32 bit performance counters, and as a result you will see them all with a value of 0.</p>
 <p>The fix is simple… Simply open up C:\Windows\SysWOW64\perfmon.exe instead of the usual Performance Monitor link in the Administrative Tools directory. This version of perfmon is the good old 32 bit version that will read the 32 bit ASP.NET performance counters. This trick applies for all x64 versions of Windows.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Mar</span>
+			<span class="day">29</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/xmloutput-vs-xmlserializer-performance/" title="XmlOutput vs XmlSerializer Performance" rel="bookmark">XmlOutput vs XmlSerializer Performance</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I got quite a lot of comments for my <a href="/xmldocument-fluent-interface/">XmlDocument fluent interface</a>, and I’m very glad I did. I’m always open towards new ways to solve problems, and I got a couple of suggestions to my post that I afterwards experimented with. One of those is using the XmlSerializer to serialize strongly typed classes (or structs - performance is the same) into XML. <a href="http://www.vonsharp.net/" target="_blank">Jon von Gillern</a> originally suggested it, but <a href="http://www.u2u.info/Blogs/Kris" target="_blank">Kris Vandermotten</a> made me want to test it out.</p>
+<a id="more"></a>
+
+<p>There are two aspects of these solutions, one is readability &amp; maintanability, the other is pure performance. I said that my XmlDocument wrapper would be a lot faster than the serialization way using Reflection, but Kris wasn’t so sure. Admittedly, I hadn’t tested it out, so I though I might actually be wrong in that assumption. Let the testing commence.</p>
+<p>I’ll be using my User XML snippet as an example. This is how the XML is generated using my API:</p>
+<figure class="highlight csharp"><pre>XmlOutput xo = new XmlOutput()
+	<span class="preprocessor">.XmlDeclaration</span>()
+	<span class="preprocessor">.Node</span>(<span class="string">"root"</span>)<span class="preprocessor">.Within</span>()
+		<span class="preprocessor">.Node</span>(<span class="string">"user"</span>)<span class="preprocessor">.Within</span>()
+			<span class="preprocessor">.Node</span>(<span class="string">"username"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"orca"</span>)
+			<span class="preprocessor">.Node</span>(<span class="string">"realname"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Mark S. Rasmussen"</span>)
+			<span class="preprocessor">.Node</span>(<span class="string">"description"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"I'll handle any escaping (like &lt; & &gt; for example) needs automagically."</span>)
+			<span class="preprocessor">.Node</span>(<span class="string">"articles"</span>)<span class="preprocessor">.Within</span>()
+				<span class="preprocessor">.Node</span>(<span class="string">"article"</span>)<span class="preprocessor">.Attribute</span>(<span class="string">"id"</span>, <span class="string">"25"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Handling DBNulls"</span>)
+				<span class="preprocessor">.Node</span>(<span class="string">"article"</span>)<span class="preprocessor">.Attribute</span>(<span class="string">"id"</span>, <span class="string">"26"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Accessing my privates"</span>)
+				<span class="preprocessor">.EndWithin</span>()
+			<span class="preprocessor">.Node</span>(<span class="string">"hobbies"</span>)<span class="preprocessor">.Within</span>()
+				<span class="preprocessor">.Node</span>(<span class="string">"hobby"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Fishing"</span>)
+				<span class="preprocessor">.Node</span>(<span class="string">"hobby"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Photography"</span>)
+				<span class="preprocessor">.Node</span>(<span class="string">"hobby"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Work"</span>)<span class="comment">;</span>
+
+string output = xo<span class="preprocessor">.GetOuterXml</span>()<span class="comment">;</span>
+</pre></figure>
+
+<p>Note that I just retrieve the complete XML in a string, I don’t print or save this, it’s just to get a valid comparison point. This is how we’ll generate the same code using the XmlSerializer:</p>
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> User
+{
+	<span class="keyword">public</span> <span class="keyword">string</span> Username;
+	<span class="keyword">public</span> <span class="keyword">string</span> Realname;
+	<span class="keyword">public</span> <span class="keyword">string</span> Description;
+	<span class="keyword">public</span> List&lt;Article&gt; Articles;
+	<span class="keyword">public</span> List&lt;Hobby&gt; Hobbies;
+}
+
+<span class="keyword">public</span> <span class="keyword">class</span> Article
+{
+	[XmlAttribute]
+	<span class="keyword">public</span> <span class="keyword">int</span> ID;
+
+	[XmlText]
+	<span class="keyword">public</span> <span class="keyword">string</span> Content;
+}
+
+<span class="keyword">public</span> <span class="keyword">class</span> Hobby
+{
+	[XmlText]
+	<span class="keyword">public</span> <span class="keyword">string</span> Content;
+}
+</pre></figure>
+
+
+<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">string</span> <span class="title">ConvertToXml</span>(<span class="keyword">object</span> item)
+{
+	XmlSerializer xmlser = <span class="keyword">new</span> XmlSerializer(item.GetType());
+
+	<span class="keyword">using</span> (MemoryStream ms = <span class="keyword">new</span> MemoryStream())
+	{
+		xmlser.Serialize(ms, item);
+		UTF8Encoding textconverter = <span class="keyword">new</span> UTF8Encoding();
+		<span class="keyword">return</span> textconverter.GetString(ms.ToArray());
+	}
+}
+</pre></figure>
+
+
+<figure class="highlight csharp"><pre>User user = new User()<span class="comment">;</span>
+user<span class="preprocessor">.Username</span> = <span class="string">"orca"</span><span class="comment">;</span>
+user<span class="preprocessor">.Realname</span> = <span class="string">"Mark S. Rasmussen"</span><span class="comment">;</span>
+user<span class="preprocessor">.Description</span> = <span class="string">"I'll handle any escaping (like &lt; & &gt; for example) needs automagically."</span><span class="comment">;</span>
+
+user<span class="preprocessor">.Articles</span> = new List&lt;Article&gt;()<span class="comment">;</span>
+user<span class="preprocessor">.Articles</span><span class="preprocessor">.Add</span>(new Article() { ID = <span class="number">25</span>, Content = <span class="string">"Handling DBNulls"</span> })<span class="comment">;</span>
+user<span class="preprocessor">.Articles</span><span class="preprocessor">.Add</span>(new Article() { ID = <span class="number">26</span>, Content = <span class="string">"Accessing my privates"</span>})<span class="comment">;</span>
+
+user<span class="preprocessor">.Hobbies</span> = new List&lt;Hobby&gt;()<span class="comment">;</span>
+user<span class="preprocessor">.Hobbies</span><span class="preprocessor">.Add</span>(new Hobby() { Content = <span class="string">"Fishing"</span> })<span class="comment">;</span>
+user<span class="preprocessor">.Hobbies</span><span class="preprocessor">.Add</span>(new Hobby() { Content = <span class="string">"Photography"</span> })<span class="comment">;</span>
+user<span class="preprocessor">.Hobbies</span><span class="preprocessor">.Add</span>(new Hobby() { Content = <span class="string">"Work"</span> })<span class="comment">;</span>
+
+string output = ConvertToXml(user)<span class="comment">;</span>
+</pre></figure>
+
+<p>Note that only the last codesnippet is the one being looped, the other two are simply one-time helpers to actually create the XML. I have run the tests in a number of iterations to get a total code time, furthermore, I’ve run each of the iteration tests 10 times to calculate the average execution time. This is the basic code to run the tests:</p>
+<figure class="highlight csharp"><pre>sw.Reset();
+<span class="constant">iterationTime</span> = 0;
+for (int testIteration = 0; testIteration &lt; testIterations; testIteration++)
+{
+	sw.Start();
+	for (int i = 0; i &lt; iterations; i++)
+	{
+		// Perform XML creation
+	}
+	sw.Stop();
+	iterationTime += sw.ElapsedMilliseconds;
+	Console.WriteLine(sw.ElapsedMilliseconds);
+
+	sw.Reset();
+}
+Console.WriteLine("Total XmlSerializer: " + iterationTime / testIterations);
+</pre></figure>
+
+<p>And finally, the results (times in ms on a base 10 logarithmic scale):</p>
+<div class="imgwrapper" style=""><div><a href="/xmloutput-vs-xmlserializer-performance/xmloutputspeed_2.jpg" class="fancy"><img src="/xmloutput-vs-xmlserializer-performance/xmloutputspeed_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>As expected, the XmlSerializer is somewhat slower on the low iteration numbers, this is due to the initial code emits XmlSerializer will do, as Kris also mentioned. This is also the reason XmlSerializer is actually speeding up as the iterations go up, the initial compilation is meaning less and less. XmlOutput has a rather linear use of time. Never the less, the initial compilation time is neglible as it’s only the first request that has this performance hit (and we could sgen followed by ngen this to avoid it). Thus, if we simply reset the timer after the first iteration, this is the new graph we get (note that we can’t plot the 1st iteration as a value of 0 cannot be plotted on the logarithmic scale):</p>
+<div class="imgwrapper" style=""><div><a href="/xmloutput-vs-xmlserializer-performance/xmloutputspeed2_2.jpg" class="fancy"><img src="/xmloutput-vs-xmlserializer-performance/xmloutputspeed2_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>This time XmlSerializer behaves a lot more linearly like XmlOutput, but it’s still several factors slower than XmlOutput. In conclusion, speed does not seem to be the advantage of XmlSerializer. Depending on your scenario, using strongly typed classes might be more appropriate, but I really believe this is scenario dependent and thus I’ll leave that out of the discussion.</p>
+<h2 id="Downloads">Downloads</h2>
+<p><a href="SerializationBenchmark.zip">SerializationBenchmark.zip - Sample code</a></p>
+<h2 id="Update">Update</h2>
+<p>I misread Kris’ comment about sgen, I read it as ngen. I’ve removed my comment regarding this. To be fair, I’ve redone the performance tests, using sgen on the assembly during compilation. And I must say, it certainly does improve the performance somewhat of the serializer, though still not enough to compete with XmlOutput/XmlDocument.</p>
+<div class="imgwrapper" style=""><div><a href="/xmloutput-vs-xmlserializer-performance/xmloutputspeed3_2.jpg" class="fancy"><img src="/xmloutput-vs-xmlserializer-performance/xmloutputspeed3_2.jpg" style="max-height: 250px"/></a></div></div>
 
 
 				<div style="clear: both"></div>
@@ -613,161 +952,6 @@ static void log_thread_proc()
 	<div class="datebox">
 		<div class="upper">
 			<span class="month">Mar</span>
-			<span class="day">29</span>
-		</div>
-		<div class="lower">2008</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/xmloutput-vs-xmlserializer-performance/" title="XmlOutput vs XmlSerializer Performance" rel="bookmark">XmlOutput vs XmlSerializer Performance</a></h1>
-		<div class="categories">
-			
-				<a href="/category/.NET/">.NET</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>I got quite a lot of comments for my <a href="/xmldocument-fluent-interface/">XmlDocument fluent interface</a>, and I’m very glad I did. I’m always open towards new ways to solve problems, and I got a couple of suggestions to my post that I afterwards experimented with. One of those is using the XmlSerializer to serialize strongly typed classes (or structs - performance is the same) into XML. <a href="http://www.vonsharp.net/" target="_blank">Jon von Gillern</a> originally suggested it, but <a href="http://www.u2u.info/Blogs/Kris" target="_blank">Kris Vandermotten</a> made me want to test it out.</p>
-<a id="more"></a>
-
-<p>There are two aspects of these solutions, one is readability &amp; maintanability, the other is pure performance. I said that my XmlDocument wrapper would be a lot faster than the serialization way using Reflection, but Kris wasn’t so sure. Admittedly, I hadn’t tested it out, so I though I might actually be wrong in that assumption. Let the testing commence.</p>
-<p>I’ll be using my User XML snippet as an example. This is how the XML is generated using my API:</p>
-<figure class="highlight csharp"><pre>XmlOutput xo = new XmlOutput()
-	<span class="preprocessor">.XmlDeclaration</span>()
-	<span class="preprocessor">.Node</span>(<span class="string">"root"</span>)<span class="preprocessor">.Within</span>()
-		<span class="preprocessor">.Node</span>(<span class="string">"user"</span>)<span class="preprocessor">.Within</span>()
-			<span class="preprocessor">.Node</span>(<span class="string">"username"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"orca"</span>)
-			<span class="preprocessor">.Node</span>(<span class="string">"realname"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Mark S. Rasmussen"</span>)
-			<span class="preprocessor">.Node</span>(<span class="string">"description"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"I'll handle any escaping (like &lt; & &gt; for example) needs automagically."</span>)
-			<span class="preprocessor">.Node</span>(<span class="string">"articles"</span>)<span class="preprocessor">.Within</span>()
-				<span class="preprocessor">.Node</span>(<span class="string">"article"</span>)<span class="preprocessor">.Attribute</span>(<span class="string">"id"</span>, <span class="string">"25"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Handling DBNulls"</span>)
-				<span class="preprocessor">.Node</span>(<span class="string">"article"</span>)<span class="preprocessor">.Attribute</span>(<span class="string">"id"</span>, <span class="string">"26"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Accessing my privates"</span>)
-				<span class="preprocessor">.EndWithin</span>()
-			<span class="preprocessor">.Node</span>(<span class="string">"hobbies"</span>)<span class="preprocessor">.Within</span>()
-				<span class="preprocessor">.Node</span>(<span class="string">"hobby"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Fishing"</span>)
-				<span class="preprocessor">.Node</span>(<span class="string">"hobby"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Photography"</span>)
-				<span class="preprocessor">.Node</span>(<span class="string">"hobby"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Work"</span>)<span class="comment">;</span>
-
-string output = xo<span class="preprocessor">.GetOuterXml</span>()<span class="comment">;</span>
-</pre></figure>
-
-<p>Note that I just retrieve the complete XML in a string, I don’t print or save this, it’s just to get a valid comparison point. This is how we’ll generate the same code using the XmlSerializer:</p>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> User
-{
-	<span class="keyword">public</span> <span class="keyword">string</span> Username;
-	<span class="keyword">public</span> <span class="keyword">string</span> Realname;
-	<span class="keyword">public</span> <span class="keyword">string</span> Description;
-	<span class="keyword">public</span> List&lt;Article&gt; Articles;
-	<span class="keyword">public</span> List&lt;Hobby&gt; Hobbies;
-}
-
-<span class="keyword">public</span> <span class="keyword">class</span> Article
-{
-	[XmlAttribute]
-	<span class="keyword">public</span> <span class="keyword">int</span> ID;
-
-	[XmlText]
-	<span class="keyword">public</span> <span class="keyword">string</span> Content;
-}
-
-<span class="keyword">public</span> <span class="keyword">class</span> Hobby
-{
-	[XmlText]
-	<span class="keyword">public</span> <span class="keyword">string</span> Content;
-}
-</pre></figure>
-
-
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">string</span> <span class="title">ConvertToXml</span>(<span class="keyword">object</span> item)
-{
-	XmlSerializer xmlser = <span class="keyword">new</span> XmlSerializer(item.GetType());
-
-	<span class="keyword">using</span> (MemoryStream ms = <span class="keyword">new</span> MemoryStream())
-	{
-		xmlser.Serialize(ms, item);
-		UTF8Encoding textconverter = <span class="keyword">new</span> UTF8Encoding();
-		<span class="keyword">return</span> textconverter.GetString(ms.ToArray());
-	}
-}
-</pre></figure>
-
-
-<figure class="highlight csharp"><pre>User user = new User()<span class="comment">;</span>
-user<span class="preprocessor">.Username</span> = <span class="string">"orca"</span><span class="comment">;</span>
-user<span class="preprocessor">.Realname</span> = <span class="string">"Mark S. Rasmussen"</span><span class="comment">;</span>
-user<span class="preprocessor">.Description</span> = <span class="string">"I'll handle any escaping (like &lt; & &gt; for example) needs automagically."</span><span class="comment">;</span>
-
-user<span class="preprocessor">.Articles</span> = new List&lt;Article&gt;()<span class="comment">;</span>
-user<span class="preprocessor">.Articles</span><span class="preprocessor">.Add</span>(new Article() { ID = <span class="number">25</span>, Content = <span class="string">"Handling DBNulls"</span> })<span class="comment">;</span>
-user<span class="preprocessor">.Articles</span><span class="preprocessor">.Add</span>(new Article() { ID = <span class="number">26</span>, Content = <span class="string">"Accessing my privates"</span>})<span class="comment">;</span>
-
-user<span class="preprocessor">.Hobbies</span> = new List&lt;Hobby&gt;()<span class="comment">;</span>
-user<span class="preprocessor">.Hobbies</span><span class="preprocessor">.Add</span>(new Hobby() { Content = <span class="string">"Fishing"</span> })<span class="comment">;</span>
-user<span class="preprocessor">.Hobbies</span><span class="preprocessor">.Add</span>(new Hobby() { Content = <span class="string">"Photography"</span> })<span class="comment">;</span>
-user<span class="preprocessor">.Hobbies</span><span class="preprocessor">.Add</span>(new Hobby() { Content = <span class="string">"Work"</span> })<span class="comment">;</span>
-
-string output = ConvertToXml(user)<span class="comment">;</span>
-</pre></figure>
-
-<p>Note that only the last codesnippet is the one being looped, the other two are simply one-time helpers to actually create the XML. I have run the tests in a number of iterations to get a total code time, furthermore, I’ve run each of the iteration tests 10 times to calculate the average execution time. This is the basic code to run the tests:</p>
-<figure class="highlight csharp"><pre>sw.Reset();
-<span class="constant">iterationTime</span> = 0;
-for (int testIteration = 0; testIteration &lt; testIterations; testIteration++)
-{
-	sw.Start();
-	for (int i = 0; i &lt; iterations; i++)
-	{
-		// Perform XML creation
-	}
-	sw.Stop();
-	iterationTime += sw.ElapsedMilliseconds;
-	Console.WriteLine(sw.ElapsedMilliseconds);
-
-	sw.Reset();
-}
-Console.WriteLine("Total XmlSerializer: " + iterationTime / testIterations);
-</pre></figure>
-
-<p>And finally, the results (times in ms on a base 10 logarithmic scale):</p>
-<div class="imgwrapper" style=""><div><a href="/xmloutput-vs-xmlserializer-performance/xmloutputspeed_2.jpg" class="fancy"><img src="/xmloutput-vs-xmlserializer-performance/xmloutputspeed_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>As expected, the XmlSerializer is somewhat slower on the low iteration numbers, this is due to the initial code emits XmlSerializer will do, as Kris also mentioned. This is also the reason XmlSerializer is actually speeding up as the iterations go up, the initial compilation is meaning less and less. XmlOutput has a rather linear use of time. Never the less, the initial compilation time is neglible as it’s only the first request that has this performance hit (and we could sgen followed by ngen this to avoid it). Thus, if we simply reset the timer after the first iteration, this is the new graph we get (note that we can’t plot the 1st iteration as a value of 0 cannot be plotted on the logarithmic scale):</p>
-<div class="imgwrapper" style=""><div><a href="/xmloutput-vs-xmlserializer-performance/xmloutputspeed2_2.jpg" class="fancy"><img src="/xmloutput-vs-xmlserializer-performance/xmloutputspeed2_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>This time XmlSerializer behaves a lot more linearly like XmlOutput, but it’s still several factors slower than XmlOutput. In conclusion, speed does not seem to be the advantage of XmlSerializer. Depending on your scenario, using strongly typed classes might be more appropriate, but I really believe this is scenario dependent and thus I’ll leave that out of the discussion.</p>
-<h2 id="Downloads">Downloads</h2>
-<p><a href="SerializationBenchmark.zip">SerializationBenchmark.zip - Sample code</a></p>
-<h2 id="Update">Update</h2>
-<p>I misread Kris’ comment about sgen, I read it as ngen. I’ve removed my comment regarding this. To be fair, I’ve redone the performance tests, using sgen on the assembly during compilation. And I must say, it certainly does improve the performance somewhat of the serializer, though still not enough to compete with XmlOutput/XmlDocument.</p>
-<div class="imgwrapper" style=""><div><a href="/xmloutput-vs-xmlserializer-performance/xmloutputspeed3_2.jpg" class="fancy"><img src="/xmloutput-vs-xmlserializer-performance/xmloutputspeed3_2.jpg" style="max-height: 250px"/></a></div></div>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Mar</span>
 			<span class="day">23</span>
 		</div>
 		<div class="lower">2008</div>
@@ -839,9 +1023,9 @@ Console.WriteLine("Total XmlSerializer: " + iterationTime / testIterations);
 <div class="imgwrapper" style=""><div><a href="/sql-server-mirroring-a-practical-approach/mirrortester_2.jpg" class="fancy"><img src="/sql-server-mirroring-a-practical-approach/mirrortester_2.jpg" style="max-height: 250px"/></a></div></div>
 
 <p>It continuously attempts to connect to the databases using three different connection strings:</p>
-<figure class="highlight csharp"><pre><span class="xml"><span class="tag"><span class="attribute">string</span> <span class="attribute">principalConnection</span> = "<span class="attribute">Data</span> <span class="attribute">Source</span>=<span class="value">Mandalay;Connect</span> <span class="attribute">Timeout</span>=<span class="value">1;Initial</span> <span class="attribute">Catalog</span>=<span class="value">AdventureWorks;User</span> <span class="attribute">Id</span>=<span class="value">sa;Password=sadpassword;Pooling=false";</span>
-<span class="attribute">string</span> <span class="attribute">mirrorConnection</span> = "<span class="attribute">Data</span> <span class="attribute">Source</span>=<span class="value">Rio;Connect</span> <span class="attribute">Timeout</span>=<span class="value">1;Initial</span> <span class="attribute">Catalog</span>=<span class="value">AdventureWorks;User</span> <span class="attribute">Id</span>=<span class="value">sa;Password=sadpassword;Pooling=false";</span>
-<span class="attribute">string</span> <span class="attribute">totalConnection</span> = "<span class="attribute">Data</span> <span class="attribute">Source</span>=<span class="value">Mandalay;Failover</span> <span class="attribute">Partner</span>=<span class="value">Rio;Connect</span> <span class="attribute">Timeout</span>=<span class="value">1;Initial</span> <span class="attribute">Catalog</span>=<span class="value">AdventureWorks;User</span> <span class="attribute">Id</span>=<span class="value">sa;Password=sadpassword;Pooling=false";</span></span></span>
+<figure class="highlight csharp"><pre><span class="keyword">string</span> principalConnection = <span class="string">"Data Source=Mandalay;Connect Timeout=1;Initial Catalog=AdventureWorks;User Id=sa;Password=sadpassword;Pooling=false"</span>;
+<span class="keyword">string</span> mirrorConnection = <span class="string">"Data Source=Rio;Connect Timeout=1;Initial Catalog=AdventureWorks;User Id=sa;Password=sadpassword;Pooling=false"</span>;
+<span class="keyword">string</span> totalConnection = <span class="string">"Data Source=Mandalay;Failover Partner=Rio;Connect Timeout=1;Initial Catalog=AdventureWorks;User Id=sa;Password=sadpassword;Pooling=false"</span>;
 </pre></figure>
 
 <p>The first connects directly to MANDALAY, the principal database. The second one goes to RIO, the mirror. And the last one is the mirror enabled connection string that combines the two. The principal should respond and act like any other normal database. The mirror will throw an exception as we cannot interact with a datbase in recovery mode. The combined connection will automatically connect to the current principal database, whether it be MANDALAY or RIO.</p>
@@ -1231,247 +1415,6 @@ switch (EnumHelper<span class="preprocessor">.Parse</span>&lt;Input&gt;(input))
 <p>If you have any questions regarding the source code, or any other related matter, please let me know. I will not guarantee any help in regards of making the code run, but I might be able to give some pointers.</p>
 <h2 id="Downloads">Downloads</h2>
 <p><a href="https://github.com/improvedk/Multi-Table-Helper" target="_blank">https://github.com/improvedk/Multi-Table-Helper</a></p>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Mar</span>
-			<span class="day">02</span>
-		</div>
-		<div class="lower">2008</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/setting-up-and-testing-active-directory-failover/" title="Setting Up and Testing Active Directory Failover" rel="bookmark">Setting Up and Testing Active Directory Failover</a></h1>
-		<div class="categories">
-			
-				<a href="/category/.NET/">.NET</a>
-				, 
-			
-				<a href="/category/Windows/">Windows</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>I spend a lot of time architecting for scalability, availability and security during my daily work. Currently I’ve got a distributed system consisting of several windows services communicating across machines using WCF and authenticating through Active Directory.</p>
-<a id="more"></a>
-
-<p>In such a situation, if the Active Directory Domain Controller (let’s just call it DC from now on) dies, everything more or less dies as no clients/servers are able to authenticate incoming requests anymore. Security is paramount, so the services are not allowed to simply cache the domain logon, thus the logon has the occur at each service call - requiring a fully working DC.</p>
-<p>In this post I’ll attempt to implement a secondary failover DC and investigate how it affects a downtime situation. I’ll be using a couple of simple WCF based applications to test the DC. I will be using three virtual machines. Luxor is the primary DC. MGM is part of the domain, and this is the machine hosting the WCF server. Later on I’ll add the third virtual machine, Excalibur, being the failover DC. The WCF client will be running from my own machine. Note that I will not show how to install the primary DC, <a href="http://www.petri.co.il/how_to_install_active_directory_on_windows_2003.htm" target="_blank">there are plenty other great guides on how to setup the primary DC</a>. I also won’t be going into <a href="http://support.microsoft.com/kb/814591" target="_blank">how to install the primary DNS server</a>.</p>
-<p>This is the WCF server interface:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
-<span class="keyword">using</span> System.Security.Principal;
-<span class="keyword">using</span> System.ServiceModel;
-<span class="keyword">using</span> System.ServiceModel.Channels;
-<span class="keyword">using</span> System.ServiceModel.Description;
-
-namespace Contracts
-{
-	<span class="keyword">public</span> <span class="keyword">class</span> WCFHelper
-	{
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> Creates an instance of the specified interface type by channeling to the service host.</span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;typeparam name="T"&gt;</span>The interface type to create.<span class="xmlDocTag">&lt;/typeparam&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="binding"&gt;</span>The binding protocol to use.<span class="xmlDocTag">&lt;/param&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="endpointAddress"&gt;</span>The complete address for the endpoint.<span class="xmlDocTag">&lt;/param&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>An instance of type T.<span class="xmlDocTag">&lt;/returns&gt;</span></span>
-		<span class="keyword">public</span> <span class="keyword">static</span> T CreateChannel&lt;T&gt;(Binding binding, <span class="keyword">string</span> endpointAddress)
-		{
-			<span class="comment">// Create an endpoint for the specified binding & address</span>
-			ServiceEndpoint endpoint = <span class="keyword">new</span> ServiceEndpoint(ContractDescription.GetContract(<span class="keyword">typeof</span>(T)), binding, <span class="keyword">new</span> EndpointAddress(endpointAddress));
-			binding.SendTimeout = <span class="keyword">new</span> TimeSpan(<span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>);
-			binding.ReceiveTimeout = <span class="keyword">new</span> TimeSpan(<span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>);
-			binding.OpenTimeout = <span class="keyword">new</span> TimeSpan(<span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>);
-			binding.CloseTimeout = <span class="keyword">new</span> TimeSpan(<span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>);
-
-			<span class="comment">// Create a channel factory of type T</span>
-			ChannelFactory&lt;T&gt; factory = <span class="keyword">new</span> ChannelFactory&lt;T&gt;(endpoint);
-			factory.Credentials.Windows.ClientCredential.UserName = <span class="string">"RedundancyCheck"</span>;
-			factory.Credentials.Windows.ClientCredential.Password = <span class="string">"RedundancyCheck"</span>;
-			factory.Credentials.Windows.ClientCredential.Domain = <span class="string">"IPAPER"</span>;
-			factory.Credentials.Windows.AllowedImpersonationLevel = TokenImpersonationLevel.Impersonation;
-
-			<span class="comment">// Return the created channel</span>
-			<span class="keyword">return</span> factory.CreateChannel();
-		}
-
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> Creates a ServiceHost hosting the specific implementation TImplementationType of interface TInterfaceType at the specified endpointAddress.</span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;typeparam name="TInterfaceType"&gt;</span>The interface type to host.<span class="xmlDocTag">&lt;/typeparam&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;typeparam name="TImplentationType"&gt;</span>The implementation type to host.<span class="xmlDocTag">&lt;/typeparam&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="binding"&gt;</span>The binding protocol to use.<span class="xmlDocTag">&lt;/param&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="endpointAddress"&gt;</span>The endpoint where the service should be hosted at.<span class="xmlDocTag">&lt;/param&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="mexEndpointAddress"&gt;</span>The endpoint where the service metadata should be hosted at.<span class="xmlDocTag">&lt;/param&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>An instance of ServiceHost.<span class="xmlDocTag">&lt;/returns&gt;</span></span>
-		<span class="keyword">public</span> <span class="keyword">static</span> ServiceHost CreateServiceHost&lt;TInterfaceType, TImplentationType&gt;(Binding binding, <span class="keyword">string</span> endpointAddress, <span class="keyword">string</span> mexEndpointAddress)
-		{
-			<span class="comment">// Create new service host</span>
-			ServiceHost host = <span class="keyword">new</span> ServiceHost(<span class="keyword">typeof</span>(TImplentationType));
-
-			<span class="comment">// Create endpoints</span>
-			host.AddServiceEndpoint(<span class="keyword">typeof</span>(TInterfaceType), binding, endpointAddress);
-
-			<span class="comment">// Create metadata endpoint if it doesn't exist</span>
-			ServiceMetadataBehavior smb = host.Description.Behaviors.Find&lt;ServiceMetadataBehavior&gt;();
-			<span class="keyword">if</span> (smb == <span class="keyword">null</span>)
-			{
-				smb = <span class="keyword">new</span> ServiceMetadataBehavior();
-				smb.MetadataExporter.PolicyVersion = PolicyVersion.Policy15;
-				host.Description.Behaviors.Add(smb);
-			}
-			<span class="keyword">if</span> (binding <span class="keyword">is</span> NetTcpBinding)
-				host.AddServiceEndpoint(ServiceMetadataBehavior.MexContractName, MetadataExchangeBindings.CreateMexTcpBinding(), mexEndpointAddress);
-			<span class="keyword">else</span> <span class="keyword">if</span> (binding <span class="keyword">is</span> BasicHttpBinding)
-				host.AddServiceEndpoint(ServiceMetadataBehavior.MexContractName, MetadataExchangeBindings.CreateMexHttpBinding(), mexEndpointAddress);
-			<span class="keyword">else</span>
-				<span class="keyword">throw</span> <span class="keyword">new</span> ArgumentOutOfRangeException(<span class="string">"Invalid binding: "</span> + binding);
-
-			<span class="keyword">return</span> host;
-		}
-	}
-}
-</pre></figure>
-
-<p>Notice that I’ve hardcoded the user “IPAPERRedundancyCheck” with a password of “RedundancyCheck” - this is for test purposes only, don’t even bother commenting on password security :) Also notice that I’ve set a timeout of 1 second - when the DC fails, I don’t want to spend 30 seconds before knowing if it’s down, I want to know about it right away. And since all machines are running locally, 1 second is plenty.</p>
-<p>This is the server that’ll be running on the MGM machine on port 8000:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
-<span class="keyword">using</span> System.Security;
-<span class="keyword">using</span> System.Security.Permissions;
-<span class="keyword">using</span> System.ServiceModel;
-<span class="keyword">using</span> Contracts;
-
-namespace WcfServer
-{
-	class Program
-	{
-		<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
-		{
-			<span class="comment">// Create service host</span>
-			ServiceHost host = WCFHelper.CreateServiceHost&lt;IServer, Server&gt;(<span class="keyword">new</span> NetTcpBinding(SecurityMode.Transport), <span class="string">"net.tcp://localhost:8000"</span>, <span class="string">"net.tcp://localhost:8000/mex"</span>);
-
-			<span class="comment">// Open host</span>
-			host.Open();
-
-			Console.Read();
-		}
-	}
-
-	[ServiceBehavior(IncludeExceptionDetailInFaults = <span class="keyword">true</span>)]
-	<span class="keyword">public</span> <span class="keyword">class</span> Server : IServer
-	{
-		<span class="keyword">public</span> <span class="keyword">string</span> <span class="title">Ping</span>()
-		{
-			<span class="comment">// Security check</span>
-			<span class="keyword">try</span>
-			{
-				<span class="keyword">new</span> PrincipalPermission(<span class="keyword">null</span>, <span class="string">"ADTest"</span>).Demand();
-			}
-			<span class="keyword">catch</span>
-			{
-				<span class="keyword">throw</span> <span class="keyword">new</span> SecurityException();
-			}
-
-			<span class="comment">// Let caller know that we're alive</span>
-			<span class="keyword">return</span> <span class="string">"Pong!"</span>;
-		}
-	}
-}
-</pre></figure>
-
-<p>We’ve got an implementation of the IServer interface with the single method “Ping”. We test that the user is part of the “ADTest” role by demanding it on the current principal. If something fails we throw a SecurityException which will let the client now authentication failed. If the client is authenticated, we return a pong.</p>
-<p>And finally we have the client that’ll be running on my own machine:</p>
-<figure class="highlight csharp"><pre>using System;
-using System.ServiceModel;
-using System.Threading;
-using Contracts;
-
-namespace WcfClient
-{
-	class Program
-	{
-		static void Main(string[] args)
-		{
-			while (true)
-			{
-				try
-				{
-					IServer server = WCFHelper.CreateChannel(new NetTcpBinding(SecurityMode.Transport), <span class="string">"net.tcp://192.168.0.35:8000"</span>);
-
-					using (server as IDisposable)
-					{
-						try
-						{
-							Console.WriteLine(server.Ping());
-						}
-						catch (Exception ex)
-						{
-							Console.WriteLine(ex.Message);
-						}
-					}
-				}
-				catch (CommunicationObjectFaultedException)
-				{ }
-
-				Thread.Sleep(250);
-			}
-		}
-	}
-}
-</pre></figure>
-
-<p>We create a channel to the MGM machine (static IP of 192.168.0.35). We’ll continue to call the IServer service every 250ms, writing either the result of the Ping function, or a message explaining any problems that have occurred. Note that in real life situations we’d not create a new channel each time, but in this case we have to, so we really do authenticate on each call (so we’re affected immediatly when the DC dies).</p>
-<p>The following clip will show what happens when we run the server &amp; client while the DC goes down (by pausing the virtual machine). Note that we’re receiving a timeout exception, not a SecurityException. This is because I’m using SecurityMode.Transport which requires us to authenticate before even reaching the service, thus the method is never invoked, and the PrincipPermission.Demand() call is NOT the one failing us, it’s the WCF security layer trying to open a TCP transport. As soon as the DC (running on LUXOR) fails, we lose connectivity with our service (running on MGM).</p>
-<div class="video-container"><iframe src="//www.youtube.com/embed/P7ufIfZlfjU" frameborder="0" allowfullscreen></iframe></div>
-
-
-
-<p>The goal obviously is to prevent this from happening, we cannot have all our services brought to a standstill if the DC fails. The first step in installing a failover AD DC is to get a DNS secondary server up and running (on the soon to be secondary DC machine) so we have redundant DNS functionality.</p>
-<p>A quick recap of the servers:</p>
-<figure class="highlight"><pre><span class="setting">LUXOR = <span class="value">Primary DC, primary DNS</span></span>
-<span class="setting">EXCALIBUR = <span class="value">To be secondary DC, secondary DNS</span></span>
-<span class="setting">MGM = <span class="value">Client server</span></span>
-</pre></figure>
-
-<div class="video-container"><iframe src="//www.youtube.com/embed/BE5mB417BNs" frameborder="0" allowfullscreen></iframe></div>
-
-
-
-<p>Now that we’ve got the secondary DNS set up, we’re ready to install Active Directory on the secondary AD server (EXCALIBUR). The following video shows how easy it is to install a failover DC:</p>
-<div class="video-container"><iframe src="//www.youtube.com/embed/x5qTxr-pglg" frameborder="0" allowfullscreen></iframe></div>
-
-
-
-<p>That’s it! After the server reboots, it now functions as a failover DC in case the primary one kicks the bucket. I’ll end this post post by running my WcfServer application on the MGM server whilst both LUXOR and EXCALIBUR are running. You’ll se a fluent stream of “Pong”s returning. After shutting down LUXOR, the WCF client will immediately start reporting connection problems, but after a short while it automatically starts returning Pongs again - it got a hold of the second DC! Now, if I shut down the second DC aswell, we’ll get errors in our client again. If I then restart the primary DC, after a short while, the client starts Ponging again - we got a hold of the primary DC. So we haven’t eliminated downtime completely, but we’ve reduced it to a 5-30 sec period before everything automatically switches over to the failover DC.</p>
-<div class="video-container"><iframe src="//www.youtube.com/embed/KWkEjiulJu8" frameborder="0" allowfullscreen></iframe></div>
-
-
-
-<p>This is my first blog post utilizing videos - does it work? Do you prefer seeing live video like this, or a long series of screenshots? I know what I prefer :)</p>
 
 
 				<div style="clear: both"></div>

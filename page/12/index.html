@@ -74,6 +74,56 @@
 	<article>
 	<div class="datebox">
 		<div class="upper">
+			<span class="month">Mar</span>
+			<span class="day">17</span>
+		</div>
+		<div class="lower">2010</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/speaking-at-miracle-openworld-2010/" title="Speaking at Miracle OpenWorld 2010" rel="bookmark">Speaking at Miracle OpenWorld 2010</a></h1>
+		<div class="categories">
+			
+				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I will be giving two presentations at <a href="http://mow2010.dk/" target="_blank">Miracle OpenWorld 2010</a> in April.</p>
+<a id="more"></a>
+
+<h2 id="Working_with_PDF_documents">Working with PDF documents</h2>
+<p>In this session he will sharing his experiences with dissecting PDF documents for the iPaper system. We’ll look at various commercial as well as open source tools for reading, editing and rasterizing PDF documents. What are some of the common pitfalls you’ll run into when working with PDF documents and what does a PDF really consist of internally? While some of the tools and libraries can also be used to create PDFs, this session will concentrate on working with existing PDF files.</p>
+<h2 id="SQL_Azure_for_DBA’s">SQL Azure for DBA’s</h2>
+<p>Will be presenting together with Martin Schmidt from Miracle. Abstract is still in the works. It’s safe to say though that this will be no typical sales pitch - we’ll be looking at what limitations you’ll run into, what happens when you reach the limits of SQL Azure and generally what the sales pitch happily ignores.</p>
+<p>I highly recommend going to MOW as this is one of the best DBA &amp; developer conferences with networking and fun being in the high seat! There’s a beach party - what more do you need?</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
 			<span class="month">Feb</span>
 			<span class="day">19</span>
 		</div>
@@ -1030,542 +1080,6 @@ namespace MyUrlRewriter
 <li>/W:5 reduces the wait time between failures to 5 seconds instead of the 30 second default.</li>
 </ul>
 <p>The robocopy script can be setup as a simply Scheduled Task that runs daily, hourly, weekly etc. Note that robocopy also contains a switch that’ll make robocopy monitor the source for changes and invoke the synchronization script each time a configurable number of changes has been made. This may work in your scenario, but be aware that robocopy will not just copy the changes, it will scan the complete directory structure just like a normal mirroring procedure. If there’s a lot of files &amp; directories, this may hamper performance.</p>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Sep</span>
-			<span class="day">30</span>
-		</div>
-		<div class="lower">2009</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/writing-a-calculator-in-csharp-using-sablecc/" title="Writing a Calculator in C# Using SableCC" rel="bookmark">Writing a Calculator in C# Using SableCC</a></h1>
-		<div class="categories">
-			
-				<a href="/category/.NET/">.NET</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>Writing a calculator is a simple task - just add nine buttons labeled 1-9 and add a plus and minus button and we’re almost good to go. In this entry I’m going to write a calculator called SimpleCalc that does not have a GUI, instead it’ll take in an arbitrary expression and calculate the results of it. The input I’ll use as my immediate goal is the following:</p>
-<a id="more"></a>
-
-
-<figure class="highlight"><pre><span class="number">25</span>-<span class="number">37</span>+<span class="number">2</span><span class="variable">*(</span><span class="number">1.22</span>+<span class="keyword">cos</span>(<span class="number">5</span>))<span class="variable">*sin</span>(<span class="number">5</span>)<span class="variable">*2</span>+<span class="number">5</span><span class="variable">%2</span><span class="variable">*3</span><span class="variable">*sqrt</span>(<span class="number">5</span>+<span class="number">2</span>)
-</pre></figure>
-
-<p><a href="http://www.google.dk/search?rlz=1C1CHMG_daDK293DK303&amp;sourceid=chrome&amp;ie=UTF-8&amp;q=25-37%2B2*%281.22%2Bcos%285%29%29*sin%285%29*2%2B5%252*3*sqrt%285%2B2%29" target="_blank">According to Google</a> the result is -9.83033875. Some of the tricky subjects we’ll have to handle is <a href="http://en.wikipedia.org/wiki/Order_of_operations" target="_blank">operator precedence</a> (multiplication before addition etc), nested expressions (2*1.22+cos(5) != 2*(1.22+cos(5))) and <a href="http://en.wikipedia.org/wiki/Associativity" target="_blank">associativity</a> (5+7 == 7+5 &amp; 7-5 != 5-7 etc).</p>
-<h2 id="Parsing_the_input_using_SableCC">Parsing the input using SableCC</h2>
-<p>Before doing any calculations, we need to parse the input expression so we have an in-memory representation of the input. We need to have the input represented in the form of an <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree" target="_blank">abstract syntax tree</a> that defines the order of operations and allows us to traverse the different parts of the expression individually. To perform this task, we’ll be using <a href="http://sablecc.org/" target="_blank">SableCC</a>.</p>
-<blockquote>
-<p>SableCC is a parser generator which generates fully featured object-oriented frameworks for building compilers, interpreters and other text parsers. In particular, generated frameworks include intuitive strictly-typed abstract syntax trees and tree walkers. SableCC also keeps a clean separation between machine-generated code and user-written code which leads to a shorter development cycle.</p>
-</blockquote>
-<p>In short, SableCC can be used to automatically generate the parser code that’s used in any compiler, as well as in a lot of other cases where input needs to be parsed - like in this case. SableCC itself is written in Java by <a href="http://www.labunix.uqam.ca/~gagnon_et/en/" target="_blank">Etienne M. Gagnon</a> and the <a href="http://sablecc.org/browser/src" target="_blank">source code</a> is freely available.</p>
-<p>The standard output from SableCC is Java code. Thus, the parser we’re about to generate will be made into a number of Java files that we can incorporate into our own source code and extend. As I’ll be writing the calculator in C#, I’d much prefer to work with C# source files directly, rather than having to port the Java output or call it by other means. Luckily <a href="http://www.mare.ee/indrek/" target="_blank">Indrek Mandre</a> has made a SableCC variant that’ll generate the parser in either Java, C#, C++, O’Caml, Python, C, Graphviz Dot or XML. All we need to do is to download the <a href="http://www.mare.ee/indrek/sablecc/" target="_blank">sablecc-3-beta.3.altgen.20041114</a> zip file from the frontpage of Indrek’s SableCC page. Once it’s downloaded and unpacked we’re able to run it, as long as Java is installed. First create a bat file with the following contents:</p>
-<figure class="highlight"><pre>java -jar <span class="string">"C:Program FilesSableCCsablecc-3-beta.3.altgen.20041114libsablecc.jar"</span> <span class="variable">%1</span> <span class="variable">%2</span> <span class="variable">%3</span> <span class="variable">%4</span> <span class="variable">%5</span> <span class="variable">%6</span> <span class="variable">%7</span> <span class="variable">%8</span> <span class="variable">%9</span>
-</pre></figure>
-
-<p>Make sure to replace my path with whatever path you’ve extracted the SableCC altgen package into. When we invoke SableCC from now on, we’ll do it through this bat file that I’ve chosen to call <strong>sablecc_altgen.bat</strong>, just to make the syntax simpler.</p>
-<h2 id="Defining_the_grammar">Defining the grammar</h2>
-<p>For SableCC to be able to generate our parser, we first need to define the language it should support. The way we do this is to define the language in the <a href="http://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_Form" target="_blank">(E)BNF</a>format. I won’t be writing a generic tutorial on how to write grammers in SableCC as there’s already a number of good ones on the <a href="http://sablecc.org/wiki/DocumentationPage" target="_blank">SableCC Documentation</a> page, as well as <a href="http://nat.truemesh.com/archives/000531.html" target="_blank">one by Nat Pryce</a> that’s not on the documentation page. Finally there’s also a <a href="http://www.nabble.com/SableCC-f12279r0.html" target="_blank">mailing list</a>, though the activity is limited.</p>
-<p>We’ll start out by creating a new text file called <em>simplecalc.sablecc</em>, this is where we’ll be defining our SimpleCalc grammar. Furthermore I’ve created a new bat file called simplecalc_sable.bat with the following contents:</p>
-<figure class="highlight"><pre><span class="keyword">cls</span>
-sablecc_altgen -d generated -t csharp simplecalc<span class="preprocessor">.sablecc</span>
-</pre></figure>
-
-<p>The above bat file will call the one we previously made. <strong>-d generated</strong> specifies the output directory name. <strong>-t csharp</strong> specifies the output source code type, C# in this case. The last argument is the name of the input sablecc file. From now on we can simply run <strong>simplecalc_sable</strong> to start the SableCC compilation process.</p>
-<p>I’ll post the full simplecalc.sablecc file contents first, and then go through the specific sections one by one afterwards.</p>
-<figure class="highlight"><pre>Package SimpleCalc;
-
-Helpers
-	digit	= [<span class="comment">'0' .. '9'];</span>
-
-Tokens
-	number	= (digit+ | digit+ <span class="comment">'.' digit+);</span>
-	add	= <span class="comment">'+';</span>
-	<span class="keyword">sub</span>	= <span class="comment">'-';</span>
-	mul	= <span class="comment">'*';</span>
-	div	= <span class="comment">'/';</span>
-	mod	= <span class="comment">'%';</span>
-	sqrt	= <span class="comment">'sqrt';</span>
-	<span class="built_in">cos</span>	= <span class="comment">'cos';</span>
-	<span class="built_in">sin</span>	= <span class="comment">'sin';</span>
-	lparen	= <span class="comment">'(';</span>
-	rparen	= <span class="comment">')';</span>
-
-Productions		
-	<span class="built_in">exp</span> {-&gt; <span class="built_in">exp</span>}
-		= {add}		[<span class="built_in">left</span>]:<span class="built_in">exp</span> add [<span class="built_in">right</span>]:factor		{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.add(<span class="built_in">left</span>, <span class="built_in">right</span>.<span class="built_in">exp</span>)}
-		| {<span class="keyword">sub</span>}		[<span class="built_in">left</span>]:<span class="built_in">exp</span> <span class="keyword">sub</span> [<span class="built_in">right</span>]:factor		{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.<span class="keyword">sub</span>(<span class="built_in">left</span>, <span class="built_in">right</span>.<span class="built_in">exp</span>)}
-		| {factor}	factor					{-&gt; factor.<span class="built_in">exp</span>}
-		;
-		
-	factor {-&gt; <span class="built_in">exp</span>}
-		= {mul}		[<span class="built_in">left</span>]:factor mul [<span class="built_in">right</span>]:unary		{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.mul(<span class="built_in">left</span>.<span class="built_in">exp</span>, <span class="built_in">right</span>.<span class="built_in">exp</span>)}
-		| {div}		[<span class="built_in">left</span>]:factor div [<span class="built_in">right</span>]:unary		{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.div(<span class="built_in">left</span>.<span class="built_in">exp</span>, <span class="built_in">right</span>.<span class="built_in">exp</span>)}
-		| {mod}		[<span class="built_in">left</span>]:factor mod [<span class="built_in">right</span>]:unary		{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.mod(<span class="built_in">left</span>.<span class="built_in">exp</span>, <span class="built_in">right</span>.<span class="built_in">exp</span>)}
-		| {unary}	unary					{-&gt; unary.<span class="built_in">exp</span>}
-		;
-		
-	unary {-&gt; <span class="built_in">exp</span>}
-		= {number}	number					{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.number(number)}
-		| {sqrt}	sqrt lparen <span class="built_in">exp</span> rparen			{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.sqrt(<span class="built_in">exp</span>)}
-		| {<span class="built_in">cos</span>}		<span class="built_in">cos</span> lparen <span class="built_in">exp</span> rparen			{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.<span class="built_in">cos</span>(<span class="built_in">exp</span>)}
-		| {<span class="built_in">sin</span>}		<span class="built_in">sin</span> lparen <span class="built_in">exp</span> rparen			{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.<span class="built_in">sin</span>(<span class="built_in">exp</span>)}
-		| {paren}	lparen <span class="built_in">exp</span> rparen			{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.paren(<span class="built_in">exp</span>)}
-		;
-		
-	exp_list {-&gt; <span class="built_in">exp</span>*}
-		= {single}	<span class="built_in">exp</span>					{-&gt; [<span class="built_in">exp</span>.<span class="built_in">exp</span>]}
-		| {multi}	<span class="built_in">exp</span> [tail]:exp_list			{-&gt; [<span class="built_in">exp</span>.<span class="built_in">exp</span>, tail.<span class="built_in">exp</span>]}
-		;
-		
-Abstract Syntax Tree
-	<span class="built_in">exp</span>
-		= {add}			[<span class="built_in">left</span>]:<span class="built_in">exp</span> [<span class="built_in">right</span>]:<span class="built_in">exp</span>
-		| {<span class="keyword">sub</span>}			[<span class="built_in">left</span>]:<span class="built_in">exp</span> [<span class="built_in">right</span>]:<span class="built_in">exp</span>
-		| {mul}			[<span class="built_in">left</span>]:<span class="built_in">exp</span> [<span class="built_in">right</span>]:<span class="built_in">exp</span>
-		| {div}			[<span class="built_in">left</span>]:<span class="built_in">exp</span> [<span class="built_in">right</span>]:<span class="built_in">exp</span>
-		| {mod}			[<span class="built_in">left</span>]:<span class="built_in">exp</span> [<span class="built_in">right</span>]:<span class="built_in">exp</span>
-		| {paren}		<span class="built_in">exp</span>
-		| {sqrt}		<span class="built_in">exp</span>
-		| {<span class="built_in">cos</span>}			<span class="built_in">exp</span>
-		| {<span class="built_in">sin</span>}			<span class="built_in">exp</span>
-		| {number}		number
-		;
-</pre></figure>
-
-<p>In the grammar we’re using 5 different sections, Package, Helpers, Tokens, Productions and Abstract Syntax Tree.</p>
-<figure class="highlight"><pre><span class="keyword">Package</span> SimpleCalc;
-</pre></figure>
-
-<p>The Package declaration simply defines the name of the overall package. If this is excluded (which is valid according to SableCC) our namesapces int he generated C# code will be blank and thus invalid.</p>
-<figure class="highlight"><pre>Helpers
-	digit	= [<span class="string">'0'</span> .. <span class="string">'9'</span>];
-</pre></figure>
-
-<p>Helpers are basically placeholders you can setup and use throughout the SableCC file. They have no deeper meaning or functionality, it’s just a way to easily be able to express common code by its name. As we’ll be referring to <em>digits</em> multiple times it helps to define it as a helper instead of replicating <strong>[‘0’ .. ‘9’]</strong> multiple times in the code. <strong>[‘0’ .. ‘9’]</strong> means all digits between 0 and 9.</p>
-<figure class="highlight"><pre>Tokens
-	number		= (digit+ | digit+ <span class="string">'.'</span> digit+);
-	add		= <span class="string">'+'</span>;
-	<span class="sub"><span class="keyword">sub</span>		= '-';</span>
-	mul		= <span class="string">'*'</span>;
-	div		= <span class="string">'/'</span>;
-	mod		= <span class="string">'%'</span>;
-	<span class="keyword">sqrt</span>		= <span class="string">'sqrt'</span>;
-	<span class="keyword">cos</span>		= <span class="string">'cos'</span>;
-	<span class="keyword">sin</span>		= <span class="string">'sin'</span>;
-	lparen		= <span class="string">'('</span>;
-	rparen		= <span class="string">')'</span>;
-</pre></figure>
-
-<p>Note that I’m jumping ahead and ignoring <strong>Productions</strong> section for now, I’ll come to that in just a bit. The <strong>Abstract Syntax Tree</strong> defines the nodes that will be present in our parsed AST. Each type of operation and function has a corresponding node in the AST. Thus, and add operation will consist of an Add node with two children - a left and a right expression. Those expressions may themselves be constant numbers or nested expressions - since they’re defined as <strong>exp</strong> which is a recursive reference to the actual AST exp type.</p>
-<p><strong>Add</strong>, <strong>sub</strong>, <strong>mul</strong>, <strong>div</strong> and <strong>mod</strong> are <strong>binary</strong> operators and thus have two child expressions. <strong>Paren</strong>, <strong>sqrt</strong>, <strong>cos</strong> and <strong>sin</strong> (and in some ways, number) are unary operators in that they only have a single child/parameter - an expression. Number is a leaf node that expresses an actual number constant.</p>
-<p>The <strong>Productions</strong> section defines our mapping from the actual input to the AST that we’ve just defined.</p>
-<figure class="highlight"><pre>Productions
-	<span class="built_in">exp</span> {-&gt; <span class="built_in">exp</span>}
-		= {add}		[<span class="built_in">left</span>]:<span class="built_in">exp</span> add [<span class="built_in">right</span>]:factor		{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.add(<span class="built_in">left</span>, <span class="built_in">right</span>.<span class="built_in">exp</span>)}
-		| {<span class="keyword">sub</span>}		[<span class="built_in">left</span>]:<span class="built_in">exp</span> <span class="keyword">sub</span> [<span class="built_in">right</span>]:factor 		{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.<span class="keyword">sub</span>(<span class="built_in">left</span>, <span class="built_in">right</span>.<span class="built_in">exp</span>)}
-		| {factor}	factor					{-&gt; factor.<span class="built_in">exp</span>}
-		;
-</pre></figure>
-
-<p>The first production we define is a generic one for expressing expressions. Note that the way we define operator precedence is by first expressing the least prioritized operator (<strong>add</strong> &amp; <strong>sub</strong>) and then referencing the factor operations (<strong>mul</strong>, <strong>div</strong>, <strong>mod</strong> &amp; <strong>unary</strong>) and thus forth. <strong>exp {-&gt; exp}</strong> signifies that the concrete syntax of an expression is mapped into the abstract syntax tree node called “exp” as well. <strong>Productions</strong> and <strong>Abstract Syntax Tree</strong> are two different namespaces and they may thus share the same names.</p>
-<figure class="highlight"><pre><span class="header">= {add}		[left]:exp add [right]:factor		{-&gt; New exp.add(left, right.exp)}</span>
-</pre></figure>
-
-<p>The <strong>add</strong> operation is defined by a left expression followed by the add token (defined as ‘+’ previously) and then a factor expression on the right, hence defining the precedence relation between the add operation and factor operations. Finally we define that the add operation maps into a new instance of the exp AST node, having the left and right expressions as parameters (children in the AST). The sub operation is almost identical to the add operator.</p>
-<figure class="highlight"><pre>| <span class="cell">{factor}</span>	<span class="built_in">factor</span>		<span class="cell">{-&gt; factor.exp}</span>
-</pre></figure>
-
-<p>Any factor expressions are simply mapped onto the factor production defined later on.</p>
-<figure class="highlight"><pre>factor {-&gt; <span class="built_in">exp</span>}
-	= {mul}		[<span class="built_in">left</span>]:factor mul [<span class="built_in">right</span>]:unary		{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.mul(<span class="built_in">left</span>.<span class="built_in">exp</span>, <span class="built_in">right</span>.<span class="built_in">exp</span>)}
-	| {div}		[<span class="built_in">left</span>]:factor div [<span class="built_in">right</span>]:unary		{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.div(<span class="built_in">left</span>.<span class="built_in">exp</span>, <span class="built_in">right</span>.<span class="built_in">exp</span>)}
-	| {mod}		[<span class="built_in">left</span>]:factor mod [<span class="built_in">right</span>]:unary		{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.mod(<span class="built_in">left</span>.<span class="built_in">exp</span>, <span class="built_in">right</span>.<span class="built_in">exp</span>)}
-	| {unary}	unary					{-&gt; unary.<span class="built_in">exp</span>}
-	;
-</pre></figure>
-
-<p>The <strong>mul</strong>, <strong>div</strong> and <strong>mod</strong> expressions are basically identical to the add and sub expressions, except defining unary as the next production in the operator precedence chain.</p>
-<figure class="highlight"><pre>unary {-&gt; <span class="built_in">exp</span>}
-	= {number}	number					{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.number(number)}
-	| {sqrt}	sqrt lparen <span class="built_in">exp</span> rparen			{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.sqrt(<span class="built_in">exp</span>)}
-	| {<span class="built_in">cos</span>}		<span class="built_in">cos</span> lparen <span class="built_in">exp</span> rparen			{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.<span class="built_in">cos</span>(<span class="built_in">exp</span>)}
-	| {<span class="built_in">sin</span>}		<span class="built_in">sin</span> lparen <span class="built_in">exp</span> rparen			{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.<span class="built_in">sin</span>(<span class="built_in">exp</span>)}
-	| {paren}	lparen <span class="built_in">exp</span> rparen			{-&gt; <span class="keyword">New</span> <span class="built_in">exp</span>.paren(<span class="built_in">exp</span>)}
-	;
-</pre></figure>
-
-<p>The simplest of all expressions is the unary <strong>number</strong> expression that defines a numeric constant. The number expression is mapped into a new AST node of the type exp.number, having the actual number as a parameter. The <strong>sqrt</strong>, <strong>cos</strong> and <strong>sin</strong> functions all define the input as the function name and the parameter expression enclosed in parentheses. Finally we define the <strong>{paren}</strong> unary function which is an arbitrary expression enclosed in parentheses. This gets mapped into the exp.paren AST type, taking the arbitrary expression as a parameter. The {paren} function allows us to differentiate between expressions like “5*2-7” and “5*(2-7)”.</p>
-<figure class="highlight"><pre>exp_list {-&gt; <span class="built_in">exp</span>*}
-	= {single}	<span class="built_in">exp</span>					{-&gt; [<span class="built_in">exp</span>.<span class="built_in">exp</span>]}
-	| {multi}	<span class="built_in">exp</span> [tail]:exp_list			{-&gt; [<span class="built_in">exp</span>.<span class="built_in">exp</span>, tail.<span class="built_in">exp</span>]}
-	;
-</pre></figure>
-
-<p>The final production is what allows us to chain expressions. Without the <strong>exp_list</strong> production only single operations would be allowed (5+2, 3*7 etc), not chains of expressions (5+2+3, 5*2+3 etc). <strong>exp_list {-&gt; exp*}</strong> defines that the exp_list production maps into a list of exp’s in the AST.</p>
-<p>Anyone having done functional programming will recognize the <a href="http://en.wikipedia.org/wiki/Tail_recursion" target="_blank">tail recursion</a> going on here. If there’s only a single expression, we map it into a list of expressions containing just that one expression. If there’s a single expression and a list of expressions following it (which may be one or more expressions), we map it into a list of expressions containing the first expression as well as the rest of the expressions represented by the tail parameter.</p>
-<h2 id="Generating_the_parser">Generating the parser</h2>
-<p>Once we’ve defined the grammar, we’re ready to run the <strong>simplecalc_sable</strong> bat file, hopefully resulting in the following output:</p>
-<figure class="highlight"><pre>D:<span class="subst">\</span>Webmentor Projekter<span class="subst">\</span>Eclipse Projects<span class="subst">\</span>SableCC<span class="subst">\&gt;</span>simplecalc_sable <span class="attribute">-d</span> generated <span class="attribute">-t</span> c
-sharp simplecalc<span class="built_in">.</span>sablecc
-
-D:<span class="subst">\</span>Webmentor Projekter<span class="subst">\</span>Eclipse Projects<span class="subst">\</span>SableCC<span class="subst">\&gt;</span>java <span class="attribute">-jar</span> <span class="string">"C:Program FilesSabl
-eCCsablecc-3-beta.3.altgen.20041114libsablecc.jar"</span> <span class="attribute">-d</span> generated <span class="attribute">-t</span> csharp sim
-plecalc<span class="built_in">.</span>sablecc
-
-SableCC version <span class="number">3</span><span class="attribute">-beta</span><span class="number">.3</span><span class="built_in">.</span>altgen<span class="number">.20040327</span>
-Copyright (C) <span class="number">1997</span><span class="subst">-</span><span class="number">2003</span> Etienne M<span class="built_in">.</span> Gagnon <span class="subst">&lt;</span>etienne<span class="built_in">.</span>gagnon@uqam<span class="built_in">.</span>ca<span class="subst">&gt;</span> <span class="literal">and</span>
-others<span class="built_in">.</span>  <span class="literal">All</span> rights reserved<span class="built_in">.</span>
-
-This software comes <span class="keyword">with</span> ABSOLUTELY NO WARRANTY<span class="built_in">.</span>  This is free software,
-<span class="literal">and</span> you are welcome <span class="keyword">to</span> redistribute it under certain conditions<span class="built_in">.</span>
-
-<span class="keyword">Type</span> <span class="string">'sablecc -license'</span> <span class="keyword">to</span> view
-the complete copyright notice <span class="literal">and</span> license<span class="built_in">.</span>
-
-
- <span class="subst">--</span> Generating parser for simplecalc<span class="built_in">.</span>sablecc <span class="keyword">in</span> D:Webmentor ProjekterEclipse P
-rojectsSableCCgenerated
-Verifying identifiers<span class="built_in">.</span>
-Verifying ast identifiers<span class="built_in">.</span>
-Adding empty productions <span class="literal">and</span> empty alternative transformation <span class="keyword">if</span> necessary<span class="built_in">.</span>
-Adding productions <span class="literal">and</span> alternative transformation <span class="keyword">if</span> necessary<span class="built_in">.</span>
-computing alternative symbol table identifiers<span class="built_in">.</span>
-Verifying production transform identifiers<span class="built_in">.</span>
-Verifying ast alternatives transform identifiers<span class="built_in">.</span>
-Generating token classes<span class="built_in">.</span>
-Generating production classes<span class="built_in">.</span>
-Generating alternative classes<span class="built_in">.</span>
-Generating analysis classes<span class="built_in">.</span>
-Generating utility classes<span class="built_in">.</span>
-Generating the lexer<span class="built_in">.</span>
- State: INITIAL
- <span class="subst">-</span> Constructing NFA<span class="built_in">.</span>
-<span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span>
- <span class="subst">-</span> Constructing DFA<span class="built_in">.</span>
-<span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span>
-<span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="built_in">..</span>
- <span class="subst">-</span> resolving ACCEPT states<span class="built_in">.</span>
-Generating the parser<span class="built_in">.</span>
-<span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span>
-<span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span>
-<span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span>
-<span class="built_in">..</span>
-<span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span><span class="attribute">...</span>
-</pre></figure>
-
-<p>Now if we look in the generated directory, there should be six files: <strong>analysis.cs</strong>, <strong>lexer.cs</strong>, <strong>nodes.cs</strong>, <strong>parser.cs</strong>, <strong>prods.cs</strong> and <strong>tokens.cs</strong>. The files should contain classes in the <strong>SimpleCalc</strong> namespace.</p>
-<h2 id="Printing_the_abstract_syntax_tree">Printing the abstract syntax tree</h2>
-<p>To help ourselves, the first task we’ll do is to simply print out the AST so we can verify what gets parsed is correct. Create a solution called <strong>SimpleCalc</strong> and either copy the genrated files or create a solution link to the folder. Add a new file called <strong>AstPrinter.cs</strong> and paste the following contents:</p>
-<figure class="highlight csharp"><pre>using System;
-using SimpleCalc.analysis;
-using SimpleCalc.node;
-
-namespace SimpleCalc
-{
-	class AstPrinter : DepthFirstAdapter
-	{
-		int indent;
-
-		private void printIndent()
-		{
-			Console.Write(<span class="string">""</span>.PadLeft(indent, 't'));
-		}
-
-		private void printNode(Node node)
-		{
-			printIndent();
-
-			Console.ForegroundColor = ConsoleColor.White;
-			Console.Write(node.GetType().ToString().Replace(<span class="string">"SimpleCalc.node."</span>, <span class="string">""</span>));
-
-			if (node is ANumberExp)
-			{
-				Console.ForegroundColor = ConsoleColor.DarkGray;
-				Console.WriteLine(<span class="string">"  "</span> + node.ToString());
-			}
-			else
-				Console.WriteLine();
-		}
-
-		public override void DefaultIn(Node node)
-		{
-			printNode(node);
-			indent++;
-		}
-
-		public override void DefaultOut(Node node)
-		{
-			indent--;
-		}
-	}
-}
-</pre></figure>
-
-<p>The <strong>DepthFirstAdapter</strong> is a class auto generated by SableCC. It allows us to easily traverse the generated AST depth first, while giving us various hook points along the way. Each node in the tree has an In and Out method that we can override. In is called before the children are traversed while Out is called after the children have been traversed. Note that we may change the tree during the traversal - though we’re not going to do so.</p>
-<p>In the AstPrinter class I’ve overriden the <strong>DefaultIn</strong> and <strong>DefaultOut</strong> methods that gets called for each node unless we’ve overriden their specific default methods. In the In method we increase the indent, and likewise we decrease it in the Out method. Furthermore, in the In method we also print the actual node contents to the console. If it’s a ANumberExp node (the name of the node corresponding to the number type in the AST) then we print the actual number, otherwise we just print the name of the node itself.</p>
-<p>In the main program file, paste the following:</p>
-<figure class="highlight csharp"><pre>using System;
-using System.IO;
-using SimpleCalc.lexer;
-using SimpleCalc.node;
-using SimpleCalc.parser;
-
-namespace SimpleCalc
-{
-	class Program
-	{
-		private static void Main(string[] args)
-		{
-			if (args.Length != 1)
-				exit(<span class="string">"Usage: Simplecalc.exe filename"</span>);
-
-			using (StreamReader sr = new StreamReader(File.Open(args[0], FileMode.Open)))
-			{
-				// Read source
-				Lexer lexer = new Lexer(sr);
-
-				// Parse source
-				Parser parser = new Parser(lexer);
-				Start ast = null;
-
-				try
-				{
-					ast = parser.Parse();
-				}
-				catch (Exception ex)
-				{
-					exit(ex.ToString());
-				}
-
-				// Print tree
-				AstPrinter printer = new AstPrinter();
-				ast.Apply(printer);
-			}
-
-			exit(<span class="string">"Done"</span>);
-		}
-
-		private static void exit(string msg)
-		{
-			if (msg != null)
-				Console.WriteLine(msg);
-			else
-				Console.WriteLine();
-			
-			Console.WriteLine(<span class="string">"Press any key to exit..."</span>);
-			Console.Read();
-			Environment.Exit(0);
-		}
-	}
-}
-</pre></figure>
-
-<p>I’ve made it so the program takes in a single argument, a filename where our calculation expression is written. By taking a file as a parameter, it’s easier for me to change the expression directly in Visual Studio without having to setup launch parameters. The only launch parameter that needs to be set is the file argument.</p>
-<div class="imgwrapper" style=""><div><a href="/writing-a-calculator-in-csharp-using-sablecc/simplecalc_properties_2.jpg" class="fancy"><img src="/writing-a-calculator-in-csharp-using-sablecc/simplecalc_properties_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>The program tries to open the file and then instantiates the SableCC auto generated <a href="http://en.wikipedia.org/wiki/Lexical_analysis" target="_blank">lexer</a> and <a href="http://en.wikipedia.org/wiki/Parsing" target="_blank">parser</a>.</p>
-<p>Now let’s make a new file called <strong>test.ss</strong> and paste the following expression into it: <strong>25-37+2*(1.22+cos(5))*sin(5)*2+5%2*3*sqrt(5+2)</strong>. If you run the application at this point, you should see an output like the following:</p>
-<div class="imgwrapper" style=""><div><a href="/writing-a-calculator-in-csharp-using-sablecc/simplecalc_ast_2.jpg" class="fancy"><img src="/writing-a-calculator-in-csharp-using-sablecc/simplecalc_ast_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>By comparing the printed AST with the input expression, we’ll see that they match both in contents and in regards to operator precedence. Now all that’s left is to perform the actual calculation of the expression.</p>
-<h2 id="Calculating_the_expression_based_on_the_abstract_syntax_tree">Calculating the expression based on the abstract syntax tree</h2>
-<p>Add a new file called <strong>AstCalculator.cs</strong> and paste the following contents:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
-<span class="keyword">using</span> System.Collections.Generic;
-<span class="keyword">using</span> System.Globalization;
-<span class="keyword">using</span> SimpleCalc.analysis;
-<span class="keyword">using</span> SimpleCalc.node;
-
-namespace SimpleCalc
-{
-	class AstCalculator : DepthFirstAdapter
-	{
-		<span class="keyword">private</span> <span class="keyword">double</span>? result;
-		<span class="keyword">private</span> Stack&lt;<span class="keyword">double</span>&gt; stack = <span class="keyword">new</span> Stack&lt;<span class="keyword">double</span>&gt;();
-
-		<span class="keyword">public</span> <span class="keyword">double</span> CalculatedResult
-		{
-			<span class="keyword">get</span>
-			{
-				<span class="keyword">if</span> (result == <span class="keyword">null</span>)
-					<span class="keyword">throw</span> <span class="keyword">new</span> InvalidOperationException(<span class="string">"Must apply AstCalculator to the AST first."</span>);
-
-				<span class="keyword">return</span> result.Value;
-			}
-		}
-
-		<span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">OutStart</span>(Start node)
-		{
-			<span class="keyword">if</span> (stack.Count != <span class="number">1</span>)
-				<span class="keyword">throw</span> <span class="keyword">new</span> Exception(<span class="string">"Stack should contain only one element at end."</span>);
-
-			result = stack.Pop();
-		}
-		
-		<span class="comment">// Associative operators</span>
-		<span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">OutAMulExp</span>(AMulExp node)
-		{
-			stack.Push(stack.Pop() * stack.Pop());
-		}
-
-		<span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">OutAAddExp</span>(AAddExp node)
-		{
-			stack.Push(stack.Pop() + stack.Pop());
-		}
-
-		<span class="comment">// Non associative operators</span>
-		<span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">OutASubExp</span>(ASubExp node)
-		{
-			<span class="keyword">double</span> numB = stack.Pop();
-
-			stack.Push(stack.Pop() - numB);
-		}
-
-		<span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">OutAModExp</span>(AModExp node)
-		{
-			<span class="keyword">double</span> numB = stack.Pop();
-
-			stack.Push(stack.Pop() % numB);
-		}
-
-		<span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">OutADivExp</span>(ADivExp node)
-		{
-			<span class="keyword">double</span> numB = stack.Pop();
-
-			stack.Push(stack.Pop() / numB);
-		}
-
-		<span class="comment">// Unary</span>
-		<span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">OutASqrtExp</span>(ASqrtExp node)
-		{
-			stack.Push(Math.Sqrt(stack.Pop()));
-		}
-
-		<span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">OutACosExp</span>(ACosExp node)
-		{
-			stack.Push(Math.Cos(stack.Pop()));
-		}
-
-		<span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">OutASinExp</span>(ASinExp node)
-		{
-			stack.Push(Math.Sin(stack.Pop()));
-		}
-
-		<span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">InANumberExp</span>(ANumberExp node)
-		{
-			stack.Push(Convert.ToDouble(node.GetNumber().Text.Trim(), <span class="keyword">new</span> CultureInfo(<span class="string">"en-us"</span>)));
-		}
-	}
-}
-</pre></figure>
-
-<p>I will not go through all parts of the calculator as many functions are very similar. I’ll outline the important ones below.</p>
-<figure class="highlight csharp"><pre><span class="keyword">private</span> <span class="keyword">double</span>? result;
-<span class="keyword">private</span> Stack&lt;<span class="keyword">double</span>&gt; stack = <span class="keyword">new</span> Stack&lt;<span class="keyword">double</span>&gt;();
-
-<span class="keyword">public</span> <span class="keyword">double</span> CalculatedResult
-{
-	<span class="keyword">get</span>
-	{
-		<span class="keyword">if</span> (result == <span class="keyword">null</span>)
-			<span class="keyword">throw</span> <span class="keyword">new</span> InvalidOperationException(<span class="string">"Must apply AstCalculator to the AST first."</span>);
-
-		<span class="keyword">return</span> result.Value;
-	}
-}
-</pre></figure>
-
-<p>As all numbers are treated as doubles, the result will be a double as well. The result can be retrieved through the <strong>CalculatedResult</strong> property, but only once the calculation has been performed - thus we check whether the result is null or not.</p>
-<p>While traversing the AST to perform the calculations we maintain state through the use of a generic stack of doubles.</p>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">OutStart</span>(Start node)
-{
-	<span class="keyword">if</span> (stack.Count != <span class="number">1</span>)
-		<span class="keyword">throw</span> <span class="keyword">new</span> Exception(<span class="string">"Stack should contain only one element at end."</span>);
-
-	result = stack.Pop();
-}
-</pre></figure>
-
-<p>When starting out the stack will be empty. Once we’ve traversed the tree the stack should only contain a single element - the result. To ensure there’s no errors we make sure the stack only contains a single element, after which we return it by popping it from the stack.</p>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">InANumberExp</span>(ANumberExp node)
-{
-	stack.Push(Convert.ToDouble(node.GetNumber().Text.Trim(), <span class="keyword">new</span> CultureInfo(<span class="string">"en-us"</span>)));
-}
-</pre></figure>
-
-<p>Probably the most important unary operator is the constant number. Whenever we’re in a <strong>ANumberExp</strong> node we read in the number and push it onto the stack.</p>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">OutASqrtExp</span>(ASqrtExp node)
-{
-	stack.Push(Math.Sqrt(stack.Pop()));
-}
-</pre></figure>
-
-<p>The other unary operators follow the same pattern. We pop the stack and perform a math operation on the popped value, after which we push the result back onto the stack.</p>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">OutAMulExp</span>(AMulExp node)
-{
-	stack.Push(stack.Pop() * stack.Pop());
-}
-</pre></figure>
-
-<p>The associative operators are simple in that they have no requirements as to which order the input parameters are in. As such, a multiplication simple pops two numbers from the stack and push the multiplied result back onto the stack.</p>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">OutASubExp</span>(ASubExp node)
-{
-	<span class="keyword">double</span> numB = stack.Pop();
-
-	stack.Push(stack.Pop() - numB);
-}
-</pre></figure>
-
-<p>The non associative opreators need to first pop one number and store it in a temporary variable. The reason we need to do this is that we’re working with a <a href="http://en.wikipedia.org/wiki/FIFO_%28computing%29" target="_blank">FIFO</a> stack, meaning the second number will not be the topmost on the stack and thus we can’t perform the calculation in a single expression.</p>
-<p>Now that we’ve made the AstCalculator class we just need to modify the main method so it runs the calculator.</p>
-<figure class="highlight csharp"><pre><span class="comment">// Print tree</span>
-AstPrinter printer = <span class="keyword">new</span> AstPrinter();
-ast.Apply(printer);
-
-<span class="comment">// Calculate expression</span>
-AstCalculator calculator = <span class="keyword">new</span> AstCalculator();
-ast.Apply(calculator);
-
-Console.WriteLine(<span class="string">"Calculation result: "</span> + calculator.CalculatedResult);
-</pre></figure>
-
-<p>Simply instantiate a new <strong>AstCalculator</strong> after printing the AST, and then apply it to the AST. If you make the above modification and run the program, you should see an output similar to this:</p>
-<div class="imgwrapper" style=""><div><a href="/writing-a-calculator-in-csharp-using-sablecc/simplecalc_calculation_2.jpg" class="fancy"><img src="/writing-a-calculator-in-csharp-using-sablecc/simplecalc_calculation_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>Lo and behold, the result is identical to the one provided by Google originally!</p>
-<h2 id="Wrapping_up">Wrapping up</h2>
-<p>I’ve now shown how we can define a language grammar in SableCC and have it auto generate a parser for us. Using the SableCC parser we can read an input string and transform it into an abstract syntax tree. Once we have the abstract syntax tree, we can easily traverse it and modify it.</p>
-<p>While SableCC originally was only able to generate Java output, we now have multiple options for the output language. Unfortunately the generated C# classes are not partial - a feature that would’ve been very useful once we start doing more advanced stuff with the AST. It’s rather easy to modify the six source files manually, as well as setting up an automated script to do it for us.</p>
-<p>Once we read the input and transformed it into an AST we used stack based approach to traverse it and calculate sub results in a very simple way, emulating how most higher level languages work internally.</p>
-<p>I’ll be following up on this post later on by extending the grammar and interpreter functionality.</p>
 
 
 				<div style="clear: both"></div>

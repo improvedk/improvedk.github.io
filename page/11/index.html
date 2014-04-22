@@ -75,6 +75,143 @@
 	<div class="datebox">
 		<div class="upper">
 			<span class="month">Apr</span>
+			<span class="day">26</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/watch-out-for-implicit-uniqueidentifier-conversions/" title="Watch Out For Implicit Uniqueidentifier Conversions" rel="bookmark">Watch Out For Implicit Uniqueidentifier Conversions</a></h1>
+		<div class="categories">
+			
+				<a href="/category/SQL Server - Optimization/">SQL Server - Optimization</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I recently gave a presentations on the topic of <a href="/miracle-open-world-2011-follow-up/">GUID usage</a> at <a href="http://mow2011.dk/" target="_blank">Miracle Open World</a>. After finishing off my last slide and opening to questions, one of the attendees told a story of how an implicit GUID conversion had resulted in index scans instead of index seeks.</p>
+<a id="more"></a>
+
+<p>It’s commonly known that to use indexes effectively, we need to seek. Furthermore, to ensure we don’t scan, we should avoid using functions, casts, etc. as predicates as that will cause the optimizer to not utilize the indexes properly. However, in this case the situation was presented as query having a simple “where SomeCol = ‘74e03ed0-6d51-413a-bffb-76b5e409afc1’”. As far as I knew, that should just convert automatically into a uniqueidentifier and still use an index seek. A simple test shows that to be the case as well:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">create</span> <span class="keyword">table</span> #Test
+(
+	ID <span class="keyword">int</span> <span class="keyword">identity</span>(<span class="number">1</span>,<span class="number">1</span>) <span class="keyword">constraint</span> pk_Test_ID <span class="keyword">primary</span> <span class="keyword">key</span> clustered,
+	Guid uniqueidentifier <span class="keyword">default</span>(newid()),
+	Padding <span class="keyword">char</span>(<span class="number">100</span>) <span class="keyword">null</span>
+)
+<span class="keyword">create</span> nonclustered index idx_Guid <span class="keyword">on</span> #Test (Guid)
+
+<span class="keyword">declare</span> @cnt <span class="keyword">int</span> = <span class="number">0</span>
+while @cnt &lt; <span class="number">10000</span> <span class="keyword">begin</span>
+	<span class="keyword">insert</span> <span class="keyword">into</span> #Test <span class="keyword">default</span> <span class="keyword">values</span>
+	<span class="keyword">set</span> @cnt += <span class="number">1</span>
+<span class="keyword">end</span>
+
+<span class="keyword">select</span> * <span class="keyword">from</span> #Test <span class="keyword">where</span> Guid = <span class="string">'74e03ed0-6d51-413a-bffb-76b5e409afc1'</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/watch-out-for-implicit-uniqueidentifier-conversions/image_21.png" class="fancy"><img src="/watch-out-for-implicit-uniqueidentifier-conversions/image_21.png" style="max-height: 250px"/></a></div></div>
+
+<p>An index seek with a bookmark lookup, perfect. I had no answer to his question so I asked if he could send me the query they were running, so I could take a look at it. I got the queries sent as well as the execution plan, and sure enough, an index scan was performed with a CONVERT_IMPLICIT predicate:</p>
+<div class="imgwrapper" style=""><div><a href="/watch-out-for-implicit-uniqueidentifier-conversions/image_8.png" class="fancy"><img src="/watch-out-for-implicit-uniqueidentifier-conversions/image_8.png" style="max-height: 250px"/></a></div></div>
+
+<p>As the system is internal, I promised to keep it anonymous, thus most of it is blurred out. I also do not have access to the actual schema, I was however able to deduce the relevant parts from the execution plans and column/table names used. Here’s an abstract version of the query being run:</p>
+<figure class="highlight sql"><pre><span class="comment">-- Schema</span>
+<span class="operator"><span class="keyword">create</span> <span class="keyword">table</span> #GuidTest
+(
+	ID <span class="keyword">int</span> <span class="keyword">identity</span>(<span class="number">1</span>,<span class="number">1</span>) <span class="keyword">constraint</span> pk_GuidTest_ID <span class="keyword">primary</span> <span class="keyword">key</span> clustered,
+	GuidA uniqueidentifier <span class="keyword">default</span>(newid()),
+	GuidB uniqueidentifier <span class="keyword">default</span>(newid()),
+	GuidC uniqueidentifier <span class="keyword">default</span>(newid()),
+	GuidD uniqueidentifier <span class="keyword">default</span>(newid()),
+	GuidE uniqueidentifier <span class="keyword">default</span>(newid()) <span class="keyword">null</span>,
+	GuidF uniqueidentifier <span class="keyword">default</span>(newid()),
+	Cost <span class="keyword">float</span> <span class="keyword">default</span>(rand()) <span class="keyword">null</span>,
+	Padding <span class="keyword">char</span>(<span class="number">20</span>)
+)
+<span class="keyword">create</span> nonclustered index idx_Guid <span class="keyword">on</span> #GuidTest (GuidA, GuidB, GuidC, GuidD, GuidE) include (Cost, GuidF)
+<span class="keyword">with</span> (	pad_index = off,
+	statistics_norecompute = off,
+	sort_in_tempdb = off,
+	ignore_dup_key = off,
+	drop_existing = off,
+	online = off,
+	allow_row_locks = <span class="keyword">on</span>,
+	allow_page_locks = <span class="keyword">on</span>,
+	fillfactor = <span class="number">90</span>)
+
+<span class="keyword">create</span> <span class="keyword">table</span> #GuidJoin
+(
+	JoinGuid uniqueidentifier <span class="keyword">default</span>(newid()),
+	JoinValue <span class="keyword">char</span>(<span class="number">3</span>) <span class="keyword">null</span>
+)
+<span class="keyword">create</span> nonclustered index idx_JoinGuid <span class="keyword">on</span> #GuidJoin (JoinGuid)
+
+-- Query
+<span class="keyword">select</span>
+	<span class="aggregate">sum</span>(isnull(Cost, <span class="number">0</span>)),
+	GuidA,
+	GuidB,
+	GuidC,
+	GuidD
+<span class="keyword">from</span>
+	#GuidTest
+<span class="keyword">left</span> <span class="keyword">join</span>
+	#GuidJoin <span class="keyword">on</span> GuidF = JoinGuid
+<span class="keyword">where</span>
+	(JoinValue = <span class="string">'XYZ'</span> <span class="keyword">or</span> JoinValue <span class="keyword">is</span> <span class="keyword">null</span>) <span class="keyword">AND</span>
+	(
+		(GuidA = <span class="string">'0B0220E8-053E-43CA-A268-AD78DF4F7DC0'</span> <span class="keyword">AND</span> GuidB = <span class="string">'F268830A-5C13-4E6E-AE63-DAA1353A6306'</span> <span class="keyword">AND</span> GuidC = <span class="string">'5565A230-E919-4229-BA65-49AE1D4FFAE3'</span> <span class="keyword">AND</span> GuidD = <span class="string">'C4BAAA53-9447-419F-A7FA-76C43B8F1049'</span>) <span class="keyword">OR</span>
+		(GuidA = <span class="string">'D32EE121-FB05-44E8-BD36-86833E4BE3B6'</span> <span class="keyword">AND</span> GuidB = <span class="string">'9DE3B8FF-95B1-4519-9F92-9DE7758D9DE6'</span> <span class="keyword">AND</span> GuidC = <span class="string">'8ADF6C5E-E3B6-49C7-BEF7-E26074D8874C'</span> <span class="keyword">AND</span> GuidD = <span class="string">'D2BBB20C-991D-44FD-848C-124B33CFC9F6'</span>) <span class="keyword">OR</span>
+		-- Snipped about <span class="number">250</span> lines --
+		(GuidA = <span class="string">'54E75EB0-83FE-40A0-B2E0-6A2A71B393AA'</span> <span class="keyword">AND</span> GuidB = <span class="string">'CC3D2107-6C1B-4ED6-B708-6503BFAD8965'</span> <span class="keyword">AND</span> GuidC = <span class="string">'B62EBEA3-193A-422A-846D-978000E1AB9C'</span> <span class="keyword">AND</span> GuidD = <span class="string">'ECC25117-B903-49EE-8B66-8E31F07170A5'</span>)
+	) <span class="keyword">AND</span>
+	(GuidE = <span class="string">'08F62323-0707-430E-B5F8-5FFF040D2AF6'</span> <span class="keyword">OR</span> GuidE <span class="keyword">is</span> <span class="keyword">null</span>)
+<span class="keyword">group</span> <span class="keyword">by</span>
+	GuidA, GuidB, GuidC, GuidD</span>
+</pre></figure>
+
+<p>Obviously this is not the optimal way of doing this, passing in a large amount of variables in ad-hoc fashion. This was not an in-house system however, so they had to live with the code. Using my code as a test, filled with a large number of dummy test data, I’m not able to reproduce the issue. However, the most interesting part is how they managed to solve the problem. Instead of doing a usual uniqueidentifier predicate like:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">select</span> * <span class="keyword">from</span> #Test <span class="keyword">where</span> Guid = <span class="string">'74e03ed0-6d51-413a-bffb-76b5e409afc1'</span></span>
+</pre></figure>
+
+<p>They were able to modify the predicates to look like this:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">select</span> * <span class="keyword">from</span> #Test <span class="keyword">where</span> Guid = {GUID<span class="string">'74e03ed0-6d51-413a-bffb-76b5e409afc1'</span>}</span>
+</pre></figure>
+
+<p>And if you look closely at the execution plan of the first query, this is what’s happening internally as well:</p>
+<div class="imgwrapper" style=""><div><a href="/watch-out-for-implicit-uniqueidentifier-conversions/image_10.png" class="fancy"><img src="/watch-out-for-implicit-uniqueidentifier-conversions/image_10.png" style="max-height: 250px"/></a></div></div>
+
+<p>Since I was unable to reproduce the issue, and I can find no documentation on the {GUID’xyz’} (neither online nor in BOL) syntax, I am unable to explain exactly what’s going on. EDIT: <a href="http://weblogs.sqlteam.com/mladenp/" target="_blank">Mladen Prajdić</a> found a page describing <a href="http://msdn.microsoft.com/en-us/library/ms712494(VS.85" target="_blank">GUID Escape Sequences</a>.aspx). My guess is that the input query, while simple in structure, became too complex due to the large number of predicates, and thus the optimizer was unable to convert the input string to a GUID at compile time and thus had to resort to an IMPLICIT_CONVERT, causing an index scan. Using parameters, a TVF or another form of temporary table to hold those ~1000 predicate GUIDs in would obviously have been a lot more optimal as well, and would have avoided the implicit convert too. Being as it was a third party system, that was a modification that could not be made. If you have any further information on the {GUID’xyz’} constant syntax, please do get in touch.</p>
+<p>While I have no final explanation, the conclusion must be – watch out for those implicit conversions, even when you absolutely do not expect them to occur.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
 			<span class="day">17</span>
 		</div>
 		<div class="lower">2011</div>
@@ -916,56 +1053,6 @@
 
 <p>As promised, you can download the slides from my presentations below.</p>
 <p><a href="Dissecting_PDF_Documents_1.pdf">Dissecting_PDF_Documents_1.pdf - Slides</a><br><a href="SQL_Azure_for_DBAs.pdf">SQL_Azure_for_DBAs.pdf - Slides</a></p>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Mar</span>
-			<span class="day">17</span>
-		</div>
-		<div class="lower">2010</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/speaking-at-miracle-openworld-2010/" title="Speaking at Miracle OpenWorld 2010" rel="bookmark">Speaking at Miracle OpenWorld 2010</a></h1>
-		<div class="categories">
-			
-				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>I will be giving two presentations at <a href="http://mow2010.dk/" target="_blank">Miracle OpenWorld 2010</a> in April.</p>
-<a id="more"></a>
-
-<h2 id="Working_with_PDF_documents">Working with PDF documents</h2>
-<p>In this session he will sharing his experiences with dissecting PDF documents for the iPaper system. We’ll look at various commercial as well as open source tools for reading, editing and rasterizing PDF documents. What are some of the common pitfalls you’ll run into when working with PDF documents and what does a PDF really consist of internally? While some of the tools and libraries can also be used to create PDFs, this session will concentrate on working with existing PDF files.</p>
-<h2 id="SQL_Azure_for_DBA’s">SQL Azure for DBA’s</h2>
-<p>Will be presenting together with Martin Schmidt from Miracle. Abstract is still in the works. It’s safe to say though that this will be no typical sales pitch - we’ll be looking at what limitations you’ll run into, what happens when you reach the limits of SQL Azure and generally what the sales pitch happily ignores.</p>
-<p>I highly recommend going to MOW as this is one of the best DBA &amp; developer conferences with networking and fun being in the high seat! There’s a beach party - what more do you need?</p>
 
 
 				<div style="clear: both"></div>

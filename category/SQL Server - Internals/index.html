@@ -514,6 +514,41 @@
 	</div>
 
 	<div class="title">
+		<h1><a href="/the-8-byte-record-that-was-9-bytes-while-making-no-sense/" title="The 8 Byte Record That Was 9 Bytes While Making No Sense" rel="bookmark">The 8 Byte Record That Was 9 Bytes While Making No Sense</a></h1>
+		<div class="categories">
+			
+				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>Warning: this is a <em>select is (most likely) not broken, it’s just not working as I’d expect</em>. It may very well be that I’m just overlooking something, in which case I hope someone will correct me :)</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">16</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
 		<h1><a href="/depending-on-how-itrsquos-added-spare-bits-in-the-null/" title="The Garbage Null Bitmap and Why You Can&#39;t Rely on It Solely" rel="bookmark">The Garbage Null Bitmap and Why You Can&#39;t Rely on It Solely</a></h1>
 		<div class="categories">
 			
@@ -543,13 +578,13 @@
 	<div class="datebox">
 		<div class="upper">
 			<span class="month">Jul</span>
-			<span class="day">16</span>
+			<span class="day">15</span>
 		</div>
 		<div class="lower">2011</div>
 	</div>
 
 	<div class="title">
-		<h1><a href="/the-8-byte-record-that-was-9-bytes-while-making-no-sense/" title="The 8 Byte Record That Was 9 Bytes While Making No Sense" rel="bookmark">The 8 Byte Record That Was 9 Bytes While Making No Sense</a></h1>
+		<h1><a href="/sparse-column-storage-ndash-the-sparse-vector/" title="Sparse Column Storage &amp; the Sparse Vector" rel="bookmark">Sparse Column Storage &amp; the Sparse Vector</a></h1>
 		<div class="categories">
 			
 				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
@@ -564,7 +599,7 @@
 
 		
 
-			<div class="body"><p>Warning: this is a <em>select is (most likely) not broken, it’s just not working as I’d expect</em>. It may very well be that I’m just overlooking something, in which case I hope someone will correct me :)</p>
+			<div class="body"><p>In this post I’ll be looking at the internal storage mechanism that supports sparse columns. For an introduction to what sparse columns are and when they ought to be used, <a href="http://msdn.microsoft.com/en-us/library/cc280604.aspx" target="_blank">take a look here</a>.</p>
 </div>
 		
 		
@@ -648,13 +683,13 @@
 	<div class="datebox">
 		<div class="upper">
 			<span class="month">Jul</span>
-			<span class="day">15</span>
+			<span class="day">13</span>
 		</div>
 		<div class="lower">2011</div>
 	</div>
 
 	<div class="title">
-		<h1><a href="/sparse-column-storage-ndash-the-sparse-vector/" title="Sparse Column Storage &amp; the Sparse Vector" rel="bookmark">Sparse Column Storage &amp; the Sparse Vector</a></h1>
+		<h1><a href="/exploring-the-sys-system_internals_partition_columns-ti-field/" title="Exploring the sys.system_internals_partition_columns.ti Field" rel="bookmark">Exploring the sys.system_internals_partition_columns.ti Field</a></h1>
 		<div class="categories">
 			
 				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
@@ -669,7 +704,7 @@
 
 		
 
-			<div class="body"><p>In this post I’ll be looking at the internal storage mechanism that supports sparse columns. For an introduction to what sparse columns are and when they ought to be used, <a href="http://msdn.microsoft.com/en-us/library/cc280604.aspx" target="_blank">take a look here</a>.</p>
+			<div class="body"><p>Running sp_helptext on the sys.system_internals_partition_columns system view reveals the following internal query:</p>
 </div>
 		
 		
@@ -705,41 +740,6 @@
 		
 
 			<div class="body"><p>Based on my findings <a href="/exploring-the-sys-system_internals_partition_columns-ti-field">exploring the sys.system_internals_partition_columns.ti field</a>, I needed parser that could extract the scale, precision, max_length as well as the max_inrow_length fields from it. The tricky part is that those values are stored differently for each individual type, added onto the fact that some types have hardcoded defaults that are not stored in the ti field, even though there’s space for it.</p>
-</div>
-		
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Jul</span>
-			<span class="day">13</span>
-		</div>
-		<div class="lower">2011</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/exploring-the-sys-system_internals_partition_columns-ti-field/" title="Exploring the sys.system_internals_partition_columns.ti Field" rel="bookmark">Exploring the sys.system_internals_partition_columns.ti Field</a></h1>
-		<div class="categories">
-			
-				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-
-			<div class="body"><p>Running sp_helptext on the sys.system_internals_partition_columns system view reveals the following internal query:</p>
 </div>
 		
 		
@@ -1028,7 +1028,7 @@
 
 		
 
-			<div class="body"><p>There are several different date related data types in SQL Server. Currently <a href="introducing-orcamdf">OrcaMDF</a> supports the three most common types: <a href="http://msdn.microsoft.com/en-us/library/bb630352.aspx" target="_blank">date</a>, <a href="http://msdn.microsoft.com/en-us/library/ms187819.aspx" target="_blank">datetime</a> &amp; <a href="http://msdn.microsoft.com/en-us/library/ms182418.aspx" target="_blank">smalldatetime</a>.</p>
+			<div class="body"><p>There are several different date related data types in SQL Server. Currently <a href="/introducing-orcamdf">OrcaMDF</a> supports the three most common types: <a href="http://msdn.microsoft.com/en-us/library/bb630352.aspx" target="_blank">date</a>, <a href="http://msdn.microsoft.com/en-us/library/ms187819.aspx" target="_blank">datetime</a> &amp; <a href="http://msdn.microsoft.com/en-us/library/ms182418.aspx" target="_blank">smalldatetime</a>.</p>
 </div>
 		
 		

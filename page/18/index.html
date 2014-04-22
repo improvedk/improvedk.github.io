@@ -74,6 +74,247 @@
 	<article>
 	<div class="datebox">
 		<div class="upper">
+			<span class="month">Mar</span>
+			<span class="day">02</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/setting-up-and-testing-active-directory-failover/" title="Setting Up and Testing Active Directory Failover" rel="bookmark">Setting Up and Testing Active Directory Failover</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/Windows/">Windows</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I spend a lot of time architecting for scalability, availability and security during my daily work. Currently I’ve got a distributed system consisting of several windows services communicating across machines using WCF and authenticating through Active Directory.</p>
+<a id="more"></a>
+
+<p>In such a situation, if the Active Directory Domain Controller (let’s just call it DC from now on) dies, everything more or less dies as no clients/servers are able to authenticate incoming requests anymore. Security is paramount, so the services are not allowed to simply cache the domain logon, thus the logon has the occur at each service call - requiring a fully working DC.</p>
+<p>In this post I’ll attempt to implement a secondary failover DC and investigate how it affects a downtime situation. I’ll be using a couple of simple WCF based applications to test the DC. I will be using three virtual machines. Luxor is the primary DC. MGM is part of the domain, and this is the machine hosting the WCF server. Later on I’ll add the third virtual machine, Excalibur, being the failover DC. The WCF client will be running from my own machine. Note that I will not show how to install the primary DC, <a href="http://www.petri.co.il/how_to_install_active_directory_on_windows_2003.htm" target="_blank">there are plenty other great guides on how to setup the primary DC</a>. I also won’t be going into <a href="http://support.microsoft.com/kb/814591" target="_blank">how to install the primary DNS server</a>.</p>
+<p>This is the WCF server interface:</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Security.Principal;
+<span class="keyword">using</span> System.ServiceModel;
+<span class="keyword">using</span> System.ServiceModel.Channels;
+<span class="keyword">using</span> System.ServiceModel.Description;
+
+namespace Contracts
+{
+	<span class="keyword">public</span> <span class="keyword">class</span> WCFHelper
+	{
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> Creates an instance of the specified interface type by channeling to the service host.</span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;typeparam name="T"&gt;</span>The interface type to create.<span class="xmlDocTag">&lt;/typeparam&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="binding"&gt;</span>The binding protocol to use.<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="endpointAddress"&gt;</span>The complete address for the endpoint.<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>An instance of type T.<span class="xmlDocTag">&lt;/returns&gt;</span></span>
+		<span class="keyword">public</span> <span class="keyword">static</span> T CreateChannel&lt;T&gt;(Binding binding, <span class="keyword">string</span> endpointAddress)
+		{
+			<span class="comment">// Create an endpoint for the specified binding & address</span>
+			ServiceEndpoint endpoint = <span class="keyword">new</span> ServiceEndpoint(ContractDescription.GetContract(<span class="keyword">typeof</span>(T)), binding, <span class="keyword">new</span> EndpointAddress(endpointAddress));
+			binding.SendTimeout = <span class="keyword">new</span> TimeSpan(<span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>);
+			binding.ReceiveTimeout = <span class="keyword">new</span> TimeSpan(<span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>);
+			binding.OpenTimeout = <span class="keyword">new</span> TimeSpan(<span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>);
+			binding.CloseTimeout = <span class="keyword">new</span> TimeSpan(<span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>);
+
+			<span class="comment">// Create a channel factory of type T</span>
+			ChannelFactory&lt;T&gt; factory = <span class="keyword">new</span> ChannelFactory&lt;T&gt;(endpoint);
+			factory.Credentials.Windows.ClientCredential.UserName = <span class="string">"RedundancyCheck"</span>;
+			factory.Credentials.Windows.ClientCredential.Password = <span class="string">"RedundancyCheck"</span>;
+			factory.Credentials.Windows.ClientCredential.Domain = <span class="string">"IPAPER"</span>;
+			factory.Credentials.Windows.AllowedImpersonationLevel = TokenImpersonationLevel.Impersonation;
+
+			<span class="comment">// Return the created channel</span>
+			<span class="keyword">return</span> factory.CreateChannel();
+		}
+
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> Creates a ServiceHost hosting the specific implementation TImplementationType of interface TInterfaceType at the specified endpointAddress.</span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;typeparam name="TInterfaceType"&gt;</span>The interface type to host.<span class="xmlDocTag">&lt;/typeparam&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;typeparam name="TImplentationType"&gt;</span>The implementation type to host.<span class="xmlDocTag">&lt;/typeparam&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="binding"&gt;</span>The binding protocol to use.<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="endpointAddress"&gt;</span>The endpoint where the service should be hosted at.<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="mexEndpointAddress"&gt;</span>The endpoint where the service metadata should be hosted at.<span class="xmlDocTag">&lt;/param&gt;</span></span>
+		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>An instance of ServiceHost.<span class="xmlDocTag">&lt;/returns&gt;</span></span>
+		<span class="keyword">public</span> <span class="keyword">static</span> ServiceHost CreateServiceHost&lt;TInterfaceType, TImplentationType&gt;(Binding binding, <span class="keyword">string</span> endpointAddress, <span class="keyword">string</span> mexEndpointAddress)
+		{
+			<span class="comment">// Create new service host</span>
+			ServiceHost host = <span class="keyword">new</span> ServiceHost(<span class="keyword">typeof</span>(TImplentationType));
+
+			<span class="comment">// Create endpoints</span>
+			host.AddServiceEndpoint(<span class="keyword">typeof</span>(TInterfaceType), binding, endpointAddress);
+
+			<span class="comment">// Create metadata endpoint if it doesn't exist</span>
+			ServiceMetadataBehavior smb = host.Description.Behaviors.Find&lt;ServiceMetadataBehavior&gt;();
+			<span class="keyword">if</span> (smb == <span class="keyword">null</span>)
+			{
+				smb = <span class="keyword">new</span> ServiceMetadataBehavior();
+				smb.MetadataExporter.PolicyVersion = PolicyVersion.Policy15;
+				host.Description.Behaviors.Add(smb);
+			}
+			<span class="keyword">if</span> (binding <span class="keyword">is</span> NetTcpBinding)
+				host.AddServiceEndpoint(ServiceMetadataBehavior.MexContractName, MetadataExchangeBindings.CreateMexTcpBinding(), mexEndpointAddress);
+			<span class="keyword">else</span> <span class="keyword">if</span> (binding <span class="keyword">is</span> BasicHttpBinding)
+				host.AddServiceEndpoint(ServiceMetadataBehavior.MexContractName, MetadataExchangeBindings.CreateMexHttpBinding(), mexEndpointAddress);
+			<span class="keyword">else</span>
+				<span class="keyword">throw</span> <span class="keyword">new</span> ArgumentOutOfRangeException(<span class="string">"Invalid binding: "</span> + binding);
+
+			<span class="keyword">return</span> host;
+		}
+	}
+}
+</pre></figure>
+
+<p>Notice that I’ve hardcoded the user “IPAPERRedundancyCheck” with a password of “RedundancyCheck” - this is for test purposes only, don’t even bother commenting on password security :) Also notice that I’ve set a timeout of 1 second - when the DC fails, I don’t want to spend 30 seconds before knowing if it’s down, I want to know about it right away. And since all machines are running locally, 1 second is plenty.</p>
+<p>This is the server that’ll be running on the MGM machine on port 8000:</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Security;
+<span class="keyword">using</span> System.Security.Permissions;
+<span class="keyword">using</span> System.ServiceModel;
+<span class="keyword">using</span> Contracts;
+
+namespace WcfServer
+{
+	class Program
+	{
+		<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
+		{
+			<span class="comment">// Create service host</span>
+			ServiceHost host = WCFHelper.CreateServiceHost&lt;IServer, Server&gt;(<span class="keyword">new</span> NetTcpBinding(SecurityMode.Transport), <span class="string">"net.tcp://localhost:8000"</span>, <span class="string">"net.tcp://localhost:8000/mex"</span>);
+
+			<span class="comment">// Open host</span>
+			host.Open();
+
+			Console.Read();
+		}
+	}
+
+	[ServiceBehavior(IncludeExceptionDetailInFaults = <span class="keyword">true</span>)]
+	<span class="keyword">public</span> <span class="keyword">class</span> Server : IServer
+	{
+		<span class="keyword">public</span> <span class="keyword">string</span> <span class="title">Ping</span>()
+		{
+			<span class="comment">// Security check</span>
+			<span class="keyword">try</span>
+			{
+				<span class="keyword">new</span> PrincipalPermission(<span class="keyword">null</span>, <span class="string">"ADTest"</span>).Demand();
+			}
+			<span class="keyword">catch</span>
+			{
+				<span class="keyword">throw</span> <span class="keyword">new</span> SecurityException();
+			}
+
+			<span class="comment">// Let caller know that we're alive</span>
+			<span class="keyword">return</span> <span class="string">"Pong!"</span>;
+		}
+	}
+}
+</pre></figure>
+
+<p>We’ve got an implementation of the IServer interface with the single method “Ping”. We test that the user is part of the “ADTest” role by demanding it on the current principal. If something fails we throw a SecurityException which will let the client now authentication failed. If the client is authenticated, we return a pong.</p>
+<p>And finally we have the client that’ll be running on my own machine:</p>
+<figure class="highlight csharp"><pre>using System;
+using System.ServiceModel;
+using System.Threading;
+using Contracts;
+
+namespace WcfClient
+{
+	class Program
+	{
+		static void Main(string[] args)
+		{
+			while (true)
+			{
+				try
+				{
+					IServer server = WCFHelper.CreateChannel(new NetTcpBinding(SecurityMode.Transport), <span class="string">"net.tcp://192.168.0.35:8000"</span>);
+
+					using (server as IDisposable)
+					{
+						try
+						{
+							Console.WriteLine(server.Ping());
+						}
+						catch (Exception ex)
+						{
+							Console.WriteLine(ex.Message);
+						}
+					}
+				}
+				catch (CommunicationObjectFaultedException)
+				{ }
+
+				Thread.Sleep(250);
+			}
+		}
+	}
+}
+</pre></figure>
+
+<p>We create a channel to the MGM machine (static IP of 192.168.0.35). We’ll continue to call the IServer service every 250ms, writing either the result of the Ping function, or a message explaining any problems that have occurred. Note that in real life situations we’d not create a new channel each time, but in this case we have to, so we really do authenticate on each call (so we’re affected immediatly when the DC dies).</p>
+<p>The following clip will show what happens when we run the server &amp; client while the DC goes down (by pausing the virtual machine). Note that we’re receiving a timeout exception, not a SecurityException. This is because I’m using SecurityMode.Transport which requires us to authenticate before even reaching the service, thus the method is never invoked, and the PrincipPermission.Demand() call is NOT the one failing us, it’s the WCF security layer trying to open a TCP transport. As soon as the DC (running on LUXOR) fails, we lose connectivity with our service (running on MGM).</p>
+<div class="video-container"><iframe src="//www.youtube.com/embed/P7ufIfZlfjU" frameborder="0" allowfullscreen></iframe></div>
+
+
+
+<p>The goal obviously is to prevent this from happening, we cannot have all our services brought to a standstill if the DC fails. The first step in installing a failover AD DC is to get a DNS secondary server up and running (on the soon to be secondary DC machine) so we have redundant DNS functionality.</p>
+<p>A quick recap of the servers:</p>
+<figure class="highlight"><pre><span class="setting">LUXOR = <span class="value">Primary DC, primary DNS</span></span>
+<span class="setting">EXCALIBUR = <span class="value">To be secondary DC, secondary DNS</span></span>
+<span class="setting">MGM = <span class="value">Client server</span></span>
+</pre></figure>
+
+<div class="video-container"><iframe src="//www.youtube.com/embed/BE5mB417BNs" frameborder="0" allowfullscreen></iframe></div>
+
+
+
+<p>Now that we’ve got the secondary DNS set up, we’re ready to install Active Directory on the secondary AD server (EXCALIBUR). The following video shows how easy it is to install a failover DC:</p>
+<div class="video-container"><iframe src="//www.youtube.com/embed/x5qTxr-pglg" frameborder="0" allowfullscreen></iframe></div>
+
+
+
+<p>That’s it! After the server reboots, it now functions as a failover DC in case the primary one kicks the bucket. I’ll end this post post by running my WcfServer application on the MGM server whilst both LUXOR and EXCALIBUR are running. You’ll se a fluent stream of “Pong”s returning. After shutting down LUXOR, the WCF client will immediately start reporting connection problems, but after a short while it automatically starts returning Pongs again - it got a hold of the second DC! Now, if I shut down the second DC aswell, we’ll get errors in our client again. If I then restart the primary DC, after a short while, the client starts Ponging again - we got a hold of the primary DC. So we haven’t eliminated downtime completely, but we’ve reduced it to a 5-30 sec period before everything automatically switches over to the failover DC.</p>
+<div class="video-container"><iframe src="//www.youtube.com/embed/KWkEjiulJu8" frameborder="0" allowfullscreen></iframe></div>
+
+
+
+<p>This is my first blog post utilizing videos - does it work? Do you prefer seeing live video like this, or a long series of screenshots? I know what I prefer :)</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
 			<span class="month">Nov</span>
 			<span class="day">25</span>
 		</div>
@@ -1199,87 +1440,6 @@ FunctionEnd
 
 <p>After having downloaded the .NET Framework 2.0, it’ll start the .NET installer and run it through as usual, the installation will continue as soon as the .NET installer finishes. There is currently no check for whether the user cancels the .NET installation midways or if it fails. A simple check could be made right afterwards by simple calling the GetDotNETVersion function again like we did just before, if it fails, the user hasn’t installed .NET for some unknown reason and we’ll have to abort.</p>
 <p>You can see <a href="http://www.improve.dk/downloads/InstallScript.txt" target="_blank">my complete install script here</a>. Download and rename to *.nsi to compile it.</p>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Apr</span>
-			<span class="day">14</span>
-		</div>
-		<div class="lower">2007</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/cascading-windows/" title="Cascading Windows Using PInvoke" rel="bookmark">Cascading Windows Using PInvoke</a></h1>
-		<div class="categories">
-			
-				<a href="/category/.NET/">.NET</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>In Photoshop we often work with multiple windows open. They can be cascaded to more easily be able to view the different windows and tell them apart. There’s an API function that does the same to any windows you specify, you can even define the rectangle where they should be cascaded within.</p>
-<a id="more"></a>
-
-
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
-<span class="keyword">using</span> System.Runtime.InteropServices;
-<span class="keyword">using</span> System.Drawing;
-<span class="keyword">using</span> System.Collections;
-
-namespace Cascading_Windows
-{
-	class Program
-	{
-		<span class="comment">// The CascadeWindows function cascades the specified child windows of the specified parent window. It can be used to</span>
-		<span class="comment">// cascade all windows (as in this example) or just the child windows of a specific window by passing in a handle to that</span>
-		<span class="comment">// window. You can also define the rectangle wherein they should be cascaded.</span>
-		<span class="comment">// See http://msdn.microsoft.com/library/default.asp?url=/library/en-us/winui/winui/windowsuserinterface/windowing/windows/windowreference/windowfunctions/animatewindow.asp</span>
-		<span class="comment">// for full documentation.</span>
-		[DllImport(<span class="string">"user32.dll"</span>)]
-		<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">extern</span> <span class="keyword">int</span> <span class="title">CascadeWindows</span>(<span class="keyword">int</span> hWnd, <span class="keyword">int</span> wHow, <span class="keyword">ref</span> Rectangle lpRect, <span class="keyword">int</span> cKids, <span class="keyword">ref</span> ArrayList lpKids);
-
-		<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
-		{
-			<span class="comment">// As the function expects references to both a Rectangle and an ArrayList, we'll have to hack a couple of null values</span>
-			<span class="comment">// as we can't pass null into the function.</span>
-			Rectangle nilRect = Rectangle.Empty;
-			ArrayList nilList = <span class="keyword">null</span>;
-
-			<span class="comment">// Cascade all windows that are children of the Desktop (handle = 0).</span>
-			CascadeWindows(<span class="number">0</span>, <span class="number">0</span>, <span class="keyword">ref</span> nilRect, <span class="number">0</span>, <span class="keyword">ref</span> nilList);
-
-			Console.Read();
-		}
-	}
-}
-</pre></figure>
-
-<p>And the result:</p>
-<p><em>Having three monitors generates quite a large screenshot so I’ll leave this one up for you to try / your imagination :)</em></p>
 
 
 				<div style="clear: both"></div>

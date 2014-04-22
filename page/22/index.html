@@ -75,6 +75,87 @@
 	<div class="datebox">
 		<div class="upper">
 			<span class="month">Dec</span>
+			<span class="day">13</span>
+		</div>
+		<div class="lower">2006</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/sql-server-datetime-rounding-made-easy/" title="SQL Server Datetime Rounding Made Easy" rel="bookmark">SQL Server Datetime Rounding Made Easy</a></h1>
+		<div class="categories">
+			
+				<a href="/category/SQL Server/">SQL Server</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p><strong>Update:</strong> As noted in the comments, this method does not actually round, it truncates the datetime value.</p>
+<a id="more"></a>
+
+<p>As feature complete as MS SQL Server may be, it really lacks some simple datetime rounding functions. Here is a simple trick to easily round of datetimes at any precision you wish.</p>
+<p>We will be using two builtin functions, namely the <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/tsqlref/ts_da-db_3vtw.asp" target="_blank">DATEADD</a> and the <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/tsqlref/ts_da-db_5vxi.asp" target="_blank">DATEDIFF</a> function.</p>
+<p>We can round off at nearly any precision that SQL Server itself supports, for instance: Minute, Day, Hour, Day, Month, Year and so forth.</p>
+<p>In this example I’ll select the original “Created” column from the table tblHits, as well as a rounding of the Created column by the day:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span> Created,
+	DATEADD(<span class="keyword">Day</span>, DATEDIFF(<span class="keyword">Day</span>, <span class="number">0</span>, Created), <span class="number">0</span>) <span class="keyword">AS</span> CreatedDay
+<span class="keyword">FROM</span> tblHits</span>
+</pre></figure>
+
+<p>It’ll return the following original / rounded values:</p>
+<figure class="highlight"><pre><span class="number">19</span>-<span class="number">11</span>-<span class="number">2006</span> <span class="number">22</span>:<span class="number">39</span>:<span class="number">27</span> -&gt; <span class="number">19</span>-<span class="number">11</span>-<span class="number">2006</span> <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>
+<span class="number">20</span>-<span class="number">11</span>-<span class="number">2006</span> <span class="number">02</span>:<span class="number">27</span>:<span class="number">31</span> -&gt; <span class="number">20</span>-<span class="number">11</span>-<span class="number">2006</span> <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>
+<span class="keyword">...</span>
+</pre></figure>
+
+<p>And naturally we can do the same, this time rounded by the hour:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span> Created,
+	DATEADD(<span class="keyword">Hour</span>, DATEDIFF(<span class="keyword">Hour</span>, <span class="number">0</span>, Created), <span class="number">0</span>) <span class="keyword">AS</span> CreatedHour
+<span class="keyword">FROM</span> tblHits</span>
+</pre></figure>
+
+<p>It’ll return the following:</p>
+<figure class="highlight"><pre><span class="number">19</span>-<span class="number">11</span>-<span class="number">2006</span> <span class="number">22</span>:<span class="number">39</span>:<span class="number">27</span> -&gt; <span class="number">19</span>-<span class="number">11</span>-<span class="number">2006</span> <span class="number">22</span>:<span class="number">39</span>:<span class="number">00</span>
+<span class="number">20</span>-<span class="number">11</span>-<span class="number">2006</span> <span class="number">02</span>:<span class="number">27</span>:<span class="number">31</span> -&gt; <span class="number">20</span>-<span class="number">11</span>-<span class="number">2006</span> <span class="number">02</span>:<span class="number">27</span>:<span class="number">00</span>
+<span class="keyword">...</span>
+</pre></figure>
+
+<p>You could of course also do the rounding on the webserver after you’ve selected the database results. Sometimes though, we have to do it at the database level. For instance, if I want to know how many visitors I have per day on my blog:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span> <span class="aggregate">COUNT</span>(<span class="number">1</span>) <span class="keyword">AS</span> Visitors,
+	DATEADD(<span class="keyword">Day</span>, DATEDIFF(<span class="keyword">Day</span>, <span class="number">0</span>, Created), <span class="number">0</span>) <span class="keyword">AS</span> <span class="keyword">Date</span>
+<span class="keyword">FROM</span> tblHits
+<span class="keyword">GROUP</span> <span class="keyword">BY</span> DATEADD(<span class="keyword">Day</span>, DATEDIFF(<span class="keyword">Day</span>, <span class="number">0</span>, Created), <span class="number">0</span>)
+<span class="keyword">ORDER</span> <span class="keyword">BY</span> <span class="keyword">Date</span> <span class="keyword">DESC</span></span>
+</pre></figure>
+
+<p>Now, I know that this is not optimal in terms of performance since we’re doing the DATEADD(DATEDIFF()) trick twice to both select it and group by it, but I’ve kept it this way to follow the <a href="http://en.wikipedia.org/wiki/KISS_principle" target="_blank">KISS principle</a>.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Dec</span>
 			<span class="day">11</span>
 		</div>
 		<div class="lower">2006</div>
@@ -252,6 +333,90 @@
 	</div>
 
 	<div class="title">
+		<h1><a href="/installing-office-2007-on-vista/" title="Installing Office 2007 on Vista" rel="bookmark">Installing Office 2007 on Vista</a></h1>
+		<div class="categories">
+			
+				<a href="/category/Windows/">Windows</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Ok, so I’d promised myself that I would at least give it a month before I’d install Vista on my desktop computer as I simply will not be able to cope with having major problems here. For work purposes I simply have to have a functional desktop computer.</p>
+<a id="more"></a>
+
+<p>Oh to heck with that! Having tried Vista on my laptop, I craved for seeing it expose it’s full potential on a more capable machine. I fell into the pressure. I did it. I installed Vista on my desktop.</p>
+<p>I’ve blogged the whole process, moving from the usual XP environment to Vista, all the new features, annoyances, problems and so forth. I won’t be blogging about all of it as there’s simply too much, instead I’ll be releasing an article shortly describing the whole process. For now, I’ll stick to a problem I had when I tried to install Office 2007 on the newly installed Vista machine (a problem which Google couldn’t remedy). It was an absolutely fresh install on a formatted drive, all that I’d installed so far were some device drivers. Barring this, Office 2007 should install without a hitch right? Guess not.</p>
+<div class="imgwrapper" style=""><div><a href="/installing-office-2007-on-vista/officeinstall_1_2.jpg" class="fancy"><img src="/installing-office-2007-on-vista/officeinstall_1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>I started the installation without problems, chose my setup configuration and began the actual installation. After about 6-7 minutes it was at the end of the installation according to the process bar. An hour later it was still at the end of the process bar without anything visibly happening. I checked the task manager, it was constantly using 10-15% CPU. I gave it another hour as I had to go eat anyways.</p>
+<div class="imgwrapper" style=""><div><a href="/installing-office-2007-on-vista/officeinstall_2_2.jpg" class="fancy"><img src="/installing-office-2007-on-vista/officeinstall_2_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>After the second hour it had still not moved anywhere, I’d guess you can call it dead by now. I cancelled the setup (by clicking the red X), but this time it hung again, halfways in the uninstall. Half an hour later I killed the process as nothing was happening.</p>
+<div class="imgwrapper" style=""><div><a href="/installing-office-2007-on-vista/officeinstall_3_2.jpg" class="fancy"><img src="/installing-office-2007-on-vista/officeinstall_3_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Then this friendly fella popped up, teling me that the uninstallation probably didn’t go as planned, well woope de doo. Clicking “Uninstall using recommended settings” performed the uninstall without problems (I seriously wonder what the “recommended” settings are, seeing as there are no settings in regards of an uninstall).</p>
+<div class="imgwrapper" style=""><div><a href="/installing-office-2007-on-vista/officeinstall_4_2.jpg" class="fancy"><img src="/installing-office-2007-on-vista/officeinstall_4_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Reinitiating the Office 2007 install from the DVD resulted in this error - it gets more and more cryptic. I have sucessfully used this DVD to install Vista on Windows XP without problems, so it can’t be the DVD. I then resorted to the true swizz army knife of any software developer - a reboot.</p>
+<p>After rebooting I initiated the install again, and what do you know, it actually went all the way through this time without any problems. Finally! Or so I thought at least.</p>
+<div class="imgwrapper" style=""><div><a href="/installing-office-2007-on-vista/officeinstall_5_2.jpg" class="fancy"><img src="/installing-office-2007-on-vista/officeinstall_5_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>“Failed to register a VB Script DLL. Reinstall or run Regsvr32.exe Vbscript.dll to self register. ‘C:Program FilesMicrosoft OfficeOffice12FORMS1033scdrestl.ico’ is not a valid icon file.”</p>
+<p>When starting up Outlook, I receive this error message (during the “Setting up accounts” initialization phase). Clicking OK (or the red X) resulted in Outlook closing down and me receiving yet another almost identical message:</p>
+<div class="imgwrapper" style=""><div><a href="/installing-office-2007-on-vista/officeinstall_6_2.jpg" class="fancy"><img src="/installing-office-2007-on-vista/officeinstall_6_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>“‘C:Program FilesMicrosoft OfficeOffice12FORMS1033scdrestl.ico’ is not a valid icon file.”</p>
+<p>More or less the same error message, though this time the title of the dialog was “SetPoint” - the mouse/keyboard driver software for my Logitech diNovo keyboard - what the fudge?</p>
+<div class="imgwrapper" style=""><div><a href="/installing-office-2007-on-vista/officeinstall_7_2.jpg" class="fancy"><img src="/installing-office-2007-on-vista/officeinstall_7_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>OK, it told me to either “self register” or uninstall. As I have no idea what “self register” incorporates (I tried to regsvr32 Vbscript.dll to no avail, and I hardly think a .ico file can be regsvr32’ed), I went for the uninstall. But this all to familiar dialog box popped up. After about five reboots and several torn images of Bill Gates I realized the I was not going to get this bugger uninstalled (this dialog also appeared through the “Programs and Features” control panel when trying to uninstall from there). So what’s the next step?</p>
+<div class="imgwrapper" style=""><div><a href="/installing-office-2007-on-vista/officeinstall_8_2.jpg" class="fancy"><img src="/installing-office-2007-on-vista/officeinstall_8_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Please do not ask me how, I really can’t remember how I dug myself in here, the important thing is that I did. I tried running both .MSI files. I have no idea what they did, the just executed with no GUI and then closed again in about one second. After running these MSI’s, I was suddenly able to run the Office installer again. It acted as though Office wasn’t even installed on my system so I couldn’t uninstall. I decided to just do an install again, hopefully overwriting any buggy files that might have caused the problem.</p>
+<div class="imgwrapper" style=""><div><a href="/installing-office-2007-on-vista/officeinstall_5_21.jpg" class="fancy"><img src="/installing-office-2007-on-vista/officeinstall_5_21.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Well, the good news is that the install went through problem free. The bad news is that the main problem persisted.</p>
+<div class="imgwrapper" style=""><div><a href="/installing-office-2007-on-vista/officeinstall_9_21.jpg" class="fancy"><img src="/installing-office-2007-on-vista/officeinstall_9_21.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>I dug out the 2KB .ICO file that seemingly was corrupt (and was able to bring down Microsoft Outlook 2007 - talk about David vs. Goliath!). Windows Photo Gallery (the Vista pendant of the XP Preview application) wasn’t able to display the ICO file. As it was able to display all of the other .ICO’s in the same folder I think it’s safe to conclude that the file was somehow damaged.</p>
+<div class="imgwrapper" style=""><div><a href="/installing-office-2007-on-vista/officeinstall_10_2.jpg" class="fancy"><img src="/installing-office-2007-on-vista/officeinstall_10_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Then I took the damaged SCDRESTL.ICO file and prepended the file name with an underscore. Afterwards I simply took a copy of one of the other working .ICO files (SCDRESTS.ICO) and renamed it SCDRESTL.ICO.</p>
+<div class="imgwrapper" style=""><div><a href="/installing-office-2007-on-vista/officeinstall_11_2.jpg" class="fancy"><img src="/installing-office-2007-on-vista/officeinstall_11_2.jpg" style="max-height: 250px"/></a></div></div>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Dec</span>
+			<span class="day">04</span>
+		</div>
+		<div class="lower">2006</div>
+	</div>
+
+	<div class="title">
 		<h1><a href="/setpoint-volume-control-in-vista/" title="SetPoint Volume Control In Vista" rel="bookmark">SetPoint Volume Control In Vista</a></h1>
 		<div class="categories">
 			
@@ -327,90 +492,6 @@
 
 <p>In recognition of this problem, Microsoft has put out a free Virtual PC 2004 (VPC itself has also been made a free download) image containing a pre-activated Windows XP SP2 installation as well as IE6 and the IE7 readiness toolkit. The image will self destruct on the 1st of april 2007, there’ll probably be another solution out by then.</p>
 <p><a href="http://blogs.msdn.com/ie/archive/2006/11/30/ie6-and-ie7-running-on-a-single-machine.aspx" target="_blank">Click here to go to the Microsoft IEBlog for further information and download links</a></p>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Dec</span>
-			<span class="day">04</span>
-		</div>
-		<div class="lower">2006</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/installing-office-2007-on-vista/" title="Installing Office 2007 on Vista" rel="bookmark">Installing Office 2007 on Vista</a></h1>
-		<div class="categories">
-			
-				<a href="/category/Windows/">Windows</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>Ok, so I’d promised myself that I would at least give it a month before I’d install Vista on my desktop computer as I simply will not be able to cope with having major problems here. For work purposes I simply have to have a functional desktop computer.</p>
-<a id="more"></a>
-
-<p>Oh to heck with that! Having tried Vista on my laptop, I craved for seeing it expose it’s full potential on a more capable machine. I fell into the pressure. I did it. I installed Vista on my desktop.</p>
-<p>I’ve blogged the whole process, moving from the usual XP environment to Vista, all the new features, annoyances, problems and so forth. I won’t be blogging about all of it as there’s simply too much, instead I’ll be releasing an article shortly describing the whole process. For now, I’ll stick to a problem I had when I tried to install Office 2007 on the newly installed Vista machine (a problem which Google couldn’t remedy). It was an absolutely fresh install on a formatted drive, all that I’d installed so far were some device drivers. Barring this, Office 2007 should install without a hitch right? Guess not.</p>
-<div class="imgwrapper" style=""><div><a href="/installing-office-2007-on-vista/officeinstall_1_2.jpg" class="fancy"><img src="/installing-office-2007-on-vista/officeinstall_1_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>I started the installation without problems, chose my setup configuration and began the actual installation. After about 6-7 minutes it was at the end of the installation according to the process bar. An hour later it was still at the end of the process bar without anything visibly happening. I checked the task manager, it was constantly using 10-15% CPU. I gave it another hour as I had to go eat anyways.</p>
-<div class="imgwrapper" style=""><div><a href="/installing-office-2007-on-vista/officeinstall_2_2.jpg" class="fancy"><img src="/installing-office-2007-on-vista/officeinstall_2_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>After the second hour it had still not moved anywhere, I’d guess you can call it dead by now. I cancelled the setup (by clicking the red X), but this time it hung again, halfways in the uninstall. Half an hour later I killed the process as nothing was happening.</p>
-<div class="imgwrapper" style=""><div><a href="/installing-office-2007-on-vista/officeinstall_3_2.jpg" class="fancy"><img src="/installing-office-2007-on-vista/officeinstall_3_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>Then this friendly fella popped up, teling me that the uninstallation probably didn’t go as planned, well woope de doo. Clicking “Uninstall using recommended settings” performed the uninstall without problems (I seriously wonder what the “recommended” settings are, seeing as there are no settings in regards of an uninstall).</p>
-<div class="imgwrapper" style=""><div><a href="/installing-office-2007-on-vista/officeinstall_4_2.jpg" class="fancy"><img src="/installing-office-2007-on-vista/officeinstall_4_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>Reinitiating the Office 2007 install from the DVD resulted in this error - it gets more and more cryptic. I have sucessfully used this DVD to install Vista on Windows XP without problems, so it can’t be the DVD. I then resorted to the true swizz army knife of any software developer - a reboot.</p>
-<p>After rebooting I initiated the install again, and what do you know, it actually went all the way through this time without any problems. Finally! Or so I thought at least.</p>
-<div class="imgwrapper" style=""><div><a href="/installing-office-2007-on-vista/officeinstall_5_2.jpg" class="fancy"><img src="/installing-office-2007-on-vista/officeinstall_5_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>“Failed to register a VB Script DLL. Reinstall or run Regsvr32.exe Vbscript.dll to self register. ‘C:Program FilesMicrosoft OfficeOffice12FORMS1033scdrestl.ico’ is not a valid icon file.”</p>
-<p>When starting up Outlook, I receive this error message (during the “Setting up accounts” initialization phase). Clicking OK (or the red X) resulted in Outlook closing down and me receiving yet another almost identical message:</p>
-<div class="imgwrapper" style=""><div><a href="/installing-office-2007-on-vista/officeinstall_6_2.jpg" class="fancy"><img src="/installing-office-2007-on-vista/officeinstall_6_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>“‘C:Program FilesMicrosoft OfficeOffice12FORMS1033scdrestl.ico’ is not a valid icon file.”</p>
-<p>More or less the same error message, though this time the title of the dialog was “SetPoint” - the mouse/keyboard driver software for my Logitech diNovo keyboard - what the fudge?</p>
-<div class="imgwrapper" style=""><div><a href="/installing-office-2007-on-vista/officeinstall_7_2.jpg" class="fancy"><img src="/installing-office-2007-on-vista/officeinstall_7_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>OK, it told me to either “self register” or uninstall. As I have no idea what “self register” incorporates (I tried to regsvr32 Vbscript.dll to no avail, and I hardly think a .ico file can be regsvr32’ed), I went for the uninstall. But this all to familiar dialog box popped up. After about five reboots and several torn images of Bill Gates I realized the I was not going to get this bugger uninstalled (this dialog also appeared through the “Programs and Features” control panel when trying to uninstall from there). So what’s the next step?</p>
-<div class="imgwrapper" style=""><div><a href="/installing-office-2007-on-vista/officeinstall_8_2.jpg" class="fancy"><img src="/installing-office-2007-on-vista/officeinstall_8_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>Please do not ask me how, I really can’t remember how I dug myself in here, the important thing is that I did. I tried running both .MSI files. I have no idea what they did, the just executed with no GUI and then closed again in about one second. After running these MSI’s, I was suddenly able to run the Office installer again. It acted as though Office wasn’t even installed on my system so I couldn’t uninstall. I decided to just do an install again, hopefully overwriting any buggy files that might have caused the problem.</p>
-<div class="imgwrapper" style=""><div><a href="/installing-office-2007-on-vista/officeinstall_5_21.jpg" class="fancy"><img src="/installing-office-2007-on-vista/officeinstall_5_21.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>Well, the good news is that the install went through problem free. The bad news is that the main problem persisted.</p>
-<div class="imgwrapper" style=""><div><a href="/installing-office-2007-on-vista/officeinstall_9_21.jpg" class="fancy"><img src="/installing-office-2007-on-vista/officeinstall_9_21.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>I dug out the 2KB .ICO file that seemingly was corrupt (and was able to bring down Microsoft Outlook 2007 - talk about David vs. Goliath!). Windows Photo Gallery (the Vista pendant of the XP Preview application) wasn’t able to display the ICO file. As it was able to display all of the other .ICO’s in the same folder I think it’s safe to conclude that the file was somehow damaged.</p>
-<div class="imgwrapper" style=""><div><a href="/installing-office-2007-on-vista/officeinstall_10_2.jpg" class="fancy"><img src="/installing-office-2007-on-vista/officeinstall_10_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>Then I took the damaged SCDRESTL.ICO file and prepended the file name with an underscore. Afterwards I simply took a copy of one of the other working .ICO files (SCDRESTS.ICO) and renamed it SCDRESTL.ICO.</p>
-<div class="imgwrapper" style=""><div><a href="/installing-office-2007-on-vista/officeinstall_11_2.jpg" class="fancy"><img src="/installing-office-2007-on-vista/officeinstall_11_2.jpg" style="max-height: 250px"/></a></div></div>
 
 
 				<div style="clear: both"></div>
@@ -686,54 +767,6 @@
 <div class="imgwrapper" style=""><div><a href="/unix-to-the-rescue/unixfireextinguisher_2.jpg" class="fancy"><img src="/unix-to-the-rescue/unixfireextinguisher_2.jpg" style="max-height: 250px"/></a></div></div>
 
 <p>So how would you intepret this image? Let me know…</p>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Oct</span>
-			<span class="day">29</span>
-		</div>
-		<div class="lower">2006</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/securingdotnet/" title="Securing .NET Code Presentation" rel="bookmark">Securing .NET Code Presentation</a></h1>
-		<div class="categories">
-			
-				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>During the last couple of weeks, I have been giving lectures on the subject of .NET code protection at some of the danish universities.</p>
-<a id="more"></a>
-
-<p>Part of being a Microsoft Student Partner is exactly this, travelling the universities and spreading knowledge of the Microsoft platform. Naturally .NET is the most exciting topic to talk about as the primary audience mostly consists of computer scientists.</p>
-<p>Due to my work as a MSP I’ve got my 2006 Tech-Ed conference entry ticket paid, so I’m taking a short trip to Barcelona on the 8th of november untill the 11th of november. Hopefully I’ll get a lot of hands-on experiences with the new technologies and platforms, I can’t wait!</p>
-<p><a href="http://www.improve.dk/securing-dotnet-code-article/" target="_blank">Read my article on securing .NET code here</a></p>
 
 
 				<div style="clear: both"></div>

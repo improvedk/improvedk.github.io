@@ -74,6 +74,320 @@
 	<article>
 	<div class="datebox">
 		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">06</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/" title="Determining the Uniquifier Column Ordinal for Clustered and Nonclustered Indexes" rel="bookmark">Determining the Uniquifier Column Ordinal for Clustered and Nonclustered Indexes</a></h1>
+		<div class="categories">
+			
+				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Lately I’ve been working on nonclustered index parsing. One of my test cases proved to be somewhat more tricky than I’d anticipated, namely the parsing of nonclustered indexes for non-unique clustered tables. Working with non-unique clustered indexes, we’ll have to take care of <a href="http://www.mssqltips.com/tip.asp?tip=2082" target="_blank">uniquifiers</a> when necessary.</p>
+<a id="more"></a>
+
+<h2 id="The_setup">The setup</h2>
+<p>Using an empty database I create the following schema and insert two rows. Note that the clustered index is created on the (ID, Name) columns and will thus have uniquifiers inserted since my rows aren’t unique. Also note that I’m intentionally creating a schema that will cause all three allocation unit types to be created – IN_ROW_DATA by default, LOB_DATA for the text column and finally ROW_OVERFLOW_DATA due to the overflowing varchar filler columns. This won’t serve any practical purpose besides being eye candy when looking at the data :)</p>
+<figure class="highlight sql"><pre><span class="comment">-- Create schema</span>
+<span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> Test
+(
+	ID <span class="keyword">int</span>,
+	Name <span class="keyword">varchar</span>(<span class="number">10</span>),
+	FillerA <span class="keyword">varchar</span>(<span class="number">8000</span>) <span class="keyword">DEFAULT</span>(REPLICATE(<span class="string">'x'</span>, <span class="number">5000</span>)),
+	FillerB <span class="keyword">varchar</span>(<span class="number">8000</span>) <span class="keyword">DEFAULT</span>(REPLICATE(<span class="string">'y'</span>, <span class="number">5000</span>)),
+	Data text <span class="keyword">DEFAULT</span> (<span class="string">''</span>)
+)
+<span class="keyword">CREATE</span> CLUSTERED INDEX CX_ID_Name <span class="keyword">ON</span> Test (ID, Name)
+<span class="keyword">CREATE</span> NONCLUSTERED INDEX IX_ID <span class="keyword">ON</span> Test (ID)
+
+-- <span class="keyword">Insert</span> dummy data
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span>
+	Test (ID, Name)
+<span class="keyword">VALUES</span>
+	(<span class="number">1</span>, <span class="string">'Mark'</span>),
+	(<span class="number">1</span>, <span class="string">'Mark'</span>)</span>
+</pre></figure>
+
+<h2 id="Verifying_the_presence_of_uniquifiers_in_the_clustered_index">Verifying the presence of uniquifiers in the clustered index</h2>
+<p>Running a quick DBCC IND on the Test table’s clustered index in the database (I’ve named mine ‘Y’ – I’m lazy), demonstrates the allocation of three allocation unit types as well as their tracking IAM pages.</p>
+<figure class="highlight sql"><pre>DBCC IND (Y, 'Test', 1)
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_23.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_23.png" style="max-height: 250px"/></a></div></div>
+
+<p>What we’re interested in are the two data pages of the clustered index – pages (1:89) and (1:114) in my case. Dumping the contents using dump style 3 shows that both have uniquifiers – one with a NULL value (interpreted as zero) and the other with a value of 1.</p>
+<figure class="highlight sql"><pre>DBCC TRACEON (3604)
+DBCC PAGE (Y, 1, 89, 3)
+DBCC PAGE (Y, 1, 114, 3)
+</pre></figure>
+
+
+<figure class="highlight sql"><pre>-- Page (1:89)
+
+Slot 0 Column 0 Offset 0x0 Length 4 Length (physical) 0
+UNIQUIFIER = 0                       
+
+Slot 0 Column 1 Offset 0x4 Length 4 Length (physical) 4
+ID = 1                               
+
+Slot 0 Column 2 Offset 0x17 Length 4 Length (physical) 4
+Name = Mark
+
+&lt;snip&gt;     
+
+-- Page (1:114)
+
+Slot 0 Column 0 Offset 0x17 Length 4 Length (physical) 4
+UNIQUIFIER = 1                       
+
+Slot 0 Column 1 Offset 0x4 Length 4 Length (physical) 4
+ID = 1                               
+
+Slot 0 Column 2 Offset 0x1b Length 4 Length (physical) 4
+Name = Mark                          
+
+&lt;snip&gt;
+</pre></figure>
+
+<p>Notice how both are represented as slot 0 – this is because they stem from different pages, I’ve just cut out everything but the uniquifier column interpretation of the DBCC PAGE results. Also note how the first record doesn’t have any physical uniquifier value, while the second one uses 4 bytes. Finally make note that the uniquifier columns both reside at column ordinal 0.</p>
+<h2 id="Comparing_the_uniquifiers_in_the_nonclustered_index">Comparing the uniquifiers in the nonclustered index</h2>
+<p>Now we’ll run DBCC IND to find the single index page for the nonclustered index – page (1:93) in my case (the uniquifier will only be present in the leaf level index pages – which is all we’ve got in this case).</p>
+<figure class="highlight sql"><pre>DBCC IND (Y, 'Test', 2)
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_82.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_82.png" style="max-height: 250px"/></a></div></div>
+
+<p>Dumping the contents of an index page using style 3 works differently for index pages – it returns a table resultset. It does confirm the presence of the uniquifier as well as our clustered index key columns (ID, Name) though:</p>
+<figure class="highlight sql"><pre>DBCC PAGE (Y, 1, 93, 1)
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_62.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_62.png" style="max-height: 250px"/></a></div></div>
+
+<p>Dumping in style 1 reveals the byte contents of the two rows, which is exactly what we need to locate the uniquifier:</p>
+<figure class="highlight sql"><pre>DBCC PAGE (Y, 1, 93, 1)
+</pre></figure>
+
+
+<figure class="highlight sql"><pre>Slot 0, Offset 0x60, Length 16, DumpStyle BYTE
+
+Record Type = INDEX_RECORD           Record Attributes =  NULL_BITMAP VARIABLE_COLUMNS
+Record Size = 16                     
+Memory Dump @0x0000000009DEC060
+
+0000000000000000:   36010000 00030000 01001000 4d61726b †6...........Mark 
+
+Slot 1, Offset 0x70, Length 22, DumpStyle BYTE
+
+Record Type = INDEX_RECORD           Record Attributes =  NULL_BITMAP VARIABLE_COLUMNS
+Record Size = 22                     
+Memory Dump @0x0000000009DEC070
+
+0000000000000000:   36010000 00030000 02001200 16004d61 †6.............Ma 
+0000000000000010:   726b0100 0000††††††††††††††††††††††††rk....
+</pre></figure>
+
+<p>Notice how the second record is 6 bytes larger than the first. This is caused by the presence of the uniquifier on the second record. Since the uniquifier is stored as a 4 byte integer in the variable length section, we also need 2 extra bytes for storing the length of the uniquifier in the variable length column offset array – thus causing a total overhead of 6. The primary difference however, lies in the fact that the uniquifier is stored as the last variable length column in the nonclustered index (the 0100 0000 part of the second record), while in the clustered index data page it was stored as the first variable length column. This discrepancy is what caused me headaches when trying to parse both page types – I needed a way of determining what column ordinal the uniquifiers had for both the clustered and the nonclustered index.</p>
+<h2 id="Locating_the_uniquifier_in_a_clustered_index">Locating the uniquifier in a clustered index</h2>
+<p>Thankfully there’s a plethora of DMVs to look in, it’s just a matter of finding the right ones. Let’s start out by querying sys.objects to get the object id of our table:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	*
+<span class="keyword">FROM</span>
+	sys.objects
+<span class="keyword">WHERE</span>
+	Name = <span class="string">'Test'</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_102.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_102.png" style="max-height: 250px"/></a></div></div>
+
+<p>Armed with the object id, we can find the default partitions for our clustered and nonclustered indexes:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	*
+<span class="keyword">FROM</span>
+	sys.partitions
+<span class="keyword">WHERE</span>
+	object_id = <span class="number">293576084</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_122.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_122.png" style="max-height: 250px"/></a></div></div>
+
+<p>Armed with the partition id, we can find the partition columns for our clustered index (index_id = 1):</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	*
+<span class="keyword">FROM</span>
+	sys.system_internals_partition_columns
+<span class="keyword">WHERE</span>
+	partition_id = <span class="number">72057594040483840</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_161.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_161.png" style="max-height: 250px"/></a></div></div>
+
+<p>Now would you take a look at that marvelous is_uniquifier column (we’ll ignore the alternative spelling for now). Using this output we can see that the first row is the uniquifier – being the third part of our clustered key (key_ordinal = 3). The leaf_offset column specifies the physical order in the record, fixed length columns being positive and variable length columns being negative. This confirms what we saw earlier, that the uniquifier is the first variable length column stored, with the remaining columns coming in at leaf offset –2, –3, –4 and –5.</p>
+<h2 id="Locating_the_uniquifier_in_a_nonclustered_index">Locating the uniquifier in a nonclustered index</h2>
+<p>Well that was easy, let’s just repeat that using the partition id of our nonclustered index (index_id = 2):</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	*
+<span class="keyword">FROM</span>
+	sys.system_internals_partition_columns
+<span class="keyword">WHERE</span>
+	partition_id = <span class="number">72057594040549376</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_181.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_181.png" style="max-height: 250px"/></a></div></div>
+
+<p>But what’s this, curses! For nonclustered indexes, the is_uniquifier column is not set, even though we can see there are three columns in our nonclustered index (the explicitly included ID, the implicitly included Name column that’s part of the clustered index key as well as the uniquifier which is also part of the clustered index key). So now we know that the uniquifier is shown in the result set, we just can’t trust the is_uniquifier column. However – to the best of my knowledge no other integer columns are stored as a variable length column, besides the uniquifier. Thus, we can add a predicate to the query returning just integers (system_type_id = 56) with negative leaf_offsets:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	*
+<span class="keyword">FROM</span>
+	sys.system_internals_partition_columns
+<span class="keyword">WHERE</span>
+	partition_id = <span class="number">72057594040549376</span> <span class="keyword">AND</span>
+	system_type_id = <span class="number">56</span> <span class="keyword">AND</span>
+	leaf_offset &lt; <span class="number">0</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_141.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_141.png" style="max-height: 250px"/></a></div></div>
+
+<p>And that’s it, we now have the uniquifier column offset in the variable length part of our nonclustered index record!</p>
+<h2 id="The_pessimistic_approach">The pessimistic approach</h2>
+<p>As I can’t find any info guaranteeing that the uniquifier is the only integer stored in the variable length part of a record, I came up with a secondary way of finding the uniquifier column offset. This method is way more cumbersome though and I won’t go into complete details. We’ll start out by retrieving all columns in the nonclustered index that are not explicitly part of the nonclustered index itself (by removing all rows present in sys.index_columns for the index):</p>
+<figure class="highlight sql"><pre>DECLARE @TableName sysname = 'Test'
+DECLARE @NonclusteredIndexName sysname = 'IX_ID'
+
+<span class="operator"><span class="keyword">SELECT</span>
+	i.index_id,
+	pc.*
+<span class="keyword">FROM</span>
+	sys.objects o
+<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
+	sys.indexes i <span class="keyword">ON</span> i.object_id = o.object_id
+<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
+	sys.partitions p <span class="keyword">ON</span> p.object_id = o.object_id <span class="keyword">AND</span> p.index_id = i.index_id
+<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
+	sys.system_internals_partition_columns pc <span class="keyword">on</span> pc.partition_id = p.partition_id
+<span class="keyword">WHERE</span>
+	o.name = @TableName <span class="keyword">AND</span>
+	i.name = @NonclusteredIndexName <span class="keyword">AND</span>
+	<span class="keyword">NOT</span> <span class="keyword">EXISTS</span> (<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> sys.index_columns <span class="keyword">WHERE</span> object_id = o.object_id <span class="keyword">AND</span> index_id = i.index_id <span class="keyword">AND</span> key_ordinal = pc.key_ordinal)</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_201.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_201.png" style="max-height: 250px"/></a></div></div>
+
+<p>These are the remaining columns that are stored as the physical part of the index record. Given that they’re not part of the index definition itself, these are the columns that make up the remainder of the clustered key – the <em>Name</em> and <em>Unuiquifier</em> columns in this example.</p>
+<p>Now we can perform the same query for the clustered index, though this time only filtering away those that are not part of the key itself (that is, key_ordinal &gt; 0):</p>
+<figure class="highlight sql"><pre>DECLARE @TableName sysname = 'Test'
+DECLARE @NonclusteredIndexName sysname = 'CX_ID_Name'
+
+<span class="operator"><span class="keyword">SELECT</span>
+	i.index_id,
+	pc.*
+<span class="keyword">FROM</span>
+	sys.objects o
+<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
+	sys.indexes i <span class="keyword">ON</span> i.object_id = o.object_id
+<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
+	sys.partitions p <span class="keyword">ON</span> p.object_id = o.object_id <span class="keyword">AND</span> p.index_id = i.index_id
+<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
+	sys.system_internals_partition_columns pc <span class="keyword">on</span> pc.partition_id = p.partition_id
+<span class="keyword">WHERE</span>
+	o.name = @TableName <span class="keyword">AND</span>
+	i.name = @NonclusteredIndexName <span class="keyword">AND</span>
+	key_ordinal &gt; <span class="number">0</span>
+<span class="keyword">ORDER</span> <span class="keyword">BY</span>
+	key_ordinal</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_221.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_221.png" style="max-height: 250px"/></a></div></div>
+
+<p>At this point we can compare these two result sets from the highest key_ordinal and downwards. Basically we just need to find the first match between the uniquifier column in the clustered index output and the assumed uniquifier column in the nonclustered index output. Until my assumption of the uniquifier being the only variable length integer, I wouldn’t recommend using this method though.</p>
+<h2 id="The_hardcore_approach_–_using_base_tables">The hardcore approach – using base tables</h2>
+<p>All those DMV’s certainly are nifty, but I just can’t help but feel I’m cheating. Let’s try and redo the optimistic (uniquifier being the only variable length integer) approach without using DMVs. Start out by connecting to your database using the <a href="http://msdn.microsoft.com/en-us/library/ms178068.aspx" target="_blank">dedicated administrator connection</a>, this will allow you to query the base tables:</p>
+<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_241.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_241.png" style="max-height: 250px"/></a></div></div>
+
+<p>We’ll start out by querying sys.sysschobjs, which is basically the underlying table for sys.objects:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	*
+<span class="keyword">FROM</span>
+	sys.sysschobjs
+<span class="keyword">WHERE</span>
+	name = <span class="string">'Test'</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_26.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_26.png" style="max-height: 250px"/></a></div></div>
+
+<p>Now we’ll query sys.sysrowsets, which is basically the underlying table for sys.partitions. In the base tables, idmajor is the column name we commonly know as object_id and idminor is what we’d usually know as index_id:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	*
+<span class="keyword">FROM</span>
+	sys.sysrowsets
+<span class="keyword">WHERE</span>
+	idmajor = <span class="number">293576084</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_281.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_281.png" style="max-height: 250px"/></a></div></div>
+
+<p>Checking out the row with idminor = 2, we’ve now got the rowsetid (partition id) of our nonclustered index. Now we just need to find the columns for the index – and that’s just what sys.sysrscols is for, the base table behind sys.system_internals_partition_columns:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	*,
+	<span class="keyword">CAST</span>(<span class="keyword">CAST</span>(offset & <span class="number">0xFFFF</span> <span class="keyword">AS</span> binary(<span class="number">2</span>)) <span class="keyword">AS</span> <span class="keyword">smallint</span>) <span class="keyword">AS</span> leaf_offset
+<span class="keyword">FROM</span>
+	sys.sysrscols
+<span class="keyword">WHERE</span>
+	rsid = <span class="number">72057594040549376</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_30.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_30.png" style="max-height: 250px"/></a></div></div>
+
+<p>Note that the leaf_offset column isn’t persisted as an easily read value – it’s actually stored as an integer in the offset column. The offset column stores not only the value for the leaf_offset column but also for the internal_offset column – we just have to do some masking and conversion to get it out.</p>
+<p>The following query helps to show exactly what we’re doing to extract the leaf_offset value from the offset column value:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	offset,
+	<span class="keyword">CAST</span>(<span class="keyword">CAST</span>(offset & <span class="number">0xFFFF</span> <span class="keyword">AS</span> binary(<span class="number">2</span>)) <span class="keyword">AS</span> <span class="keyword">smallint</span>) <span class="keyword">AS</span> leaf_offset,
+	<span class="keyword">CAST</span>(offset <span class="keyword">AS</span> binary(<span class="number">4</span>)) <span class="keyword">AS</span> HexValue,
+	<span class="keyword">CAST</span>(offset & <span class="number">0xFFFF</span> <span class="keyword">AS</span> binary(<span class="number">4</span>)) <span class="keyword">AS</span> MaskedHexValue,
+	<span class="keyword">CAST</span>(offset & <span class="number">0xFFFF</span> <span class="keyword">AS</span> binary(<span class="number">2</span>)) <span class="keyword">AS</span> ShortenedMaskedHexValue
+<span class="keyword">FROM</span>
+	sys.sysrscols
+<span class="keyword">WHERE</span>
+	rsid = <span class="number">72057594040549376</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_36.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_36.png" style="max-height: 250px"/></a></div></div>
+
+<p>The HexValue shows the offset column value represented in hex – no magic yet. After applying the 0xFFFF bitmask (0b1111111111111111 in binary), only the first 16 bits / 2 (starting from the right since we’re little endian) bytes will keep their value. Converting to binary(2) simply discards the last two bytes (the 0x0000 part).</p>
+<p>0x0001 is easily converted to the decimal value 1. 0xFFFF and 0xFFFE correspond to the decimal values 65.535 and 65.534 respectively. The way storing smallints work, 0 is stored as 0x0, 32.767 is stored as 0x7FFF and from there on the decimal value rolls over into –32.768 with a hex value of 0x8000 – continuing all the way up the –1 = 0xFFFF. And that’s why we can convert the binary(2) representations of the offset columns into the –1 and –2 decimal values.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
 			<span class="month">Jun</span>
 			<span class="day">30</span>
 		</div>
@@ -857,183 +1171,6 @@ DBCC PAGE (Test, 1, 114, 3)
 
 <p>We save the surrogate key value bytes for each row and all the data is stored only once. There’s no need for secondary indexes as all the data is stored in the natural querying order. However, page splitting will occur as EntityID won’t be sequential. This is easily avoided by scheduling REINDEX &amp; REUBILD as appropriate.</p>
 <p>Furthermore, as the clustered key is sorted on Created secondarily, older non-fragmented data won’t be affected – it’ll only affect the most recently added pages, which are probably in memory anyways and thus won’t cause problems for querying.</p>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">May</span>
-			<span class="day">19</span>
-		</div>
-		<div class="lower">2011</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/reverse-engineering-sql-server-page-headers/" title="Reverse Engineering SQL Server Page Headers" rel="bookmark">Reverse Engineering SQL Server Page Headers</a></h1>
-		<div class="categories">
-			
-				<a href="/category/.NET/">.NET</a>
-				, 
-			
-				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>One of the first challenges I faced when starting out the development of <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a> was parsing page headers. We all know that <a href="/deciphering-a-sql-server-data-page/">pages are basically split in two parts</a>, the 96 byte header and the 8096 byte body of remaining bytes. Much has been written about headers and Paul Randal (<a href="http://www.sqlskills.com/BLOGS/PAUL/" target="_blank">b</a>|<a href="http://twitter.com/#!/paulrandal" target="_blank">t</a>) has a great post describing the <a href="http://www.sqlskills.com/blogs/paul/post/Inside-the-Storage-Engine-Anatomy-of-a-page.aspx" target="_blank">contents of the header</a> as well. However, though the contents have been described, I’ve been completely unable to find any kind of details on the storage format. What data types are the individual fields, and what’s the order? Oh well, we’ve always got DBCC PAGE.</p>
-<a id="more"></a>
-
-<p>Firing up DBCC PAGE, I scoured for a random data page whose header I could dump, in this case page (1:101):</p>
-<figure class="highlight sql"><pre>DBCC TRACEON (3604)
-DBCC PAGE (TextTest, 1, 101, 2)
-</pre></figure>
-
-<p>The result comes in two parts, first we’ve got the header contents as DBCC PAGE kindly parses for us, while the second part is a dump of the 96 bytes that make up the header data:</p>
-<div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_2.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_2.png" style="max-height: 250px"/></a></div></div>
-
-<p>Armed with this, the hunt begins! What we’re looking for is a match between the parsed values and the bytes in the header. To make it easy, we need to spot some unique values so we don’t get a lot of ambiguity in where the value might be stored. Starting out with m_freeCnt, we see it has a value of 4066. The body size is 8060 bytes so it’s clear that the number can’t be a tinyint. It wouldn’t make sense to make it an int as that supporst way larger values than we need. An educated guess would be that m_freeCnt is probably stored as a smallint, leaving plenty of space for the 0-8060 range we need.</p>
-<p>Now, 4066 represented in hex is 0x0FE2. Byte swapped, that becomes 0xE20F, and what do you know, we have a match!</p>
-<div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_4.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_4.png" style="max-height: 250px"/></a></div></div>
-
-<p>And thus we have identified the first field of our header:</p>
-<figure class="highlight csharp"><pre>/*
-	Bytes	Content
-	-----	-------
-	00-27	?
-	28-29	FreeCnt (smallint)
-	30-95	?
-*/
-</pre></figure>
-
-<p>Continuing the search we see that m_freeData = 3895. In hex that’s 0x0F37 and 0x370F when swapped. And voilá, that’s stored right next to m_freeCnt:</p>
-<div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_6.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_6.png" style="max-height: 250px"/></a></div></div>
-
-<p>Continuing on with this technique, we can map all the distinct header values where there’s no ambiguity as to where they’re stored. But what about a field like m_level? It has the same value as m_xactReserved, m_reservedCnt, m_ghostRecCnt, etc. How do we know which one of those zero values is really m_level? And how do we find out what the data type is? It could be anything from a tinyint to bigint!</p>
-<p>Time to bring out the big guns! We’ll start out by shutting down MSSQL / SQL Server:</p>
-<div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_8.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_8.png" style="max-height: 250px"/></a></div></div>
-
-<p>Then we’ll open up the .mdf file in Visual Studio:</p>
-<div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_10.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_10.png" style="max-height: 250px"/></a></div></div>
-
-<p>This’ll open up the file in hex editor mode, allowing direct access to all the yummy data! As we know the page id was 101, we need to jump to byte offset 101 * 8192 = 827,392 to get to the first byte of page 101:</p>
-<div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_12.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_12.png" style="max-height: 250px"/></a></div></div>
-
-<p>Looking at these bytes we see that they’re identical to our header contents, thus confirming we’ve jumped to the correct offset:</p>
-<div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_16.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_16.png" style="max-height: 250px"/></a></div></div>
-
-<p>Now I’m going to ask you to do something that will make sheep loving people cry – write some gibberish in there and save the file! Please <strong>do not</strong> do this to a database with any kind of important data in it. Before:</p>
-<div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_18.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_18.png" style="max-height: 250px"/></a></div></div>
-
-<p>After:</p>
-<div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_22.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_22.png" style="max-height: 250px"/></a></div></div>
-
-<p>Oh the horrors! Now restart MSSQL / SQL Server and rerun the DBCC PAGE query from before:</p>
-<figure class="highlight sql"><pre>DBCC TRACEON (3604)
-DBCC PAGE (TextTest, 1, 101, 2)
-</pre></figure>
-
-<p>And notice the header we get as a result:</p>
-<div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_24.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_24.png" style="max-height: 250px"/></a></div></div>
-
-<p>Several values have changed! m_xactReserved had an ambiguous value of 0 before, now it’s at 30,806. Converting that to byte swapped hex we get a value of 0x5678. Looking at the header, we’ve now pinpointed yet another field and datatype (smallint):</p>
-<div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_26.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_26.png" style="max-height: 250px"/></a></div></div>
-
-<p>And thus we can update our header reference table:</p>
-<figure class="highlight csharp"><pre>/*
-	Bytes	Content
-	-----	-------
-	00-27	?
-	28-29	FreeCnt (smallint)
-	30-49	?
-	50-51	XactReserved (smallint)
-	30-95	?
-*/
-</pre></figure>
-
-<p>Continuing down this path, messing up the header, correlating messed up values with values parsed by DBCC PAGE, it’s possible to locate all the fields and their corresponding data types. If you see the following message, you know you’ve messed it up properly:</p>
-<div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_28.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_28.png" style="max-height: 250px"/></a></div></div>
-
-<p>You should be proud of yourself. No go clean up the mess you’ve made!</p>
-<p>Jumping forward, I’ve compiled a reference to the page header structure:</p>
-<figure class="highlight csharp"><pre>/*
-	Bytes	Content
-	-----	-------
-	00	HeaderVersion (tinyint)
-	01	Type (tinyint)
-	02	TypeFlagBits (tinyint)
-	03	Level (tinyint)
-	04-05	FlagBits (smallint)
-	06-07	IndexID (smallint)
-	08-11	PreviousPageID (int)
-	12-13	PreviousFileID (smallint)
-	14-15	Pminlen (smallint)
-	16-19	NextPageID (int)
-	20-21	NextPageFileID (smallint)
-	22-23	SlotCnt (smallint)
-	24-27	ObjectID (int)
-	28-29	FreeCnt (smallint)
-	30-31	FreeData (smallint)
-	32-35	PageID (int)
-	36-37	FileID (smallint)
-	38-39	ReservedCnt (smallint)
-	40-43	Lsn1 (int)
-	44-47	Lsn2 (int)
-	48-49	Lsn3 (smallint)
-	50-51	XactReserved (smallint)
-	52-55	XdesIDPart2 (int)
-	56-57	XdesIDPart1 (smallint)
-	58-59	GhostRecCnt (smallint)
-	60-95	?
-*/
-</pre></figure>
-
-<p>I’m not sure what lies in the remaining bytes of the header as DBCC PAGE doesn’t seem to parse stuff there, and it seems to be zeroed out for all pages I’ve tested. I’m assuming it’s reserved bytes for future usage. Once we’ve got the format, parsing becomes a simple task of reading each field, field by field:</p>
-<figure class="highlight csharp"><pre>HeaderVersion = header[<span class="number">0</span>]<span class="comment">;</span>
-Type = (PageType)header[<span class="number">1</span>]<span class="comment">;</span>
-TypeFlagBits = header[<span class="number">2</span>]<span class="comment">;</span>
-Level = header[<span class="number">3</span>]<span class="comment">;</span>
-FlagBits = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">4</span>)<span class="comment">;</span>
-IndexID = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">6</span>)<span class="comment">;</span>
-PreviousPage = new PagePointer(BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">12</span>), BitConverter<span class="preprocessor">.ToInt</span>32(header, <span class="number">8</span>))<span class="comment">;</span>
-Pminlen = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">14</span>)<span class="comment">;</span>
-NextPage = new PagePointer(BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">20</span>), BitConverter<span class="preprocessor">.ToInt</span>32(header, <span class="number">16</span>))<span class="comment">;</span>
-SlotCnt = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">22</span>)<span class="comment">;</span>
-ObjectID = BitConverter<span class="preprocessor">.ToInt</span>32(header, <span class="number">24</span>)<span class="comment">;</span>
-FreeCnt = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">28</span>)<span class="comment">;</span>
-FreeData = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">30</span>)<span class="comment">;</span>
-Pointer = new PagePointer(BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">36</span>), BitConverter<span class="preprocessor">.ToInt</span>32(header, <span class="number">32</span>))<span class="comment">;</span>
-ReservedCnt = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">38</span>)<span class="comment">;</span>
-Lsn = <span class="string">"("</span> + BitConverter<span class="preprocessor">.ToInt</span>32(header, <span class="number">40</span>) + <span class="string">":"</span> + BitConverter<span class="preprocessor">.ToInt</span>32(header, <span class="number">44</span>) + <span class="string">":"</span> + BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">48</span>) + <span class="string">")"</span><span class="comment">;</span>
-XactReserved = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">50</span>)<span class="comment">;</span>
-XdesID = <span class="string">"("</span> + BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">56</span>) + <span class="string">":"</span> + BitConverter<span class="preprocessor">.ToInt</span>32(header, <span class="number">52</span>) + <span class="string">")"</span><span class="comment">;</span>
-GhostRecCnt = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">58</span>)<span class="comment">;</span>
-</pre></figure>
-
-<p>You can also see the <a href="https://github.com/improvedk/OrcaMDF/blob/master/src/OrcaMDF.Core/Engine/Pages/PageHeader.cs" target="_blank">full source of the header parsing at GitHub</a>.</p>
-<h2 id="Wan’t_more?">Wan’t more?</h2>
-<p>If this isn’t enough for you, you should go and <a href="http://www.sqlpass.org/summit/2011/Speakers/SessionPreferencing.aspx?spid=245&amp;p=1&amp;preferred=False" target="_blank">vote for one or more of my OrcaMDF related sessions</a> at the PASS Summit.</p>
 
 
 				<div style="clear: both"></div>

@@ -123,6 +123,122 @@
 	<div class="datebox">
 		<div class="upper">
 			<span class="month">Jun</span>
+			<span class="day">13</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/providing-custom-assembly-evidence/" title="Providing Custom Assembly Evidence" rel="bookmark">Providing Custom Assembly Evidence</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I recently <a href="/analyzing-assembly-evidence/">mentioned</a> the possibility of having an assembly provide custom evidence alongside the CLR provided evidence. Let’s see how to do it.</p>
+<a id="more"></a>
+
+<h2 id="Creating_the_evidence">Creating the evidence</h2>
+<p>The first step is to actually create the evidence itself. The evidence can be in any form, as long as it’s serializable. That means you can use strings, complex types (provided they’re serializable), or plain old’n’good XML. In lack of a better example, I’ll create a piece of evidence that tells the birthdate and name of the developer behind the assembly. Really useful, I know.</p>
+<figure class="highlight xml"><pre><span class="pi">&lt;?xml version="1.0" encoding="utf-8" ?&gt;</span>
+<span class="tag">&lt;<span class="title">myEvidence</span>&gt;</span>
+	<span class="tag">&lt;<span class="title">birthDay</span>&gt;</span>1985-07-25<span class="tag">&lt;/<span class="title">birthDay</span>&gt;</span>
+	<span class="tag">&lt;<span class="title">name</span>&gt;</span>Mark S. Rasmussen<span class="tag">&lt;/<span class="title">name</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">myEvidence</span>&gt;</span>
+</pre></figure>
+
+<h2 id="Saving_the_evidence_in_binary_form">Saving the evidence in binary form</h2>
+<p>To embed our XML as evidence, we first have to save it in binary form. To save a bit of typing, I use my SaveXmlAsBinaryEvidence function:</p>
+<figure class="highlight csharp"><pre><span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> Saves the input XML in binary format that can be used when linking custom evidence to an assembly</span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="xml"&gt;</span><span class="xmlDocTag">&lt;/param&gt;</span></span>
+<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="outputFile"&gt;</span><span class="xmlDocTag">&lt;/param&gt;</span></span>
+<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">SaveXmlAsBinaryEvidence</span>(<span class="keyword">string</span> xml, <span class="keyword">string</span> outputFile)
+{
+	Evidence customEvidence = <span class="keyword">new</span> Evidence();
+	customEvidence.AddAssembly(xml);
+
+	<span class="keyword">using</span> (FileStream fs = <span class="keyword">new</span> FileStream(outputFile, FileMode.Create))
+	{
+		BinaryFormatter bf = <span class="keyword">new</span> BinaryFormatter();
+		bf.Serialize(fs, customEvidence);
+	}
+}
+</pre></figure>
+
+<p>This allows us to save out the evidence in binary format using a single line:</p>
+<figure class="highlight csharp"><pre>EvidenceCreator<span class="preprocessor">.SaveXmlAsBinaryEvidence</span>(File<span class="preprocessor">.ReadAllText</span>(<span class="string">"MyEvidence.xml"</span>), <span class="string">"MyEvidence.evidence"</span>)<span class="comment">;</span>
+</pre></figure>
+
+<h2 id="Compiling_the_relevant_assembly_in_netmodule_form">Compiling the relevant assembly in netmodule form</h2>
+<p>I’ve created a simple assembly named TestAssembly that consists of a single file, MyClass:</p>
+<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+
+namespace TestAssembly
+{
+	<span class="keyword">public</span> <span class="keyword">class</span> MyClass
+	{
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Test</span>()
+		{
+			Console.Write(<span class="string">"Hello world!"</span>);
+		}
+	}
+}
+</pre></figure>
+
+<p>If we compile it directly in Visual Studio, we end up with an assembly called TestAssembly.dll - this is not what we want. We need to compile the code into a .netmodule module file so we can manually link it together with our assembly into a finished assembly. Running the following command (with relevant path variables setup, or from the Visual Studio Command Prompt) will compile MyClass into a netmodule called MyClass.netmodule:</p>
+<figure class="highlight csharp"><pre>csc /<span class="symbol">target:</span><span class="class"><span class="keyword">module</span> <span class="title">MyClass</span>.<span class="title">cs</span></span>
+</pre></figure>
+
+<p>You can actually load the .netmodule file into Reflector to verify the contents. It’ll work nicely, though Reflector will give a warning since our netmodule does not contain an assembly manifest.</p>
+<h2 id="Creating_an_assembly_by_linking_the_netmodule_and_evidence_together">Creating an assembly by linking the netmodule and evidence together</h2>
+<p>The final step is to link our evidence (MyEvidence.evidence) and netmodule (MyClass.netmodule) together. Make sure both files reside in the same directory (they don’t have to, but it’ll be easier). The following command will invoke AL.exe and do the final assembly linking:</p>
+<figure class="highlight csharp"><pre>al /target:library /evidence:MyEvidence<span class="preprocessor">.evidence</span> /<span class="keyword">out</span>:MyClass<span class="preprocessor">.dll</span> MyClass<span class="preprocessor">.netmodule</span>
+</pre></figure>
+
+<p>If you load up the resulting assembly in Reflector, you’ll see the attached evidence under the Resources directory:</p>
+<div class="imgwrapper" style=""><div><a href="/providing-custom-assembly-evidence/reflector_evidence_2.jpg" class="fancy"><img src="/providing-custom-assembly-evidence/reflector_evidence_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Now, if we <a href="/analyzing-assembly-evidence/">analyze the assembly evidence</a> by loading the assembly and enumerating the assembly provided evidence like so:</p>
+<figure class="highlight csharp"><pre>al /target:library /evidence:MyEvidence<span class="preprocessor">.evidence</span> /<span class="keyword">out</span>:MyClass<span class="preprocessor">.dll</span> MyClass<span class="preprocessor">.netmodule</span>
+</pre></figure>
+
+<p>We see our custom evidence:</p>
+<div class="imgwrapper" style=""><div><a href="/providing-custom-assembly-evidence/analyzing_custom_evidence_2.jpg" class="fancy"><img src="/providing-custom-assembly-evidence/analyzing_custom_evidence_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Trustworthiness">Trustworthiness</h2>
+<p><a href="/analyzing-assembly-evidence/">As mentioned earlier</a>, assembly provided evidence is inherently not trustworthy. There are however ways to secure it. We could use a public/private cryptosystem to sign the actual evidence. That way, anyone reading the evidence could verify the evidence providers signature and thus be sure that the entity linking the evidence into the assembly is trustworthy.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jun</span>
 			<span class="day">12</span>
 		</div>
 		<div class="lower">2008</div>
@@ -1506,190 +1622,6 @@ private static void performAutomappedDataReader()
 <p>I recorded a screencast of this article sometime in 2007, but I never really got it published, except for a link on the Microsoft Denmark site. It was my first screencast and unfortunately I made some mistakes, the biggest one being the click sounds from the mouse. An even bigger mistake was me deleting the original Camtasia recording files so I can’t create a new version without them.</p>
 <p>Never the less, if you prefer watching to reading, it might be interesting to look through.</p>
 <div class="video-container"><iframe src="//www.youtube.com/embed/Dc9EE4YRGy8" frameborder="0" allowfullscreen></iframe></div>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Apr</span>
-			<span class="day">16</span>
-		</div>
-		<div class="lower">2008</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/profiling-code-the-easy-way/" title="Profiling Code the Easy Way" rel="bookmark">Profiling Code the Easy Way</a></h1>
-		<div class="categories">
-			
-				<a href="/category/.NET/">.NET</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>I often do code profiling, usually involving a stopwatch and some boilerplate code. I decided to make a quick’n’simple class that’ll help me get rid of some of that code and concentrate on the actual code being profiled.</p>
-<a id="more"></a>
-
-<p>There are just four functions in the class, all overload variations. In a nutshell, they’ll allow you to profile a single action with &amp; without warmup, multiple iterations and multiple iterations run i parallel. The code is more or less self explanable so I’ll just throw it out there:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
-<span class="keyword">using</span> System.Collections.Generic;
-<span class="keyword">using</span> System.Diagnostics;
-<span class="keyword">using</span> System.Threading;
-
-namespace CodeProfiler
-{
-	<span class="keyword">public</span> <span class="keyword">class</span> CodeProfiler
-	{
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> Measures the runtime of an action once</span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="action"&gt;</span>The action to profile<span class="xmlDocTag">&lt;/param&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="warmup"&gt;</span>Whether the action should be run once before the actual measurement<span class="xmlDocTag">&lt;/param&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>The total runtime<span class="xmlDocTag">&lt;/returns&gt;</span></span>
-		<span class="keyword">public</span> <span class="keyword">static</span> TimeSpan <span class="title">ProfileAction</span>(Action action, <span class="keyword">bool</span> warmup)
-		{
-			<span class="keyword">if</span> (warmup)
-				action();
-
-			Stopwatch sw = <span class="keyword">new</span> Stopwatch();
-			sw.Start();
-			action();
-			sw.Stop();
-			<span class="keyword">return</span> sw.Elapsed;
-		}
-
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> Measures the runtime of an action once, will run the action before to warm up</span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="action"&gt;</span>The action to profile<span class="xmlDocTag">&lt;/param&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>The total runtime<span class="xmlDocTag">&lt;/returns&gt;</span></span>
-		<span class="keyword">public</span> <span class="keyword">static</span> TimeSpan <span class="title">ProfileAction</span>(Action action)
-		{
-			<span class="keyword">return</span> ProfileAction(action, <span class="keyword">true</span>);
-		}
-
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> Measures the total runtime of performing the specified action multiple times</span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="action"&gt;</span>The action to profile<span class="xmlDocTag">&lt;/param&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="iterations"&gt;</span>The number of iterations the action should be performed<span class="xmlDocTag">&lt;/param&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>The total runtime<span class="xmlDocTag">&lt;/returns&gt;</span></span>
-		<span class="keyword">public</span> <span class="keyword">static</span> TimeSpan <span class="title">ProfileAction</span>(Action action, <span class="keyword">int</span> iterations)
-		{
-			TimeSpan total = <span class="keyword">new</span> TimeSpan();
-
-			<span class="comment">// Perform single warmup</span>
-			action();
-
-			<span class="comment">// Profile iterations</span>
-			<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; iterations; i++)
-				total = total.Add(ProfileAction(action, <span class="keyword">false</span>));
-
-			<span class="keyword">return</span> total;
-		}
-
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> Measures the total runtime of performing the specified action using multiple threads</span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="action"&gt;</span>The action to profile<span class="xmlDocTag">&lt;/param&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="iterations"&gt;</span>The total number of iterations that should be profiled<span class="xmlDocTag">&lt;/param&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="dop"&gt;</span>The number of simultaneous threads that should be used<span class="xmlDocTag">&lt;/param&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>The total runtime<span class="xmlDocTag">&lt;/returns&gt;</span></span>
-		<span class="keyword">public</span> <span class="keyword">static</span> TimeSpan <span class="title">ProfileAction</span>(Action action, <span class="keyword">int</span> iterations, <span class="keyword">int</span> dop)
-		{
-			<span class="keyword">object</span> locker = <span class="keyword">new</span> <span class="keyword">object</span>();
-			List&lt;Thread&gt; threads = <span class="keyword">new</span> List&lt;Thread&gt;(iterations);
-
-			<span class="comment">// Warmup</span>
-			action();
-
-			<span class="comment">// Create profiling threads</span>
-			<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; dop; i++)
-			{
-				Thread t = <span class="keyword">new</span> Thread(<span class="keyword">delegate</span>()
-				{
-					<span class="keyword">while</span> (<span class="keyword">true</span>)
-					{
-						<span class="keyword">lock</span> (locker)
-						{
-							<span class="keyword">if</span> (iterations &gt; <span class="number">0</span>)
-								iterations--;
-							<span class="keyword">else</span>
-								<span class="keyword">break</span>;
-						}
-
-						action();
-					}
-				});
-				threads.Add(t);
-			}
-
-			Stopwatch sw = <span class="keyword">new</span> Stopwatch();
-			sw.Start();
-
-			<span class="comment">// Start profiling threads</span>
-			threads.ForEach(t =&gt; t.Start());
-
-			<span class="comment">// Wait for all threads to stop</span>
-			threads.ForEach(t =&gt; t.Join());
-
-			sw.Stop();
-
-			<span class="keyword">return</span> sw.Elapsed;
-		}
-	}
-}
-</pre></figure>
-
-<p>Using the CodeProfiler class, it’s easy for us to do code profiling, including measuring the effects of parallelization. Here’s an example of calculating the square root of the numbers 1 through 10 million 100 times, using 1-16 simultaneous threads. FYI I’m runing on a quad core machine.</p>
-<figure class="highlight csharp"><pre>using System;
-
-namespace CodeProfiler
-{
-	class Program
-	{
-		static void Main(string[] args)
-		{
-			Action action = () =&gt;
-			{
-				for (int i = 0; i &lt; 10000000; i++)
-					Math.Sqrt(i);
-			};
-
-			for(int i=1; i&lt;=16; i++)
-				Console.WriteLine(i + <span class="string">" thread(s):t"</span> + CodeProfiler.ProfileAction(action, 100, i));
-
-			Console.Read();
-		}
-	}
-}
-</pre></figure>
-
-<p>And the result as expected, the performance panning out when threads &gt;= cores. Using more threads than there is cores will usually not result in added performance, just increased context switching which is not desirable. Here’s the resulting execution times with seconds on the Y axis and number of threads on the X axis.</p>
-<div class="imgwrapper" style=""><div><a href="/profiling-code-the-easy-way/codeprofilergraph_2.jpg" class="fancy"><img src="/profiling-code-the-easy-way/codeprofilergraph_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/profiling-code-the-easy-way/codeprofilercmd_2.jpg" class="fancy"><img src="/profiling-code-the-easy-way/codeprofilercmd_2.jpg" style="max-height: 250px"/></a></div></div>
 
 
 				<div style="clear: both"></div>

@@ -75,6 +75,130 @@
 	<div class="datebox">
 		<div class="upper">
 			<span class="month">Jul</span>
+			<span class="day">18</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/" title="What is the Size of the LOB Pointer for (MAX) Types Like Varchar, Varbinary, Etc?" rel="bookmark">What is the Size of the LOB Pointer for (MAX) Types Like Varchar, Varbinary, Etc?</a></h1>
+		<div class="categories">
+			
+				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>LOB types like varchar(MAX), nvarchar(MAX), varbinary(MAX) and xml suffer from split personality disorder. SQL Server may store values in-row or off-row depending on the size of the value, the available space in the record and the table settings. Because of this, it’s no easy task to predict the size of the pointer left in the record itself. You might even say… It depends.</p>
+<a id="more"></a>
+
+<p>Based on <a href="http://www.sqlservercentral.com/Forums/Topic1143500-391-1.aspx" target="_blank">this post</a>, and the fact that I’m working on LOB type support for <a href="/introducing-orcamdf">OrcaMDF</a> at the moment, I decided to look into the LOB pointer storage structures.</p>
+<h2 id="Setup">Setup</h2>
+<p>For testing, we’ll use a very simple schema:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> Lob
+(
+	A <span class="keyword">char</span>(<span class="number">5000</span>) <span class="keyword">NULL</span>,
+	B <span class="keyword">varchar</span>(<span class="aggregate">MAX</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>
+)</span>
+</pre></figure>
+
+<h2 id="The_[BLOB_Inline_Data]_for_in-row_data">The [BLOB Inline Data] for in-row data</h2>
+<p>If data is small enough (“small enough” being hard to define as it depends on the free space in the page, the mood of SQL Server and probably a bunch of other undocumented factors), it will be stored in the record itself. Let’s insert a single small row:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> Lob (B) <span class="keyword">VALUES</span> (<span class="string">'Test'</span>)</span>
+</pre></figure>
+
+<p>Since A takes up 5000 bytes and we only try to insert 4 bytes into B, there’s plenty of space for it to be stored in-row, taking up only the expected 4 bytes that we inserted. This behavior is just as a normal varchar(X) SLOB column would react.</p>
+<div class="imgwrapper" style=""><div><a href="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_4.png" class="fancy"><img src="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_4.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="The_[BLOB_Inline_Root]_for_row-overflow_data">The [BLOB Inline Root] for row-overflow data</h2>
+<p>Now let’s truncate the table and insert a new row, forcing SQL Server to push the data off-row as there isn’t enough space on the original record:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">TRUNCATE</span> <span class="keyword">TABLE</span> LOB
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> Lob (B) <span class="keyword">VALUES</span> (REPLICATE(<span class="keyword">CAST</span>(<span class="string">'a'</span> <span class="keyword">AS</span> <span class="keyword">varchar</span>(<span class="aggregate">max</span>)), <span class="number">4000</span>))</span>
+</pre></figure>
+
+<p>Since A once again takes up a fixed amount of 5000 bytes and we’re now trying to insert 4000 more bytes, we exceed the maximum capacity of 8096 bytes for the page body, causing SQL Server to push the data off-row. Running a DBCC IND confirms that SQL Server has allocated a new IAM page to track the LOB data pages:</p>
+<figure class="highlight sql"><pre>DBCC IND (X, 'Lob', -1)
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_6.png" class="fancy"><img src="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_6.png" style="max-height: 250px"/></a></div></div>
+
+<p>Extracting the record and looking at column 2 reveals that we’re now storing a 24 byte row-overflow pointer:</p>
+<div class="imgwrapper" style=""><div><a href="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_8.png" class="fancy"><img src="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_8.png" style="max-height: 250px"/></a></div></div>
+
+<p>This pointer, once again, is exactly like a SLOB column would be stored. The (MAX) LOB variants do have one trick that SLOBs don’t have though – they can be longer than 8000 bytes. In that case, we need more than one page to store the value – and thus the off-row pointer needs to point at more than one page. The off-row pointer, at an abstract level, points to a root of pointers that then point onwards to the actual data pages (or onto another root in case we need more than two levels of page references). If the root is small enough, it’ll be stored in-row. The smallest root possible is 12 bytes – a single page reference (the extra 12 bytes is due to overhead). Each following page reference takes up an extra 12 bytes. Thus, an inline root pointing to two pages will take up 36 bytes of space, and so forth, just look at this:</p>
+<div class="imgwrapper" style=""><div><a href="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_10.png" class="fancy"><img src="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_10.png" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_12.png" class="fancy"><img src="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_12.png" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_14.png" class="fancy"><img src="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_14.png" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_16.png" class="fancy"><img src="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_16.png" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_18.png" class="fancy"><img src="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_18.png" style="max-height: 250px"/></a></div></div>
+
+<p>Note how we go from 24 to 36, 48, 60 and finally 72 bytes for a total of 40.000 bytes of data, stored on five data pages. Once we exceed 72 bytes, SQL Server doesn’t store the whole root inline any longer, instead if points to a single new slot on another page. The (1:379) page is a text_tree page, containing references to the pages where the data is stored:</p>
+<div class="imgwrapper" style=""><div><a href="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_20.png" class="fancy"><img src="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_20.png" style="max-height: 250px"/></a></div></div>
+
+<p>I haven’t been able to make SQL Server store inline blob roots any larger than 72 bytes so I’m guessing that’s a hard cutoff value before it’ll start referencing text_tree pages. Ignoring text_tree pages, the pointer format so far has been exactly the same as for SLOBs. So when exactly does SQL Server store a classic 16 byte LOB pointer for (MAX) LOB types?</p>
+<h2 id="The_[Textpointer]_for_LOB_data">The [Textpointer] for LOB data</h2>
+<p>SQL Server will <em>never</em> store a LOB pointer for the (MAX) LOB types, <em>unless</em> the <a href="http://msdn.microsoft.com/en-us/library/ms173530.aspx" target="_blank">large value types out of row</a> setting has been turned on. Let’s clear the table, set the setting, and then insert a new row like before:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">TRUNCATE</span> <span class="keyword">TABLE</span> LOB
+<span class="keyword">EXEC</span> sp_tableoption N<span class="string">'Lob'</span>, <span class="string">'large value types out of row'</span>, <span class="string">'ON'</span>
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> Lob (B) <span class="keyword">VALUES</span> (REPLICATE(<span class="keyword">CAST</span>(<span class="string">'a'</span> <span class="keyword">AS</span> <span class="keyword">varchar</span>(<span class="aggregate">max</span>)), <span class="number">4000</span>))</span>
+</pre></figure>
+
+<p>Now just as with the inline root, SQL Server allocates an IAM page to track the LOB data pages:</p>
+<div class="imgwrapper" style=""><div><a href="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_22.png" class="fancy"><img src="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_22.png" style="max-height: 250px"/></a></div></div>
+
+<p>But when we look at the record stored on page (1:4380), we see that it stores a Textpointer instead of an inline blob root:</p>
+<div class="imgwrapper" style=""><div><a href="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_24.png" class="fancy"><img src="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_24.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Mixed_pointer_types">Mixed pointer types</h2>
+<p>As long as the <a href="http://msdn.microsoft.com/en-us/library/ms173530.aspx" target="_blank">large value types out of row</a> setting is off (which it is by default), the (MAX) LOB types will act exactly like a SLOB column, except for the fact that the data can be larger than 8000 bytes. Once we turn the setting on, the (MAX) LOB types start acting like classic LOB types. So does this mean that the tables will always either use inline blob roots or textpointers? No, if only it were that simple. Take a look at this sample:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> TrickyLob
+(
+	A <span class="keyword">varchar</span>(<span class="aggregate">MAX</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>
+)
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> TrickyLob <span class="keyword">VALUES</span> (<span class="string">'Mark'</span>)
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> TrickyLob <span class="keyword">VALUES</span> (REPLICATE(<span class="keyword">CAST</span>(<span class="string">'a'</span> <span class="keyword">AS</span> <span class="keyword">varchar</span>(<span class="aggregate">MAX</span>)), <span class="number">9000</span>))
+<span class="keyword">EXEC</span> sp_tableoption N<span class="string">'TrickyLob'</span>, <span class="string">'large value types out of row'</span>, <span class="string">'ON'</span>
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> TrickyLob <span class="keyword">VALUES</span> (REPLICATE(<span class="keyword">CAST</span>(<span class="string">'a'</span> <span class="keyword">AS</span> <span class="keyword">varchar</span>(<span class="aggregate">MAX</span>)), <span class="number">4000</span>))</span>
+</pre></figure>
+
+<p>Running DBCC PAGE on the single allocated data page reveals that we now have three records using three different pointer types:</p>
+<div class="imgwrapper" style=""><div><a href="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_28.png" class="fancy"><img src="/what-is-the-size-of-the-lob-pointer-for-max-types-like-varchar-varbinary-etc/image_28.png" style="max-height: 250px"/></a></div></div>
+
+<p>Lesson: When sp_tableoption is run to set the <a href="http://msdn.microsoft.com/en-us/library/ms173530.aspx" target="_blank">large value types out of row</a> setting, it only takes effect for newly added records. A table rebuild won’t affect existing inline blob roots either, only updates to existing records will rebuild the record and convert the inline blob root to a textpointers.</p>
+<h2 id="Conclusion">Conclusion</h2>
+<p>Predicting the LOB pointer type &amp; size can be tricky as it depends on multiple factors. Using the above, you should be able to get a notion of what will be stored, as well as to interpret the DBCC PAGE results you might run into.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
 			<span class="day">16</span>
 		</div>
 		<div class="lower">2011</div>
@@ -244,99 +368,6 @@
 <div class="imgwrapper" style=""><div><a href="/the-8-byte-record-that-was-9-bytes-while-making-no-sense/image_42.png" class="fancy"><img src="/the-8-byte-record-that-was-9-bytes-while-making-no-sense/image_42.png" style="max-height: 250px"/></a></div></div>
 
 <p>As can be seen, the storage engine allocates 9 bytes for all three rows (though we can only verify the first two). Thus it’s not just DBCC PAGE that reads the records as being 9 bytes, so does the storage engine. This just strengthens the case that SQL Server knows best, now if only I could figure out why :)</p>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Jul</span>
-			<span class="day">15</span>
-		</div>
-		<div class="lower">2011</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/the-null-bitmap-is-not-always-present-in-data-records/" title="The Null Bitmap is Not Always Present in Data Records" rel="bookmark">The Null Bitmap is Not Always Present in Data Records</a></h1>
-		<div class="categories">
-			
-				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>While <a href="/sparse-column-storage-ndash-the-sparse-vector/">implementing sparse column support</a> for <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a>, I ran into a special condition that caught me by surprise – a data record with no null bitmap. Even <a href="http://www.sqlskills.com/BLOGS/PAUL/" target="_blank">Paul Randal</a> mentioned that the null bitmap would <em>always</em> be present in data records in his <a href="http://www.sqlskills.com/BLOGS/PAUL/post/A-SQL-Server-DBA-myth-a-day-(630" target="_blank">A SQL Server DBA myth a day: (6/30) three null bitmap myths</a>-three-null-bitmap-myths.aspx) post.</p>
-<a id="more"></a>
-
-<h2 id="Optimized_storage_of_sparse-only_tables">Optimized storage of sparse-only tables</h2>
-<p>During my testing I discovered that tables containing only sparse columns neither stored a null bitmap, nor the usual number of columns. Let’s create a test table and find a reference to the data page:</p>
-<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> OnlyFixedSparse (A <span class="keyword">int</span> SPARSE)
-<span class="keyword">INSERT</span> <span class="keyword">INTO</span> OnlyFixedSparse <span class="keyword">VALUES</span> (<span class="number">5</span>)
-DBCC IND (X, <span class="string">'OnlyFixedSparse'</span>, -<span class="number">1</span>)</span>
-</pre></figure>
-
-<div class="imgwrapper" style=""><div><a href="/the-null-bitmap-is-not-always-present-in-data-records/image_211.png" class="fancy"><img src="/the-null-bitmap-is-not-always-present-in-data-records/image_211.png" style="max-height: 250px"/></a></div></div>
-
-<p>And then let’s check the record contents for page (1:4359):</p>
-<figure class="highlight sql"><pre>DBCC PAGE (X, 1, 4359, 3)
-</pre></figure>
-
-<div class="imgwrapper" style=""><div><a href="/the-null-bitmap-is-not-always-present-in-data-records/image_65.png" class="fancy"><img src="/the-null-bitmap-is-not-always-present-in-data-records/image_65.png" style="max-height: 250px"/></a></div></div>
-
-<p>The first two bytes contain the record status bits. Next two bytes contain the offset for the end of the fixed-length portion of the record – which is 4 as expected, since we have no non-sparse fixed-length columns. As shown in the <em>Record Attributes</em> output, the status bytes indicates that there’s no null bitmap, and sure enough, the next two bytes indicates the number of variable length columns. The remaining bytes contains the variable length offset array as well as the <a href="/sparse-column-storage-ndash-the-sparse-vector/">sparse vector</a>.</p>
-<h3 id="Under_what_conditions_does_the_data_record_not_contain_a_null_bitmap?">Under what conditions does the data record not contain a null bitmap?</h3>
-<p>I did a quick empirical test to verify my theory that this only happens on tables containing only sparse columns:</p>
-<table width="500"><br>    <tbody><br>        <tr><br>            <td valign="top" width="299"><strong>Schema</strong></td><br>            <td valign="top" width="193"><strong>Contains null bitmap</strong></td><br>        </tr><br>        <tr><br>            <td valign="top" width="299">Only variable length columns</td><br>            <td valign="top" width="193">Yes</td><br>        </tr><br>        <tr><br>            <td valign="top" width="299">Only fixed length columns</td><br>            <td valign="top" width="193">Yes</td><br>        </tr><br>        <tr><br>            <td valign="top" width="299">Only sparse fixed length columns</td><br>            <td valign="top" width="193">No</td><br>        </tr><br>        <tr><br>            <td valign="top" width="299">Only sparse variable length columns</td><br>            <td valign="top" width="193">No</td><br>        </tr><br>        <tr><br>            <td valign="top" width="299">Fixed length + sparse fixed length columns</td><br>            <td valign="top" width="193">Yes</td><br>        </tr><br>        <tr><br>            <td valign="top" width="299">Variable length + sparse fixed length columns</td><br>            <td valign="top" width="193">Yes</td><br>        </tr><br>    </tbody><br></table>
-
-<p>Thus it would seem that this is an optimization made possible for tables containing nothing but sparse columns.</p>
-<h3 id="There’s_always_an_exception_to_the_exception">There’s always an exception to the exception</h3>
-<p>It <em>is</em> actually possible to have a data record without a null bitmap for a table with non-sparse columns too. Continuing on from the OnlyFixedSparse table from before, let’s add two extra nullable columns:</p>
-<figure class="highlight sql"><pre><span class="operator"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> OnlyFixedSparse <span class="keyword">ADD</span> B <span class="keyword">int</span> <span class="keyword">NULL</span>
-<span class="keyword">Alter</span> <span class="keyword">Table</span> OnlyFixedSparse <span class="keyword">ADD</span> C <span class="keyword">varchar</span>(<span class="number">10</span>) <span class="keyword">NULL</span></span>
-</pre></figure>
-
-<p>Checking the stored record reveals the exact same output as before:</p>
-<div class="imgwrapper" style=""><div><a href="/the-null-bitmap-is-not-always-present-in-data-records/image_86.png" class="fancy"><img src="/the-null-bitmap-is-not-always-present-in-data-records/image_86.png" style="max-height: 250px"/></a></div></div>
-
-<p>Thus it would seem that even without a null bitmap the usual alter semantics are followed – the addition of new nullable columns does not need to alter existing records. If we’d added a non-nullable column to the table, we would have to modify the record, causing the addition of a null bitmap and column count. The same goes if we insert a value into any of those new columns:</p>
-<figure class="highlight sql"><pre><span class="operator"><span class="keyword">UPDATE</span> OnlyFixedSparse <span class="keyword">SET</span> B = <span class="number">2</span></span>
-</pre></figure>
-
-<div class="imgwrapper" style=""><div><a href="/the-null-bitmap-is-not-always-present-in-data-records/image_105.png" class="fancy"><img src="/the-null-bitmap-is-not-always-present-in-data-records/image_105.png" style="max-height: 250px"/></a></div></div>
-
-<p>By setting the value of the B column we just added 7 extra bytes to our data record. 4 for the integer, 2 for the column count and 1 for the null bitmap. Had we not performed the update for all records in the table, only the affected records would be updated. This means we may have data records for a table where some have a null bitmap while others don’t. Just take a look at this:</p>
-<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> OnlyFixedSparse (A <span class="keyword">int</span> SPARSE)
-<span class="keyword">INSERT</span> <span class="keyword">INTO</span> OnlyFixedSparse <span class="keyword">VALUES</span> (<span class="number">5</span>), (<span class="number">6</span>)
-<span class="keyword">ALTER</span> <span class="keyword">TABLE</span> OnlyFixedSparse <span class="keyword">ADD</span> B <span class="keyword">int</span> <span class="keyword">NULL</span>
-<span class="keyword">UPDATE</span> OnlyFixedSparse <span class="keyword">SET</span> B = <span class="number">2</span> <span class="keyword">WHERE</span> A = <span class="number">5</span></span>
-</pre></figure>
-
-<div class="imgwrapper" style=""><div><a href="/the-null-bitmap-is-not-always-present-in-data-records/image_125.png" class="fancy"><img src="/the-null-bitmap-is-not-always-present-in-data-records/image_125.png" style="max-height: 250px"/></a></div></div>
-
-<h2 id="Conclusion">Conclusion</h2>
-<p>As I unfortunately do not work on the SQL Server team and I haven’t seen this condition documented, I can only theorize on this. For all normal data records, the null bitmap is always present, even if the table does not contain any null columns. While we can achieve <a href="http://www.sqlskills.com/blogs/paul/post/Inside-the-Storage-Engine-Anatomy-of-a-record.aspx" target="_blank">read optimizations</a> when columns may be null, for completely non-null tables, we still get the benefit that we can add a new nullable column to an existing schema, without having to modify the already existing records.</p>
-<p>While I think it’s bit of a special use case, my theory is that this is a specific optimization made for the case where you have a table with lots of sparse columns and no non-sparse columns present. For those cases, we save at least three bytes – two for the number of columns and at least one for the null bitmap. If there are only sparse columns, we have no need for the null bitmap as the null value is defined by the value not being stored in the sparse vector.</p>
 
 
 				<div style="clear: both"></div>
@@ -627,13 +658,13 @@ DBCC IND (X, OverflowTest, -<span class="number">1</span>)</span>
 	<div class="datebox">
 		<div class="upper">
 			<span class="month">Jul</span>
-			<span class="day">13</span>
+			<span class="day">15</span>
 		</div>
 		<div class="lower">2011</div>
 	</div>
 
 	<div class="title">
-		<h1><a href="/exploring-the-sys-system_internals_partition_columns-ti-field/" title="Exploring the sys.system_internals_partition_columns.ti Field" rel="bookmark">Exploring the sys.system_internals_partition_columns.ti Field</a></h1>
+		<h1><a href="/the-null-bitmap-is-not-always-present-in-data-records/" title="The Null Bitmap is Not Always Present in Data Records" rel="bookmark">The Null Bitmap is Not Always Present in Data Records</a></h1>
 		<div class="categories">
 			
 				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
@@ -650,160 +681,57 @@ DBCC IND (X, OverflowTest, -<span class="number">1</span>)</span>
 		
 			<div class="body">
 			
-				<p>Running sp_helptext on the sys.system_internals_partition_columns system view reveals the following internal query:</p>
+				<p>While <a href="/sparse-column-storage-ndash-the-sparse-vector/">implementing sparse column support</a> for <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a>, I ran into a special condition that caught me by surprise – a data record with no null bitmap. Even <a href="http://www.sqlskills.com/BLOGS/PAUL/" target="_blank">Paul Randal</a> mentioned that the null bitmap would <em>always</em> be present in data records in his <a href="http://www.sqlskills.com/BLOGS/PAUL/post/A-SQL-Server-DBA-myth-a-day-(630" target="_blank">A SQL Server DBA myth a day: (6/30) three null bitmap myths</a>-three-null-bitmap-myths.aspx) post.</p>
 <a id="more"></a>
 
-
-<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
-	c.rsid <span class="keyword">AS</span> partition_id,  
-	c.rscolid <span class="keyword">AS</span> partition_column_id,  
-	c.rcmodified <span class="keyword">AS</span> modified_count,  
-	<span class="keyword">CASE</span> c.maxinrowlen
-		<span class="keyword">WHEN</span> <span class="number">0</span> <span class="keyword">THEN</span> p.length  
-		<span class="keyword">ELSE</span> c.maxinrowlen
-	<span class="keyword">END</span> <span class="keyword">AS</span> max_inrow_length,
-	CONVERT(<span class="keyword">BIT</span>, c.status & <span class="number">1</span>) <span class="keyword">AS</span> is_replicated,    --RSC_REPLICATED  
-	CONVERT(<span class="keyword">BIT</span>, c.status & <span class="number">4</span>) <span class="keyword">AS</span> is_logged_for_replication, --RSC_LOG_FOR_REPL  
-	CONVERT(<span class="keyword">BIT</span>, c.status & <span class="number">2</span>) <span class="keyword">AS</span> is_dropped,    --RSC_DROPPED  
-	p.xtype <span class="keyword">AS</span> system_type_id,  
-	p.length <span class="keyword">AS</span> max_length,  
-	p.prec <span class="keyword">AS</span> <span class="keyword">PRECISION</span>,  
-	p.scale <span class="keyword">AS</span> scale,  
-	CONVERT(sysname, CollationPropertyFromId(c.cid, <span class="string">'name'</span>)) <span class="keyword">AS</span> collation_name,  
-	CONVERT(<span class="keyword">BIT</span>, c.status & <span class="number">32</span>) <span class="keyword">AS</span> is_filestream,   --RSC_FILESTREAM  
-	c.ordkey <span class="keyword">AS</span> key_ordinal,  
-	CONVERT(<span class="keyword">BIT</span>, <span class="number">1</span> - (c.status & <span class="number">128</span>)/<span class="number">128</span>) <span class="keyword">AS</span> is_nullable,  -- RSC_NOTNULL    
-	CONVERT(<span class="keyword">BIT</span>, c.status & <span class="number">8</span>) <span class="keyword">AS</span> is_descending_key,  --RSC_DESC_KEY  
-	CONVERT(<span class="keyword">BIT</span>, c.status & <span class="number">16</span>) <span class="keyword">AS</span> is_uniqueifier,   --RSC_UNIQUIFIER  
-	CONVERT(<span class="keyword">SMALLINT</span>, CONVERT(BINARY(<span class="number">2</span>), c.offset & <span class="number">0xffff</span>)) <span class="keyword">AS</span> leaf_offset,  
-	CONVERT(<span class="keyword">SMALLINT</span>, SUBSTRING(CONVERT(BINARY(<span class="number">4</span>), c.offset), <span class="number">1</span>, <span class="number">2</span>)) <span class="keyword">AS</span> internal_offset,  
-	CONVERT(TINYINT, c.bitpos & <span class="number">0xff</span>) <span class="keyword">AS</span> leaf_bit_position,  
-	CONVERT(TINYINT, c.bitpos/<span class="number">0x100</span>) <span class="keyword">AS</span> internal_bit_position,  
-	CONVERT(<span class="keyword">SMALLINT</span>, CONVERT(BINARY(<span class="number">2</span>), c.nullbit & <span class="number">0xffff</span>)) <span class="keyword">AS</span> leaf_null_bit,  
-	CONVERT(<span class="keyword">SMALLINT</span>, SUBSTRING(CONVERT(BINARY(<span class="number">4</span>), c.nullbit), <span class="number">1</span>, <span class="number">2</span>)) <span class="keyword">AS</span> internal_null_bit,  
-	CONVERT(<span class="keyword">BIT</span>, c.status & <span class="number">64</span>) <span class="keyword">AS</span> is_anti_matter,   --RSC_ANTIMATTER  
-	CONVERT(UNIQUEIDENTIFIER, c.colguid) <span class="keyword">AS</span> partition_column_guid,  
-	sysconv(<span class="keyword">BIT</span>, c.status & <span class="number">0x00000100</span>) <span class="keyword">AS</span> is_sparse --RSC_SPARSE  
-<span class="keyword">FROM</span>
-	sys.sysrscols c
-<span class="keyword">OUTER</span> APPLY
-	OPENROWSET(<span class="keyword">TABLE</span> RSCPROP, c.ti) p</span>
+<h2 id="Optimized_storage_of_sparse-only_tables">Optimized storage of sparse-only tables</h2>
+<p>During my testing I discovered that tables containing only sparse columns neither stored a null bitmap, nor the usual number of columns. Let’s create a test table and find a reference to the data page:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> OnlyFixedSparse (A <span class="keyword">int</span> SPARSE)
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> OnlyFixedSparse <span class="keyword">VALUES</span> (<span class="number">5</span>)
+DBCC IND (X, <span class="string">'OnlyFixedSparse'</span>, -<span class="number">1</span>)</span>
 </pre></figure>
 
-<p>Nothing too out of the ordinary if you’ve looked at other internal queries. There’s a lot of bitmasking / shifting going on to extract multiple values from the same internal base table fields. One thing that is somewhat convoluted is the OPENROWSET(TABLE RSCPROP, c.ti) p OUTER APPLY being made.</p>
-<p>A Google query for “sql server +rscprop” yields absolutely zilch results:</p>
-<div class="imgwrapper" style=""><div><a href="/exploring-the-sys-system_internals_partition_columns-ti-field/image_27.png" class="fancy"><img src="/exploring-the-sys-system_internals_partition_columns-ti-field/image_27.png" style="max-height: 250px"/></a></div></div>
+<div class="imgwrapper" style=""><div><a href="/the-null-bitmap-is-not-always-present-in-data-records/image_211.png" class="fancy"><img src="/the-null-bitmap-is-not-always-present-in-data-records/image_211.png" style="max-height: 250px"/></a></div></div>
 
-<p>Simplifying the query to only show the fields using the fields referring the OPENROWSET (p) results, shows that the scale, precision, max_length, system_type_id and max_inrow_length are either extracted from the ti field value directly or indirectly:</p>
-<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
-	<span class="keyword">CASE</span> c.maxinrowlen
-		<span class="keyword">WHEN</span> <span class="number">0</span> <span class="keyword">THEN</span> p.length  
-		<span class="keyword">ELSE</span> c.maxinrowlen
-	<span class="keyword">END</span> <span class="keyword">AS</span> max_inrow_length,
-	p.xtype <span class="keyword">AS</span> system_type_id,  
-	p.length <span class="keyword">AS</span> max_length,  
-	p.prec <span class="keyword">AS</span> <span class="keyword">PRECISION</span>,  
-	p.scale <span class="keyword">AS</span> scale,
-<span class="keyword">FROM</span>
-	sys.sysrscols c
-<span class="keyword">OUTER</span> APPLY
-	OPENROWSET(<span class="keyword">TABLE</span> RSCPROP, c.ti) p</span>
+<p>And then let’s check the record contents for page (1:4359):</p>
+<figure class="highlight sql"><pre>DBCC PAGE (X, 1, 4359, 3)
 </pre></figure>
 
-<p>To help me identifying the ti field structure, I’ve made a test table using a number of different column types:</p>
-<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> TITest
-(
-	A binary(<span class="number">50</span>),
-	B <span class="keyword">char</span>(<span class="number">10</span>),
-	C datetime2(<span class="number">5</span>),
-	D <span class="keyword">decimal</span>(<span class="number">12</span>, <span class="number">5</span>),
-	E <span class="keyword">float</span>,
-	F <span class="keyword">int</span>,
-	G <span class="keyword">numeric</span>(<span class="number">11</span>, <span class="number">4</span>),
-	H nvarchar(<span class="number">50</span>),
-	I nvarchar(<span class="aggregate">max</span>),
-	J <span class="keyword">time</span>(<span class="number">3</span>),
-	K tinyint,
-	L varbinary(<span class="aggregate">max</span>),
-	M <span class="keyword">varchar</span>(<span class="number">75</span>),
-	N text
-)</span>
+<div class="imgwrapper" style=""><div><a href="/the-null-bitmap-is-not-always-present-in-data-records/image_65.png" class="fancy"><img src="/the-null-bitmap-is-not-always-present-in-data-records/image_65.png" style="max-height: 250px"/></a></div></div>
+
+<p>The first two bytes contain the record status bits. Next two bytes contain the offset for the end of the fixed-length portion of the record – which is 4 as expected, since we have no non-sparse fixed-length columns. As shown in the <em>Record Attributes</em> output, the status bytes indicates that there’s no null bitmap, and sure enough, the next two bytes indicates the number of variable length columns. The remaining bytes contains the variable length offset array as well as the <a href="/sparse-column-storage-ndash-the-sparse-vector/">sparse vector</a>.</p>
+<h3 id="Under_what_conditions_does_the_data_record_not_contain_a_null_bitmap?">Under what conditions does the data record not contain a null bitmap?</h3>
+<p>I did a quick empirical test to verify my theory that this only happens on tables containing only sparse columns:</p>
+<table width="500"><br>    <tbody><br>        <tr><br>            <td valign="top" width="299"><strong>Schema</strong></td><br>            <td valign="top" width="193"><strong>Contains null bitmap</strong></td><br>        </tr><br>        <tr><br>            <td valign="top" width="299">Only variable length columns</td><br>            <td valign="top" width="193">Yes</td><br>        </tr><br>        <tr><br>            <td valign="top" width="299">Only fixed length columns</td><br>            <td valign="top" width="193">Yes</td><br>        </tr><br>        <tr><br>            <td valign="top" width="299">Only sparse fixed length columns</td><br>            <td valign="top" width="193">No</td><br>        </tr><br>        <tr><br>            <td valign="top" width="299">Only sparse variable length columns</td><br>            <td valign="top" width="193">No</td><br>        </tr><br>        <tr><br>            <td valign="top" width="299">Fixed length + sparse fixed length columns</td><br>            <td valign="top" width="193">Yes</td><br>        </tr><br>        <tr><br>            <td valign="top" width="299">Variable length + sparse fixed length columns</td><br>            <td valign="top" width="193">Yes</td><br>        </tr><br>    </tbody><br></table>
+
+<p>Thus it would seem that this is an optimization made possible for tables containing nothing but sparse columns.</p>
+<h3 id="There’s_always_an_exception_to_the_exception">There’s always an exception to the exception</h3>
+<p>It <em>is</em> actually possible to have a data record without a null bitmap for a table with non-sparse columns too. Continuing on from the OnlyFixedSparse table from before, let’s add two extra nullable columns:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> OnlyFixedSparse <span class="keyword">ADD</span> B <span class="keyword">int</span> <span class="keyword">NULL</span>
+<span class="keyword">Alter</span> <span class="keyword">Table</span> OnlyFixedSparse <span class="keyword">ADD</span> C <span class="keyword">varchar</span>(<span class="number">10</span>) <span class="keyword">NULL</span></span>
 </pre></figure>
 
-<p>I’m not going to insert any data as that’s irrelevant for this purpose. For this next part, make sure you’re connected to the SQL Server using the <a href="http://msdn.microsoft.com/en-us/library/ms178068.aspx" target="_blank">Dedicated Administrator Connection</a>. Now let’s query the sysrscols base table to see what values are stored in the ti field for the sample fields we’ve just created:</p>
-<figure class="highlight sql"><pre><span class="comment">-- Get object id of TITest table</span>
-<span class="operator"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> sys.sysschobjs <span class="keyword">WHERE</span> name = <span class="string">'TITest'</span>
+<p>Checking the stored record reveals the exact same output as before:</p>
+<div class="imgwrapper" style=""><div><a href="/the-null-bitmap-is-not-always-present-in-data-records/image_86.png" class="fancy"><img src="/the-null-bitmap-is-not-always-present-in-data-records/image_86.png" style="max-height: 250px"/></a></div></div>
 
--- <span class="keyword">Get</span> rowset id <span class="keyword">for</span> TITest
-<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> sys.sysrowsets <span class="keyword">WHERE</span> idmajor = <span class="number">213575799</span>
-
--- <span class="keyword">Get</span> <span class="keyword">all</span> columns <span class="keyword">for</span> rowset
-<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> sys.sysrscols <span class="keyword">WHERE</span> rsid = <span class="number">72057594040614912</span></span>
+<p>Thus it would seem that even without a null bitmap the usual alter semantics are followed – the addition of new nullable columns does not need to alter existing records. If we’d added a non-nullable column to the table, we would have to modify the record, causing the addition of a null bitmap and column count. The same goes if we insert a value into any of those new columns:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">UPDATE</span> OnlyFixedSparse <span class="keyword">SET</span> B = <span class="number">2</span></span>
 </pre></figure>
 
-<p>Besides the fact I’ve cut away some irrelevant columns, this is the result:</p>
-<div class="imgwrapper" style=""><div><a href="/exploring-the-sys-system_internals_partition_columns-ti-field/image_64.png" class="fancy"><img src="/exploring-the-sys-system_internals_partition_columns-ti-field/image_64.png" style="max-height: 250px"/></a></div></div>
+<div class="imgwrapper" style=""><div><a href="/the-null-bitmap-is-not-always-present-in-data-records/image_105.png" class="fancy"><img src="/the-null-bitmap-is-not-always-present-in-data-records/image_105.png" style="max-height: 250px"/></a></div></div>
 
-<p>Note how we first get the object ID by querying sysschobjs, then the partition ID by querying sysrowsets and finally the partition columns by querying sysrscols. The marked ti column are the values from which we shall extract the scale, precision, max_length, system_type_id and max_inrow_length values.</p>
-<p>The following query will give a better row-by-row comparison between the ti value and the expected end result field values:</p>
-<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
-	t.name,
-	r.ti,
-	p.scale,
-	p.<span class="keyword">precision</span>,
-	p.max_length,
-	p.system_type_id,
-	p.max_inrow_length
-<span class="keyword">FROM</span>
-	sys.system_internals_partition_columns p
-<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
-	sys.sysrscols r <span class="keyword">ON</span>
-		r.rscolid = p.partition_column_id <span class="keyword">AND</span>
-		r.rsid = p.partition_id
-<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
-	sys.types t <span class="keyword">ON</span>
-		t.system_type_id = p.system_type_id <span class="keyword">AND</span>
-		t.user_type_id = p.system_type_id
-<span class="keyword">WHERE</span>
-	partition_id = <span class="number">72057594040614912</span></span>
+<p>By setting the value of the B column we just added 7 extra bytes to our data record. 4 for the integer, 2 for the column count and 1 for the null bitmap. Had we not performed the update for all records in the table, only the affected records would be updated. This means we may have data records for a table where some have a null bitmap while others don’t. Just take a look at this:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> OnlyFixedSparse (A <span class="keyword">int</span> SPARSE)
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> OnlyFixedSparse <span class="keyword">VALUES</span> (<span class="number">5</span>), (<span class="number">6</span>)
+<span class="keyword">ALTER</span> <span class="keyword">TABLE</span> OnlyFixedSparse <span class="keyword">ADD</span> B <span class="keyword">int</span> <span class="keyword">NULL</span>
+<span class="keyword">UPDATE</span> OnlyFixedSparse <span class="keyword">SET</span> B = <span class="number">2</span> <span class="keyword">WHERE</span> A = <span class="number">5</span></span>
 </pre></figure>
 
-<div class="imgwrapper" style=""><div><a href="/exploring-the-sys-system_internals_partition_columns-ti-field/image_103.png" class="fancy"><img src="/exploring-the-sys-system_internals_partition_columns-ti-field/image_103.png" style="max-height: 250px"/></a></div></div>
+<div class="imgwrapper" style=""><div><a href="/the-null-bitmap-is-not-always-present-in-data-records/image_125.png" class="fancy"><img src="/the-null-bitmap-is-not-always-present-in-data-records/image_125.png" style="max-height: 250px"/></a></div></div>
 
-<h3 id="binary">binary</h3>
-<p>Converting the first system_type_id into hex yields 0n173 = 0xAD. Converting the ti value yields 0n12973 = 0x32AD. An empirical test for all columns shows this to be true for them all. Thus we can conclude that the first byte (printed as the rightmost due to <a href="http://en.wikipedia.org/wiki/Endianness" target="_blank">little endianness</a>) stores the type. Extracting the value requires a simple bitmask operation:</p>
-<figure class="highlight csharp"><pre><span class="attribute">12973 & 0x000000FF =</span>=<span class="string"> 173</span>
-</pre></figure>
-
-<p>As for the length, the second byte stores the value 0x32 = 0n50. As the length is a smallint (we know it can be up to 8000, thus requiring at least a smallint), we can assume the next two bytes cover that. To extract that value, we’ll need a bitmask, as well as a shift operation to shift the two middlemost bytes one step to the right:</p>
-<figure class="highlight csharp"><pre><span class="attribute">(12973 & 0x00FFFF00) &gt;&gt; 8 =</span>=<span class="string"> 50</span>
-</pre></figure>
-
-<h3 id="datetime2">datetime2</h3>
-<p>This is the same for the char field. The datetime2 field is different as it stores the scale and precision values. 0n1322 in hex yields a value of 0x52A. 0x2A being the type (42). All that remains is the 0x5/0n5 which can only be the scale. A quick with a datetime(7) field yields the same result, though the precision is then 27. Thus I’ll conclude that for the datetime2 type, precision = 20 + scale. Extracting the scale from the second byte requires almost the same operation as before, just with a different bitmask:</p>
-<figure class="highlight csharp"><pre><span class="attribute">(1322 & 0x0000FF00) &gt;&gt; 8 =</span>=<span class="string"> 5</span>
-</pre></figure>
-
-<h3 id="decimal">decimal</h3>
-<p>Moving onto decimal, we now have both a scale and a precision to take care of. Converting 0n330858 to hex yields a value of 0x50C6A. 0x6A being the type (106). 0x0C being the precision and finally 0x5 being the scale. Note that this is different from datetime2 – now the scale is stored as the third byte and not the second!</p>
-<p>Extracting the third byte as the scale requires a similar bitmask &amp; shift operation as previously:</p>
-<figure class="highlight csharp"><pre><span class="attribute">(330858 & 0x00FF0000) &gt;&gt; 16 =</span>=<span class="string"> 5</span>
-</pre></figure>
-
-<h3 id="float">float</h3>
-<p>0n62 = 0x3E =&gt; the system_type_id value of 62. Thus the only value stored for the float is the type ID, the rest are a given. The same goes for the int, tinyint and similar fixed length field types.</p>
-<h3 id="numeric">numeric</h3>
-<p>0n265068 = 0x40B6C. 0x6C = the type ID of 108. 0xB = the precision value of 11. 0x4 = the scale value of 4.</p>
-<h3 id="nvarchar_&amp;_nvarchar(max)">nvarchar &amp; nvarchar(max)</h3>
-<p>These are a bit special too. Looking at the first nvarchar(100) field we can convert 0n25832 to 0x64E7. 0xE7 being the type ID of 231. 0x64 being the length of 100, stored as a two byte smallint. This shows that the parsing of non-max (n)varchar fields is pretty much in line with the rest so far.</p>
-<p>The nvarchar(max) differs in that it only stores the type ID, there’s no length. Given the lack of a length (technically the invalid length of 0 is stored), we read it as being –1, telling us that it’s a LOB/MAX field being stored with a max_length of –1 and a maximum in_row length of 8000, provided it’s not stored off-row.</p>
-<p>Varbinary seems to follow the exact same format.</p>
-<h3 id="time">time</h3>
-<p>0n809 = 0x329. 0x29 = the type ID of 41. 0x3 being the scale of 3. As with the datetime2 field, the precision scales with the scale (pun only slightly intended) – precision = 9 + scale.</p>
-<h3 id="text">text</h3>
-<p>0n4131 = 0x1023. 0x23 = the type ID of 35. 0x10 being the max_length of 16. The reason the text type has a max_length of 16 is that text is a LOB type that will always be stored off row, leaving just a 16 byte pointer in the record where it’s logically stored.</p>
 <h2 id="Conclusion">Conclusion</h2>
-<p>The OPENROWSET(TABLE RSCPROP, x) obviously performs some dark magic. The ti field is an integer that’s used to store multiple values &amp; formats, depending on the row type. Thus, to parse this properly, a switch would have to be made. Certain types also take values for a given – the precision fields based on the scale value, float having a fixed precision of 53 etc. It shouldn’t be long before I have a commit ready for <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a> that’ll contain this parsing logic :)</p>
+<p>As I unfortunately do not work on the SQL Server team and I haven’t seen this condition documented, I can only theorize on this. For all normal data records, the null bitmap is always present, even if the table does not contain any null columns. While we can achieve <a href="http://www.sqlskills.com/blogs/paul/post/Inside-the-Storage-Engine-Anatomy-of-a-record.aspx" target="_blank">read optimizations</a> when columns may be null, for completely non-null tables, we still get the benefit that we can add a new nullable column to an existing schema, without having to modify the already existing records.</p>
+<p>While I think it’s bit of a special use case, my theory is that this is a specific optimization made for the case where you have a table with lots of sparse columns and no non-sparse columns present. For those cases, we save at least three bytes – two for the number of columns and at least one for the null bitmap. If there are only sparse columns, we have no need for the null bitmap as the null value is defined by the value not being stored in the sparse vector.</p>
 
 
 				<div style="clear: both"></div>
@@ -1487,6 +1415,202 @@ namespace OrcaMDF<span class="preprocessor">.Core</span><span class="preprocesso
 	<div class="datebox">
 		<div class="upper">
 			<span class="month">Jul</span>
+			<span class="day">13</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/exploring-the-sys-system_internals_partition_columns-ti-field/" title="Exploring the sys.system_internals_partition_columns.ti Field" rel="bookmark">Exploring the sys.system_internals_partition_columns.ti Field</a></h1>
+		<div class="categories">
+			
+				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Running sp_helptext on the sys.system_internals_partition_columns system view reveals the following internal query:</p>
+<a id="more"></a>
+
+
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	c.rsid <span class="keyword">AS</span> partition_id,  
+	c.rscolid <span class="keyword">AS</span> partition_column_id,  
+	c.rcmodified <span class="keyword">AS</span> modified_count,  
+	<span class="keyword">CASE</span> c.maxinrowlen
+		<span class="keyword">WHEN</span> <span class="number">0</span> <span class="keyword">THEN</span> p.length  
+		<span class="keyword">ELSE</span> c.maxinrowlen
+	<span class="keyword">END</span> <span class="keyword">AS</span> max_inrow_length,
+	CONVERT(<span class="keyword">BIT</span>, c.status & <span class="number">1</span>) <span class="keyword">AS</span> is_replicated,    --RSC_REPLICATED  
+	CONVERT(<span class="keyword">BIT</span>, c.status & <span class="number">4</span>) <span class="keyword">AS</span> is_logged_for_replication, --RSC_LOG_FOR_REPL  
+	CONVERT(<span class="keyword">BIT</span>, c.status & <span class="number">2</span>) <span class="keyword">AS</span> is_dropped,    --RSC_DROPPED  
+	p.xtype <span class="keyword">AS</span> system_type_id,  
+	p.length <span class="keyword">AS</span> max_length,  
+	p.prec <span class="keyword">AS</span> <span class="keyword">PRECISION</span>,  
+	p.scale <span class="keyword">AS</span> scale,  
+	CONVERT(sysname, CollationPropertyFromId(c.cid, <span class="string">'name'</span>)) <span class="keyword">AS</span> collation_name,  
+	CONVERT(<span class="keyword">BIT</span>, c.status & <span class="number">32</span>) <span class="keyword">AS</span> is_filestream,   --RSC_FILESTREAM  
+	c.ordkey <span class="keyword">AS</span> key_ordinal,  
+	CONVERT(<span class="keyword">BIT</span>, <span class="number">1</span> - (c.status & <span class="number">128</span>)/<span class="number">128</span>) <span class="keyword">AS</span> is_nullable,  -- RSC_NOTNULL    
+	CONVERT(<span class="keyword">BIT</span>, c.status & <span class="number">8</span>) <span class="keyword">AS</span> is_descending_key,  --RSC_DESC_KEY  
+	CONVERT(<span class="keyword">BIT</span>, c.status & <span class="number">16</span>) <span class="keyword">AS</span> is_uniqueifier,   --RSC_UNIQUIFIER  
+	CONVERT(<span class="keyword">SMALLINT</span>, CONVERT(BINARY(<span class="number">2</span>), c.offset & <span class="number">0xffff</span>)) <span class="keyword">AS</span> leaf_offset,  
+	CONVERT(<span class="keyword">SMALLINT</span>, SUBSTRING(CONVERT(BINARY(<span class="number">4</span>), c.offset), <span class="number">1</span>, <span class="number">2</span>)) <span class="keyword">AS</span> internal_offset,  
+	CONVERT(TINYINT, c.bitpos & <span class="number">0xff</span>) <span class="keyword">AS</span> leaf_bit_position,  
+	CONVERT(TINYINT, c.bitpos/<span class="number">0x100</span>) <span class="keyword">AS</span> internal_bit_position,  
+	CONVERT(<span class="keyword">SMALLINT</span>, CONVERT(BINARY(<span class="number">2</span>), c.nullbit & <span class="number">0xffff</span>)) <span class="keyword">AS</span> leaf_null_bit,  
+	CONVERT(<span class="keyword">SMALLINT</span>, SUBSTRING(CONVERT(BINARY(<span class="number">4</span>), c.nullbit), <span class="number">1</span>, <span class="number">2</span>)) <span class="keyword">AS</span> internal_null_bit,  
+	CONVERT(<span class="keyword">BIT</span>, c.status & <span class="number">64</span>) <span class="keyword">AS</span> is_anti_matter,   --RSC_ANTIMATTER  
+	CONVERT(UNIQUEIDENTIFIER, c.colguid) <span class="keyword">AS</span> partition_column_guid,  
+	sysconv(<span class="keyword">BIT</span>, c.status & <span class="number">0x00000100</span>) <span class="keyword">AS</span> is_sparse --RSC_SPARSE  
+<span class="keyword">FROM</span>
+	sys.sysrscols c
+<span class="keyword">OUTER</span> APPLY
+	OPENROWSET(<span class="keyword">TABLE</span> RSCPROP, c.ti) p</span>
+</pre></figure>
+
+<p>Nothing too out of the ordinary if you’ve looked at other internal queries. There’s a lot of bitmasking / shifting going on to extract multiple values from the same internal base table fields. One thing that is somewhat convoluted is the OPENROWSET(TABLE RSCPROP, c.ti) p OUTER APPLY being made.</p>
+<p>A Google query for “sql server +rscprop” yields absolutely zilch results:</p>
+<div class="imgwrapper" style=""><div><a href="/exploring-the-sys-system_internals_partition_columns-ti-field/image_27.png" class="fancy"><img src="/exploring-the-sys-system_internals_partition_columns-ti-field/image_27.png" style="max-height: 250px"/></a></div></div>
+
+<p>Simplifying the query to only show the fields using the fields referring the OPENROWSET (p) results, shows that the scale, precision, max_length, system_type_id and max_inrow_length are either extracted from the ti field value directly or indirectly:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	<span class="keyword">CASE</span> c.maxinrowlen
+		<span class="keyword">WHEN</span> <span class="number">0</span> <span class="keyword">THEN</span> p.length  
+		<span class="keyword">ELSE</span> c.maxinrowlen
+	<span class="keyword">END</span> <span class="keyword">AS</span> max_inrow_length,
+	p.xtype <span class="keyword">AS</span> system_type_id,  
+	p.length <span class="keyword">AS</span> max_length,  
+	p.prec <span class="keyword">AS</span> <span class="keyword">PRECISION</span>,  
+	p.scale <span class="keyword">AS</span> scale,
+<span class="keyword">FROM</span>
+	sys.sysrscols c
+<span class="keyword">OUTER</span> APPLY
+	OPENROWSET(<span class="keyword">TABLE</span> RSCPROP, c.ti) p</span>
+</pre></figure>
+
+<p>To help me identifying the ti field structure, I’ve made a test table using a number of different column types:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> TITest
+(
+	A binary(<span class="number">50</span>),
+	B <span class="keyword">char</span>(<span class="number">10</span>),
+	C datetime2(<span class="number">5</span>),
+	D <span class="keyword">decimal</span>(<span class="number">12</span>, <span class="number">5</span>),
+	E <span class="keyword">float</span>,
+	F <span class="keyword">int</span>,
+	G <span class="keyword">numeric</span>(<span class="number">11</span>, <span class="number">4</span>),
+	H nvarchar(<span class="number">50</span>),
+	I nvarchar(<span class="aggregate">max</span>),
+	J <span class="keyword">time</span>(<span class="number">3</span>),
+	K tinyint,
+	L varbinary(<span class="aggregate">max</span>),
+	M <span class="keyword">varchar</span>(<span class="number">75</span>),
+	N text
+)</span>
+</pre></figure>
+
+<p>I’m not going to insert any data as that’s irrelevant for this purpose. For this next part, make sure you’re connected to the SQL Server using the <a href="http://msdn.microsoft.com/en-us/library/ms178068.aspx" target="_blank">Dedicated Administrator Connection</a>. Now let’s query the sysrscols base table to see what values are stored in the ti field for the sample fields we’ve just created:</p>
+<figure class="highlight sql"><pre><span class="comment">-- Get object id of TITest table</span>
+<span class="operator"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> sys.sysschobjs <span class="keyword">WHERE</span> name = <span class="string">'TITest'</span>
+
+-- <span class="keyword">Get</span> rowset id <span class="keyword">for</span> TITest
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> sys.sysrowsets <span class="keyword">WHERE</span> idmajor = <span class="number">213575799</span>
+
+-- <span class="keyword">Get</span> <span class="keyword">all</span> columns <span class="keyword">for</span> rowset
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> sys.sysrscols <span class="keyword">WHERE</span> rsid = <span class="number">72057594040614912</span></span>
+</pre></figure>
+
+<p>Besides the fact I’ve cut away some irrelevant columns, this is the result:</p>
+<div class="imgwrapper" style=""><div><a href="/exploring-the-sys-system_internals_partition_columns-ti-field/image_64.png" class="fancy"><img src="/exploring-the-sys-system_internals_partition_columns-ti-field/image_64.png" style="max-height: 250px"/></a></div></div>
+
+<p>Note how we first get the object ID by querying sysschobjs, then the partition ID by querying sysrowsets and finally the partition columns by querying sysrscols. The marked ti column are the values from which we shall extract the scale, precision, max_length, system_type_id and max_inrow_length values.</p>
+<p>The following query will give a better row-by-row comparison between the ti value and the expected end result field values:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	t.name,
+	r.ti,
+	p.scale,
+	p.<span class="keyword">precision</span>,
+	p.max_length,
+	p.system_type_id,
+	p.max_inrow_length
+<span class="keyword">FROM</span>
+	sys.system_internals_partition_columns p
+<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
+	sys.sysrscols r <span class="keyword">ON</span>
+		r.rscolid = p.partition_column_id <span class="keyword">AND</span>
+		r.rsid = p.partition_id
+<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
+	sys.types t <span class="keyword">ON</span>
+		t.system_type_id = p.system_type_id <span class="keyword">AND</span>
+		t.user_type_id = p.system_type_id
+<span class="keyword">WHERE</span>
+	partition_id = <span class="number">72057594040614912</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/exploring-the-sys-system_internals_partition_columns-ti-field/image_103.png" class="fancy"><img src="/exploring-the-sys-system_internals_partition_columns-ti-field/image_103.png" style="max-height: 250px"/></a></div></div>
+
+<h3 id="binary">binary</h3>
+<p>Converting the first system_type_id into hex yields 0n173 = 0xAD. Converting the ti value yields 0n12973 = 0x32AD. An empirical test for all columns shows this to be true for them all. Thus we can conclude that the first byte (printed as the rightmost due to <a href="http://en.wikipedia.org/wiki/Endianness" target="_blank">little endianness</a>) stores the type. Extracting the value requires a simple bitmask operation:</p>
+<figure class="highlight csharp"><pre><span class="attribute">12973 & 0x000000FF =</span>=<span class="string"> 173</span>
+</pre></figure>
+
+<p>As for the length, the second byte stores the value 0x32 = 0n50. As the length is a smallint (we know it can be up to 8000, thus requiring at least a smallint), we can assume the next two bytes cover that. To extract that value, we’ll need a bitmask, as well as a shift operation to shift the two middlemost bytes one step to the right:</p>
+<figure class="highlight csharp"><pre><span class="attribute">(12973 & 0x00FFFF00) &gt;&gt; 8 =</span>=<span class="string"> 50</span>
+</pre></figure>
+
+<h3 id="datetime2">datetime2</h3>
+<p>This is the same for the char field. The datetime2 field is different as it stores the scale and precision values. 0n1322 in hex yields a value of 0x52A. 0x2A being the type (42). All that remains is the 0x5/0n5 which can only be the scale. A quick with a datetime(7) field yields the same result, though the precision is then 27. Thus I’ll conclude that for the datetime2 type, precision = 20 + scale. Extracting the scale from the second byte requires almost the same operation as before, just with a different bitmask:</p>
+<figure class="highlight csharp"><pre><span class="attribute">(1322 & 0x0000FF00) &gt;&gt; 8 =</span>=<span class="string"> 5</span>
+</pre></figure>
+
+<h3 id="decimal">decimal</h3>
+<p>Moving onto decimal, we now have both a scale and a precision to take care of. Converting 0n330858 to hex yields a value of 0x50C6A. 0x6A being the type (106). 0x0C being the precision and finally 0x5 being the scale. Note that this is different from datetime2 – now the scale is stored as the third byte and not the second!</p>
+<p>Extracting the third byte as the scale requires a similar bitmask &amp; shift operation as previously:</p>
+<figure class="highlight csharp"><pre><span class="attribute">(330858 & 0x00FF0000) &gt;&gt; 16 =</span>=<span class="string"> 5</span>
+</pre></figure>
+
+<h3 id="float">float</h3>
+<p>0n62 = 0x3E =&gt; the system_type_id value of 62. Thus the only value stored for the float is the type ID, the rest are a given. The same goes for the int, tinyint and similar fixed length field types.</p>
+<h3 id="numeric">numeric</h3>
+<p>0n265068 = 0x40B6C. 0x6C = the type ID of 108. 0xB = the precision value of 11. 0x4 = the scale value of 4.</p>
+<h3 id="nvarchar_&amp;_nvarchar(max)">nvarchar &amp; nvarchar(max)</h3>
+<p>These are a bit special too. Looking at the first nvarchar(100) field we can convert 0n25832 to 0x64E7. 0xE7 being the type ID of 231. 0x64 being the length of 100, stored as a two byte smallint. This shows that the parsing of non-max (n)varchar fields is pretty much in line with the rest so far.</p>
+<p>The nvarchar(max) differs in that it only stores the type ID, there’s no length. Given the lack of a length (technically the invalid length of 0 is stored), we read it as being –1, telling us that it’s a LOB/MAX field being stored with a max_length of –1 and a maximum in_row length of 8000, provided it’s not stored off-row.</p>
+<p>Varbinary seems to follow the exact same format.</p>
+<h3 id="time">time</h3>
+<p>0n809 = 0x329. 0x29 = the type ID of 41. 0x3 being the scale of 3. As with the datetime2 field, the precision scales with the scale (pun only slightly intended) – precision = 9 + scale.</p>
+<h3 id="text">text</h3>
+<p>0n4131 = 0x1023. 0x23 = the type ID of 35. 0x10 being the max_length of 16. The reason the text type has a max_length of 16 is that text is a LOB type that will always be stored off row, leaving just a 16 byte pointer in the record where it’s logically stored.</p>
+<h2 id="Conclusion">Conclusion</h2>
+<p>The OPENROWSET(TABLE RSCPROP, x) obviously performs some dark magic. The ti field is an integer that’s used to store multiple values &amp; formats, depending on the row type. Thus, to parse this properly, a switch would have to be made. Certain types also take values for a given – the precision fields based on the scale value, float having a fixed precision of 53 etc. It shouldn’t be long before I have a commit ready for <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a> that’ll contain this parsing logic :)</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
 			<span class="day">12</span>
 		</div>
 		<div class="lower">2011</div>
@@ -1681,320 +1805,6 @@ RETURNS <span class="keyword">varchar</span>(<span class="number">255</span>)
 </pre></figure>
 
 <div class="imgwrapper" style=""><div><a href="/converting-between-base-2-10-and-16-in-t-sql/image_162.png" class="fancy"><img src="/converting-between-base-2-10-and-16-in-t-sql/image_162.png" style="max-height: 250px"/></a></div></div>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Jul</span>
-			<span class="day">06</span>
-		</div>
-		<div class="lower">2011</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/" title="Determining the Uniquifier Column Ordinal for Clustered and Nonclustered Indexes" rel="bookmark">Determining the Uniquifier Column Ordinal for Clustered and Nonclustered Indexes</a></h1>
-		<div class="categories">
-			
-				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>Lately I’ve been working on nonclustered index parsing. One of my test cases proved to be somewhat more tricky than I’d anticipated, namely the parsing of nonclustered indexes for non-unique clustered tables. Working with non-unique clustered indexes, we’ll have to take care of <a href="http://www.mssqltips.com/tip.asp?tip=2082" target="_blank">uniquifiers</a> when necessary.</p>
-<a id="more"></a>
-
-<h2 id="The_setup">The setup</h2>
-<p>Using an empty database I create the following schema and insert two rows. Note that the clustered index is created on the (ID, Name) columns and will thus have uniquifiers inserted since my rows aren’t unique. Also note that I’m intentionally creating a schema that will cause all three allocation unit types to be created – IN_ROW_DATA by default, LOB_DATA for the text column and finally ROW_OVERFLOW_DATA due to the overflowing varchar filler columns. This won’t serve any practical purpose besides being eye candy when looking at the data :)</p>
-<figure class="highlight sql"><pre><span class="comment">-- Create schema</span>
-<span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> Test
-(
-	ID <span class="keyword">int</span>,
-	Name <span class="keyword">varchar</span>(<span class="number">10</span>),
-	FillerA <span class="keyword">varchar</span>(<span class="number">8000</span>) <span class="keyword">DEFAULT</span>(REPLICATE(<span class="string">'x'</span>, <span class="number">5000</span>)),
-	FillerB <span class="keyword">varchar</span>(<span class="number">8000</span>) <span class="keyword">DEFAULT</span>(REPLICATE(<span class="string">'y'</span>, <span class="number">5000</span>)),
-	Data text <span class="keyword">DEFAULT</span> (<span class="string">''</span>)
-)
-<span class="keyword">CREATE</span> CLUSTERED INDEX CX_ID_Name <span class="keyword">ON</span> Test (ID, Name)
-<span class="keyword">CREATE</span> NONCLUSTERED INDEX IX_ID <span class="keyword">ON</span> Test (ID)
-
--- <span class="keyword">Insert</span> dummy data
-<span class="keyword">INSERT</span> <span class="keyword">INTO</span>
-	Test (ID, Name)
-<span class="keyword">VALUES</span>
-	(<span class="number">1</span>, <span class="string">'Mark'</span>),
-	(<span class="number">1</span>, <span class="string">'Mark'</span>)</span>
-</pre></figure>
-
-<h2 id="Verifying_the_presence_of_uniquifiers_in_the_clustered_index">Verifying the presence of uniquifiers in the clustered index</h2>
-<p>Running a quick DBCC IND on the Test table’s clustered index in the database (I’ve named mine ‘Y’ – I’m lazy), demonstrates the allocation of three allocation unit types as well as their tracking IAM pages.</p>
-<figure class="highlight sql"><pre>DBCC IND (Y, 'Test', 1)
-</pre></figure>
-
-<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_23.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_23.png" style="max-height: 250px"/></a></div></div>
-
-<p>What we’re interested in are the two data pages of the clustered index – pages (1:89) and (1:114) in my case. Dumping the contents using dump style 3 shows that both have uniquifiers – one with a NULL value (interpreted as zero) and the other with a value of 1.</p>
-<figure class="highlight sql"><pre>DBCC TRACEON (3604)
-DBCC PAGE (Y, 1, 89, 3)
-DBCC PAGE (Y, 1, 114, 3)
-</pre></figure>
-
-
-<figure class="highlight sql"><pre>-- Page (1:89)
-
-Slot 0 Column 0 Offset 0x0 Length 4 Length (physical) 0
-UNIQUIFIER = 0                       
-
-Slot 0 Column 1 Offset 0x4 Length 4 Length (physical) 4
-ID = 1                               
-
-Slot 0 Column 2 Offset 0x17 Length 4 Length (physical) 4
-Name = Mark
-
-&lt;snip&gt;     
-
--- Page (1:114)
-
-Slot 0 Column 0 Offset 0x17 Length 4 Length (physical) 4
-UNIQUIFIER = 1                       
-
-Slot 0 Column 1 Offset 0x4 Length 4 Length (physical) 4
-ID = 1                               
-
-Slot 0 Column 2 Offset 0x1b Length 4 Length (physical) 4
-Name = Mark                          
-
-&lt;snip&gt;
-</pre></figure>
-
-<p>Notice how both are represented as slot 0 – this is because they stem from different pages, I’ve just cut out everything but the uniquifier column interpretation of the DBCC PAGE results. Also note how the first record doesn’t have any physical uniquifier value, while the second one uses 4 bytes. Finally make note that the uniquifier columns both reside at column ordinal 0.</p>
-<h2 id="Comparing_the_uniquifiers_in_the_nonclustered_index">Comparing the uniquifiers in the nonclustered index</h2>
-<p>Now we’ll run DBCC IND to find the single index page for the nonclustered index – page (1:93) in my case (the uniquifier will only be present in the leaf level index pages – which is all we’ve got in this case).</p>
-<figure class="highlight sql"><pre>DBCC IND (Y, 'Test', 2)
-</pre></figure>
-
-<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_82.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_82.png" style="max-height: 250px"/></a></div></div>
-
-<p>Dumping the contents of an index page using style 3 works differently for index pages – it returns a table resultset. It does confirm the presence of the uniquifier as well as our clustered index key columns (ID, Name) though:</p>
-<figure class="highlight sql"><pre>DBCC PAGE (Y, 1, 93, 1)
-</pre></figure>
-
-<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_62.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_62.png" style="max-height: 250px"/></a></div></div>
-
-<p>Dumping in style 1 reveals the byte contents of the two rows, which is exactly what we need to locate the uniquifier:</p>
-<figure class="highlight sql"><pre>DBCC PAGE (Y, 1, 93, 1)
-</pre></figure>
-
-
-<figure class="highlight sql"><pre>Slot 0, Offset 0x60, Length 16, DumpStyle BYTE
-
-Record Type = INDEX_RECORD           Record Attributes =  NULL_BITMAP VARIABLE_COLUMNS
-Record Size = 16                     
-Memory Dump @0x0000000009DEC060
-
-0000000000000000:   36010000 00030000 01001000 4d61726b †6...........Mark 
-
-Slot 1, Offset 0x70, Length 22, DumpStyle BYTE
-
-Record Type = INDEX_RECORD           Record Attributes =  NULL_BITMAP VARIABLE_COLUMNS
-Record Size = 22                     
-Memory Dump @0x0000000009DEC070
-
-0000000000000000:   36010000 00030000 02001200 16004d61 †6.............Ma 
-0000000000000010:   726b0100 0000††††††††††††††††††††††††rk....
-</pre></figure>
-
-<p>Notice how the second record is 6 bytes larger than the first. This is caused by the presence of the uniquifier on the second record. Since the uniquifier is stored as a 4 byte integer in the variable length section, we also need 2 extra bytes for storing the length of the uniquifier in the variable length column offset array – thus causing a total overhead of 6. The primary difference however, lies in the fact that the uniquifier is stored as the last variable length column in the nonclustered index (the 0100 0000 part of the second record), while in the clustered index data page it was stored as the first variable length column. This discrepancy is what caused me headaches when trying to parse both page types – I needed a way of determining what column ordinal the uniquifiers had for both the clustered and the nonclustered index.</p>
-<h2 id="Locating_the_uniquifier_in_a_clustered_index">Locating the uniquifier in a clustered index</h2>
-<p>Thankfully there’s a plethora of DMVs to look in, it’s just a matter of finding the right ones. Let’s start out by querying sys.objects to get the object id of our table:</p>
-<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
-	*
-<span class="keyword">FROM</span>
-	sys.objects
-<span class="keyword">WHERE</span>
-	Name = <span class="string">'Test'</span></span>
-</pre></figure>
-
-<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_102.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_102.png" style="max-height: 250px"/></a></div></div>
-
-<p>Armed with the object id, we can find the default partitions for our clustered and nonclustered indexes:</p>
-<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
-	*
-<span class="keyword">FROM</span>
-	sys.partitions
-<span class="keyword">WHERE</span>
-	object_id = <span class="number">293576084</span></span>
-</pre></figure>
-
-<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_122.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_122.png" style="max-height: 250px"/></a></div></div>
-
-<p>Armed with the partition id, we can find the partition columns for our clustered index (index_id = 1):</p>
-<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
-	*
-<span class="keyword">FROM</span>
-	sys.system_internals_partition_columns
-<span class="keyword">WHERE</span>
-	partition_id = <span class="number">72057594040483840</span></span>
-</pre></figure>
-
-<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_161.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_161.png" style="max-height: 250px"/></a></div></div>
-
-<p>Now would you take a look at that marvelous is_uniquifier column (we’ll ignore the alternative spelling for now). Using this output we can see that the first row is the uniquifier – being the third part of our clustered key (key_ordinal = 3). The leaf_offset column specifies the physical order in the record, fixed length columns being positive and variable length columns being negative. This confirms what we saw earlier, that the uniquifier is the first variable length column stored, with the remaining columns coming in at leaf offset –2, –3, –4 and –5.</p>
-<h2 id="Locating_the_uniquifier_in_a_nonclustered_index">Locating the uniquifier in a nonclustered index</h2>
-<p>Well that was easy, let’s just repeat that using the partition id of our nonclustered index (index_id = 2):</p>
-<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
-	*
-<span class="keyword">FROM</span>
-	sys.system_internals_partition_columns
-<span class="keyword">WHERE</span>
-	partition_id = <span class="number">72057594040549376</span></span>
-</pre></figure>
-
-<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_181.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_181.png" style="max-height: 250px"/></a></div></div>
-
-<p>But what’s this, curses! For nonclustered indexes, the is_uniquifier column is not set, even though we can see there are three columns in our nonclustered index (the explicitly included ID, the implicitly included Name column that’s part of the clustered index key as well as the uniquifier which is also part of the clustered index key). So now we know that the uniquifier is shown in the result set, we just can’t trust the is_uniquifier column. However – to the best of my knowledge no other integer columns are stored as a variable length column, besides the uniquifier. Thus, we can add a predicate to the query returning just integers (system_type_id = 56) with negative leaf_offsets:</p>
-<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
-	*
-<span class="keyword">FROM</span>
-	sys.system_internals_partition_columns
-<span class="keyword">WHERE</span>
-	partition_id = <span class="number">72057594040549376</span> <span class="keyword">AND</span>
-	system_type_id = <span class="number">56</span> <span class="keyword">AND</span>
-	leaf_offset &lt; <span class="number">0</span></span>
-</pre></figure>
-
-<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_141.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_141.png" style="max-height: 250px"/></a></div></div>
-
-<p>And that’s it, we now have the uniquifier column offset in the variable length part of our nonclustered index record!</p>
-<h2 id="The_pessimistic_approach">The pessimistic approach</h2>
-<p>As I can’t find any info guaranteeing that the uniquifier is the only integer stored in the variable length part of a record, I came up with a secondary way of finding the uniquifier column offset. This method is way more cumbersome though and I won’t go into complete details. We’ll start out by retrieving all columns in the nonclustered index that are not explicitly part of the nonclustered index itself (by removing all rows present in sys.index_columns for the index):</p>
-<figure class="highlight sql"><pre>DECLARE @TableName sysname = 'Test'
-DECLARE @NonclusteredIndexName sysname = 'IX_ID'
-
-<span class="operator"><span class="keyword">SELECT</span>
-	i.index_id,
-	pc.*
-<span class="keyword">FROM</span>
-	sys.objects o
-<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
-	sys.indexes i <span class="keyword">ON</span> i.object_id = o.object_id
-<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
-	sys.partitions p <span class="keyword">ON</span> p.object_id = o.object_id <span class="keyword">AND</span> p.index_id = i.index_id
-<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
-	sys.system_internals_partition_columns pc <span class="keyword">on</span> pc.partition_id = p.partition_id
-<span class="keyword">WHERE</span>
-	o.name = @TableName <span class="keyword">AND</span>
-	i.name = @NonclusteredIndexName <span class="keyword">AND</span>
-	<span class="keyword">NOT</span> <span class="keyword">EXISTS</span> (<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> sys.index_columns <span class="keyword">WHERE</span> object_id = o.object_id <span class="keyword">AND</span> index_id = i.index_id <span class="keyword">AND</span> key_ordinal = pc.key_ordinal)</span>
-</pre></figure>
-
-<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_201.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_201.png" style="max-height: 250px"/></a></div></div>
-
-<p>These are the remaining columns that are stored as the physical part of the index record. Given that they’re not part of the index definition itself, these are the columns that make up the remainder of the clustered key – the <em>Name</em> and <em>Unuiquifier</em> columns in this example.</p>
-<p>Now we can perform the same query for the clustered index, though this time only filtering away those that are not part of the key itself (that is, key_ordinal &gt; 0):</p>
-<figure class="highlight sql"><pre>DECLARE @TableName sysname = 'Test'
-DECLARE @NonclusteredIndexName sysname = 'CX_ID_Name'
-
-<span class="operator"><span class="keyword">SELECT</span>
-	i.index_id,
-	pc.*
-<span class="keyword">FROM</span>
-	sys.objects o
-<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
-	sys.indexes i <span class="keyword">ON</span> i.object_id = o.object_id
-<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
-	sys.partitions p <span class="keyword">ON</span> p.object_id = o.object_id <span class="keyword">AND</span> p.index_id = i.index_id
-<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
-	sys.system_internals_partition_columns pc <span class="keyword">on</span> pc.partition_id = p.partition_id
-<span class="keyword">WHERE</span>
-	o.name = @TableName <span class="keyword">AND</span>
-	i.name = @NonclusteredIndexName <span class="keyword">AND</span>
-	key_ordinal &gt; <span class="number">0</span>
-<span class="keyword">ORDER</span> <span class="keyword">BY</span>
-	key_ordinal</span>
-</pre></figure>
-
-<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_221.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_221.png" style="max-height: 250px"/></a></div></div>
-
-<p>At this point we can compare these two result sets from the highest key_ordinal and downwards. Basically we just need to find the first match between the uniquifier column in the clustered index output and the assumed uniquifier column in the nonclustered index output. Until my assumption of the uniquifier being the only variable length integer, I wouldn’t recommend using this method though.</p>
-<h2 id="The_hardcore_approach_–_using_base_tables">The hardcore approach – using base tables</h2>
-<p>All those DMV’s certainly are nifty, but I just can’t help but feel I’m cheating. Let’s try and redo the optimistic (uniquifier being the only variable length integer) approach without using DMVs. Start out by connecting to your database using the <a href="http://msdn.microsoft.com/en-us/library/ms178068.aspx" target="_blank">dedicated administrator connection</a>, this will allow you to query the base tables:</p>
-<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_241.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_241.png" style="max-height: 250px"/></a></div></div>
-
-<p>We’ll start out by querying sys.sysschobjs, which is basically the underlying table for sys.objects:</p>
-<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
-	*
-<span class="keyword">FROM</span>
-	sys.sysschobjs
-<span class="keyword">WHERE</span>
-	name = <span class="string">'Test'</span></span>
-</pre></figure>
-
-<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_26.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_26.png" style="max-height: 250px"/></a></div></div>
-
-<p>Now we’ll query sys.sysrowsets, which is basically the underlying table for sys.partitions. In the base tables, idmajor is the column name we commonly know as object_id and idminor is what we’d usually know as index_id:</p>
-<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
-	*
-<span class="keyword">FROM</span>
-	sys.sysrowsets
-<span class="keyword">WHERE</span>
-	idmajor = <span class="number">293576084</span></span>
-</pre></figure>
-
-<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_281.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_281.png" style="max-height: 250px"/></a></div></div>
-
-<p>Checking out the row with idminor = 2, we’ve now got the rowsetid (partition id) of our nonclustered index. Now we just need to find the columns for the index – and that’s just what sys.sysrscols is for, the base table behind sys.system_internals_partition_columns:</p>
-<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
-	*,
-	<span class="keyword">CAST</span>(<span class="keyword">CAST</span>(offset & <span class="number">0xFFFF</span> <span class="keyword">AS</span> binary(<span class="number">2</span>)) <span class="keyword">AS</span> <span class="keyword">smallint</span>) <span class="keyword">AS</span> leaf_offset
-<span class="keyword">FROM</span>
-	sys.sysrscols
-<span class="keyword">WHERE</span>
-	rsid = <span class="number">72057594040549376</span></span>
-</pre></figure>
-
-<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_30.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_30.png" style="max-height: 250px"/></a></div></div>
-
-<p>Note that the leaf_offset column isn’t persisted as an easily read value – it’s actually stored as an integer in the offset column. The offset column stores not only the value for the leaf_offset column but also for the internal_offset column – we just have to do some masking and conversion to get it out.</p>
-<p>The following query helps to show exactly what we’re doing to extract the leaf_offset value from the offset column value:</p>
-<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
-	offset,
-	<span class="keyword">CAST</span>(<span class="keyword">CAST</span>(offset & <span class="number">0xFFFF</span> <span class="keyword">AS</span> binary(<span class="number">2</span>)) <span class="keyword">AS</span> <span class="keyword">smallint</span>) <span class="keyword">AS</span> leaf_offset,
-	<span class="keyword">CAST</span>(offset <span class="keyword">AS</span> binary(<span class="number">4</span>)) <span class="keyword">AS</span> HexValue,
-	<span class="keyword">CAST</span>(offset & <span class="number">0xFFFF</span> <span class="keyword">AS</span> binary(<span class="number">4</span>)) <span class="keyword">AS</span> MaskedHexValue,
-	<span class="keyword">CAST</span>(offset & <span class="number">0xFFFF</span> <span class="keyword">AS</span> binary(<span class="number">2</span>)) <span class="keyword">AS</span> ShortenedMaskedHexValue
-<span class="keyword">FROM</span>
-	sys.sysrscols
-<span class="keyword">WHERE</span>
-	rsid = <span class="number">72057594040549376</span></span>
-</pre></figure>
-
-<div class="imgwrapper" style=""><div><a href="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_36.png" class="fancy"><img src="/determining-the-uniquifier-column-ordinal-for-clustered-and-nonclustered-indexes/image_36.png" style="max-height: 250px"/></a></div></div>
-
-<p>The HexValue shows the offset column value represented in hex – no magic yet. After applying the 0xFFFF bitmask (0b1111111111111111 in binary), only the first 16 bits / 2 (starting from the right since we’re little endian) bytes will keep their value. Converting to binary(2) simply discards the last two bytes (the 0x0000 part).</p>
-<p>0x0001 is easily converted to the decimal value 1. 0xFFFF and 0xFFFE correspond to the decimal values 65.535 and 65.534 respectively. The way storing smallints work, 0 is stored as 0x0, 32.767 is stored as 0x7FFF and from there on the decimal value rolls over into –32.768 with a hex value of 0x8000 – continuing all the way up the –1 = 0xFFFF. And that’s why we can convert the binary(2) representations of the offset columns into the –1 and –2 decimal values.</p>
 
 
 				<div style="clear: both"></div>
