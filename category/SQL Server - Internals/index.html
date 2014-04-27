@@ -17,9 +17,11 @@
 		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
 		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 		ga('create', 'UA-2479580-1', 'improve.dk');
+		ga('require', 'displayfeatures');
 		ga('send', 	'pageview');
 	</script>
-	<link rel="stylesheet" href="/css/style.css" type="text/css">
+	<link rel="stylesheet" href="/css/style.css" type="text/css" />
+	<link rel="stylesheet" href="/css/print.css" type="text/css" media="print" />
 </head>
 	<body>
 		<div id="headerline"></div>
@@ -32,17 +34,17 @@
 				
 				<nav>
 					<ul class="normal">
-						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li class="navicon"></li>
 						<li><a href="/about-me/">About Me</a></li>
 					</ul>
 				</nav>
 				
 				<ul id="sharing">
-					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
-					<li><a href="http://feeds.feedburner.com/Improvedk" id="rssfeed"><img src="/img/rss.png" /></a></li>
-					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
-					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
-					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+					<li><a href="mailto:mark@improve.dk" id="shareat"></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk" id="rssfeed"></a></li>
+					<li><a href="https://twitter.com/improvedk" id="sharetwitter"></a></li>
+					<li><a href="https://github.com/improvedk" id="sharegithub"></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/" id="sharelinkedin"></a></li>
 				</ul>
 
 				<div class="clear"></div>
@@ -514,41 +516,6 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/the-8-byte-record-that-was-9-bytes-while-making-no-sense/" title="The 8 Byte Record That Was 9 Bytes While Making No Sense" rel="bookmark">The 8 Byte Record That Was 9 Bytes While Making No Sense</a></h1>
-		<div class="categories">
-			
-				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-
-			<div class="body"><p>Warning: this is a <em>select is (most likely) not broken, it’s just not working as I’d expect</em>. It may very well be that I’m just overlooking something, in which case I hope someone will correct me :)</p>
-</div>
-		
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Jul</span>
-			<span class="day">16</span>
-		</div>
-		<div class="lower">2011</div>
-	</div>
-
-	<div class="title">
 		<h1><a href="/depending-on-how-itrsquos-added-spare-bits-in-the-null/" title="The Garbage Null Bitmap and Why You Can&#39;t Rely on It Solely" rel="bookmark">The Garbage Null Bitmap and Why You Can&#39;t Rely on It Solely</a></h1>
 		<div class="categories">
 			
@@ -578,13 +545,13 @@
 	<div class="datebox">
 		<div class="upper">
 			<span class="month">Jul</span>
-			<span class="day">15</span>
+			<span class="day">16</span>
 		</div>
 		<div class="lower">2011</div>
 	</div>
 
 	<div class="title">
-		<h1><a href="/sparse-column-storage-ndash-the-sparse-vector/" title="Sparse Column Storage &amp; the Sparse Vector" rel="bookmark">Sparse Column Storage &amp; the Sparse Vector</a></h1>
+		<h1><a href="/the-8-byte-record-that-was-9-bytes-while-making-no-sense/" title="The 8 Byte Record That Was 9 Bytes While Making No Sense" rel="bookmark">The 8 Byte Record That Was 9 Bytes While Making No Sense</a></h1>
 		<div class="categories">
 			
 				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
@@ -599,7 +566,7 @@
 
 		
 
-			<div class="body"><p>In this post I’ll be looking at the internal storage mechanism that supports sparse columns. For an introduction to what sparse columns are and when they ought to be used, <a href="http://msdn.microsoft.com/en-us/library/cc280604.aspx" target="_blank">take a look here</a>.</p>
+			<div class="body"><p>Warning: this is a <em>select is (most likely) not broken, it’s just not working as I’d expect</em>. It may very well be that I’m just overlooking something, in which case I hope someone will correct me :)</p>
 </div>
 		
 		
@@ -654,6 +621,41 @@
 	</div>
 
 	<div class="title">
+		<h1><a href="/sparse-column-storage-ndash-the-sparse-vector/" title="Sparse Column Storage &amp; the Sparse Vector" rel="bookmark">Sparse Column Storage &amp; the Sparse Vector</a></h1>
+		<div class="categories">
+			
+				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+
+			<div class="body"><p>In this post I’ll be looking at the internal storage mechanism that supports sparse columns. For an introduction to what sparse columns are and when they ought to be used, <a href="http://msdn.microsoft.com/en-us/library/cc280604.aspx" target="_blank">take a look here</a>.</p>
+</div>
+		
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
+			<span class="day">15</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
 		<h1><a href="/identifying-complex-columns-in-records/" title="Identifying Complex Columns in Records" rel="bookmark">Identifying Complex Columns in Records</a></h1>
 		<div class="categories">
 			
@@ -689,7 +691,7 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/exploring-the-sys-system_internals_partition_columns-ti-field/" title="Exploring the sys.system_internals_partition_columns.ti Field" rel="bookmark">Exploring the sys.system_internals_partition_columns.ti Field</a></h1>
+		<h1><a href="/creating-a-type-aware-parser-for-the-sys-system_internals_partition_columns-ti-field/" title="Creating a Type Aware Parser for the sys.system_internals_partition_columns.ti Field" rel="bookmark">Creating a Type Aware Parser for the sys.system_internals_partition_columns.ti Field</a></h1>
 		<div class="categories">
 			
 				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
@@ -704,7 +706,7 @@
 
 		
 
-			<div class="body"><p>Running sp_helptext on the sys.system_internals_partition_columns system view reveals the following internal query:</p>
+			<div class="body"><p>Based on my findings <a href="/exploring-the-sys-system_internals_partition_columns-ti-field">exploring the sys.system_internals_partition_columns.ti field</a>, I needed parser that could extract the scale, precision, max_length as well as the max_inrow_length fields from it. The tricky part is that those values are stored differently for each individual type, added onto the fact that some types have hardcoded defaults that are not stored in the ti field, even though there’s space for it.</p>
 </div>
 		
 		
@@ -724,7 +726,7 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/creating-a-type-aware-parser-for-the-sys-system_internals_partition_columns-ti-field/" title="Creating a Type Aware Parser for the sys.system_internals_partition_columns.ti Field" rel="bookmark">Creating a Type Aware Parser for the sys.system_internals_partition_columns.ti Field</a></h1>
+		<h1><a href="/exploring-the-sys-system_internals_partition_columns-ti-field/" title="Exploring the sys.system_internals_partition_columns.ti Field" rel="bookmark">Exploring the sys.system_internals_partition_columns.ti Field</a></h1>
 		<div class="categories">
 			
 				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
@@ -739,7 +741,7 @@
 
 		
 
-			<div class="body"><p>Based on my findings <a href="/exploring-the-sys-system_internals_partition_columns-ti-field">exploring the sys.system_internals_partition_columns.ti field</a>, I needed parser that could extract the scale, precision, max_length as well as the max_inrow_length fields from it. The tricky part is that those values are stored differently for each individual type, added onto the fact that some types have hardcoded defaults that are not stored in the ti field, even though there’s space for it.</p>
+			<div class="body"><p>Running sp_helptext on the sys.system_internals_partition_columns system view reveals the following internal query:</p>
 </div>
 		
 		

@@ -17,9 +17,11 @@
 		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
 		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 		ga('create', 'UA-2479580-1', 'improve.dk');
+		ga('require', 'displayfeatures');
 		ga('send', 	'pageview');
 	</script>
-	<link rel="stylesheet" href="/css/style.css" type="text/css">
+	<link rel="stylesheet" href="/css/style.css" type="text/css" />
+	<link rel="stylesheet" href="/css/print.css" type="text/css" media="print" />
 </head>
 	<body>
 		<div id="headerline"></div>
@@ -32,17 +34,17 @@
 				
 				<nav>
 					<ul class="normal">
-						<li class="navicon"><img src="/img/navicon.png" /></li>
+						<li class="navicon"></li>
 						<li><a href="/about-me/">About Me</a></li>
 					</ul>
 				</nav>
 				
 				<ul id="sharing">
-					<li><a href="mailto:mark@improve.dk"><img src="/img/at.png" /></a></li>
-					<li><a href="http://feeds.feedburner.com/Improvedk" id="rssfeed"><img src="/img/rss.png" /></a></li>
-					<li><a href="https://twitter.com/improvedk"><img src="/img/twitter.png" /></a></li>
-					<li><a href="https://github.com/improvedk"><img src="/img/github.png" /></a></li>
-					<li><a href="https://www.linkedin.com/in/markrasmussen/"><img src="/img/linkedin.png" /></a></li>
+					<li><a href="mailto:mark@improve.dk" id="shareat"></a></li>
+					<li><a href="http://feeds.feedburner.com/Improvedk" id="rssfeed"></a></li>
+					<li><a href="https://twitter.com/improvedk" id="sharetwitter"></a></li>
+					<li><a href="https://github.com/improvedk" id="sharegithub"></a></li>
+					<li><a href="https://www.linkedin.com/in/markrasmussen/" id="sharelinkedin"></a></li>
 				</ul>
 
 				<div class="clear"></div>
@@ -81,10 +83,13 @@
 	</div>
 
 	<div class="title">
-		<h1><a href="/profiling-code-the-easy-way/" title="Profiling Code the Easy Way" rel="bookmark">Profiling Code the Easy Way</a></h1>
+		<h1><a href="/securing-dotnet-code/" title="Securing .NET Code" rel="bookmark">Securing .NET Code</a></h1>
 		<div class="categories">
 			
 				<a href="/category/.NET/">.NET</a>
+				, 
+			
+				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
 				
 			
 		</div>
@@ -98,148 +103,12 @@
 		
 			<div class="body">
 			
-				<p>I often do code profiling, usually involving a stopwatch and some boilerplate code. I decided to make a quick’n’simple class that’ll help me get rid of some of that code and concentrate on the actual code being profiled.</p>
+				<p>Time flies fast. Back in 2006, during my time as an <a href="http://en.wikipedia.org/wiki/Microsoft_Student_Partners" target="_blank">MSP</a>, I made a series of presentations on securing intellectual property in .NET code, resulting in my <a href="/securing-dotnet-code-article/">Securing .NET Code</a> article. Although it’s about two years old, most points are still valid today, unfortunately.</p>
 <a id="more"></a>
 
-<p>There are just four functions in the class, all overload variations. In a nutshell, they’ll allow you to profile a single action with &amp; without warmup, multiple iterations and multiple iterations run i parallel. The code is more or less self explanable so I’ll just throw it out there:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
-<span class="keyword">using</span> System.Collections.Generic;
-<span class="keyword">using</span> System.Diagnostics;
-<span class="keyword">using</span> System.Threading;
-
-namespace CodeProfiler
-{
-	<span class="keyword">public</span> <span class="keyword">class</span> CodeProfiler
-	{
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> Measures the runtime of an action once</span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="action"&gt;</span>The action to profile<span class="xmlDocTag">&lt;/param&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="warmup"&gt;</span>Whether the action should be run once before the actual measurement<span class="xmlDocTag">&lt;/param&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>The total runtime<span class="xmlDocTag">&lt;/returns&gt;</span></span>
-		<span class="keyword">public</span> <span class="keyword">static</span> TimeSpan <span class="title">ProfileAction</span>(Action action, <span class="keyword">bool</span> warmup)
-		{
-			<span class="keyword">if</span> (warmup)
-				action();
-
-			Stopwatch sw = <span class="keyword">new</span> Stopwatch();
-			sw.Start();
-			action();
-			sw.Stop();
-			<span class="keyword">return</span> sw.Elapsed;
-		}
-
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> Measures the runtime of an action once, will run the action before to warm up</span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="action"&gt;</span>The action to profile<span class="xmlDocTag">&lt;/param&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>The total runtime<span class="xmlDocTag">&lt;/returns&gt;</span></span>
-		<span class="keyword">public</span> <span class="keyword">static</span> TimeSpan <span class="title">ProfileAction</span>(Action action)
-		{
-			<span class="keyword">return</span> ProfileAction(action, <span class="keyword">true</span>);
-		}
-
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> Measures the total runtime of performing the specified action multiple times</span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="action"&gt;</span>The action to profile<span class="xmlDocTag">&lt;/param&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="iterations"&gt;</span>The number of iterations the action should be performed<span class="xmlDocTag">&lt;/param&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>The total runtime<span class="xmlDocTag">&lt;/returns&gt;</span></span>
-		<span class="keyword">public</span> <span class="keyword">static</span> TimeSpan <span class="title">ProfileAction</span>(Action action, <span class="keyword">int</span> iterations)
-		{
-			TimeSpan total = <span class="keyword">new</span> TimeSpan();
-
-			<span class="comment">// Perform single warmup</span>
-			action();
-
-			<span class="comment">// Profile iterations</span>
-			<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; iterations; i++)
-				total = total.Add(ProfileAction(action, <span class="keyword">false</span>));
-
-			<span class="keyword">return</span> total;
-		}
-
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> Measures the total runtime of performing the specified action using multiple threads</span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="action"&gt;</span>The action to profile<span class="xmlDocTag">&lt;/param&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="iterations"&gt;</span>The total number of iterations that should be profiled<span class="xmlDocTag">&lt;/param&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="dop"&gt;</span>The number of simultaneous threads that should be used<span class="xmlDocTag">&lt;/param&gt;</span></span>
-		<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>The total runtime<span class="xmlDocTag">&lt;/returns&gt;</span></span>
-		<span class="keyword">public</span> <span class="keyword">static</span> TimeSpan <span class="title">ProfileAction</span>(Action action, <span class="keyword">int</span> iterations, <span class="keyword">int</span> dop)
-		{
-			<span class="keyword">object</span> locker = <span class="keyword">new</span> <span class="keyword">object</span>();
-			List&lt;Thread&gt; threads = <span class="keyword">new</span> List&lt;Thread&gt;(iterations);
-
-			<span class="comment">// Warmup</span>
-			action();
-
-			<span class="comment">// Create profiling threads</span>
-			<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; dop; i++)
-			{
-				Thread t = <span class="keyword">new</span> Thread(<span class="keyword">delegate</span>()
-				{
-					<span class="keyword">while</span> (<span class="keyword">true</span>)
-					{
-						<span class="keyword">lock</span> (locker)
-						{
-							<span class="keyword">if</span> (iterations &gt; <span class="number">0</span>)
-								iterations--;
-							<span class="keyword">else</span>
-								<span class="keyword">break</span>;
-						}
-
-						action();
-					}
-				});
-				threads.Add(t);
-			}
-
-			Stopwatch sw = <span class="keyword">new</span> Stopwatch();
-			sw.Start();
-
-			<span class="comment">// Start profiling threads</span>
-			threads.ForEach(t =&gt; t.Start());
-
-			<span class="comment">// Wait for all threads to stop</span>
-			threads.ForEach(t =&gt; t.Join());
-
-			sw.Stop();
-
-			<span class="keyword">return</span> sw.Elapsed;
-		}
-	}
-}
-</pre></figure>
-
-<p>Using the CodeProfiler class, it’s easy for us to do code profiling, including measuring the effects of parallelization. Here’s an example of calculating the square root of the numbers 1 through 10 million 100 times, using 1-16 simultaneous threads. FYI I’m runing on a quad core machine.</p>
-<figure class="highlight csharp"><pre>using System;
-
-namespace CodeProfiler
-{
-	class Program
-	{
-		static void Main(string[] args)
-		{
-			Action action = () =&gt;
-			{
-				for (int i = 0; i &lt; 10000000; i++)
-					Math.Sqrt(i);
-			};
-
-			for(int i=1; i&lt;=16; i++)
-				Console.WriteLine(i + <span class="string">" thread(s):t"</span> + CodeProfiler.ProfileAction(action, 100, i));
-
-			Console.Read();
-		}
-	}
-}
-</pre></figure>
-
-<p>And the result as expected, the performance panning out when threads &gt;= cores. Using more threads than there is cores will usually not result in added performance, just increased context switching which is not desirable. Here’s the resulting execution times with seconds on the Y axis and number of threads on the X axis.</p>
-<div class="imgwrapper" style=""><div><a href="/profiling-code-the-easy-way/codeprofilergraph_2.jpg" class="fancy"><img src="/profiling-code-the-easy-way/codeprofilergraph_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/profiling-code-the-easy-way/codeprofilercmd_2.jpg" class="fancy"><img src="/profiling-code-the-easy-way/codeprofilercmd_2.jpg" style="max-height: 250px"/></a></div></div>
+<p>I recorded a screencast of this article sometime in 2007, but I never really got it published, except for a link on the Microsoft Denmark site. It was my first screencast and unfortunately I made some mistakes, the biggest one being the click sounds from the mouse. An even bigger mistake was me deleting the original Camtasia recording files so I can’t create a new version without them.</p>
+<p>Never the less, if you prefer watching to reading, it might be interesting to look through.</p>
+<div class="video-container"><iframe src="//www.youtube.com/embed/Dc9EE4YRGy8" frameborder="0" allowfullscreen></iframe></div>
 
 
 				<div style="clear: both"></div>
