@@ -113,70 +113,70 @@
 <a id="more"></a>
 
 
-<figure class="highlight csharp"><pre>using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
-using System.Drawing;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Collections.Generic;
+<span class="keyword">using</span> System.Text;
+<span class="keyword">using</span> System.Runtime.InteropServices;
+<span class="keyword">using</span> System.Text.RegularExpressions;
+<span class="keyword">using</span> System.Drawing;
 
 namespace Modifying_window_location_and_size
 {
 	class Program
 	{
-		// The SetWindowPos function is used to both resize and change the location of windows. The uFlags parameter
-		// can take any number of flags, with zero being a neutral flag, the same goes for the hWndInsertAfter parameter.
-		// X, Y is the new location of the window, cx and cy is the new height / width of the window. Via uFlags it can
-		// be set to ignore the new location and/or the new size of the window.
-		// See http://msdn2.microsoft.com/en-us/library/ms633545.aspx for full documentation.
+		<span class="comment">// The SetWindowPos function is used to both resize and change the location of windows. The uFlags parameter</span>
+		<span class="comment">// can take any number of flags, with zero being a neutral flag, the same goes for the hWndInsertAfter parameter.</span>
+		<span class="comment">// X, Y is the new location of the window, cx and cy is the new height / width of the window. Via uFlags it can</span>
+		<span class="comment">// be set to ignore the new location and/or the new size of the window.</span>
+		<span class="comment">// See http://msdn2.microsoft.com/en-us/library/ms633545.aspx for full documentation.</span>
 		[DllImport(<span class="string">"user32.dll"</span>)]
-		public static extern bool SetWindowPos(int hWnd, int hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+		<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">extern</span> <span class="keyword">bool</span> <span class="title">SetWindowPos</span>(<span class="keyword">int</span> hWnd, <span class="keyword">int</span> hWndInsertAfter, <span class="keyword">int</span> X, <span class="keyword">int</span> Y, <span class="keyword">int</span> cx, <span class="keyword">int</span> cy, <span class="keyword">uint</span> uFlags);
 
-		// An enumeration containing all the possible HWND values.
-		public enum HWND : int
+		<span class="comment">// An enumeration containing all the possible HWND values.</span>
+		<span class="keyword">public</span> <span class="keyword">enum</span> HWND : <span class="keyword">int</span>
 		{
-			BOTTOM = 1,
-			NOTOPMOST = -2,
-			TOPMOST = -1,
-			TOP = 0
+			BOTTOM = <span class="number">1</span>,
+			NOTOPMOST = -<span class="number">2</span>,
+			TOPMOST = -<span class="number">1</span>,
+			TOP = <span class="number">0</span>
 		}
 
-		// And enumeration containing all the possible SWP values.
-		public enum SWP : uint
+		<span class="comment">// And enumeration containing all the possible SWP values.</span>
+		<span class="keyword">public</span> <span class="keyword">enum</span> SWP : <span class="keyword">uint</span>
 		{
-			ASYNCWINDOWPOS = 0x4000,
-			DEFERERASE = 0x2000,
-			FRAMECHANGED = 0x0020,
-			HIDEWINDOW = 0x0080,
-			NOACTIVATE = 0x0010,
-			NOCOPYBITS = 0x0100,
-			NOMOVE = 0x0002,
-			NOOWNERZORDER = 0x0200,
-			NOREDRAW = 0x0008,
-			NOSENDCHANGING = 0x0400,
-			NOSIZE = 0x0001,
-			NOZORDER = 0x0004,
-			SHOWWINDOW = 0x0040
+			ASYNCWINDOWPOS = <span class="number">0x4000</span>,
+			DEFERERASE = <span class="number">0x2000</span>,
+			FRAMECHANGED = <span class="number">0x0020</span>,
+			HIDEWINDOW = <span class="number">0x0080</span>,
+			NOACTIVATE = <span class="number">0x0010</span>,
+			NOCOPYBITS = <span class="number">0x0100</span>,
+			NOMOVE = <span class="number">0x0002</span>,
+			NOOWNERZORDER = <span class="number">0x0200</span>,
+			NOREDRAW = <span class="number">0x0008</span>,
+			NOSENDCHANGING = <span class="number">0x0400</span>,
+			NOSIZE = <span class="number">0x0001</span>,
+			NOZORDER = <span class="number">0x0004</span>,
+			SHOWWINDOW = <span class="number">0x0040</span>
 		}
 
-		static void Main(string[] args)
+		<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
 		{
-			// Introduced in the <span class="string">"Finding specific windows"</span> blog, we use the WindowFinder class to find all Internet Explorer main window instances.
-			Finding_specific_windows.WindowFinder wf = new Finding_specific_windows.WindowFinder();
-			wf.FindWindows(0, null, new Regex(<span class="string">"- (Windows|Microsoft) Internet Explorer"</span>), new Regex(<span class="string">"iexplore"</span>), new Finding_specific_windows.WindowFinder.FoundWindowCallback(foundWindow));
+			<span class="comment">// Introduced in the "Finding specific windows" blog, we use the WindowFinder class to find all Internet Explorer main window instances.</span>
+			Finding_specific_windows.WindowFinder wf = <span class="keyword">new</span> Finding_specific_windows.WindowFinder();
+			wf.FindWindows(<span class="number">0</span>, <span class="keyword">null</span>, <span class="keyword">new</span> Regex(<span class="string">"- (Windows|Microsoft) Internet Explorer"</span>), <span class="keyword">new</span> Regex(<span class="string">"iexplore"</span>), <span class="keyword">new</span> Finding_specific_windows.WindowFinder.FoundWindowCallback(foundWindow));
 
 			Console.Read();
 		}
 
-		static bool foundWindow(int handle)
+		<span class="keyword">static</span> <span class="keyword">bool</span> foundWindow(<span class="keyword">int</span> handle)
 		{
-			// After an Internet Explorer window has been found, relocate it to (50,50) and set it's size to 600x500px.
-			SetWindowPos(handle, 0, 50, 50, 600, 500, 0);
+			<span class="comment">// After an Internet Explorer window has been found, relocate it to (50,50) and set it's size to 600x500px.</span>
+			SetWindowPos(handle, <span class="number">0</span>, <span class="number">50</span>, <span class="number">50</span>, <span class="number">600</span>, <span class="number">500</span>, <span class="number">0</span>);
 
 			Console.WriteLine(<span class="string">"Window resized and relocated"</span>);
 
-			// Since we return true, this will be done for any and all Internet Explorer instances.
-			return true;
+			<span class="comment">// Since we return true, this will be done for any and all Internet Explorer instances.</span>
+			<span class="keyword">return</span> <span class="keyword">true</span>;
 		}
 	}
 }

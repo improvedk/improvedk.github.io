@@ -118,14 +118,14 @@
 <div class="imgwrapper" style=""><div><a href="/solving-deadlocks-through-locking-hints/deadlock-hint-1_2.jpg" class="fancy"><img src="/solving-deadlocks-through-locking-hints/deadlock-hint-1_2.jpg" style="max-height: 250px"/></a></div></div>
 
 <p>Great. So we have a deadlock, what’s the first step in fixing it? I’ve outlined the code in PaperHandler.cs that caused the issue, though in pseudo code format:</p>
-<figure class="highlight csharp"><pre>using (var ts = new TransactionScope())
+<figure class="highlight cs"><pre><span class="keyword">using</span> (<span class="keyword">var</span> ts = <span class="keyword">new</span> TransactionScope())
 {
 	<span class="keyword">if</span> ((SELECT COUNT(*) FROM tblPapers WHERE Url = <span class="string">'newurl'</span>) &gt; <span class="number">0</span>)
-		throw new UrlNotUniqueException();
+		<span class="keyword">throw</span> <span class="keyword">new</span> UrlNotUniqueException();
 
-	// <span class="keyword">...</span> Further validation checks
+	<span class="comment">// ... Further validation checks</span>
 
-	INSERT INTO tblPapers <span class="keyword">...</span> // This is where the deadlock occurred
+	INSERT INTO tblPapers ... <span class="comment">// This is where the deadlock occurred</span>
 }
 </pre></figure>
 
@@ -254,12 +254,12 @@ Transaction (Process ID <span class="number">53</span>) was deadlocked <span cla
 </ul>
 <p>If we look at the <a href="http://msdn.microsoft.com/en-us/library/ms186396(SQL.90" target="_blank">Lock Compatibility chart</a>.aspx), we’ll see that “Shared (S)” locks are compatible with other S &amp; IS (Intent Shared) locks. This means both of the processes are able to perform a shared lock on the initial SELECT COUNT(*) key range. When the INSERT statement is then performed, the database will then attempt to get an exclusive (X) lock on the data - but since the other process has a shared lock, we’ll have to wait for it to be released. When the second process tries to perform an INSERT as well, it’ll try to get an exclusive lock on the same data. At this point we have two processes that both have a shared lock on the same piece of data, and they both want an exclusive lock on the data. The only way to get out of this situation is to dedicate one of the transactions as a victim and perform a rollback. The unaffected process will perform the INSERT and will be able to commit.</p>
 <p>How do we then get rid of the deadlock situation? We <em>could</em> change the isolation mode to the default READ COMMITTED like so:</p>
-<figure class="highlight csharp"><pre>var tsOptions = new TransactionOptions();
+<figure class="highlight cs"><pre><span class="keyword">var</span> tsOptions = <span class="keyword">new</span> TransactionOptions();
 tsOptions.IsolationLevel = IsolationLevel.ReadCommitted;
 
-using (var ts = new TransactionScope(TransactionScopeOption.Required, tsOptions))
+<span class="keyword">using</span> (<span class="keyword">var</span> ts = <span class="keyword">new</span> TransactionScope(TransactionScopeOption.Required, tsOptions))
 {
-	<span class="keyword">...</span>
+	...
 
 	ts.Complete();
 }

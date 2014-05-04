@@ -118,7 +118,7 @@
 <p>In such a situation, if the Active Directory Domain Controller (let’s just call it DC from now on) dies, everything more or less dies as no clients/servers are able to authenticate incoming requests anymore. Security is paramount, so the services are not allowed to simply cache the domain logon, thus the logon has the occur at each service call - requiring a fully working DC.</p>
 <p>In this post I’ll attempt to implement a secondary failover DC and investigate how it affects a downtime situation. I’ll be using a couple of simple WCF based applications to test the DC. I will be using three virtual machines. Luxor is the primary DC. MGM is part of the domain, and this is the machine hosting the WCF server. Later on I’ll add the third virtual machine, Excalibur, being the failover DC. The WCF client will be running from my own machine. Note that I will not show how to install the primary DC, <a href="http://www.petri.co.il/how_to_install_active_directory_on_windows_2003.htm" target="_blank">there are plenty other great guides on how to setup the primary DC</a>. I also won’t be going into <a href="http://support.microsoft.com/kb/814591" target="_blank">how to install the primary DNS server</a>.</p>
 <p>This is the WCF server interface:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 <span class="keyword">using</span> System.Security.Principal;
 <span class="keyword">using</span> System.ServiceModel;
 <span class="keyword">using</span> System.ServiceModel.Channels;
@@ -195,7 +195,7 @@ namespace Contracts
 
 <p>Notice that I’ve hardcoded the user “IPAPERRedundancyCheck” with a password of “RedundancyCheck” - this is for test purposes only, don’t even bother commenting on password security :) Also notice that I’ve set a timeout of 1 second - when the DC fails, I don’t want to spend 30 seconds before knowing if it’s down, I want to know about it right away. And since all machines are running locally, 1 second is plenty.</p>
 <p>This is the server that’ll be running on the MGM machine on port 8000:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 <span class="keyword">using</span> System.Security;
 <span class="keyword">using</span> System.Security.Permissions;
 <span class="keyword">using</span> System.ServiceModel;
@@ -241,39 +241,39 @@ namespace WcfServer
 
 <p>We’ve got an implementation of the IServer interface with the single method “Ping”. We test that the user is part of the “ADTest” role by demanding it on the current principal. If something fails we throw a SecurityException which will let the client now authentication failed. If the client is authenticated, we return a pong.</p>
 <p>And finally we have the client that’ll be running on my own machine:</p>
-<figure class="highlight csharp"><pre>using System;
-using System.ServiceModel;
-using System.Threading;
-using Contracts;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.ServiceModel;
+<span class="keyword">using</span> System.Threading;
+<span class="keyword">using</span> Contracts;
 
 namespace WcfClient
 {
 	class Program
 	{
-		static void Main(string[] args)
+		<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
 		{
-			while (true)
+			<span class="keyword">while</span> (<span class="keyword">true</span>)
 			{
-				try
+				<span class="keyword">try</span>
 				{
-					IServer server = WCFHelper.CreateChannel(new NetTcpBinding(SecurityMode.Transport), <span class="string">"net.tcp://192.168.0.35:8000"</span>);
+					IServer server = WCFHelper.CreateChannel(<span class="keyword">new</span> NetTcpBinding(SecurityMode.Transport), <span class="string">"net.tcp://192.168.0.35:8000"</span>);
 
-					using (server as IDisposable)
+					<span class="keyword">using</span> (server <span class="keyword">as</span> IDisposable)
 					{
-						try
+						<span class="keyword">try</span>
 						{
 							Console.WriteLine(server.Ping());
 						}
-						catch (Exception ex)
+						<span class="keyword">catch</span> (Exception ex)
 						{
 							Console.WriteLine(ex.Message);
 						}
 					}
 				}
-				catch (CommunicationObjectFaultedException)
+				<span class="keyword">catch</span> (CommunicationObjectFaultedException)
 				{ }
 
-				Thread.Sleep(250);
+				Thread.Sleep(<span class="number">250</span>);
 			}
 		}
 	}

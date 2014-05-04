@@ -123,16 +123,16 @@
 <h2 id="The_AWS_console_only_takes_you_so_far">The AWS console only takes you so far</h2>
 <p>While the AWS console is great in itself, it’s really only meant for the simplest of tasks. Very quickly you’ll find yourself limited by what you can do. For what we’re about to do, all you’d be able to do through the console GUI is to create a bucket, the rest would have to be done through code. To keep things consistent, I’m sticking to code for all tasks.</p>
 <p>Before we start, <a href="http://aws.amazon.com/sdkfornet/" target="_blank">download the Amazon AWS .NET SDK</a> and create a template console application like this:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 <span class="keyword">using</span> Amazon;
 <span class="keyword">using</span> Amazon.CloudFront.Model;
 <span class="keyword">using</span> Amazon.S3;
 <span class="keyword">using</span> Amazon.S3.Model;
 
-<span class="class"><span class="keyword">namespace</span> <span class="title">AWSTest</span> 
-{</span> 
-    <span class="class"><span class="keyword">class</span> <span class="title">Program</span> 
-    {</span> 
+namespace AWSTest 
+{ 
+    class Program 
+    { 
         <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">string</span> accessKeyID = <span class="string">"AKI..."</span>; 
         <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">string</span> secretAccessKey = <span class="string">"w49..."</span>;
 
@@ -147,7 +147,7 @@
 <p>Make sure to insert your own access key ID and secret access key values. All code samples posted from now on should go into the Main() method body.</p>
 <h2 id="Creating_the_private_bucket">Creating the private bucket</h2>
 <p>Run the following code to set up a bucket, which will be private by default. Make sure you define a unique bucket name, I’m using the name <em>improve.dk</em> for this sample. Note that if your bucket is not in the EU region, you’ll need to substitute my ServiceURL with the one for your region. You can find all the service URLs here: <a href="http://docs.amazonwebservices.com/general/latest/gr/index.html?rande.html" target="_blank">http://docs.amazonwebservices.com/general/latest/gr/index.html?rande.html</a></p>
-<figure class="highlight csharp"><pre><span class="keyword">var</span> config = <span class="keyword">new</span> AmazonS3Config()
+<figure class="highlight cs"><pre><span class="keyword">var</span> config = <span class="keyword">new</span> AmazonS3Config()
 	.WithServiceURL(<span class="string">"s3-eu-west-1.amazonaws.com"</span>);
 
 <span class="keyword">using</span> (<span class="keyword">var</span> s3Client = AWSClientFactory.CreateAmazonS3Client(accessKeyID, secretAccessKey, config))
@@ -167,17 +167,17 @@
 <p>Now that we’ve got our bucket, we need to create the private CloudFront distribution. However, we also need to concoct a way for the private distribution to gain access to our private bucket. We can do so by utilizing a special type of CloudFront identities called Origin Access Identities, which I’ll be referring to as OAI’s.</p>
 <p>Creating an OAI allows us to tell CloudFront to access the S3 bucket using that OAI. On the bucket side, we can then create a policy granting access to that specific OAI, and thus enabling our private distribution access to our private bucket.</p>
 <p>Run the following code:</p>
-<figure class="highlight csharp"><pre>using (var cfClient = AWSClientFactory<span class="preprocessor">.CreateAmazonCloudFrontClient</span>(accessKeyID, secretAccessKey))
+<figure class="highlight cs"><pre><span class="keyword">using</span> (<span class="keyword">var</span> cfClient = AWSClientFactory.CreateAmazonCloudFrontClient(accessKeyID, secretAccessKey))
 {
-	var oaiConfig = new CloudFrontOriginAccessIdentityConfig()
-		<span class="preprocessor">.WithComment</span>(<span class="string">"OAI used for private distribution access to improve.dk bucket."</span>)<span class="comment">;</span>
+	<span class="keyword">var</span> oaiConfig = <span class="keyword">new</span> CloudFrontOriginAccessIdentityConfig()
+		.WithComment(<span class="string">"OAI used for private distribution access to improve.dk bucket."</span>);
 
-	var request = new CreateOriginAccessIdentityRequest()<span class="comment">;</span>
-	request<span class="preprocessor">.OriginAccessIdentityConfig</span> = oaiConfig<span class="comment">;</span>
+	<span class="keyword">var</span> request = <span class="keyword">new</span> CreateOriginAccessIdentityRequest();
+	request.OriginAccessIdentityConfig = oaiConfig;
 
-	var response = cfClient<span class="preprocessor">.CreateOriginAccessIdentity</span>(request)<span class="comment">;</span>
-	Console<span class="preprocessor">.WriteLine</span>(response<span class="preprocessor">.OriginAccessIdentity</span><span class="preprocessor">.Id</span>)<span class="comment">;</span>
-	Console<span class="preprocessor">.WriteLine</span>(response<span class="preprocessor">.OriginAccessIdentity</span><span class="preprocessor">.S</span>3CanonicalUserId)<span class="comment">;</span>
+	<span class="keyword">var</span> response = cfClient.CreateOriginAccessIdentity(request);
+	Console.WriteLine(response.OriginAccessIdentity.Id);
+	Console.WriteLine(response.OriginAccessIdentity.S3CanonicalUserId);
 }
 </pre></figure>
 
@@ -185,7 +185,7 @@
 <h2 id="Creating_the_private_CloudFront_distribution">Creating the private CloudFront distribution</h2>
 <p>Now that we have our bucket and OAI, we can set up a private CloudFront distribution and point it at the S3 bucket.</p>
 <p>Run the following code:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> (<span class="keyword">var</span> cfClient = AWSClientFactory.CreateAmazonCloudFrontClient(accessKeyID, secretAccessKey))
+<figure class="highlight cs"><pre><span class="keyword">using</span> (<span class="keyword">var</span> cfClient = AWSClientFactory.CreateAmazonCloudFrontClient(accessKeyID, secretAccessKey))
 {
 	<span class="keyword">var</span> oaiIdentity = cfClient.ListOriginAccessIdentities().OriginAccessIdentities[<span class="number">0</span>];
 
@@ -255,19 +255,19 @@
 </pre></figure>
 
 <p>Now that we have the policy ready, we need to add it to our bucket. Run the following code:</p>
-<figure class="highlight csharp"><pre>var config = new AmazonS3Config()
+<figure class="highlight cs"><pre><span class="keyword">var</span> config = <span class="keyword">new</span> AmazonS3Config()
 	.WithServiceURL(<span class="string">"s3-eu-west-1.amazonaws.com"</span>);
 
-using (var s3Client = AWSClientFactory.CreateAmazonS3Client(accessKeyID, secretAccessKey, config))
+<span class="keyword">using</span> (<span class="keyword">var</span> s3Client = AWSClientFactory.CreateAmazonS3Client(accessKeyID, secretAccessKey, config))
 {
-	var request = new PutBucketPolicyRequest();
+	<span class="keyword">var</span> request = <span class="keyword">new</span> PutBucketPolicyRequest();
 	request.BucketName = <span class="string">"improve.dk"</span>;
 	request.Policy = <span class="string">"{ "</span>Id<span class="string">": "</span>Policy1319566876317<span class="string">", "</span>Statement<span class="string">": [ { "</span>Sid<span class="string">": "</span>Stmt1319566860498<span class="string">", "</span> +
-		<span class="string">""</span>Action<span class="string">": [ "</span>s3:GetObject<span class="string">" ], "</span>Effect<span class="string">": "</span>Allow<span class="string">", "</span>Resource<span class="string">": "</span>arn:aws:s3:::improve.dk/*<span class="string">", "</span> +
-		<span class="string">""</span>Principal<span class="string">": { "</span>CanonicalUse<span class="string">r": [ "</span><span class="number">7</span>d76be60a0acc160399f6d6750bdc9d4d78d16a58a30987844d4df010f2ded483a9e73b8b0877089fab75f5d0b591dee<span class="string">" ] } } ] }"</span>;
+		<span class="string">""</span>Action<span class="string">": [ "</span>s3:GetObject<span class="string">" ], "</span>Effect<span class="string">": "</span>Allow<span class="string">", "</span>Resource<span class="string">": "</span>arn:aws:s3:::improve.dk<span class="comment">/*", " +
+		""Principal": { "CanonicalUser": [ "7d76be60a0acc160399f6d6750bdc9d4d78d16a58a30987844d4df010f2ded483a9e73b8b0877089fab75f5d0b591dee" ] } } ] }";
 
 	var response = s3Client.PutBucketPolicy(request);
-}
+}</span>
 </pre></figure>
 
 <p>Make sure you escape your policy properly. There’s no need to concatenate it over multiple lines, I just did so only to avoid too much website distortion when displayed here.</p>
@@ -276,7 +276,7 @@ using (var s3Client = AWSClientFactory.CreateAmazonS3Client(accessKeyID, secretA
 <div class="imgwrapper" style=""><div><a href="/how-to-set-up-and-serve-private-content-using-s3/logo_aws_thumb.gif" class="fancy"><img src="/how-to-set-up-and-serve-private-content-using-s3/logo_aws_thumb.gif" style="max-height: 250px"/></a></div></div>
 
 <p>Run the following code to upload the object:</p>
-<figure class="highlight csharp"><pre><span class="keyword">var</span> config = <span class="keyword">new</span> AmazonS3Config()
+<figure class="highlight cs"><pre><span class="keyword">var</span> config = <span class="keyword">new</span> AmazonS3Config()
 	.WithServiceURL(<span class="string">"s3-eu-west-1.amazonaws.com"</span>);
 
 <span class="keyword">using</span> (<span class="keyword">var</span> s3Client = AWSClientFactory.CreateAmazonS3Client(accessKeyID, secretAccessKey, config))
@@ -306,7 +306,7 @@ using (var s3Client = AWSClientFactory.CreateAmazonS3Client(accessKeyID, secretA
 <h2 id="Creating_a_time_limited_signed_URL_for_a_given_object">Creating a time limited signed URL for a given object</h2>
 <p>Now that we have the URL of our distribution object, we need to sign it with a policy granting access to it for a given time period. To do the signing, I’ve create a class based on <a href="http://stackoverflow.com/questions/2284206/how-to-encrypt-amazon-cloudfront-signature-for-private-content-access-using-cann/2545017#2545017" target="_blank">Gael Fraiteurs post on Stack Overflow</a>. His class deals with canned policies, whereas this one deals with custom policies as they’re a bit more dynamic, configurable and thereby powerful.</p>
 <p>Add the following class to your project:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 <span class="keyword">using</span> System.Security.Cryptography;
 <span class="keyword">using</span> System.Text;
 
@@ -374,24 +374,24 @@ namespace AWSTest
 
 <h3 id="Creating_the_actual_signed_URL">Creating the actual signed URL</h3>
 <p>One way or the other, copy that <RSAKeyValue> bit of XML. Now run the following code, substituting my CloudFront key pair and object URL with your own:</p>
-<figure class="highlight csharp"><pre>[STAThread]
-static void Main()
+<figure class="highlight cs"><pre>[STAThread]
+<span class="keyword">static</span> <span class="keyword">void</span> Main()
 {
-	string keyPairID = "APKAILAOYMDETYTM7NYQ";
-	string secretKey = @"
-		<span class="tag">&lt;<span class="title">RSAKeyValue</span>&gt;</span>
-			<span class="tag">&lt;<span class="title">Modulus</span>&gt;</span>kp2udNofRGbbiMtFLWMFMGB1U67JWq2EYqLR0qbfFnOd2kMnY7UUMLLf/uPdf9RsEZxA3wnbIS6fH2vesHYkk=<span class="tag">&lt;/<span class="title">Modulus</span>&gt;</span>
-			<span class="tag">&lt;<span class="title">Exponent</span>&gt;</span>AQAB<span class="tag">&lt;/<span class="title">Exponent</span>&gt;</span>
-			<span class="tag">&lt;<span class="title">P</span>&gt;</span>6GhWFDM89x69lp3b93RACdm9yQBjbrP9+ySIiaiy8htXxxKYF5fEn0TRQEzo3FLFG/cf17ozrFAtHV6rqMaRFQ==<span class="tag">&lt;/<span class="title">P</span>&gt;</span>
-			<span class="tag">&lt;<span class="title">Q</span>&gt;</span>oX/Yg4huItINr9SfLmOdZ0y/ysPykmvcESwuXjJiLNB+V5My5AWDSgucE8ZuqT5wvMQJ93DZPpLX0+P6esbRZQ==<span class="tag">&lt;/<span class="title">Q</span>&gt;</span>
-			<span class="tag">&lt;<span class="title">DP</span>&gt;</span>BepB5pm3P4LkyGSUKKQozRdhoTAFV9f06uNvJjHI/Ch9/28Vt+QA+RzDRqOueY0Rvzh28wKmNgiEXW7/Z3hGUQ==<span class="tag">&lt;/<span class="title">DP</span>&gt;</span>
-			<span class="tag">&lt;<span class="title">DQ</span>&gt;</span>F8y5YZjnciY2ciUJWFLBzYlX8k+yHbXbdoRmSOdv5F7NX6aHp2bQlEblt1xUzogvIQJa3aY5vajyOX2tWg6WqQ==<span class="tag">&lt;/<span class="title">DQ</span>&gt;</span>
-			<span class="tag">&lt;<span class="title">InverseQ</span>&gt;</span>cMc+6NMLU1A6LbOeNikuVRbGu43HoG+hECnEzhk6VtQQO3HiUCUdCuZ1lBZegm5YecURbSZ+pWnGok5tqo//gA==<span class="tag">&lt;/<span class="title">InverseQ</span>&gt;</span>
-			<span class="tag">&lt;<span class="title">D</span>&gt;</span>HBgW69E4GJVVD9tTgCTvQ5vYH5bognWpXnUwm5raOKUitBsxABDFISmOfYjwwx2cE4lTR18r4Fgqt0jxOXVBzWE=<span class="tag">&lt;/<span class="title">D</span>&gt;</span>
-		<span class="tag">&lt;/<span class="title">RSAKeyValue</span>&gt;</span>";
+	<span class="keyword">string</span> keyPairID = <span class="string">"APKAILAOYMDETYTM7NYQ"</span>;
+	<span class="keyword">string</span> secretKey = <span class="string">@"
+		&lt;RSAKeyValue&gt;
+			&lt;Modulus&gt;kp2udNofRGbbiMtFLWMFMGB1U67JWq2EYqLR0qbfFnOd2kMnY7UUMLLf/uPdf9RsEZxA3wnbIS6fH2vesHYkk=&lt;/Modulus&gt;
+			&lt;Exponent&gt;AQAB&lt;/Exponent&gt;
+			&lt;P&gt;6GhWFDM89x69lp3b93RACdm9yQBjbrP9+ySIiaiy8htXxxKYF5fEn0TRQEzo3FLFG/cf17ozrFAtHV6rqMaRFQ==&lt;/P&gt;
+			&lt;Q&gt;oX/Yg4huItINr9SfLmOdZ0y/ysPykmvcESwuXjJiLNB+V5My5AWDSgucE8ZuqT5wvMQJ93DZPpLX0+P6esbRZQ==&lt;/Q&gt;
+			&lt;DP&gt;BepB5pm3P4LkyGSUKKQozRdhoTAFV9f06uNvJjHI/Ch9/28Vt+QA+RzDRqOueY0Rvzh28wKmNgiEXW7/Z3hGUQ==&lt;/DP&gt;
+			&lt;DQ&gt;F8y5YZjnciY2ciUJWFLBzYlX8k+yHbXbdoRmSOdv5F7NX6aHp2bQlEblt1xUzogvIQJa3aY5vajyOX2tWg6WqQ==&lt;/DQ&gt;
+			&lt;InverseQ&gt;cMc+6NMLU1A6LbOeNikuVRbGu43HoG+hECnEzhk6VtQQO3HiUCUdCuZ1lBZegm5YecURbSZ+pWnGok5tqo//gA==&lt;/InverseQ&gt;
+			&lt;D&gt;HBgW69E4GJVVD9tTgCTvQ5vYH5bognWpXnUwm5raOKUitBsxABDFISmOfYjwwx2cE4lTR18r4Fgqt0jxOXVBzWE=&lt;/D&gt;
+		&lt;/RSAKeyValue&gt;"</span>;
 
-	var provider = new CloudFrontSecurityProvider(keyPairID, secretKey);
-	var signedUrl = provider.GetCustomUrl("https://d2ya0f2cfwcopc.cloudfront.net/logo_aws.gif", DateTime.Now.AddMinutes(5));
+	<span class="keyword">var</span> provider = <span class="keyword">new</span> CloudFrontSecurityProvider(keyPairID, secretKey);
+	<span class="keyword">var</span> signedUrl = provider.GetCustomUrl(<span class="string">"https://d2ya0f2cfwcopc.cloudfront.net/logo_aws.gif"</span>, DateTime.Now.AddMinutes(<span class="number">5</span>));
 
 	Clipboard.SetText(signedUrl);
 	Console.WriteLine(signedUrl);
@@ -408,7 +408,7 @@ static void Main()
 
 <h3 id="Using_wildcards_when_signing_URLs">Using wildcards when signing URLs</h3>
 <p>So what if you want to grant access to many files at once, do we have to create a policy for each single one? Thankfully, no, we don’t! Say you want to grant access to all files in the folder “Test” (and remember, there is no such thing as folders in S3 – just objects named e.g. /Test/FileName.jpg). What we’d do is to create a policy like this:</p>
-<figure class="highlight csharp"><pre>var signedUrl = provider<span class="preprocessor">.GetCustomUrl</span>(<span class="string">"https://d2ya0f2cfwcopc.cloudfront.net/Test/*"</span>, DateTime<span class="preprocessor">.Now</span><span class="preprocessor">.AddMinutes</span>(<span class="number">5</span>))<span class="comment">;</span>
+<figure class="highlight cs"><pre><span class="keyword">var</span> signedUrl = provider.GetCustomUrl(<span class="string">"https://d2ya0f2cfwcopc.cloudfront.net/Test/*"</span>, DateTime.Now.AddMinutes(<span class="number">5</span>));
 </pre></figure>
 
 <p>That’s right, we can create custom policies for wildcard URLs too! Once you’ve got this URL, just substitute the asterisk for whatever file you want to request:</p>
@@ -419,7 +419,7 @@ static void Main()
 <h3 id="Limiting_the_users_IP_address">Limiting the users IP address</h3>
 <p>At this point we’ve created a URL with a custom signed policy that grants access to a given resource (or wildcard) within a limited time period. However, within this period, the user may distribute the URL to anyone else, who will then also be able to access the resource. To hinder this, we can add the source IP address as an additional condition to the policy!</p>
 <p>Add an overload to the GetCustomUrl function in the CloudFrontSecurityProvider class like so:</p>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">string</span> <span class="title">GetCustomUrl</span>(<span class="keyword">string</span> url, DateTime expiration, <span class="keyword">string</span> allowedCidr)
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">string</span> <span class="title">GetCustomUrl</span>(<span class="keyword">string</span> url, DateTime expiration, <span class="keyword">string</span> allowedCidr)
 {
 	<span class="keyword">string</span> expirationEpoch = GetUnixTime(expiration).ToString();
 
@@ -436,7 +436,7 @@ static void Main()
 </pre></figure>
 
 <p>To use it, we just pass in an IP address in the <a href="http://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing" target="_blank">CIDR</a> format:</p>
-<figure class="highlight csharp"><pre>var signedUrl = provider<span class="preprocessor">.GetCustomUrl</span>(<span class="string">"https://d2ya0f2cfwcopc.cloudfront.net/D.jpg"</span>, DateTime<span class="preprocessor">.Now</span><span class="preprocessor">.AddMinutes</span>(<span class="number">5</span>), <span class="string">"212.242.193.110/32"</span>)<span class="comment">;</span>
+<figure class="highlight cs"><pre><span class="keyword">var</span> signedUrl = provider.GetCustomUrl(<span class="string">"https://d2ya0f2cfwcopc.cloudfront.net/D.jpg"</span>, DateTime.Now.AddMinutes(<span class="number">5</span>), <span class="string">"212.242.193.110/32"</span>);
 </pre></figure>
 
 <p>The above example would provide access to the D.jpg object for 5 minutes, but only for the 212.242.193.110 IP address specifically. We could grant access to a whole subnet by passing in the IP/CIDR 212.242.193.0/24, etc.</p>

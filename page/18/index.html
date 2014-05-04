@@ -115,7 +115,7 @@
 <p>In such a situation, if the Active Directory Domain Controller (let’s just call it DC from now on) dies, everything more or less dies as no clients/servers are able to authenticate incoming requests anymore. Security is paramount, so the services are not allowed to simply cache the domain logon, thus the logon has the occur at each service call - requiring a fully working DC.</p>
 <p>In this post I’ll attempt to implement a secondary failover DC and investigate how it affects a downtime situation. I’ll be using a couple of simple WCF based applications to test the DC. I will be using three virtual machines. Luxor is the primary DC. MGM is part of the domain, and this is the machine hosting the WCF server. Later on I’ll add the third virtual machine, Excalibur, being the failover DC. The WCF client will be running from my own machine. Note that I will not show how to install the primary DC, <a href="http://www.petri.co.il/how_to_install_active_directory_on_windows_2003.htm" target="_blank">there are plenty other great guides on how to setup the primary DC</a>. I also won’t be going into <a href="http://support.microsoft.com/kb/814591" target="_blank">how to install the primary DNS server</a>.</p>
 <p>This is the WCF server interface:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 <span class="keyword">using</span> System.Security.Principal;
 <span class="keyword">using</span> System.ServiceModel;
 <span class="keyword">using</span> System.ServiceModel.Channels;
@@ -192,7 +192,7 @@ namespace Contracts
 
 <p>Notice that I’ve hardcoded the user “IPAPERRedundancyCheck” with a password of “RedundancyCheck” - this is for test purposes only, don’t even bother commenting on password security :) Also notice that I’ve set a timeout of 1 second - when the DC fails, I don’t want to spend 30 seconds before knowing if it’s down, I want to know about it right away. And since all machines are running locally, 1 second is plenty.</p>
 <p>This is the server that’ll be running on the MGM machine on port 8000:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 <span class="keyword">using</span> System.Security;
 <span class="keyword">using</span> System.Security.Permissions;
 <span class="keyword">using</span> System.ServiceModel;
@@ -238,39 +238,39 @@ namespace WcfServer
 
 <p>We’ve got an implementation of the IServer interface with the single method “Ping”. We test that the user is part of the “ADTest” role by demanding it on the current principal. If something fails we throw a SecurityException which will let the client now authentication failed. If the client is authenticated, we return a pong.</p>
 <p>And finally we have the client that’ll be running on my own machine:</p>
-<figure class="highlight csharp"><pre>using System;
-using System.ServiceModel;
-using System.Threading;
-using Contracts;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.ServiceModel;
+<span class="keyword">using</span> System.Threading;
+<span class="keyword">using</span> Contracts;
 
 namespace WcfClient
 {
 	class Program
 	{
-		static void Main(string[] args)
+		<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
 		{
-			while (true)
+			<span class="keyword">while</span> (<span class="keyword">true</span>)
 			{
-				try
+				<span class="keyword">try</span>
 				{
-					IServer server = WCFHelper.CreateChannel(new NetTcpBinding(SecurityMode.Transport), <span class="string">"net.tcp://192.168.0.35:8000"</span>);
+					IServer server = WCFHelper.CreateChannel(<span class="keyword">new</span> NetTcpBinding(SecurityMode.Transport), <span class="string">"net.tcp://192.168.0.35:8000"</span>);
 
-					using (server as IDisposable)
+					<span class="keyword">using</span> (server <span class="keyword">as</span> IDisposable)
 					{
-						try
+						<span class="keyword">try</span>
 						{
 							Console.WriteLine(server.Ping());
 						}
-						catch (Exception ex)
+						<span class="keyword">catch</span> (Exception ex)
 						{
 							Console.WriteLine(ex.Message);
 						}
 					}
 				}
-				catch (CommunicationObjectFaultedException)
+				<span class="keyword">catch</span> (CommunicationObjectFaultedException)
 				{ }
 
-				Thread.Sleep(250);
+				Thread.Sleep(<span class="number">250</span>);
 			}
 		}
 	}
@@ -461,7 +461,7 @@ WITH RND AS
 <a id="more"></a>
 
 
-<figure class="highlight csharp"><pre><span class="keyword">struct</span> Test
+<figure class="highlight cs"><pre><span class="keyword">struct</span> Test
 {
 	<span class="keyword">public</span> <span class="keyword">string</span> Name;
 	<span class="keyword">public</span> <span class="keyword">int</span> Value;
@@ -476,34 +476,34 @@ WITH RND AS
 
 <p>Our objective is basically to transfer the DataRows in the DataTable into a List that can be transferred on to the next layer.</p>
 <p>The fastest way possible would be doing it manually like so:</p>
-<figure class="highlight csharp"><pre><span class="keyword">List</span> <span class="keyword">list</span> = <span class="keyword">new</span> <span class="keyword">List</span>();
-<span class="keyword">foreach</span> (DataRow dr in dt.Rows)
+<figure class="highlight cs"><pre>List list = <span class="keyword">new</span> List();
+<span class="keyword">foreach</span> (DataRow dr <span class="keyword">in</span> dt.Rows)
 {
 	Test t = <span class="keyword">new</span> Test();
 	t.Name = dr[<span class="string">"Name"</span>].ToString();
 	t.Value = Convert.ToInt32(dr[<span class="string">"Value"</span>]);
 
-	<span class="keyword">list</span>.Add(t);
+	list.Add(t);
 }
 </pre></figure>
 
 <p>But this takes a lot of time to write, especially if your objects vary a lot and you have to create a lot of them. That’s where my MapList function comes into play:</p>
-<figure class="highlight csharp"><pre><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">List</span> MapList(DataTable dt)
+<figure class="highlight cs"><pre><span class="keyword">private</span> <span class="keyword">static</span> List <span class="title">MapList</span>(DataTable dt)
 {
-	<span class="keyword">List</span> <span class="keyword">list</span> = <span class="keyword">new</span> <span class="keyword">List</span>();
+	List list = <span class="keyword">new</span> List();
 
-	FieldInfo[] fields = typeof(T).GetFields();
+	FieldInfo[] fields = <span class="keyword">typeof</span>(T).GetFields();
 	T t = Activator.CreateInstance();
 
-	<span class="keyword">foreach</span> (DataRow dr in dt.Rows)
+	<span class="keyword">foreach</span> (DataRow dr <span class="keyword">in</span> dt.Rows)
 	{
-		<span class="keyword">foreach</span> (FieldInfo fi in fields)
+		<span class="keyword">foreach</span> (FieldInfo fi <span class="keyword">in</span> fields)
 			fi.SetValueDirect(__makeref(t), dr[fi.Name]);
 
-		<span class="keyword">list</span>.Add(t);
+		list.Add(t);
 	}
 
-	<span class="keyword">return</span> <span class="keyword">list</span>;
+	<span class="keyword">return</span> list;
 }
 </pre></figure>
 
@@ -568,49 +568,49 @@ WITH RND AS
 </pre></figure>
 
 <p>I’d usually create this bit of XML using a simple StringBuilder like so:</p>
-<figure class="highlight csharp"><pre>StringBuilder output = new StringBuilder();
-output.Append("<span class="pi">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>");
-output.Append("<span class="tag">&lt;<span class="title">root</span>&gt;</span>");
-output.Append("<span class="tag">&lt;<span class="title">result</span> <span class="attribute">type</span>=<span class="value">"boolean"</span>&gt;</span>true<span class="tag">&lt;/<span class="title">result</span>&gt;</span>");
-output.Append("<span class="tag">&lt;/<span class="title">root</span>&gt;</span>");
+<figure class="highlight cs"><pre>StringBuilder output = <span class="keyword">new</span> StringBuilder();
+output.Append(<span class="string">"&lt;?xml version="</span><span class="number">1.0</span><span class="string">" encoding="</span>utf-<span class="number">8</span><span class="string">"?&gt;"</span>);
+output.Append(<span class="string">"&lt;root&gt;"</span>);
+output.Append(<span class="string">"&lt;result type="</span>boolean<span class="string">"&gt;true&lt;/result&gt;"</span>);
+output.Append(<span class="string">"&lt;/root&gt;"</span>);
 </pre></figure>
 
 <p>This has the advantage of being very fast to write, but readability suffers from the escaped quotes, lack of indentation and there’s a whole lot of text when the XML becomes just a bit more advanced.</p>
 <p>A “prettier” way is to use the DOM through the XmlDocument like so:</p>
-<figure class="highlight csharp"><pre>XmlDocument xd = new XmlDocument()<span class="comment">;</span>
-xd<span class="preprocessor">.AppendChild</span>(xd<span class="preprocessor">.CreateXmlDeclaration</span>(<span class="string">"1.0"</span>, <span class="string">"utf-8"</span>, <span class="string">""</span>))<span class="comment">;</span>
+<figure class="highlight cs"><pre>XmlDocument xd = <span class="keyword">new</span> XmlDocument();
+xd.AppendChild(xd.CreateXmlDeclaration(<span class="string">"1.0"</span>, <span class="string">"utf-8"</span>, <span class="string">""</span>));
 
-XmlNode root = xd<span class="preprocessor">.CreateElement</span>(<span class="string">"root"</span>)<span class="comment">;</span>
-xd<span class="preprocessor">.AppendChild</span>(root)<span class="comment">;</span>
+XmlNode root = xd.CreateElement(<span class="string">"root"</span>);
+xd.AppendChild(root);
 
-XmlNode result = xd<span class="preprocessor">.CreateElement</span>(<span class="string">"result"</span>)<span class="comment">;</span>
-result<span class="preprocessor">.InnerText</span> = <span class="string">"true"</span><span class="comment">;</span>
+XmlNode result = xd.CreateElement(<span class="string">"result"</span>);
+result.InnerText = <span class="string">"true"</span>;
 
-XmlAttribute type = xd<span class="preprocessor">.CreateAttribute</span>(<span class="string">"type"</span>)<span class="comment">;</span>
-type<span class="preprocessor">.Value</span> = <span class="string">"boolean"</span><span class="comment">;</span>
+XmlAttribute type = xd.CreateAttribute(<span class="string">"type"</span>);
+type.Value = <span class="string">"boolean"</span>;
 
-result<span class="preprocessor">.Attributes</span><span class="preprocessor">.Append</span>(type)<span class="comment">;</span>
-root<span class="preprocessor">.AppendChild</span>(result)<span class="comment">;</span>
+result.Attributes.Append(type);
+root.AppendChild(result);
 </pre></figure>
 
 <p>While this does produce exactly the same XML, it takes up twice as many lines of code, excluding the whitespace lines. Without whitespace it is even more unreadable.</p>
 <p>Let me introduce you to my quick’n’simple fluent interface that uses XmlDocument internally, XmlOutput:</p>
-<figure class="highlight csharp"><pre>XmlOutput xo = new XmlOutput()
-	<span class="preprocessor">.XmlDeclaration</span>()
-	<span class="preprocessor">.Node</span>(<span class="string">"root"</span>)<span class="preprocessor">.Within</span>()
-		<span class="preprocessor">.Node</span>(<span class="string">"result"</span>)<span class="preprocessor">.Attribute</span>(<span class="string">"type"</span>, <span class="string">"boolean"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"true"</span>)<span class="comment">;</span>
+<figure class="highlight cs"><pre>XmlOutput xo = <span class="keyword">new</span> XmlOutput()
+	.XmlDeclaration()
+	.Node(<span class="string">"root"</span>).Within()
+		.Node(<span class="string">"result"</span>).Attribute(<span class="string">"type"</span>, <span class="string">"boolean"</span>).InnerText(<span class="string">"true"</span>);
 </pre></figure>
 
 <p>Using XmlOutput we’re down to four lines, the shortest example yet. While linecount is not, and should not be, a measurement of quality, it is preferred. I believe using XmlOutput is, by far, the most readable example.</p>
 <p>Basically, using Node() creates a new node within the current node. If no node has been created previously, it will automatically be the root node. Any time a new node is created, it automatically becomes the “current node”. Calling Within() moves the context into the current node, thus any newly created nodes will be created within that node. Attribute() will add an attribute to the current node, likewise will InnerText() set the InnerText of the current node. EndWithin() moves the context to the parent node, it is not mandatory for “closing” the nodes, it is only required when you actually need to move the scope.</p>
 <p>Let me present you with a couple of examples. Dynamic data:</p>
-<figure class="highlight csharp"><pre>XmlOutput xo = new XmlOutput()
-	<span class="preprocessor">.XmlDeclaration</span>()
-	<span class="preprocessor">.Node</span>(<span class="string">"root"</span>)<span class="preprocessor">.Within</span>()
-		<span class="preprocessor">.Node</span>(<span class="string">"numbers"</span>)<span class="preprocessor">.Within</span>()<span class="comment">;</span>
+<figure class="highlight cs"><pre>XmlOutput xo = <span class="keyword">new</span> XmlOutput()
+	.XmlDeclaration()
+	.Node(<span class="string">"root"</span>).Within()
+		.Node(<span class="string">"numbers"</span>).Within();
 
-for (int i = <span class="number">1</span><span class="comment">; i &lt;= 10; i++)</span>
-	xo<span class="preprocessor">.Node</span>(<span class="string">"number"</span>)<span class="preprocessor">.Attribute</span>(<span class="string">"value"</span>, i<span class="preprocessor">.ToString</span>())<span class="preprocessor">.InnerText</span>(<span class="string">"This is the number: "</span> + i)<span class="comment">;</span>
+<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= <span class="number">10</span>; i++)
+	xo.Node(<span class="string">"number"</span>).Attribute(<span class="string">"value"</span>, i.ToString()).InnerText(<span class="string">"This is the number: "</span> + i);
 </pre></figure>
 
 
@@ -632,21 +632,21 @@ for (int i = <span class="number">1</span><span class="comment">; i &lt;= 10; i+
 </pre></figure>
 
 <p>And complex structures:</p>
-<figure class="highlight csharp"><pre>XmlOutput xo = new XmlOutput()
-	<span class="preprocessor">.XmlDeclaration</span>()
-	<span class="preprocessor">.Node</span>(<span class="string">"root"</span>)<span class="preprocessor">.Within</span>()
-		<span class="preprocessor">.Node</span>(<span class="string">"user"</span>)<span class="preprocessor">.Within</span>()
-			<span class="preprocessor">.Node</span>(<span class="string">"username"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"orca"</span>)
-			<span class="preprocessor">.Node</span>(<span class="string">"realname"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Mark S. Rasmussen"</span>)
-			<span class="preprocessor">.Node</span>(<span class="string">"description"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"I'll handle any escaping (like &lt; & &gt; for example) needs automagically."</span>)
-			<span class="preprocessor">.Node</span>(<span class="string">"articles"</span>)<span class="preprocessor">.Within</span>()
-				<span class="preprocessor">.Node</span>(<span class="string">"article"</span>)<span class="preprocessor">.Attribute</span>(<span class="string">"id"</span>, <span class="string">"25"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Handling DBNulls"</span>)
-				<span class="preprocessor">.Node</span>(<span class="string">"article"</span>)<span class="preprocessor">.Attribute</span>(<span class="string">"id"</span>, <span class="string">"26"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Accessing my privates"</span>)
-				<span class="preprocessor">.EndWithin</span>()
-			<span class="preprocessor">.Node</span>(<span class="string">"hobbies"</span>)<span class="preprocessor">.Within</span>()
-				<span class="preprocessor">.Node</span>(<span class="string">"hobby"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Fishing"</span>)
-				<span class="preprocessor">.Node</span>(<span class="string">"hobby"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Photography"</span>)
-				<span class="preprocessor">.Node</span>(<span class="string">"hobby"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Work"</span>)<span class="comment">;</span>
+<figure class="highlight cs"><pre>XmlOutput xo = <span class="keyword">new</span> XmlOutput()
+	.XmlDeclaration()
+	.Node(<span class="string">"root"</span>).Within()
+		.Node(<span class="string">"user"</span>).Within()
+			.Node(<span class="string">"username"</span>).InnerText(<span class="string">"orca"</span>)
+			.Node(<span class="string">"realname"</span>).InnerText(<span class="string">"Mark S. Rasmussen"</span>)
+			.Node(<span class="string">"description"</span>).InnerText(<span class="string">"I'll handle any escaping (like &lt; & &gt; for example) needs automagically."</span>)
+			.Node(<span class="string">"articles"</span>).Within()
+				.Node(<span class="string">"article"</span>).Attribute(<span class="string">"id"</span>, <span class="string">"25"</span>).InnerText(<span class="string">"Handling DBNulls"</span>)
+				.Node(<span class="string">"article"</span>).Attribute(<span class="string">"id"</span>, <span class="string">"26"</span>).InnerText(<span class="string">"Accessing my privates"</span>)
+				.EndWithin()
+			.Node(<span class="string">"hobbies"</span>).Within()
+				.Node(<span class="string">"hobby"</span>).InnerText(<span class="string">"Fishing"</span>)
+				.Node(<span class="string">"hobby"</span>).InnerText(<span class="string">"Photography"</span>)
+				.Node(<span class="string">"hobby"</span>).InnerText(<span class="string">"Work"</span>);
 </pre></figure>
 
 
@@ -670,7 +670,7 @@ for (int i = <span class="number">1</span><span class="comment">; i &lt;= 10; i+
 </pre></figure>
 
 <p>Finally, say hello to XmlOutput:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System.Xml;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System.Xml;
 <span class="keyword">using</span> System.Collections.Generic;
 
 <span class="keyword">public</span> <span class="keyword">class</span> XmlOutput
@@ -876,7 +876,7 @@ for (int i = <span class="number">1</span><span class="comment">; i &lt;= 10; i+
 <a id="more"></a>
 
 
-<figure class="highlight csharp"><pre>[Serializable]
+<figure class="highlight cs"><pre>[Serializable]
 <span class="keyword">public</span> <span class="keyword">class</span> Domain
 {
 	<span class="comment">// Read</span>
@@ -893,7 +893,7 @@ for (int i = <span class="number">1</span><span class="comment">; i &lt;= 10; i+
 
 <p>Take this simple object as an example. It represents a website domain, it has an ID from the database aswell as a read only domain name and a belonging CompanyID.</p>
 <p>Now, I want to create a Load() function that given a domain ID will instantiate a new instance of a Domain object and populate its values from the database. Now, as the DomainID and DomainName variables are private, I’ll have to make a constructor method to pass in those values, right? It seems not, if my Load method is a static method of the Domain class itself:</p>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">static</span> Domain <span class="title">Load</span>(<span class="keyword">int</span> domainID)
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">static</span> Domain <span class="title">Load</span>(<span class="keyword">int</span> domainID)
 {
 	SqlCommand cmd = <span class="keyword">new</span> SqlCommand(<span class="string">"SELECT Domain, CompanyID FROM tblDomains WHERE DomainID = @DomainID"</span>);
 	cmd.Parameters.Add(<span class="string">"@DomainID"</span>, SqlDbType.Int).Value = domainID;
@@ -964,7 +964,7 @@ for (int i = <span class="number">1</span><span class="comment">; i &lt;= 10; i+
 <a id="more"></a>
 
 
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> DBConvert
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> DBConvert
 {
 	<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
 	<span class="comment"><span class="xmlDocTag">///</span> Handles reading DBNull values from database in a generic fashion</span>
@@ -1031,40 +1031,40 @@ for (int i = <span class="number">1</span><span class="comment">; i &lt;= 10; i+
 
 <p>The first To method significantly simplifies the process of setting database values when using SqlParameters (we all do, right?).</p>
 <p>This is how I used to handle possible DBNulls when reading into a nullable integer:</p>
-<figure class="highlight csharp"><pre><span class="keyword">if</span>(dr[<span class="string">"CountryID"</span>] <span class="keyword">is</span> DBNull)
+<figure class="highlight cs"><pre><span class="keyword">if</span>(dr[<span class="string">"CountryID"</span>] <span class="keyword">is</span> DBNull)
 	c.CountryID = <span class="keyword">null</span>;
 <span class="keyword">else</span>
 	c.CountryID = Convert.ToInt32(dr[<span class="string">"CountryID"</span>]);
 </pre></figure>
 
 <p>And this is how it’s done using my DBConvert class:</p>
-<figure class="highlight csharp"><pre>c<span class="preprocessor">.CountryID</span> = DBConvert<span class="preprocessor">.To</span>&lt;int?&gt;(dr[<span class="string">"CountryID"</span>])<span class="comment">;</span>
-c<span class="preprocessor">.Recommended</span> = DBConvert<span class="preprocessor">.To</span>&lt;bool&gt;(dr[<span class="string">"Recommended"</span>])<span class="comment">;</span>
-d<span class="preprocessor">.companyMessageCreated</span> = DBConvert<span class="preprocessor">.To</span>&lt;DateTime?&gt;(dr[<span class="string">"CompanyMessageCreated"</span>])<span class="comment">;</span>
-d<span class="preprocessor">.Message</span> = DBConvert<span class="preprocessor">.To</span>&lt;string&gt;(dr[<span class="string">"Message"</span>])<span class="comment">;</span>
-d<span class="preprocessor">.OverallScore</span> = DBConvert<span class="preprocessor">.To</span>&lt;int&gt;(dr[<span class="string">"OverallScore"</span>])<span class="comment">;</span>
+<figure class="highlight cs"><pre>c.CountryID = DBConvert.To&lt;<span class="keyword">int</span>?&gt;(dr[<span class="string">"CountryID"</span>]);
+c.Recommended = DBConvert.To&lt;<span class="keyword">bool</span>&gt;(dr[<span class="string">"Recommended"</span>]);
+d.companyMessageCreated = DBConvert.To&lt;DateTime?&gt;(dr[<span class="string">"CompanyMessageCreated"</span>]);
+d.Message = DBConvert.To&lt;<span class="keyword">string</span>&gt;(dr[<span class="string">"Message"</span>]);
+d.OverallScore = DBConvert.To&lt;<span class="keyword">int</span>&gt;(dr[<span class="string">"OverallScore"</span>]);
 </pre></figure>
 
 <p>Notice how it works for both nullable ints, DateTimes and whatever other nullable types you wish. It also works for normal types like string, int and so forth. It’ll automatically typecast it into the type specified as a generic parameter. However, remember that the database value must match the value being converted to, you cannot use .To(“some string value”), it will fail.</p>
 <p>The private changeType() method is a wrapper for the ChangeType() method that takes care of nullable types since the builtin Convert.ChangeType() method does not support casting into nullable types.</p>
 <p>The second To simplifies databinding values in the frontend ASPX files. This is how I used to print a DateTime column in a ShortDateString format:</p>
-<figure class="highlight csharp"><pre><span class="vbscript">&lt;%# Convert.ToDateTime(DataBinder.<span class="built_in">Eval</span>(Container.DataItem, <span class="string">"Created"</span>)).ToShortDateString() %&gt;</span>
+<figure class="highlight cs"><pre>&lt;%<span class="preprocessor"># Convert.ToDateTime(DataBinder.Eval(Container.DataItem, "Created")).ToShortDateString() %&gt;</span>
 </pre></figure>
 
 <p>And this is how it can be done using the DBConvert class, generically:</p>
-<figure class="highlight csharp"><pre><span class="vbscript">&lt;%# DBConvert.<span class="keyword">To</span>&lt;DateTime&gt;(Container, <span class="string">"Created"</span>).ToShortDateString() %&gt;</span>
+<figure class="highlight cs"><pre>&lt;%<span class="preprocessor"># DBConvert.To&lt;DateTime&gt;(Container, "Created").ToShortDateString() %&gt;</span>
 </pre></figure>
 
 <p>Nullable types, as well as null strings also have to be handled when assigning SqlParameter values. The usual way for both nullable types as well as strings might look like this:</p>
-<figure class="highlight csharp"><pre>if(CountryID == null)
-	cmd<span class="preprocessor">.Parameters</span><span class="preprocessor">.Add</span>(<span class="string">"@CountryID"</span>, SqlDbType<span class="preprocessor">.Int</span>)<span class="preprocessor">.Value</span> = DBNull<span class="preprocessor">.Value</span><span class="comment">;</span>
-else
-	cmd<span class="preprocessor">.Parameters</span><span class="preprocessor">.Add</span>(<span class="string">"@CountryID"</span>, SqlDbType<span class="preprocessor">.Int</span>)<span class="preprocessor">.Value</span> = CountryID<span class="comment">;</span>
+<figure class="highlight cs"><pre><span class="keyword">if</span>(CountryID == <span class="keyword">null</span>)
+	cmd.Parameters.Add(<span class="string">"@CountryID"</span>, SqlDbType.Int).Value = DBNull.Value;
+<span class="keyword">else</span>
+	cmd.Parameters.Add(<span class="string">"@CountryID"</span>, SqlDbType.Int).Value = CountryID;
 </pre></figure>
 
 <p>Using the DBConvert class this can be done a bit simpler:</p>
-<figure class="highlight csharp"><pre>cmd<span class="preprocessor">.Parameters</span><span class="preprocessor">.Add</span>(<span class="string">"@CountryID"</span>, SqlDbType<span class="preprocessor">.Int</span>)<span class="preprocessor">.Value</span> = DBConvert<span class="preprocessor">.From</span>(CountryID)<span class="comment">;</span>
-cmd<span class="preprocessor">.Parameters</span><span class="preprocessor">.Add</span>(<span class="string">"@CountryID"</span>, SqlDbType<span class="preprocessor">.NVarChar</span>, <span class="number">2048</span>)<span class="preprocessor">.Value</span> = DBConvert<span class="preprocessor">.From</span>(MyString)<span class="comment">;</span>
+<figure class="highlight cs"><pre>cmd.Parameters.Add(<span class="string">"@CountryID"</span>, SqlDbType.Int).Value = DBConvert.From(CountryID);
+cmd.Parameters.Add(<span class="string">"@CountryID"</span>, SqlDbType.NVarChar, <span class="number">2048</span>).Value = DBConvert.From(MyString);
 </pre></figure>
 
 <p>This will automatically convert null strings as well as nulled nullable types to DBNull.</p>

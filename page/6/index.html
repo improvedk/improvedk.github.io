@@ -202,7 +202,7 @@
 <h2 id="NUnit_TestCaseSourceAttribute_to_the_rescue!">NUnit TestCaseSourceAttribute to the rescue!</h2>
 <p>NUnit supports <a href="http://www.nunit.org/index.php?p=testCase&amp;r=2.5" target="_blank">inline parameterized tests</a> through the TestCase attribute. Even better, we can also provide the parameter data for test cases dynamically, using the <a href="http://www.nunit.org/index.php?p=testCaseSource&amp;r=2.5" target="_blank">TestCaseSource</a> attribute.</p>
 <p>First up, I implemented a simple enumeration covering the versions that I’m currently working on supporting:</p>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">enum</span> DatabaseVersion
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">enum</span> DatabaseVersion
 {
 	SqlServer2005,
 	SqlServer2008,
@@ -211,7 +211,7 @@
 </pre></figure>
 
 <p>I then created the SqlServerTestAttribute class, inheriting directly from TestCaseSourceAttribute like so:</p>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlServerTestAttribute : TestCaseSourceAttribute
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlServerTestAttribute : TestCaseSourceAttribute
 {
 	<span class="keyword">private</span> <span class="keyword">static</span> IEnumerable&lt;TestCaseData&gt; versions
 	{
@@ -229,10 +229,10 @@
 
 <p>The SqlServerTestAttribute class tells TestCaseSourceAttribute to find the test case source data in the private static <em>versions</em> property. The versions property enumerates all the DatabaseVersion values and returns them one by one – ensuring to set the test category to the name of the DatabaseVersion value.</p>
 <p>Next up, I converted my current tests to use the new SqlServerTest attribute, instead of the previous vanilla NUnit Test attribute:</p>
-<figure class="highlight csharp"><pre>[SqlServerTest]
-public void HeapForwardedRecord(DatabaseVersion version)
+<figure class="highlight cs"><pre>[SqlServerTest]
+<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">HeapForwardedRecord</span>(DatabaseVersion version)
 {
-	<span class="keyword">...</span>
+	...
 }
 </pre></figure>
 
@@ -248,25 +248,25 @@ public void HeapForwardedRecord(DatabaseVersion version)
 
 <p>If a database doesn’t have a connection (the name corresponding to the DatabaseVersion enumeration value), the test won’t be run for that version, simple as that. In this case I’m currently ignoring SQL Server 2008 as I only have 2005 and 2008R2 installed on my machine.</p>
 <p>To perform the filtering on available databases, I’ve modified my test cases to let the base class actually run the test, using a lambda:</p>
-<figure class="highlight csharp"><pre>[SqlServerTest]
-public void HeapForwardedRecord(DatabaseVersion version)
+<figure class="highlight cs"><pre>[SqlServerTest]
+<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">HeapForwardedRecord</span>(DatabaseVersion version)
 {
 	RunDatabaseTest(version, db =&gt;
 	{
-		var scanner = new DataScanner(db)<span class="comment">;</span>
-		var rows = scanner<span class="preprocessor">.ScanTable</span>(<span class="string">"HeapForwardedRecord"</span>)<span class="preprocessor">.ToList</span>()<span class="comment">;</span>
+		<span class="keyword">var</span> scanner = <span class="keyword">new</span> DataScanner(db);
+		<span class="keyword">var</span> rows = scanner.ScanTable(<span class="string">"HeapForwardedRecord"</span>).ToList();
 
-		Assert<span class="preprocessor">.AreEqual</span>(<span class="number">25</span>, rows[<span class="number">0</span>]<span class="preprocessor">.Field</span>&lt;int&gt;(<span class="string">"A"</span>))<span class="comment">;</span>
-		Assert<span class="preprocessor">.AreEqual</span>(<span class="string">""</span><span class="preprocessor">.PadLeft</span>(<span class="number">5000</span>, <span class="string">'A'</span>), rows[<span class="number">0</span>]<span class="preprocessor">.Field</span>&lt;string&gt;(<span class="string">"B"</span>))<span class="comment">;</span>
+		Assert.AreEqual(<span class="number">25</span>, rows[<span class="number">0</span>].Field&lt;<span class="keyword">int</span>&gt;(<span class="string">"A"</span>));
+		Assert.AreEqual(<span class="string">""</span>.PadLeft(<span class="number">5000</span>, <span class="string">'A'</span>), rows[<span class="number">0</span>].Field&lt;<span class="keyword">string</span>&gt;(<span class="string">"B"</span>));
 
-		Assert<span class="preprocessor">.AreEqual</span>(<span class="number">28</span>, rows[<span class="number">1</span>]<span class="preprocessor">.Field</span>&lt;int&gt;(<span class="string">"A"</span>))<span class="comment">;</span>
-		Assert<span class="preprocessor">.AreEqual</span>(<span class="string">""</span><span class="preprocessor">.PadLeft</span>(<span class="number">4000</span>, <span class="string">'B'</span>), rows[<span class="number">1</span>]<span class="preprocessor">.Field</span>&lt;string&gt;(<span class="string">"B"</span>))<span class="comment">;</span>
-	})<span class="comment">;</span>
+		Assert.AreEqual(<span class="number">28</span>, rows[<span class="number">1</span>].Field&lt;<span class="keyword">int</span>&gt;(<span class="string">"A"</span>));
+		Assert.AreEqual(<span class="string">""</span>.PadLeft(<span class="number">4000</span>, <span class="string">'B'</span>), rows[<span class="number">1</span>].Field&lt;<span class="keyword">string</span>&gt;(<span class="string">"B"</span>));
+	});
 }
 </pre></figure>
 
 <p>The RunDatabase method is exposed in the SqlServerSystemTestBase class:</p>
-<figure class="highlight csharp"><pre><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">RunDatabaseTest</span>(DatabaseVersion version, Action&lt;Database&gt; test)
+<figure class="highlight cs"><pre><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">RunDatabaseTest</span>(DatabaseVersion version, Action&lt;Database&gt; test)
 {
 	<span class="keyword">string</span> versionConnectionName = version.ToString();
 
@@ -286,7 +286,7 @@ public void HeapForwardedRecord(DatabaseVersion version)
 <p>If a corresponding connection string hasn’t been declared in the configuration file, we abort the test and mark it as inconclusive – we simply weren’t able to run it given the current setup. Next up, ensureDatabaseIsSetup() runs the usual setup code (as detailed in the <a href="/avoiding-regressions-in-orcamdf-by-system-testing">earlier blog post</a>), though this time once per database versions, per fixture. Finally an OrcaMDF instance is created and passed onto the actual test as a parameter.</p>
 <h2 id="Supporting_different_SQL_Server_feature_versions">Supporting different SQL Server feature versions</h2>
 <p>As mentioned, I need a way of executing some tests only on certain versions of SQL Server. The standard SqlServerTestAttribute automatically enumerations <em>all</em> values of the DatabaseVersion enumeration, but there’s no reason we can’t create a SqlServer2005TestAttribute like this:</p>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlServer2005TestAttribute : TestCaseSourceAttribute
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlServer2005TestAttribute : TestCaseSourceAttribute
 {
 	<span class="keyword">private</span> <span class="keyword">static</span> IEnumerable&lt;TestCaseData&gt; versions
 	{
@@ -302,7 +302,7 @@ public void HeapForwardedRecord(DatabaseVersion version)
 </pre></figure>
 
 <p>Or what about tests that need to be run on SQL Server 2008+?</p>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlServer2008PlusTestAttribute : TestCaseSourceAttribute
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlServer2008PlusTestAttribute : TestCaseSourceAttribute
 {
 	<span class="keyword">private</span> <span class="keyword">static</span> IEnumerable&lt;TestCaseData&gt; versions
 	{
@@ -321,7 +321,7 @@ public void HeapForwardedRecord(DatabaseVersion version)
 </pre></figure>
 
 <p>Once we have the attributes, it’s as easy as marking the individual tests with the versions they’re supposed to be run on:</p>
-<figure class="highlight csharp"><pre>[SqlServer2008PlusTest]
+<figure class="highlight cs"><pre>[SqlServer2008PlusTest]
 <span class="keyword">public</span> <span class="keyword">void</span> <span class="title">ScanAllNullSparse</span>(DatabaseVersion version)
 {
 	RunDatabaseTest(version, db =&gt;
@@ -547,25 +547,25 @@ public void HeapForwardedRecord(DatabaseVersion version)
 <h2 id="Multi-threaded_deletes">Multi-threaded deletes</h2>
 <p>The key to performance, as previously shown, is without doubt achieved by scaling out the number of threads.</p>
 <p>The following test code spins up a given number of threads and lets them run for 30 seconds, before they’re all aborted. Each thread is continually looping, firing off as many DeleteObjectRequest’s as it can. After 30 seconds, the average request/sec is calculated and output. I ran four repetitions of each, discarded the top and bottom result and calculated the average of the remaining two.</p>
-<figure class="highlight csharp"><pre>private <span class="reserved">const</span> string bucketName = <span class="string">"improve-eu.dk"</span>;
-private <span class="reserved">const</span> string serviceUrl = <span class="string">"s3-eu-west-1.amazonaws.com"</span>;
+<figure class="highlight cs"><pre><span class="keyword">private</span> <span class="keyword">const</span> <span class="keyword">string</span> bucketName = <span class="string">"improve-eu.dk"</span>;
+<span class="keyword">private</span> <span class="keyword">const</span> <span class="keyword">string</span> serviceUrl = <span class="string">"s3-eu-west-1.amazonaws.com"</span>;
 
-static <span class="reserved">void</span> Main(string[] args)
+<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
 {
-	<span class="reserved">var</span> config = <span class="keyword">new</span> AmazonS3Config().WithServiceURL(serviceUrl).WithCommunicationProtocol(Protocol.HTTP);
-	int numThreads = Convert.ToInt32(args[<span class="number">0</span>]);
-	int count = <span class="number">0</span>;
-	<span class="reserved">var</span> sw = <span class="keyword">new</span> Stopwatch();
+	<span class="keyword">var</span> config = <span class="keyword">new</span> AmazonS3Config().WithServiceURL(serviceUrl).WithCommunicationProtocol(Protocol.HTTP);
+	<span class="keyword">int</span> numThreads = Convert.ToInt32(args[<span class="number">0</span>]);
+	<span class="keyword">int</span> count = <span class="number">0</span>;
+	<span class="keyword">var</span> sw = <span class="keyword">new</span> Stopwatch();
 
-	<span class="regexp">//</span> Ensuring all connections have network connectivity
+	<span class="comment">// Ensuring all connections have network connectivity</span>
 	ServicePointManager.DefaultConnectionLimit = numThreads;
 
-	<span class="regexp">//</span> The actual job each thread will be performing
-	<span class="reserved">var</span> work = <span class="keyword">new</span> ThreadStart<span class="function"><span class="params">(() =&gt;
+	<span class="comment">// The actual job each thread will be performing</span>
+	<span class="keyword">var</span> work = <span class="keyword">new</span> ThreadStart(() =&gt;
 	{
-		using (<span class="reserved">var</span> s3Client = AWSClientFactory.CreateAmazonS3Client(ConfigurationManager.AppSettings[<span class="string">"AccessKeyID"</span>], ConfigurationManager.AppSettings[<span class="string">"SecretAccessKey"</span>], config))
+		<span class="keyword">using</span> (<span class="keyword">var</span> s3Client = AWSClientFactory.CreateAmazonS3Client(ConfigurationManager.AppSettings[<span class="string">"AccessKeyID"</span>], ConfigurationManager.AppSettings[<span class="string">"SecretAccessKey"</span>], config))
 		{
-			<span class="reserved">var</span> request = <span class="keyword">new</span> DeleteObjectRequest()
+			<span class="keyword">var</span> request = <span class="keyword">new</span> DeleteObjectRequest()
 				.WithBucketName(bucketName)
 				.WithKey(<span class="string">"xyz"</span>);
 
@@ -573,36 +573,36 @@ static <span class="reserved">void</span> Main(string[] args)
 			{
 				s3Client.DeleteObject(request);
 
-				<span class="regexp">//</span> Avoid extra counts <span class="keyword">while</span> threads are spinning down
+				<span class="comment">// Avoid extra counts while threads are spinning down</span>
 				<span class="keyword">if</span>(sw.ElapsedMilliseconds &lt;= <span class="number">30000</span>)
 					count++;
 			}
 		}
-	})</span>;
+	});
 
-	// <span class="title">Warmup</span>
-	<span class="title">using</span> <span class="params">(<span class="reserved">var</span> s3Client = AWSClientFactory.CreateAmazonS3Client(ConfigurationManager.AppSettings[<span class="string">"AccessKeyID"</span>], ConfigurationManager.AppSettings[<span class="string">"SecretAccessKey"</span>], config))</span>
+	<span class="comment">// Warmup</span>
+	<span class="keyword">using</span> (<span class="keyword">var</span> s3Client = AWSClientFactory.CreateAmazonS3Client(ConfigurationManager.AppSettings[<span class="string">"AccessKeyID"</span>], ConfigurationManager.AppSettings[<span class="string">"SecretAccessKey"</span>], config))
 	{
-		<span class="title">var</span> <span class="title">request</span> = <span class="title">new</span> <span class="title">DeleteObjectRequest</span><span class="params">()</span>
-			.<span class="title">WithBucketName</span><span class="params">(bucketName)</span>
-			.<span class="title">WithKey</span><span class="params">(<span class="string">"xyz"</span>)</span>;
-		<span class="title">s3Client</span>.<span class="title">DeleteObject</span><span class="params">(request)</span>;
+		<span class="keyword">var</span> request = <span class="keyword">new</span> DeleteObjectRequest()
+			.WithBucketName(bucketName)
+			.WithKey(<span class="string">"xyz"</span>);
+		s3Client.DeleteObject(request);
 	}
 
-	// <span class="title">Start</span> <span class="title">X</span> <span class="title">number</span> <span class="title">of</span> <span class="title">threads</span> <span class="title">and</span> <span class="title">let</span> <span class="title">them</span> <span class="title">upload</span> <span class="title">as</span> <span class="title">much</span> <span class="title">as</span> <span class="title">they</span> <span class="title">can</span>
-	<span class="title">var</span> <span class="title">threads</span> = <span class="title">new</span> <span class="title">List</span>&lt;<span class="title">Thread</span>&gt;<span class="params">()</span>;
-	<span class="title">for</span> <span class="params">(int j = <span class="number">0</span>; j &lt; numThreads; j++)</span>
-		<span class="title">threads</span>.<span class="title">Add</span><span class="params">(<span class="keyword">new</span> Thread(work))</span>;
+	<span class="comment">// Start X number of threads and let them upload as much as they can</span>
+	<span class="keyword">var</span> threads = <span class="keyword">new</span> List&lt;Thread&gt;();
+	<span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; numThreads; j++)
+		threads.Add(<span class="keyword">new</span> Thread(work));
 
-	<span class="title">sw</span>.<span class="title">Start</span><span class="params">()</span>;
-	<span class="title">threads</span>.<span class="title">ForEach</span><span class="params">(x =&gt; x.Start())</span>;
+	sw.Start();
+	threads.ForEach(x =&gt; x.Start());
 
-	// <span class="title">Wait</span> 30 <span class="title">secs</span>, <span class="title">stop</span> <span class="title">all</span> <span class="title">threads</span>, <span class="title">output</span> <span class="title">reqs</span>/<span class="title">sec</span> <span class="title">result</span>
-	<span class="title">Thread</span>.<span class="title">Sleep</span><span class="params">(<span class="number">30000</span>)</span>;
-	<span class="title">threads</span>.<span class="title">ForEach</span><span class="params">(x =&gt; x.Abort())</span>;
+	<span class="comment">// Wait 30 secs, stop all threads, output reqs/sec result</span>
+	Thread.Sleep(<span class="number">30000</span>);
+	threads.ForEach(x =&gt; x.Abort());
 
-	<span class="title">Console</span>.<span class="title">WriteLine</span><span class="params">((double)count / <span class="number">30</span>)</span>;
-}</span>
+	Console.WriteLine((<span class="keyword">double</span>)count / <span class="number">30</span>);
+}
 </pre></figure>
 
 <p>The following graph shows the results, testing with thread counts of 8, 16, 32, 64, 128, 256, being run on an m1.large instance, the more CPU-beefy c1.xlarge instance and finally the Danish Server 2003 Colo instance that I used in my last post:</p>
@@ -616,35 +616,35 @@ static <span class="reserved">void</span> Main(string[] args)
 <div class="imgwrapper" style=""><div><a href="/optimizing-single-instance-amazon-s3-delete-performance/image_42.png" class="fancy"><img src="/optimizing-single-instance-amazon-s3-delete-performance/image_42.png" style="max-height: 250px"/></a></div></div>
 
 <p>However, the code we’re running is already in a rather tight loop without much to optimize:</p>
-<figure class="highlight csharp"><pre><span class="keyword">while</span> (sw.<span class="constant">ElapsedMilliseconds</span> &lt;= <span class="number">30000</span>)
+<figure class="highlight cs"><pre><span class="keyword">while</span> (sw.ElapsedMilliseconds &lt;= <span class="number">30000</span>)
 {
-	s3Client.<span class="constant">DeleteObject</span>(request);
+	s3Client.DeleteObject(request);
 
-	<span class="regexp">//</span> <span class="constant">Avoid</span> extra counts <span class="keyword">while</span> threads are spinning down
-	<span class="keyword">if</span>(sw.<span class="constant">ElapsedMilliseconds</span> &lt;= <span class="number">30000</span>)
+	<span class="comment">// Avoid extra counts while threads are spinning down</span>
+	<span class="keyword">if</span>(sw.ElapsedMilliseconds &lt;= <span class="number">30000</span>)
 		count++;
 }
 </pre></figure>
 
 <p>It’s basically just a loop, reusing the same request and letting the AmazonS3Client do its part to send off the object. Internally, AmazonS3Client.DeleteObject() is firing off the asynchronous BeginPutObject and then immediately waiting for EndPutObject afterwards. If we dig further in, there’s a lot of generic AWS SDK framework overhead in constructing the requests, checking for all sorts of conditions that may arise, but are not particularly relevant to our case. How about we ditch the SDK and create our own requests?</p>
 <p>Following this guide on <a href="http://docs.amazonwebservices.com/AmazonS3/2006-03-01/dev/index.html?RESTAuthentication.html" target="_blank">signing and authenticating REST requests</a>, I constructed a method like this (minus the measuring and reformatting, this just shows the basic form):</p>
-<figure class="highlight csharp"><pre>var accessKeyID = "XYZ";
-var secretAccessKey = "SecretXYZ";
+<figure class="highlight cs"><pre><span class="keyword">var</span> accessKeyID = <span class="string">"XYZ"</span>;
+<span class="keyword">var</span> secretAccessKey = <span class="string">"SecretXYZ"</span>;
 
-using (var sha1 = new HMACSHA1())
+<span class="keyword">using</span> (<span class="keyword">var</span> sha1 = <span class="keyword">new</span> HMACSHA1())
 {
-	while(true)
+	<span class="keyword">while</span>(<span class="keyword">true</span>)
 	{
-		var webrequest = (HttpWebRequest)WebRequest.Create(<span class="string">"http://improve-eu.dk.s3-eu-west-1.amazonaws.com/xyz"</span>);
+		<span class="keyword">var</span> webrequest = (HttpWebRequest)WebRequest.Create(<span class="string">"http://improve-eu.dk.s3-eu-west-1.amazonaws.com/xyz"</span>);
 		webrequest.Method = <span class="string">"DELETE"</span>;
-		webrequest.ContentLength = 0;
-		webrequest.KeepAlive = false;
-		webrequest.AllowWriteStreamBuffering = false;
-		webrequest.AllowAutoRedirect = false;
+		webrequest.ContentLength = <span class="number">0</span>;
+		webrequest.KeepAlive = <span class="keyword">false</span>;
+		webrequest.AllowWriteStreamBuffering = <span class="keyword">false</span>;
+		webrequest.AllowAutoRedirect = <span class="keyword">false</span>;
 
-		var date = DateTime.UtcNow.ToString(<span class="string">"R"</span>);
+		<span class="keyword">var</span> date = DateTime.UtcNow.ToString(<span class="string">"R"</span>);
 
-		string stringToSign = 
+		<span class="keyword">string</span> stringToSign = 
 			<span class="string">"DELETE"</span> + <span class="string">"n"</span> +
 			<span class="string">"n"</span> +
 			<span class="string">"n"</span> +
@@ -652,7 +652,7 @@ using (var sha1 = new HMACSHA1())
 			<span class="string">"x-amz-date:"</span> + date + <span class="string">"n"</span> +
 			<span class="string">"/improve-eu.dk/xyz"</span>;
 
-		string signature = AWSSDKUtils.HMACSign(stringToSign, secretAccessKey, sha1);
+		<span class="keyword">string</span> signature = AWSSDKUtils.HMACSign(stringToSign, secretAccessKey, sha1);
 
 		webrequest.Headers.Add(<span class="string">"x-amz-date"</span>, date);
 		webrequest.Headers.Add(<span class="string">"Authorization"</span>, <span class="string">"AWS "</span> + accessKeyID + <span class="string">":"</span> + signature);
@@ -737,20 +737,20 @@ using (var sha1 = new HMACSHA1())
 </pre></figure>
 
 <p>Doing the same in OrcaMDF could look like this:</p>
-<figure class="highlight csharp"><pre>using (var db = new Database(new[] { @<span class="string">"C:Test.mdf"</span> }))
+<figure class="highlight cs"><pre><span class="keyword">using</span> (<span class="keyword">var</span> db = <span class="keyword">new</span> Database(<span class="keyword">new</span>[] { <span class="string">@"C:Test.mdf"</span> }))
 {
-	var sys = db<span class="preprocessor">.Dmvs</span><span class="comment">;</span>
+	<span class="keyword">var</span> sys = db.Dmvs;
 
-	var table = sys<span class="preprocessor">.Tables</span><span class="preprocessor">.Where</span>(t =&gt; t<span class="preprocessor">.Name</span> == <span class="string">"Persons"</span>)<span class="preprocessor">.Single</span>()<span class="comment">;</span>
-	var columns = sys<span class="preprocessor">.Columns</span><span class="preprocessor">.Where</span>(c =&gt; c<span class="preprocessor">.ObjectID</span> == table<span class="preprocessor">.ObjectID</span>)<span class="comment">;</span>
+	<span class="keyword">var</span> table = sys.Tables.Where(t =&gt; t.Name == <span class="string">"Persons"</span>).Single();
+	<span class="keyword">var</span> columns = sys.Columns.Where(c =&gt; c.ObjectID == table.ObjectID);
 
-	foreach (var col <span class="keyword">in</span> columns)
-		Console<span class="preprocessor">.WriteLine</span>(col<span class="preprocessor">.Name</span>)<span class="comment">;</span>
+	<span class="keyword">foreach</span> (<span class="keyword">var</span> col <span class="keyword">in</span> columns)
+		Console.WriteLine(col.Name);
 }
 </pre></figure>
 
 <p>And if you prefer the more SQL-esque syntax of LINQ, you can of course do it like this as well:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> (<span class="keyword">var</span> db = <span class="keyword">new</span> Database(<span class="keyword">new</span>[] { <span class="string">@"C:Test.mdf"</span> }))
+<figure class="highlight cs"><pre><span class="keyword">using</span> (<span class="keyword">var</span> db = <span class="keyword">new</span> Database(<span class="keyword">new</span>[] { <span class="string">@"C:Test.mdf"</span> }))
 {
 	<span class="keyword">var</span> sys = db.Dmvs;
 
@@ -838,107 +838,107 @@ using (var sha1 = new HMACSHA1())
 <p>I tried running the tests both with and without MD5 checksum generation &amp; verification, but I saw no measurable difference in the outcome.</p>
 <p>At no point, in any of the test environments, were the CPUs stressed to the point where they were close to becoming bottlenecks. As the test object is all in-memory and no disk is involved, I’ve ruled out disks as a bottleneck factor as well. Thus, the number one of piece of hardware affecting the results is the network interface card (NIC).</p>
 <p>Before starting the four repetitions of the test, I fire off a single PutObject request to warm up the stack. The test code is relatively simple, it runs in an infinite loop, checking whether we need to upload more objects, or whether we’re done. If done, it breaks the loop and ends the thread. When launching I start up X amount of threads and immediately after join with them to wait for them all to complete. The runtime includes the amount of time required to instantiate the threads, though it should have no measurable impact on the result. The runtime calculation is done using integer math for output simplicity, but the impact should be minimal in the big picture.</p>
-<figure class="highlight csharp"><pre>using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Diagnostics;
-using System.Net;
-using System.Threading;
-using Amazon;
-using Amazon.S3;
-using Amazon.S3.Model;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Collections.Generic;
+<span class="keyword">using</span> System.Configuration;
+<span class="keyword">using</span> System.Diagnostics;
+<span class="keyword">using</span> System.Net;
+<span class="keyword">using</span> System.Threading;
+<span class="keyword">using</span> Amazon;
+<span class="keyword">using</span> Amazon.S3;
+<span class="keyword">using</span> Amazon.S3.Model;
 
 namespace S3Optimization
 {
-	<span class="class"><span class="keyword">class</span> <span class="title">Program</span></span>
+	class Program
 	{
-		private <span class="reserved">const</span> string bucketName = <span class="string">"improve.dk"</span>;
-		private <span class="reserved">const</span> string serviceUrl = <span class="string">"s3-eu-west-1.amazonaws.com"</span>;
+		<span class="keyword">private</span> <span class="keyword">const</span> <span class="keyword">string</span> bucketName = <span class="string">"improve.dk"</span>;
+		<span class="keyword">private</span> <span class="keyword">const</span> <span class="keyword">string</span> serviceUrl = <span class="string">"s3-eu-west-1.amazonaws.com"</span>;
 
-		<span class="regexp">//</span> ConnectionLimit ObjSizeInKB
-		static <span class="reserved">void</span> Main(string[] args)
+		<span class="comment">// ConnectionLimit ObjSizeInKB</span>
+		<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
 		{
-			int repetitions = <span class="number">4</span>;
-			int uploadCount = <span class="number">512</span>;
-			int objSize = Convert.ToInt32(args[<span class="number">1</span>]) * <span class="number">1024</span>;
-			int numThreads = Convert.ToInt32(args[<span class="number">0</span>]);
-			string dir = <span class="string">"Optimization/"</span> + Guid.NewGuid();
-			<span class="reserved">var</span> config = <span class="keyword">new</span> AmazonS3Config().WithServiceURL(serviceUrl).WithCommunicationProtocol(Protocol.HTTPS);
-			<span class="reserved">var</span> sw = <span class="keyword">new</span> Stopwatch();
-			object locker = <span class="keyword">new</span> object();
-			string obj = randomString(objSize);
+			<span class="keyword">int</span> repetitions = <span class="number">4</span>;
+			<span class="keyword">int</span> uploadCount = <span class="number">512</span>;
+			<span class="keyword">int</span> objSize = Convert.ToInt32(args[<span class="number">1</span>]) * <span class="number">1024</span>;
+			<span class="keyword">int</span> numThreads = Convert.ToInt32(args[<span class="number">0</span>]);
+			<span class="keyword">string</span> dir = <span class="string">"Optimization/"</span> + Guid.NewGuid();
+			<span class="keyword">var</span> config = <span class="keyword">new</span> AmazonS3Config().WithServiceURL(serviceUrl).WithCommunicationProtocol(Protocol.HTTPS);
+			<span class="keyword">var</span> sw = <span class="keyword">new</span> Stopwatch();
+			<span class="keyword">object</span> locker = <span class="keyword">new</span> <span class="keyword">object</span>();
+			<span class="keyword">string</span> obj = randomString(objSize);
 
-			<span class="regexp">//</span> Ensuring all connections have network connectivity
+			<span class="comment">// Ensuring all connections have network connectivity</span>
 			ServicePointManager.DefaultConnectionLimit = numThreads;
 
-			<span class="regexp">//</span> The actual job each thread will be performing
-			<span class="reserved">var</span> work = <span class="keyword">new</span> ThreadStart<span class="function"><span class="params">(() =&gt;
+			<span class="comment">// The actual job each thread will be performing</span>
+			<span class="keyword">var</span> work = <span class="keyword">new</span> ThreadStart(() =&gt;
 				{
-					using (<span class="reserved">var</span> s3Client = AWSClientFactory.CreateAmazonS3Client(ConfigurationManager.AppSettings[<span class="string">"AccessKeyID"</span>], ConfigurationManager.AppSettings[<span class="string">"SecretAccessKey"</span>], config))
+					<span class="keyword">using</span> (<span class="keyword">var</span> s3Client = AWSClientFactory.CreateAmazonS3Client(ConfigurationManager.AppSettings[<span class="string">"AccessKeyID"</span>], ConfigurationManager.AppSettings[<span class="string">"SecretAccessKey"</span>], config))
 					{
-						<span class="keyword">while</span> (<span class="literal">true</span>)
+						<span class="keyword">while</span> (<span class="keyword">true</span>)
 						{
-							lock (locker)
+							<span class="keyword">lock</span> (locker)
 							{
 								<span class="keyword">if</span> (uploadCount &lt;= <span class="number">0</span>)
 									<span class="keyword">break</span>;
 								uploadCount--;
 							}
 
-							<span class="reserved">var</span> request = <span class="keyword">new</span> PutObjectRequest()
+							<span class="keyword">var</span> request = <span class="keyword">new</span> PutObjectRequest()
 								.WithBucketName(bucketName)
 								.WithKey(dir + <span class="string">"/"</span> + Guid.NewGuid())
 								.WithContentBody(obj);
 							s3Client.PutObject(request);
 						}
 					}
-				})</span>;
+				});
 
-			// <span class="title">Warmup</span>
-			<span class="title">using</span> <span class="params">(<span class="reserved">var</span> s3Client = AWSClientFactory.CreateAmazonS3Client(ConfigurationManager.AppSettings[<span class="string">"AccessKeyID"</span>], ConfigurationManager.AppSettings[<span class="string">"SecretAccessKey"</span>], config))</span>
+			<span class="comment">// Warmup</span>
+			<span class="keyword">using</span> (<span class="keyword">var</span> s3Client = AWSClientFactory.CreateAmazonS3Client(ConfigurationManager.AppSettings[<span class="string">"AccessKeyID"</span>], ConfigurationManager.AppSettings[<span class="string">"SecretAccessKey"</span>], config))
 			{
-				<span class="title">var</span> <span class="title">request</span> = <span class="title">new</span> <span class="title">PutObjectRequest</span><span class="params">()</span>
-					.<span class="title">WithBucketName</span><span class="params">(bucketName)</span>
-					.<span class="title">WithKey</span><span class="params">(dir + <span class="string">"/"</span> + Guid.NewGuid())</span>
-					.<span class="title">WithContentBody</span><span class="params">(obj)</span>;
-				<span class="title">s3Client</span>.<span class="title">PutObject</span><span class="params">(request)</span>;
+				<span class="keyword">var</span> request = <span class="keyword">new</span> PutObjectRequest()
+					.WithBucketName(bucketName)
+					.WithKey(dir + <span class="string">"/"</span> + Guid.NewGuid())
+					.WithContentBody(obj);
+				s3Client.PutObject(request);
 			}
 
-			// <span class="title">Actual</span> <span class="title">timing</span>
-			<span class="title">sw</span>.<span class="title">Start</span><span class="params">()</span>;
-			<span class="title">for</span><span class="params">(int i=<span class="number">0</span>; i&lt;repetitions; i++)</span>
+			<span class="comment">// Actual timing</span>
+			sw.Start();
+			<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>; i&lt;repetitions; i++)
 			{
-				<span class="title">int</span> <span class="title">originalUploadCount</span> = <span class="title">uploadCount</span>;
+				<span class="keyword">int</span> originalUploadCount = uploadCount;
 
-				<span class="title">var</span> <span class="title">threads</span> = <span class="title">new</span> <span class="title">List</span><span class="params">()</span>;
-				<span class="title">for</span><span class="params">(int j=<span class="number">0</span>; j&lt;numthreads; j++)</span>="" <span class="title">threads</span>.<span class="title">add</span><span class="params">(<span class="keyword">new</span>=<span class="string">""</span> thread(work))</span>;="" <span class="title">threads</span>.<span class="title">foreach</span><span class="params">(x=<span class="string">""</span>&gt; x.Start())</span>;
-				<span class="title">threads</span>.<span class="title">ForEach</span><span class="params">(x =&gt; x.Join())</span>;
+				<span class="keyword">var</span> threads = <span class="keyword">new</span> List();
+				<span class="keyword">for</span>(<span class="keyword">int</span> j=<span class="number">0</span>; j&lt;numthreads; j++)=<span class="string">""</span> threads.add(<span class="keyword">new</span>=<span class="string">""</span> thread(work));=<span class="string">""</span> threads.<span class="keyword">foreach</span>(x=<span class="string">""</span>&gt; x.Start());
+				threads.ForEach(x =&gt; x.Join());
 
-				<span class="title">uploadCount</span> = <span class="title">originalUploadCount</span>;
+				uploadCount = originalUploadCount;
 			}
-			<span class="title">sw</span>.<span class="title">Stop</span><span class="params">()</span>;
+			sw.Stop();
 
-			<span class="title">Console</span>.<span class="title">WriteLine</span><span class="params">(sw.ElapsedMilliseconds / repetitions)</span>;
+			Console.WriteLine(sw.ElapsedMilliseconds / repetitions);
 		}
 
-		<span class="title">static</span> <span class="title">string</span> <span class="title">randomString</span><span class="params">(int size)</span>
+		<span class="keyword">static</span> <span class="keyword">string</span> randomString(<span class="keyword">int</span> size)
 		{
-			<span class="title">var</span> <span class="title">rnd</span> = <span class="title">new</span> <span class="title">Random</span><span class="params">()</span>;
-			<span class="title">var</span> <span class="title">chars</span> = "<span class="title">ABCDEFGHIJKLMNOPQRSTUVWXYZ</span>";
+			<span class="keyword">var</span> rnd = <span class="keyword">new</span> Random();
+			<span class="keyword">var</span> chars = <span class="string">"ABCDEFGHIJKLMNOPQRSTUVWXYZ"</span>;
 
-			<span class="title">char</span>[] <span class="title">buffer</span> = <span class="title">new</span> <span class="title">char</span>[<span class="title">size</span>];
+			<span class="keyword">char</span>[] buffer = <span class="keyword">new</span> <span class="keyword">char</span>[size];
 
-			<span class="title">for</span> <span class="params">(int i = <span class="number">0</span>; i &lt; size; i++)</span>
-				<span class="title">buffer</span>[<span class="title">i</span>] = <span class="title">chars</span>[<span class="title">rnd</span>.<span class="title">Next</span><span class="params">(chars.Length)</span>];
+			<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; size; i++)
+				buffer[i] = chars[rnd.Next(chars.Length)];
 
-			<span class="title">return</span> <span class="title">new</span> <span class="title">string</span><span class="params">(buffer)</span>;
+			<span class="keyword">return</span> <span class="keyword">new</span> <span class="keyword">string</span>(buffer);
 		}
 	}
-}</span>
+}
 </pre></figure>
 
 <p>For running the tests, I’m using the following test runner application, testing all combinations of thread count and object size between 1 and 256/2048 respectively (in powers of 2):</p>
-<figure class="highlight csharp"><pre><span class="keyword">var</span> psi = <span class="keyword">new</span> ProcessStartInfo(<span class="string">"S3Optimization.exe"</span>)
+<figure class="highlight cs"><pre><span class="keyword">var</span> psi = <span class="keyword">new</span> ProcessStartInfo(<span class="string">"S3Optimization.exe"</span>)
     {
         UseShellExecute = <span class="keyword">false</span>,
 		RedirectStandardOutput = <span class="keyword">true</span>
@@ -1143,16 +1143,16 @@ over a maximum of <span class="number">30</span> hops:
 <h2 id="The_AWS_console_only_takes_you_so_far">The AWS console only takes you so far</h2>
 <p>While the AWS console is great in itself, it’s really only meant for the simplest of tasks. Very quickly you’ll find yourself limited by what you can do. For what we’re about to do, all you’d be able to do through the console GUI is to create a bucket, the rest would have to be done through code. To keep things consistent, I’m sticking to code for all tasks.</p>
 <p>Before we start, <a href="http://aws.amazon.com/sdkfornet/" target="_blank">download the Amazon AWS .NET SDK</a> and create a template console application like this:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 <span class="keyword">using</span> Amazon;
 <span class="keyword">using</span> Amazon.CloudFront.Model;
 <span class="keyword">using</span> Amazon.S3;
 <span class="keyword">using</span> Amazon.S3.Model;
 
-<span class="class"><span class="keyword">namespace</span> <span class="title">AWSTest</span> 
-{</span> 
-    <span class="class"><span class="keyword">class</span> <span class="title">Program</span> 
-    {</span> 
+namespace AWSTest 
+{ 
+    class Program 
+    { 
         <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">string</span> accessKeyID = <span class="string">"AKI..."</span>; 
         <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">string</span> secretAccessKey = <span class="string">"w49..."</span>;
 
@@ -1167,7 +1167,7 @@ over a maximum of <span class="number">30</span> hops:
 <p>Make sure to insert your own access key ID and secret access key values. All code samples posted from now on should go into the Main() method body.</p>
 <h2 id="Creating_the_private_bucket">Creating the private bucket</h2>
 <p>Run the following code to set up a bucket, which will be private by default. Make sure you define a unique bucket name, I’m using the name <em>improve.dk</em> for this sample. Note that if your bucket is not in the EU region, you’ll need to substitute my ServiceURL with the one for your region. You can find all the service URLs here: <a href="http://docs.amazonwebservices.com/general/latest/gr/index.html?rande.html" target="_blank">http://docs.amazonwebservices.com/general/latest/gr/index.html?rande.html</a></p>
-<figure class="highlight csharp"><pre><span class="keyword">var</span> config = <span class="keyword">new</span> AmazonS3Config()
+<figure class="highlight cs"><pre><span class="keyword">var</span> config = <span class="keyword">new</span> AmazonS3Config()
 	.WithServiceURL(<span class="string">"s3-eu-west-1.amazonaws.com"</span>);
 
 <span class="keyword">using</span> (<span class="keyword">var</span> s3Client = AWSClientFactory.CreateAmazonS3Client(accessKeyID, secretAccessKey, config))
@@ -1187,17 +1187,17 @@ over a maximum of <span class="number">30</span> hops:
 <p>Now that we’ve got our bucket, we need to create the private CloudFront distribution. However, we also need to concoct a way for the private distribution to gain access to our private bucket. We can do so by utilizing a special type of CloudFront identities called Origin Access Identities, which I’ll be referring to as OAI’s.</p>
 <p>Creating an OAI allows us to tell CloudFront to access the S3 bucket using that OAI. On the bucket side, we can then create a policy granting access to that specific OAI, and thus enabling our private distribution access to our private bucket.</p>
 <p>Run the following code:</p>
-<figure class="highlight csharp"><pre>using (var cfClient = AWSClientFactory<span class="preprocessor">.CreateAmazonCloudFrontClient</span>(accessKeyID, secretAccessKey))
+<figure class="highlight cs"><pre><span class="keyword">using</span> (<span class="keyword">var</span> cfClient = AWSClientFactory.CreateAmazonCloudFrontClient(accessKeyID, secretAccessKey))
 {
-	var oaiConfig = new CloudFrontOriginAccessIdentityConfig()
-		<span class="preprocessor">.WithComment</span>(<span class="string">"OAI used for private distribution access to improve.dk bucket."</span>)<span class="comment">;</span>
+	<span class="keyword">var</span> oaiConfig = <span class="keyword">new</span> CloudFrontOriginAccessIdentityConfig()
+		.WithComment(<span class="string">"OAI used for private distribution access to improve.dk bucket."</span>);
 
-	var request = new CreateOriginAccessIdentityRequest()<span class="comment">;</span>
-	request<span class="preprocessor">.OriginAccessIdentityConfig</span> = oaiConfig<span class="comment">;</span>
+	<span class="keyword">var</span> request = <span class="keyword">new</span> CreateOriginAccessIdentityRequest();
+	request.OriginAccessIdentityConfig = oaiConfig;
 
-	var response = cfClient<span class="preprocessor">.CreateOriginAccessIdentity</span>(request)<span class="comment">;</span>
-	Console<span class="preprocessor">.WriteLine</span>(response<span class="preprocessor">.OriginAccessIdentity</span><span class="preprocessor">.Id</span>)<span class="comment">;</span>
-	Console<span class="preprocessor">.WriteLine</span>(response<span class="preprocessor">.OriginAccessIdentity</span><span class="preprocessor">.S</span>3CanonicalUserId)<span class="comment">;</span>
+	<span class="keyword">var</span> response = cfClient.CreateOriginAccessIdentity(request);
+	Console.WriteLine(response.OriginAccessIdentity.Id);
+	Console.WriteLine(response.OriginAccessIdentity.S3CanonicalUserId);
 }
 </pre></figure>
 
@@ -1205,7 +1205,7 @@ over a maximum of <span class="number">30</span> hops:
 <h2 id="Creating_the_private_CloudFront_distribution">Creating the private CloudFront distribution</h2>
 <p>Now that we have our bucket and OAI, we can set up a private CloudFront distribution and point it at the S3 bucket.</p>
 <p>Run the following code:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> (<span class="keyword">var</span> cfClient = AWSClientFactory.CreateAmazonCloudFrontClient(accessKeyID, secretAccessKey))
+<figure class="highlight cs"><pre><span class="keyword">using</span> (<span class="keyword">var</span> cfClient = AWSClientFactory.CreateAmazonCloudFrontClient(accessKeyID, secretAccessKey))
 {
 	<span class="keyword">var</span> oaiIdentity = cfClient.ListOriginAccessIdentities().OriginAccessIdentities[<span class="number">0</span>];
 
@@ -1275,19 +1275,19 @@ over a maximum of <span class="number">30</span> hops:
 </pre></figure>
 
 <p>Now that we have the policy ready, we need to add it to our bucket. Run the following code:</p>
-<figure class="highlight csharp"><pre>var config = new AmazonS3Config()
+<figure class="highlight cs"><pre><span class="keyword">var</span> config = <span class="keyword">new</span> AmazonS3Config()
 	.WithServiceURL(<span class="string">"s3-eu-west-1.amazonaws.com"</span>);
 
-using (var s3Client = AWSClientFactory.CreateAmazonS3Client(accessKeyID, secretAccessKey, config))
+<span class="keyword">using</span> (<span class="keyword">var</span> s3Client = AWSClientFactory.CreateAmazonS3Client(accessKeyID, secretAccessKey, config))
 {
-	var request = new PutBucketPolicyRequest();
+	<span class="keyword">var</span> request = <span class="keyword">new</span> PutBucketPolicyRequest();
 	request.BucketName = <span class="string">"improve.dk"</span>;
 	request.Policy = <span class="string">"{ "</span>Id<span class="string">": "</span>Policy1319566876317<span class="string">", "</span>Statement<span class="string">": [ { "</span>Sid<span class="string">": "</span>Stmt1319566860498<span class="string">", "</span> +
-		<span class="string">""</span>Action<span class="string">": [ "</span>s3:GetObject<span class="string">" ], "</span>Effect<span class="string">": "</span>Allow<span class="string">", "</span>Resource<span class="string">": "</span>arn:aws:s3:::improve.dk/*<span class="string">", "</span> +
-		<span class="string">""</span>Principal<span class="string">": { "</span>CanonicalUse<span class="string">r": [ "</span><span class="number">7</span>d76be60a0acc160399f6d6750bdc9d4d78d16a58a30987844d4df010f2ded483a9e73b8b0877089fab75f5d0b591dee<span class="string">" ] } } ] }"</span>;
+		<span class="string">""</span>Action<span class="string">": [ "</span>s3:GetObject<span class="string">" ], "</span>Effect<span class="string">": "</span>Allow<span class="string">", "</span>Resource<span class="string">": "</span>arn:aws:s3:::improve.dk<span class="comment">/*", " +
+		""Principal": { "CanonicalUser": [ "7d76be60a0acc160399f6d6750bdc9d4d78d16a58a30987844d4df010f2ded483a9e73b8b0877089fab75f5d0b591dee" ] } } ] }";
 
 	var response = s3Client.PutBucketPolicy(request);
-}
+}</span>
 </pre></figure>
 
 <p>Make sure you escape your policy properly. There’s no need to concatenate it over multiple lines, I just did so only to avoid too much website distortion when displayed here.</p>
@@ -1296,7 +1296,7 @@ using (var s3Client = AWSClientFactory.CreateAmazonS3Client(accessKeyID, secretA
 <div class="imgwrapper" style=""><div><a href="/how-to-set-up-and-serve-private-content-using-s3/logo_aws_thumb.gif" class="fancy"><img src="/how-to-set-up-and-serve-private-content-using-s3/logo_aws_thumb.gif" style="max-height: 250px"/></a></div></div>
 
 <p>Run the following code to upload the object:</p>
-<figure class="highlight csharp"><pre><span class="keyword">var</span> config = <span class="keyword">new</span> AmazonS3Config()
+<figure class="highlight cs"><pre><span class="keyword">var</span> config = <span class="keyword">new</span> AmazonS3Config()
 	.WithServiceURL(<span class="string">"s3-eu-west-1.amazonaws.com"</span>);
 
 <span class="keyword">using</span> (<span class="keyword">var</span> s3Client = AWSClientFactory.CreateAmazonS3Client(accessKeyID, secretAccessKey, config))
@@ -1326,7 +1326,7 @@ using (var s3Client = AWSClientFactory.CreateAmazonS3Client(accessKeyID, secretA
 <h2 id="Creating_a_time_limited_signed_URL_for_a_given_object">Creating a time limited signed URL for a given object</h2>
 <p>Now that we have the URL of our distribution object, we need to sign it with a policy granting access to it for a given time period. To do the signing, I’ve create a class based on <a href="http://stackoverflow.com/questions/2284206/how-to-encrypt-amazon-cloudfront-signature-for-private-content-access-using-cann/2545017#2545017" target="_blank">Gael Fraiteurs post on Stack Overflow</a>. His class deals with canned policies, whereas this one deals with custom policies as they’re a bit more dynamic, configurable and thereby powerful.</p>
 <p>Add the following class to your project:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 <span class="keyword">using</span> System.Security.Cryptography;
 <span class="keyword">using</span> System.Text;
 
@@ -1394,24 +1394,24 @@ namespace AWSTest
 
 <h3 id="Creating_the_actual_signed_URL">Creating the actual signed URL</h3>
 <p>One way or the other, copy that <RSAKeyValue> bit of XML. Now run the following code, substituting my CloudFront key pair and object URL with your own:</p>
-<figure class="highlight csharp"><pre>[STAThread]
-static void Main()
+<figure class="highlight cs"><pre>[STAThread]
+<span class="keyword">static</span> <span class="keyword">void</span> Main()
 {
-	string keyPairID = "APKAILAOYMDETYTM7NYQ";
-	string secretKey = @"
-		<span class="tag">&lt;<span class="title">RSAKeyValue</span>&gt;</span>
-			<span class="tag">&lt;<span class="title">Modulus</span>&gt;</span>kp2udNofRGbbiMtFLWMFMGB1U67JWq2EYqLR0qbfFnOd2kMnY7UUMLLf/uPdf9RsEZxA3wnbIS6fH2vesHYkk=<span class="tag">&lt;/<span class="title">Modulus</span>&gt;</span>
-			<span class="tag">&lt;<span class="title">Exponent</span>&gt;</span>AQAB<span class="tag">&lt;/<span class="title">Exponent</span>&gt;</span>
-			<span class="tag">&lt;<span class="title">P</span>&gt;</span>6GhWFDM89x69lp3b93RACdm9yQBjbrP9+ySIiaiy8htXxxKYF5fEn0TRQEzo3FLFG/cf17ozrFAtHV6rqMaRFQ==<span class="tag">&lt;/<span class="title">P</span>&gt;</span>
-			<span class="tag">&lt;<span class="title">Q</span>&gt;</span>oX/Yg4huItINr9SfLmOdZ0y/ysPykmvcESwuXjJiLNB+V5My5AWDSgucE8ZuqT5wvMQJ93DZPpLX0+P6esbRZQ==<span class="tag">&lt;/<span class="title">Q</span>&gt;</span>
-			<span class="tag">&lt;<span class="title">DP</span>&gt;</span>BepB5pm3P4LkyGSUKKQozRdhoTAFV9f06uNvJjHI/Ch9/28Vt+QA+RzDRqOueY0Rvzh28wKmNgiEXW7/Z3hGUQ==<span class="tag">&lt;/<span class="title">DP</span>&gt;</span>
-			<span class="tag">&lt;<span class="title">DQ</span>&gt;</span>F8y5YZjnciY2ciUJWFLBzYlX8k+yHbXbdoRmSOdv5F7NX6aHp2bQlEblt1xUzogvIQJa3aY5vajyOX2tWg6WqQ==<span class="tag">&lt;/<span class="title">DQ</span>&gt;</span>
-			<span class="tag">&lt;<span class="title">InverseQ</span>&gt;</span>cMc+6NMLU1A6LbOeNikuVRbGu43HoG+hECnEzhk6VtQQO3HiUCUdCuZ1lBZegm5YecURbSZ+pWnGok5tqo//gA==<span class="tag">&lt;/<span class="title">InverseQ</span>&gt;</span>
-			<span class="tag">&lt;<span class="title">D</span>&gt;</span>HBgW69E4GJVVD9tTgCTvQ5vYH5bognWpXnUwm5raOKUitBsxABDFISmOfYjwwx2cE4lTR18r4Fgqt0jxOXVBzWE=<span class="tag">&lt;/<span class="title">D</span>&gt;</span>
-		<span class="tag">&lt;/<span class="title">RSAKeyValue</span>&gt;</span>";
+	<span class="keyword">string</span> keyPairID = <span class="string">"APKAILAOYMDETYTM7NYQ"</span>;
+	<span class="keyword">string</span> secretKey = <span class="string">@"
+		&lt;RSAKeyValue&gt;
+			&lt;Modulus&gt;kp2udNofRGbbiMtFLWMFMGB1U67JWq2EYqLR0qbfFnOd2kMnY7UUMLLf/uPdf9RsEZxA3wnbIS6fH2vesHYkk=&lt;/Modulus&gt;
+			&lt;Exponent&gt;AQAB&lt;/Exponent&gt;
+			&lt;P&gt;6GhWFDM89x69lp3b93RACdm9yQBjbrP9+ySIiaiy8htXxxKYF5fEn0TRQEzo3FLFG/cf17ozrFAtHV6rqMaRFQ==&lt;/P&gt;
+			&lt;Q&gt;oX/Yg4huItINr9SfLmOdZ0y/ysPykmvcESwuXjJiLNB+V5My5AWDSgucE8ZuqT5wvMQJ93DZPpLX0+P6esbRZQ==&lt;/Q&gt;
+			&lt;DP&gt;BepB5pm3P4LkyGSUKKQozRdhoTAFV9f06uNvJjHI/Ch9/28Vt+QA+RzDRqOueY0Rvzh28wKmNgiEXW7/Z3hGUQ==&lt;/DP&gt;
+			&lt;DQ&gt;F8y5YZjnciY2ciUJWFLBzYlX8k+yHbXbdoRmSOdv5F7NX6aHp2bQlEblt1xUzogvIQJa3aY5vajyOX2tWg6WqQ==&lt;/DQ&gt;
+			&lt;InverseQ&gt;cMc+6NMLU1A6LbOeNikuVRbGu43HoG+hECnEzhk6VtQQO3HiUCUdCuZ1lBZegm5YecURbSZ+pWnGok5tqo//gA==&lt;/InverseQ&gt;
+			&lt;D&gt;HBgW69E4GJVVD9tTgCTvQ5vYH5bognWpXnUwm5raOKUitBsxABDFISmOfYjwwx2cE4lTR18r4Fgqt0jxOXVBzWE=&lt;/D&gt;
+		&lt;/RSAKeyValue&gt;"</span>;
 
-	var provider = new CloudFrontSecurityProvider(keyPairID, secretKey);
-	var signedUrl = provider.GetCustomUrl("https://d2ya0f2cfwcopc.cloudfront.net/logo_aws.gif", DateTime.Now.AddMinutes(5));
+	<span class="keyword">var</span> provider = <span class="keyword">new</span> CloudFrontSecurityProvider(keyPairID, secretKey);
+	<span class="keyword">var</span> signedUrl = provider.GetCustomUrl(<span class="string">"https://d2ya0f2cfwcopc.cloudfront.net/logo_aws.gif"</span>, DateTime.Now.AddMinutes(<span class="number">5</span>));
 
 	Clipboard.SetText(signedUrl);
 	Console.WriteLine(signedUrl);
@@ -1428,7 +1428,7 @@ static void Main()
 
 <h3 id="Using_wildcards_when_signing_URLs">Using wildcards when signing URLs</h3>
 <p>So what if you want to grant access to many files at once, do we have to create a policy for each single one? Thankfully, no, we don’t! Say you want to grant access to all files in the folder “Test” (and remember, there is no such thing as folders in S3 – just objects named e.g. /Test/FileName.jpg). What we’d do is to create a policy like this:</p>
-<figure class="highlight csharp"><pre>var signedUrl = provider<span class="preprocessor">.GetCustomUrl</span>(<span class="string">"https://d2ya0f2cfwcopc.cloudfront.net/Test/*"</span>, DateTime<span class="preprocessor">.Now</span><span class="preprocessor">.AddMinutes</span>(<span class="number">5</span>))<span class="comment">;</span>
+<figure class="highlight cs"><pre><span class="keyword">var</span> signedUrl = provider.GetCustomUrl(<span class="string">"https://d2ya0f2cfwcopc.cloudfront.net/Test/*"</span>, DateTime.Now.AddMinutes(<span class="number">5</span>));
 </pre></figure>
 
 <p>That’s right, we can create custom policies for wildcard URLs too! Once you’ve got this URL, just substitute the asterisk for whatever file you want to request:</p>
@@ -1439,7 +1439,7 @@ static void Main()
 <h3 id="Limiting_the_users_IP_address">Limiting the users IP address</h3>
 <p>At this point we’ve created a URL with a custom signed policy that grants access to a given resource (or wildcard) within a limited time period. However, within this period, the user may distribute the URL to anyone else, who will then also be able to access the resource. To hinder this, we can add the source IP address as an additional condition to the policy!</p>
 <p>Add an overload to the GetCustomUrl function in the CloudFrontSecurityProvider class like so:</p>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">string</span> <span class="title">GetCustomUrl</span>(<span class="keyword">string</span> url, DateTime expiration, <span class="keyword">string</span> allowedCidr)
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">string</span> <span class="title">GetCustomUrl</span>(<span class="keyword">string</span> url, DateTime expiration, <span class="keyword">string</span> allowedCidr)
 {
 	<span class="keyword">string</span> expirationEpoch = GetUnixTime(expiration).ToString();
 
@@ -1456,7 +1456,7 @@ static void Main()
 </pre></figure>
 
 <p>To use it, we just pass in an IP address in the <a href="http://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing" target="_blank">CIDR</a> format:</p>
-<figure class="highlight csharp"><pre>var signedUrl = provider<span class="preprocessor">.GetCustomUrl</span>(<span class="string">"https://d2ya0f2cfwcopc.cloudfront.net/D.jpg"</span>, DateTime<span class="preprocessor">.Now</span><span class="preprocessor">.AddMinutes</span>(<span class="number">5</span>), <span class="string">"212.242.193.110/32"</span>)<span class="comment">;</span>
+<figure class="highlight cs"><pre><span class="keyword">var</span> signedUrl = provider.GetCustomUrl(<span class="string">"https://d2ya0f2cfwcopc.cloudfront.net/D.jpg"</span>, DateTime.Now.AddMinutes(<span class="number">5</span>), <span class="string">"212.242.193.110/32"</span>);
 </pre></figure>
 
 <p>The above example would provide access to the D.jpg object for 5 minutes, but only for the 212.242.193.110 IP address specifically. We could grant access to a whole subnet by passing in the IP/CIDR 212.242.193.0/24, etc.</p>
@@ -1558,7 +1558,7 @@ USE SampleDatabase
 </pre></figure>
 
 <p>This would cause MyTable to be proportionally allocated between the three data files (the C column being used for the fill to require 100 pages of storage – to ensure we hit all three data files). And to parse it, all you’d do is the following:</p>
-<figure class="highlight csharp"><pre><span class="keyword">var</span> files = <span class="keyword">new</span>[]
+<figure class="highlight cs"><pre><span class="keyword">var</span> files = <span class="keyword">new</span>[]
     {
 		<span class="string">@"C:SampleDatabase_Data1.mdf"</span>,
 		<span class="string">@"C:SampleDatabase_Data2.ndf"</span>,

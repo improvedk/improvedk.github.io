@@ -119,7 +119,7 @@
 <h2 id="NUnit_TestCaseSourceAttribute_to_the_rescue!">NUnit TestCaseSourceAttribute to the rescue!</h2>
 <p>NUnit supports <a href="http://www.nunit.org/index.php?p=testCase&amp;r=2.5" target="_blank">inline parameterized tests</a> through the TestCase attribute. Even better, we can also provide the parameter data for test cases dynamically, using the <a href="http://www.nunit.org/index.php?p=testCaseSource&amp;r=2.5" target="_blank">TestCaseSource</a> attribute.</p>
 <p>First up, I implemented a simple enumeration covering the versions that I’m currently working on supporting:</p>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">enum</span> DatabaseVersion
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">enum</span> DatabaseVersion
 {
 	SqlServer2005,
 	SqlServer2008,
@@ -128,7 +128,7 @@
 </pre></figure>
 
 <p>I then created the SqlServerTestAttribute class, inheriting directly from TestCaseSourceAttribute like so:</p>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlServerTestAttribute : TestCaseSourceAttribute
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlServerTestAttribute : TestCaseSourceAttribute
 {
 	<span class="keyword">private</span> <span class="keyword">static</span> IEnumerable&lt;TestCaseData&gt; versions
 	{
@@ -146,10 +146,10 @@
 
 <p>The SqlServerTestAttribute class tells TestCaseSourceAttribute to find the test case source data in the private static <em>versions</em> property. The versions property enumerates all the DatabaseVersion values and returns them one by one – ensuring to set the test category to the name of the DatabaseVersion value.</p>
 <p>Next up, I converted my current tests to use the new SqlServerTest attribute, instead of the previous vanilla NUnit Test attribute:</p>
-<figure class="highlight csharp"><pre>[SqlServerTest]
-public void HeapForwardedRecord(DatabaseVersion version)
+<figure class="highlight cs"><pre>[SqlServerTest]
+<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">HeapForwardedRecord</span>(DatabaseVersion version)
 {
-	<span class="keyword">...</span>
+	...
 }
 </pre></figure>
 
@@ -165,25 +165,25 @@ public void HeapForwardedRecord(DatabaseVersion version)
 
 <p>If a database doesn’t have a connection (the name corresponding to the DatabaseVersion enumeration value), the test won’t be run for that version, simple as that. In this case I’m currently ignoring SQL Server 2008 as I only have 2005 and 2008R2 installed on my machine.</p>
 <p>To perform the filtering on available databases, I’ve modified my test cases to let the base class actually run the test, using a lambda:</p>
-<figure class="highlight csharp"><pre>[SqlServerTest]
-public void HeapForwardedRecord(DatabaseVersion version)
+<figure class="highlight cs"><pre>[SqlServerTest]
+<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">HeapForwardedRecord</span>(DatabaseVersion version)
 {
 	RunDatabaseTest(version, db =&gt;
 	{
-		var scanner = new DataScanner(db)<span class="comment">;</span>
-		var rows = scanner<span class="preprocessor">.ScanTable</span>(<span class="string">"HeapForwardedRecord"</span>)<span class="preprocessor">.ToList</span>()<span class="comment">;</span>
+		<span class="keyword">var</span> scanner = <span class="keyword">new</span> DataScanner(db);
+		<span class="keyword">var</span> rows = scanner.ScanTable(<span class="string">"HeapForwardedRecord"</span>).ToList();
 
-		Assert<span class="preprocessor">.AreEqual</span>(<span class="number">25</span>, rows[<span class="number">0</span>]<span class="preprocessor">.Field</span>&lt;int&gt;(<span class="string">"A"</span>))<span class="comment">;</span>
-		Assert<span class="preprocessor">.AreEqual</span>(<span class="string">""</span><span class="preprocessor">.PadLeft</span>(<span class="number">5000</span>, <span class="string">'A'</span>), rows[<span class="number">0</span>]<span class="preprocessor">.Field</span>&lt;string&gt;(<span class="string">"B"</span>))<span class="comment">;</span>
+		Assert.AreEqual(<span class="number">25</span>, rows[<span class="number">0</span>].Field&lt;<span class="keyword">int</span>&gt;(<span class="string">"A"</span>));
+		Assert.AreEqual(<span class="string">""</span>.PadLeft(<span class="number">5000</span>, <span class="string">'A'</span>), rows[<span class="number">0</span>].Field&lt;<span class="keyword">string</span>&gt;(<span class="string">"B"</span>));
 
-		Assert<span class="preprocessor">.AreEqual</span>(<span class="number">28</span>, rows[<span class="number">1</span>]<span class="preprocessor">.Field</span>&lt;int&gt;(<span class="string">"A"</span>))<span class="comment">;</span>
-		Assert<span class="preprocessor">.AreEqual</span>(<span class="string">""</span><span class="preprocessor">.PadLeft</span>(<span class="number">4000</span>, <span class="string">'B'</span>), rows[<span class="number">1</span>]<span class="preprocessor">.Field</span>&lt;string&gt;(<span class="string">"B"</span>))<span class="comment">;</span>
-	})<span class="comment">;</span>
+		Assert.AreEqual(<span class="number">28</span>, rows[<span class="number">1</span>].Field&lt;<span class="keyword">int</span>&gt;(<span class="string">"A"</span>));
+		Assert.AreEqual(<span class="string">""</span>.PadLeft(<span class="number">4000</span>, <span class="string">'B'</span>), rows[<span class="number">1</span>].Field&lt;<span class="keyword">string</span>&gt;(<span class="string">"B"</span>));
+	});
 }
 </pre></figure>
 
 <p>The RunDatabase method is exposed in the SqlServerSystemTestBase class:</p>
-<figure class="highlight csharp"><pre><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">RunDatabaseTest</span>(DatabaseVersion version, Action&lt;Database&gt; test)
+<figure class="highlight cs"><pre><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">RunDatabaseTest</span>(DatabaseVersion version, Action&lt;Database&gt; test)
 {
 	<span class="keyword">string</span> versionConnectionName = version.ToString();
 
@@ -203,7 +203,7 @@ public void HeapForwardedRecord(DatabaseVersion version)
 <p>If a corresponding connection string hasn’t been declared in the configuration file, we abort the test and mark it as inconclusive – we simply weren’t able to run it given the current setup. Next up, ensureDatabaseIsSetup() runs the usual setup code (as detailed in the <a href="/avoiding-regressions-in-orcamdf-by-system-testing">earlier blog post</a>), though this time once per database versions, per fixture. Finally an OrcaMDF instance is created and passed onto the actual test as a parameter.</p>
 <h2 id="Supporting_different_SQL_Server_feature_versions">Supporting different SQL Server feature versions</h2>
 <p>As mentioned, I need a way of executing some tests only on certain versions of SQL Server. The standard SqlServerTestAttribute automatically enumerations <em>all</em> values of the DatabaseVersion enumeration, but there’s no reason we can’t create a SqlServer2005TestAttribute like this:</p>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlServer2005TestAttribute : TestCaseSourceAttribute
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlServer2005TestAttribute : TestCaseSourceAttribute
 {
 	<span class="keyword">private</span> <span class="keyword">static</span> IEnumerable&lt;TestCaseData&gt; versions
 	{
@@ -219,7 +219,7 @@ public void HeapForwardedRecord(DatabaseVersion version)
 </pre></figure>
 
 <p>Or what about tests that need to be run on SQL Server 2008+?</p>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlServer2008PlusTestAttribute : TestCaseSourceAttribute
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlServer2008PlusTestAttribute : TestCaseSourceAttribute
 {
 	<span class="keyword">private</span> <span class="keyword">static</span> IEnumerable&lt;TestCaseData&gt; versions
 	{
@@ -238,7 +238,7 @@ public void HeapForwardedRecord(DatabaseVersion version)
 </pre></figure>
 
 <p>Once we have the attributes, it’s as easy as marking the individual tests with the versions they’re supposed to be run on:</p>
-<figure class="highlight csharp"><pre>[SqlServer2008PlusTest]
+<figure class="highlight cs"><pre>[SqlServer2008PlusTest]
 <span class="keyword">public</span> <span class="keyword">void</span> <span class="title">ScanAllNullSparse</span>(DatabaseVersion version)
 {
 	RunDatabaseTest(version, db =&gt;

@@ -206,19 +206,19 @@ always_direct allow all
 <p>Whenever a request is made for the proxy, it’ll be in the form cache.improve.dk/file. cache.improve.dk doesn’t really exist, and the website doesn’t answer to it, so while Squid receives a request for cache.improve.dk, it should map it back to improve.dk. You could do this by configuration, but that’s no fun (in my case I had to do this for hundreds of domains, so it wasn’t feasibly to do by configuration).</p>
 <p>Luckily Squid provides an easy interface for creating custom rewriters, log &amp; storage daemons and so forth. Each time a request comes in Squid will write the url to stdin for the url rewriting daemon and it’ll expect the rewritten url to be output to stdout. It’ll also include some extra whitespace-separated options, but they can simply be ignored, just as Squid will also ignore anything after the first whitespace of the stdout output.</p>
 <p>To do the job, I’ve made an über simple console application that does the job:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 
-<span class="class"><span class="keyword">namespace</span> <span class="title">SquidRewriter</span>
-{</span>
-	<span class="class"><span class="keyword">class</span> <span class="title">Program</span>
-	{</span>
+namespace SquidRewriter
+{
+	class Program
+	{
 		<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
 		{
-			<span class="keyword">while</span> (<span class="literal">true</span>)
+			<span class="keyword">while</span> (<span class="keyword">true</span>)
 			{
 				<span class="keyword">string</span> input = Console.ReadLine();
 
-				if (input == <span class="literal">null</span> || input.Length == <span class="number">0</span>)
+				<span class="keyword">if</span> (input == <span class="keyword">null</span> || input.Length == <span class="number">0</span>)
 					<span class="keyword">return</span>;
 
 				Console.WriteLine(input.Replace(<span class="string">"cache.improve.dk"</span>, <span class="string">"improve.dk"</span>));

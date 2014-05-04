@@ -356,12 +356,12 @@ while @cnt &lt; <span class="number">10000</span> <span class="keyword">begin</s
 <p><a href="http://papercut.codeplex.com" target="_blank">Papercut</a> and <a href="http://smtp4dev.codeplex.com" target="_blank">smtp4dev</a> are both applications that’ll emulate a remote SMTP server on your local machine. Instead of actually sending the mail onwards like a normal SMTP server, they’ll simply catch the mail and notify you. This means you’ll receive the mail instantly without any risks of being caught in spam filters or dying of old age before receiving the mail. I’ve tried out both Papercut and smtp4dev and here are some thoughts on both.</p>
 <p>For the testing I’m using this rather simple piece of code:</p>
 <h3 id="Program-cs_"><strong>Program.cs </strong></h3>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System.Net.Mail;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System.Net.Mail;
 
-<span class="class"><span class="keyword">namespace</span> <span class="title">MailTest</span>
-{</span>
-    <span class="class"><span class="keyword">class</span> <span class="title">Program</span>
-    {</span>
+namespace MailTest
+{
+    class Program
+    {
         <span class="keyword">static</span> <span class="keyword">void</span> Main()
         {
             <span class="keyword">var</span> sc = <span class="keyword">new</span> SmtpClient();
@@ -668,14 +668,14 @@ while @cnt &lt; <span class="number">10000</span> <span class="keyword">begin</s
 <p>Imagine if we could just make a single request to the server - “Hey, please send me these 100 images, ty” - and then we’ll get back a single response containing all the images. One way of doing this would be to zip the images on the server and then unzip them on the client - there’s open zip libraries for both Silverlight and Flash. However, this has a large CPU cost on not only the server, but also on the client. Furthermore, images usually don’t compress much so it’s basically just a waste. In this post I’ll present a C# class for bundling images as well as an AS3 class for reading the bundled image stream. While the RIA sample is in Actionscript, it’s easily applicable to Silverlight as well - should anyone feel like implementing the client side in Silverlight, please let me know so I can link you.</p>
 <h2 id="Generating_sample_images">Generating sample images</h2>
 <p>Our first task is to generate some sample images. The following code will create 100 images named 1-100.jpg containing the greytones from #000000 (well, almost) to #FFFFFF.</p>
-<figure class="highlight csharp"><pre><span class="keyword">for</span>(<span class="built_in">int</span> i=<span class="number">1</span>; i&lt;=<span class="number">100</span>; i++)
+<figure class="highlight cs"><pre><span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">1</span>; i&lt;=<span class="number">100</span>; i++)
 {
-    <span class="built_in">int</span> <span class="built_in">rgb</span> = Convert.ToInt32(i / <span class="number">100</span>d * <span class="number">255</span>);
+    <span class="keyword">int</span> rgb = Convert.ToInt32(i / <span class="number">100</span>d * <span class="number">255</span>);
 
-    using(Bitmap bmp = <span class="keyword">new</span> Bitmap(<span class="number">100</span>, <span class="number">100</span>))
-    using(Graphics g = Graphics.FromImage(bmp))
+    <span class="keyword">using</span>(Bitmap bmp = <span class="keyword">new</span> Bitmap(<span class="number">100</span>, <span class="number">100</span>))
+    <span class="keyword">using</span>(Graphics g = Graphics.FromImage(bmp))
     {
-        g.FillRectangle(<span class="keyword">new</span> SolidBrush(Color.FromArgb(<span class="built_in">rgb</span>, <span class="built_in">rgb</span>, <span class="built_in">rgb</span>)), <span class="number">0</span>, <span class="number">0</span>, <span class="number">100</span>, <span class="number">100</span>);
+        g.FillRectangle(<span class="keyword">new</span> SolidBrush(Color.FromArgb(rgb, rgb, rgb)), <span class="number">0</span>, <span class="number">0</span>, <span class="number">100</span>, <span class="number">100</span>);
         bmp.Save(i + <span class="string">".jpg"</span>);
     }
 }
@@ -691,7 +691,7 @@ while @cnt &lt; <span class="number">10000</span> <span class="keyword">begin</s
 <li>X bytes containing the actual file contents.</li>
 </ul>
 <h3 id="ImageStream-cs">ImageStream.cs</h3>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> ImageStream
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">class</span> ImageStream
 {
     IDictionary files = <span class="keyword">new</span> Dictionary();
 
@@ -727,7 +727,7 @@ while @cnt &lt; <span class="number">10000</span> <span class="keyword">begin</s
 <h2 id="On_the_server_side:_Image-ashx">On the server side: Image.ashx</h2>
 <p>All we need now is a file to serve the ImageStream. I’m using an HttpHandler called Image.ashx to loop through all the files (located in “/Imgs/“) and add them to the ImageStream before writing them out to the output stream.</p>
 <h3 id="Image-ashx">Image.ashx</h3>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> Image : IHttpHandler
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">class</span> Image : IHttpHandler
 {
     <span class="keyword">public</span> <span class="keyword">void</span> <span class="title">ProcessRequest</span>(HttpContext context)
     {

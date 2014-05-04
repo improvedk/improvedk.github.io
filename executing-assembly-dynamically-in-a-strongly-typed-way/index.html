@@ -113,7 +113,7 @@
 <a id="more"></a>
 
 <p>I present to you my LoadPlugin function of my PluginHandler module:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System.Reflection;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System.Reflection;
 <span class="keyword">using</span> System;
 
 namespace MTH.Core
@@ -138,7 +138,7 @@ namespace MTH.Core
 <p>Inside the function we load the assembly and load through each type it hosts. For each type we check the IsAssignableFrom function which’ll check if the current type is of the specified type T, no matter if T is an abstract class, interface or any other type. If it matches, we return a new instance of that type. If no type match is found we return null so we can handle the problem in the calling function.</p>
 <p>Note that this is a very simple example function, there are many unhandled parameters! Security for instance. In most scenarios you would probably want to check the identity of the loaded assembly and set the security permissions dependingly. Also it is not possible to pass constructor parameters, this would require an extension of the function to take in an array of objects as constructor parameters.</p>
 <p>This is how easily we can load any number of plugins that have been placed in a certain plugin directory (in this case the plugins contains code that is to be run on application startup):</p>
-<figure class="highlight csharp"><pre><span class="keyword">foreach</span> (<span class="keyword">string</span> file <span class="keyword">in</span> Directory.GetFiles(Application.StartupPath + <span class="string">"\Plugins\Startup"</span>, <span class="string">"*.dll"</span>))
+<figure class="highlight cs"><pre><span class="keyword">foreach</span> (<span class="keyword">string</span> file <span class="keyword">in</span> Directory.GetFiles(Application.StartupPath + <span class="string">"\Plugins\Startup"</span>, <span class="string">"*.dll"</span>))
 {
 	IRunnable startupPlugin = PluginHandler.LoadPlugin&lt;IRunnable&gt;(file);
 
@@ -148,7 +148,7 @@ namespace MTH.Core
 </pre></figure>
 
 <p>All that is required is that the assemblies in the PluginsStartup folder contain a type that implements the IRunnable interface:</p>
-<figure class="highlight csharp"><pre>
+<figure class="highlight cs"><pre>
 <span class="keyword">public</span> <span class="keyword">interface</span> IRunnable
 {
 	<span class="keyword">void</span> Run();

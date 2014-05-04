@@ -128,13 +128,13 @@ DBCC PAGE (TextTest, 1, 101, 2)
 <div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_4.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_4.png" style="max-height: 250px"/></a></div></div>
 
 <p>And thus we have identified the first field of our header:</p>
-<figure class="highlight csharp"><pre>/*
+<figure class="highlight cs"><pre><span class="comment">/*
 	Bytes	Content
 	-----	-------
 	00-27	?
 	28-29	FreeCnt (smallint)
 	30-95	?
-*/
+*/</span>
 </pre></figure>
 
 <p>Continuing the search we see that m_freeData = 3895. In hex that’s 0x0F37 and 0x370F when swapped. And voilá, that’s stored right next to m_freeCnt:</p>
@@ -171,7 +171,7 @@ DBCC PAGE (TextTest, 1, 101, 2)
 <div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_26.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_26.png" style="max-height: 250px"/></a></div></div>
 
 <p>And thus we can update our header reference table:</p>
-<figure class="highlight csharp"><pre>/*
+<figure class="highlight cs"><pre><span class="comment">/*
 	Bytes	Content
 	-----	-------
 	00-27	?
@@ -179,7 +179,7 @@ DBCC PAGE (TextTest, 1, 101, 2)
 	30-49	?
 	50-51	XactReserved (smallint)
 	30-95	?
-*/
+*/</span>
 </pre></figure>
 
 <p>Continuing down this path, messing up the header, correlating messed up values with values parsed by DBCC PAGE, it’s possible to locate all the fields and their corresponding data types. If you see the following message, you know you’ve messed it up properly:</p>
@@ -187,7 +187,7 @@ DBCC PAGE (TextTest, 1, 101, 2)
 
 <p>You should be proud of yourself. No go clean up the mess you’ve made!</p>
 <p>Jumping forward, I’ve compiled a reference to the page header structure:</p>
-<figure class="highlight csharp"><pre>/*
+<figure class="highlight cs"><pre><span class="comment">/*
 	Bytes	Content
 	-----	-------
 	00	HeaderVersion (tinyint)
@@ -216,29 +216,29 @@ DBCC PAGE (TextTest, 1, 101, 2)
 	56-57	XdesIDPart1 (smallint)
 	58-59	GhostRecCnt (smallint)
 	60-95	?
-*/
+*/</span>
 </pre></figure>
 
 <p>I’m not sure what lies in the remaining bytes of the header as DBCC PAGE doesn’t seem to parse stuff there, and it seems to be zeroed out for all pages I’ve tested. I’m assuming it’s reserved bytes for future usage. Once we’ve got the format, parsing becomes a simple task of reading each field, field by field:</p>
-<figure class="highlight csharp"><pre>HeaderVersion = header[<span class="number">0</span>]<span class="comment">;</span>
-Type = (PageType)header[<span class="number">1</span>]<span class="comment">;</span>
-TypeFlagBits = header[<span class="number">2</span>]<span class="comment">;</span>
-Level = header[<span class="number">3</span>]<span class="comment">;</span>
-FlagBits = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">4</span>)<span class="comment">;</span>
-IndexID = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">6</span>)<span class="comment">;</span>
-PreviousPage = new PagePointer(BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">12</span>), BitConverter<span class="preprocessor">.ToInt</span>32(header, <span class="number">8</span>))<span class="comment">;</span>
-Pminlen = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">14</span>)<span class="comment">;</span>
-NextPage = new PagePointer(BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">20</span>), BitConverter<span class="preprocessor">.ToInt</span>32(header, <span class="number">16</span>))<span class="comment">;</span>
-SlotCnt = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">22</span>)<span class="comment">;</span>
-ObjectID = BitConverter<span class="preprocessor">.ToInt</span>32(header, <span class="number">24</span>)<span class="comment">;</span>
-FreeCnt = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">28</span>)<span class="comment">;</span>
-FreeData = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">30</span>)<span class="comment">;</span>
-Pointer = new PagePointer(BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">36</span>), BitConverter<span class="preprocessor">.ToInt</span>32(header, <span class="number">32</span>))<span class="comment">;</span>
-ReservedCnt = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">38</span>)<span class="comment">;</span>
-Lsn = <span class="string">"("</span> + BitConverter<span class="preprocessor">.ToInt</span>32(header, <span class="number">40</span>) + <span class="string">":"</span> + BitConverter<span class="preprocessor">.ToInt</span>32(header, <span class="number">44</span>) + <span class="string">":"</span> + BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">48</span>) + <span class="string">")"</span><span class="comment">;</span>
-XactReserved = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">50</span>)<span class="comment">;</span>
-XdesID = <span class="string">"("</span> + BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">56</span>) + <span class="string">":"</span> + BitConverter<span class="preprocessor">.ToInt</span>32(header, <span class="number">52</span>) + <span class="string">")"</span><span class="comment">;</span>
-GhostRecCnt = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">58</span>)<span class="comment">;</span>
+<figure class="highlight cs"><pre>HeaderVersion = header[<span class="number">0</span>];
+Type = (PageType)header[<span class="number">1</span>];
+TypeFlagBits = header[<span class="number">2</span>];
+Level = header[<span class="number">3</span>];
+FlagBits = BitConverter.ToInt16(header, <span class="number">4</span>);
+IndexID = BitConverter.ToInt16(header, <span class="number">6</span>);
+PreviousPage = <span class="keyword">new</span> PagePointer(BitConverter.ToInt16(header, <span class="number">12</span>), BitConverter.ToInt32(header, <span class="number">8</span>));
+Pminlen = BitConverter.ToInt16(header, <span class="number">14</span>);
+NextPage = <span class="keyword">new</span> PagePointer(BitConverter.ToInt16(header, <span class="number">20</span>), BitConverter.ToInt32(header, <span class="number">16</span>));
+SlotCnt = BitConverter.ToInt16(header, <span class="number">22</span>);
+ObjectID = BitConverter.ToInt32(header, <span class="number">24</span>);
+FreeCnt = BitConverter.ToInt16(header, <span class="number">28</span>);
+FreeData = BitConverter.ToInt16(header, <span class="number">30</span>);
+Pointer = <span class="keyword">new</span> PagePointer(BitConverter.ToInt16(header, <span class="number">36</span>), BitConverter.ToInt32(header, <span class="number">32</span>));
+ReservedCnt = BitConverter.ToInt16(header, <span class="number">38</span>);
+Lsn = <span class="string">"("</span> + BitConverter.ToInt32(header, <span class="number">40</span>) + <span class="string">":"</span> + BitConverter.ToInt32(header, <span class="number">44</span>) + <span class="string">":"</span> + BitConverter.ToInt16(header, <span class="number">48</span>) + <span class="string">")"</span>;
+XactReserved = BitConverter.ToInt16(header, <span class="number">50</span>);
+XdesID = <span class="string">"("</span> + BitConverter.ToInt16(header, <span class="number">56</span>) + <span class="string">":"</span> + BitConverter.ToInt32(header, <span class="number">52</span>) + <span class="string">")"</span>;
+GhostRecCnt = BitConverter.ToInt16(header, <span class="number">58</span>);
 </pre></figure>
 
 <p>You can also see the <a href="https://github.com/improvedk/OrcaMDF/blob/master/src/OrcaMDF.Core/Engine/Pages/PageHeader.cs" target="_blank">full source of the header parsing at GitHub</a>.</p>

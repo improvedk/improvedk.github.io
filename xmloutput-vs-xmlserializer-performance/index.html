@@ -114,27 +114,27 @@
 
 <p>There are two aspects of these solutions, one is readability &amp; maintanability, the other is pure performance. I said that my XmlDocument wrapper would be a lot faster than the serialization way using Reflection, but Kris wasn’t so sure. Admittedly, I hadn’t tested it out, so I though I might actually be wrong in that assumption. Let the testing commence.</p>
 <p>I’ll be using my User XML snippet as an example. This is how the XML is generated using my API:</p>
-<figure class="highlight csharp"><pre>XmlOutput xo = new XmlOutput()
-	<span class="preprocessor">.XmlDeclaration</span>()
-	<span class="preprocessor">.Node</span>(<span class="string">"root"</span>)<span class="preprocessor">.Within</span>()
-		<span class="preprocessor">.Node</span>(<span class="string">"user"</span>)<span class="preprocessor">.Within</span>()
-			<span class="preprocessor">.Node</span>(<span class="string">"username"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"orca"</span>)
-			<span class="preprocessor">.Node</span>(<span class="string">"realname"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Mark S. Rasmussen"</span>)
-			<span class="preprocessor">.Node</span>(<span class="string">"description"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"I'll handle any escaping (like &lt; & &gt; for example) needs automagically."</span>)
-			<span class="preprocessor">.Node</span>(<span class="string">"articles"</span>)<span class="preprocessor">.Within</span>()
-				<span class="preprocessor">.Node</span>(<span class="string">"article"</span>)<span class="preprocessor">.Attribute</span>(<span class="string">"id"</span>, <span class="string">"25"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Handling DBNulls"</span>)
-				<span class="preprocessor">.Node</span>(<span class="string">"article"</span>)<span class="preprocessor">.Attribute</span>(<span class="string">"id"</span>, <span class="string">"26"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Accessing my privates"</span>)
-				<span class="preprocessor">.EndWithin</span>()
-			<span class="preprocessor">.Node</span>(<span class="string">"hobbies"</span>)<span class="preprocessor">.Within</span>()
-				<span class="preprocessor">.Node</span>(<span class="string">"hobby"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Fishing"</span>)
-				<span class="preprocessor">.Node</span>(<span class="string">"hobby"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Photography"</span>)
-				<span class="preprocessor">.Node</span>(<span class="string">"hobby"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Work"</span>)<span class="comment">;</span>
+<figure class="highlight cs"><pre>XmlOutput xo = <span class="keyword">new</span> XmlOutput()
+	.XmlDeclaration()
+	.Node(<span class="string">"root"</span>).Within()
+		.Node(<span class="string">"user"</span>).Within()
+			.Node(<span class="string">"username"</span>).InnerText(<span class="string">"orca"</span>)
+			.Node(<span class="string">"realname"</span>).InnerText(<span class="string">"Mark S. Rasmussen"</span>)
+			.Node(<span class="string">"description"</span>).InnerText(<span class="string">"I'll handle any escaping (like &lt; & &gt; for example) needs automagically."</span>)
+			.Node(<span class="string">"articles"</span>).Within()
+				.Node(<span class="string">"article"</span>).Attribute(<span class="string">"id"</span>, <span class="string">"25"</span>).InnerText(<span class="string">"Handling DBNulls"</span>)
+				.Node(<span class="string">"article"</span>).Attribute(<span class="string">"id"</span>, <span class="string">"26"</span>).InnerText(<span class="string">"Accessing my privates"</span>)
+				.EndWithin()
+			.Node(<span class="string">"hobbies"</span>).Within()
+				.Node(<span class="string">"hobby"</span>).InnerText(<span class="string">"Fishing"</span>)
+				.Node(<span class="string">"hobby"</span>).InnerText(<span class="string">"Photography"</span>)
+				.Node(<span class="string">"hobby"</span>).InnerText(<span class="string">"Work"</span>);
 
-string output = xo<span class="preprocessor">.GetOuterXml</span>()<span class="comment">;</span>
+<span class="keyword">string</span> output = xo.GetOuterXml();
 </pre></figure>
 
 <p>Note that I just retrieve the complete XML in a string, I don’t print or save this, it’s just to get a valid comparison point. This is how we’ll generate the same code using the XmlSerializer:</p>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> User
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">class</span> User
 {
 	<span class="keyword">public</span> <span class="keyword">string</span> Username;
 	<span class="keyword">public</span> <span class="keyword">string</span> Realname;
@@ -160,7 +160,7 @@ string output = xo<span class="preprocessor">.GetOuterXml</span>()<span class="c
 </pre></figure>
 
 
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">string</span> <span class="title">ConvertToXml</span>(<span class="keyword">object</span> item)
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">string</span> <span class="title">ConvertToXml</span>(<span class="keyword">object</span> item)
 {
 	XmlSerializer xmlser = <span class="keyword">new</span> XmlSerializer(item.GetType());
 
@@ -174,32 +174,32 @@ string output = xo<span class="preprocessor">.GetOuterXml</span>()<span class="c
 </pre></figure>
 
 
-<figure class="highlight csharp"><pre>User user = new User()<span class="comment">;</span>
-user<span class="preprocessor">.Username</span> = <span class="string">"orca"</span><span class="comment">;</span>
-user<span class="preprocessor">.Realname</span> = <span class="string">"Mark S. Rasmussen"</span><span class="comment">;</span>
-user<span class="preprocessor">.Description</span> = <span class="string">"I'll handle any escaping (like &lt; & &gt; for example) needs automagically."</span><span class="comment">;</span>
+<figure class="highlight cs"><pre>User user = <span class="keyword">new</span> User();
+user.Username = <span class="string">"orca"</span>;
+user.Realname = <span class="string">"Mark S. Rasmussen"</span>;
+user.Description = <span class="string">"I'll handle any escaping (like &lt; & &gt; for example) needs automagically."</span>;
 
-user<span class="preprocessor">.Articles</span> = new List&lt;Article&gt;()<span class="comment">;</span>
-user<span class="preprocessor">.Articles</span><span class="preprocessor">.Add</span>(new Article() { ID = <span class="number">25</span>, Content = <span class="string">"Handling DBNulls"</span> })<span class="comment">;</span>
-user<span class="preprocessor">.Articles</span><span class="preprocessor">.Add</span>(new Article() { ID = <span class="number">26</span>, Content = <span class="string">"Accessing my privates"</span>})<span class="comment">;</span>
+user.Articles = <span class="keyword">new</span> List&lt;Article&gt;();
+user.Articles.Add(<span class="keyword">new</span> Article() { ID = <span class="number">25</span>, Content = <span class="string">"Handling DBNulls"</span> });
+user.Articles.Add(<span class="keyword">new</span> Article() { ID = <span class="number">26</span>, Content = <span class="string">"Accessing my privates"</span>});
 
-user<span class="preprocessor">.Hobbies</span> = new List&lt;Hobby&gt;()<span class="comment">;</span>
-user<span class="preprocessor">.Hobbies</span><span class="preprocessor">.Add</span>(new Hobby() { Content = <span class="string">"Fishing"</span> })<span class="comment">;</span>
-user<span class="preprocessor">.Hobbies</span><span class="preprocessor">.Add</span>(new Hobby() { Content = <span class="string">"Photography"</span> })<span class="comment">;</span>
-user<span class="preprocessor">.Hobbies</span><span class="preprocessor">.Add</span>(new Hobby() { Content = <span class="string">"Work"</span> })<span class="comment">;</span>
+user.Hobbies = <span class="keyword">new</span> List&lt;Hobby&gt;();
+user.Hobbies.Add(<span class="keyword">new</span> Hobby() { Content = <span class="string">"Fishing"</span> });
+user.Hobbies.Add(<span class="keyword">new</span> Hobby() { Content = <span class="string">"Photography"</span> });
+user.Hobbies.Add(<span class="keyword">new</span> Hobby() { Content = <span class="string">"Work"</span> });
 
-string output = ConvertToXml(user)<span class="comment">;</span>
+<span class="keyword">string</span> output = ConvertToXml(user);
 </pre></figure>
 
 <p>Note that only the last codesnippet is the one being looped, the other two are simply one-time helpers to actually create the XML. I have run the tests in a number of iterations to get a total code time, furthermore, I’ve run each of the iteration tests 10 times to calculate the average execution time. This is the basic code to run the tests:</p>
-<figure class="highlight csharp"><pre>sw.Reset();
-<span class="constant">iterationTime</span> = 0;
-for (int testIteration = 0; testIteration &lt; testIterations; testIteration++)
+<figure class="highlight cs"><pre>sw.Reset();
+iterationTime = <span class="number">0</span>;
+<span class="keyword">for</span> (<span class="keyword">int</span> testIteration = <span class="number">0</span>; testIteration &lt; testIterations; testIteration++)
 {
 	sw.Start();
-	for (int i = 0; i &lt; iterations; i++)
+	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; iterations; i++)
 	{
-		// Perform XML creation
+		<span class="comment">// Perform XML creation</span>
 	}
 	sw.Stop();
 	iterationTime += sw.ElapsedMilliseconds;
@@ -207,7 +207,7 @@ for (int testIteration = 0; testIteration &lt; testIterations; testIteration++)
 
 	sw.Reset();
 }
-Console.WriteLine("Total XmlSerializer: " + iterationTime / testIterations);
+Console.WriteLine(<span class="string">"Total XmlSerializer: "</span> + iterationTime / testIterations);
 </pre></figure>
 
 <p>And finally, the results (times in ms on a base 10 logarithmic scale):</p>

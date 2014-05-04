@@ -123,7 +123,7 @@
 
 <h2 id="Saving_the_evidence_in_binary_form">Saving the evidence in binary form</h2>
 <p>To embed our XML as evidence, we first have to save it in binary form. To save a bit of typing, I use my SaveXmlAsBinaryEvidence function:</p>
-<figure class="highlight csharp"><pre><span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+<figure class="highlight cs"><pre><span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
 <span class="comment"><span class="xmlDocTag">///</span> Saves the input XML in binary format that can be used when linking custom evidence to an assembly</span>
 <span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
 <span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="xml"&gt;</span><span class="xmlDocTag">&lt;/param&gt;</span></span>
@@ -142,12 +142,12 @@
 </pre></figure>
 
 <p>This allows us to save out the evidence in binary format using a single line:</p>
-<figure class="highlight csharp"><pre>EvidenceCreator<span class="preprocessor">.SaveXmlAsBinaryEvidence</span>(File<span class="preprocessor">.ReadAllText</span>(<span class="string">"MyEvidence.xml"</span>), <span class="string">"MyEvidence.evidence"</span>)<span class="comment">;</span>
+<figure class="highlight cs"><pre>EvidenceCreator.SaveXmlAsBinaryEvidence(File.ReadAllText(<span class="string">"MyEvidence.xml"</span>), <span class="string">"MyEvidence.evidence"</span>);
 </pre></figure>
 
 <h2 id="Compiling_the_relevant_assembly_in_netmodule_form">Compiling the relevant assembly in netmodule form</h2>
 <p>I’ve created a simple assembly named TestAssembly that consists of a single file, MyClass:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 
 namespace TestAssembly
 {
@@ -162,20 +162,20 @@ namespace TestAssembly
 </pre></figure>
 
 <p>If we compile it directly in Visual Studio, we end up with an assembly called TestAssembly.dll - this is not what we want. We need to compile the code into a .netmodule module file so we can manually link it together with our assembly into a finished assembly. Running the following command (with relevant path variables setup, or from the Visual Studio Command Prompt) will compile MyClass into a netmodule called MyClass.netmodule:</p>
-<figure class="highlight csharp"><pre>csc /<span class="symbol">target:</span><span class="class"><span class="keyword">module</span> <span class="title">MyClass</span>.<span class="title">cs</span></span>
+<figure class="highlight cs"><pre>csc /target:module MyClass.cs
 </pre></figure>
 
 <p>You can actually load the .netmodule file into Reflector to verify the contents. It’ll work nicely, though Reflector will give a warning since our netmodule does not contain an assembly manifest.</p>
 <h2 id="Creating_an_assembly_by_linking_the_netmodule_and_evidence_together">Creating an assembly by linking the netmodule and evidence together</h2>
 <p>The final step is to link our evidence (MyEvidence.evidence) and netmodule (MyClass.netmodule) together. Make sure both files reside in the same directory (they don’t have to, but it’ll be easier). The following command will invoke AL.exe and do the final assembly linking:</p>
-<figure class="highlight csharp"><pre>al /target:library /evidence:MyEvidence<span class="preprocessor">.evidence</span> /<span class="keyword">out</span>:MyClass<span class="preprocessor">.dll</span> MyClass<span class="preprocessor">.netmodule</span>
+<figure class="highlight cs"><pre>al /target:library /evidence:MyEvidence.evidence /<span class="keyword">out</span>:MyClass.dll MyClass.netmodule
 </pre></figure>
 
 <p>If you load up the resulting assembly in Reflector, you’ll see the attached evidence under the Resources directory:</p>
 <div class="imgwrapper" style=""><div><a href="/providing-custom-assembly-evidence/reflector_evidence_2.jpg" class="fancy"><img src="/providing-custom-assembly-evidence/reflector_evidence_2.jpg" style="max-height: 250px"/></a></div></div>
 
 <p>Now, if we <a href="/analyzing-assembly-evidence/">analyze the assembly evidence</a> by loading the assembly and enumerating the assembly provided evidence like so:</p>
-<figure class="highlight csharp"><pre>al /target:library /evidence:MyEvidence<span class="preprocessor">.evidence</span> /<span class="keyword">out</span>:MyClass<span class="preprocessor">.dll</span> MyClass<span class="preprocessor">.netmodule</span>
+<figure class="highlight cs"><pre>al /target:library /evidence:MyEvidence.evidence /<span class="keyword">out</span>:MyClass.dll MyClass.netmodule
 </pre></figure>
 
 <p>We see our custom evidence:</p>

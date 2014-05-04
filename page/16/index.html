@@ -168,7 +168,7 @@
 
 <h2 id="Saving_the_evidence_in_binary_form">Saving the evidence in binary form</h2>
 <p>To embed our XML as evidence, we first have to save it in binary form. To save a bit of typing, I use my SaveXmlAsBinaryEvidence function:</p>
-<figure class="highlight csharp"><pre><span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+<figure class="highlight cs"><pre><span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
 <span class="comment"><span class="xmlDocTag">///</span> Saves the input XML in binary format that can be used when linking custom evidence to an assembly</span>
 <span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
 <span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;param name="xml"&gt;</span><span class="xmlDocTag">&lt;/param&gt;</span></span>
@@ -187,12 +187,12 @@
 </pre></figure>
 
 <p>This allows us to save out the evidence in binary format using a single line:</p>
-<figure class="highlight csharp"><pre>EvidenceCreator<span class="preprocessor">.SaveXmlAsBinaryEvidence</span>(File<span class="preprocessor">.ReadAllText</span>(<span class="string">"MyEvidence.xml"</span>), <span class="string">"MyEvidence.evidence"</span>)<span class="comment">;</span>
+<figure class="highlight cs"><pre>EvidenceCreator.SaveXmlAsBinaryEvidence(File.ReadAllText(<span class="string">"MyEvidence.xml"</span>), <span class="string">"MyEvidence.evidence"</span>);
 </pre></figure>
 
 <h2 id="Compiling_the_relevant_assembly_in_netmodule_form">Compiling the relevant assembly in netmodule form</h2>
 <p>I’ve created a simple assembly named TestAssembly that consists of a single file, MyClass:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 
 namespace TestAssembly
 {
@@ -207,20 +207,20 @@ namespace TestAssembly
 </pre></figure>
 
 <p>If we compile it directly in Visual Studio, we end up with an assembly called TestAssembly.dll - this is not what we want. We need to compile the code into a .netmodule module file so we can manually link it together with our assembly into a finished assembly. Running the following command (with relevant path variables setup, or from the Visual Studio Command Prompt) will compile MyClass into a netmodule called MyClass.netmodule:</p>
-<figure class="highlight csharp"><pre>csc /<span class="symbol">target:</span><span class="class"><span class="keyword">module</span> <span class="title">MyClass</span>.<span class="title">cs</span></span>
+<figure class="highlight cs"><pre>csc /target:module MyClass.cs
 </pre></figure>
 
 <p>You can actually load the .netmodule file into Reflector to verify the contents. It’ll work nicely, though Reflector will give a warning since our netmodule does not contain an assembly manifest.</p>
 <h2 id="Creating_an_assembly_by_linking_the_netmodule_and_evidence_together">Creating an assembly by linking the netmodule and evidence together</h2>
 <p>The final step is to link our evidence (MyEvidence.evidence) and netmodule (MyClass.netmodule) together. Make sure both files reside in the same directory (they don’t have to, but it’ll be easier). The following command will invoke AL.exe and do the final assembly linking:</p>
-<figure class="highlight csharp"><pre>al /target:library /evidence:MyEvidence<span class="preprocessor">.evidence</span> /<span class="keyword">out</span>:MyClass<span class="preprocessor">.dll</span> MyClass<span class="preprocessor">.netmodule</span>
+<figure class="highlight cs"><pre>al /target:library /evidence:MyEvidence.evidence /<span class="keyword">out</span>:MyClass.dll MyClass.netmodule
 </pre></figure>
 
 <p>If you load up the resulting assembly in Reflector, you’ll see the attached evidence under the Resources directory:</p>
 <div class="imgwrapper" style=""><div><a href="/providing-custom-assembly-evidence/reflector_evidence_2.jpg" class="fancy"><img src="/providing-custom-assembly-evidence/reflector_evidence_2.jpg" style="max-height: 250px"/></a></div></div>
 
 <p>Now, if we <a href="/analyzing-assembly-evidence/">analyze the assembly evidence</a> by loading the assembly and enumerating the assembly provided evidence like so:</p>
-<figure class="highlight csharp"><pre>al /target:library /evidence:MyEvidence<span class="preprocessor">.evidence</span> /<span class="keyword">out</span>:MyClass<span class="preprocessor">.dll</span> MyClass<span class="preprocessor">.netmodule</span>
+<figure class="highlight cs"><pre>al /target:library /evidence:MyEvidence.evidence /<span class="keyword">out</span>:MyClass.dll MyClass.netmodule
 </pre></figure>
 
 <p>We see our custom evidence:</p>
@@ -448,7 +448,7 @@ namespace TestAssembly
 <p>There are two different overall origins of evidence, assembly provided and CLR provided. When the CLR loads an assembly, it recognizes the evidence based on the location the assembly is loaded from, file hash and so forth - this is the CLR provided evidence. The other type of evidence is custom evidence provided by the assembly itself. Although useful, we have to be careful not to blindly trust this evidence as it’s provided by the assembly manufacturer. Thus an assembly manufacturer might provide a piece of evidence claiming that the assembly is provided by Microsoft / Google / some other trustworthy corporation - even though that might not be the case.</p>
 <p>Any loaded assembly has an evidence property of type <a href="http://msdn.microsoft.com/en-us/library/system.security.policy.evidence.aspx" target="_blank">System.Security.Policy.Evidence</a>. The Evidence class has three relevant functions for obtaining the actual evidence, namely GetHostEnumerator, GetAssemblyEnumerator and GetEnumerator. GetHostEnumerator returns an IEnumerator containing the evidence policies, likewise the GetAssemblyEnumerator returns the assembly provided (and inherently untrustworthy) policies, while the GetEnumerator returns the union of the two.</p>
 <p>Just a quick tip. I hate using enumerators, I much prefer foreach loops. The following method will take an IEnumerator and yield an IEnumerable, enabling you to foreach the collection:</p>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">static</span> IEnumerable <span class="title">GetEnumerable</span>(IEnumerator enumerator)
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">static</span> IEnumerable <span class="title">GetEnumerable</span>(IEnumerator enumerator)
 {
 	<span class="keyword">while</span> (enumerator.MoveNext())
 		<span class="keyword">yield</span> <span class="keyword">return</span> enumerator.Current;
@@ -456,13 +456,13 @@ namespace TestAssembly
 </pre></figure>
 
 <p>I’ve created a simple assembly containing an empty class (the contents of the assembly is not relevant in regards to evidence) called TestAssembly. The following code will load in the TestAssembly from the application directory and enumerate the CLR provided evidence. Note that I’ve got a special case for the<a href="http://msdn.microsoft.com/en-us/library/system.security.policy.hash(VS.80" target="_blank">System.Security.Policy.Hash</a>.aspx) type as it includes a rather lengthy hash of the file. The hash evidence can be used to validate the assembly contents against a pre-known hash of the assembly as a simple way of tamper protecting your applications assemblies.</p>
-<figure class="highlight csharp"><pre>Assembly asm = Assembly<span class="preprocessor">.LoadFile</span>(Path<span class="preprocessor">.Combine</span>(Path<span class="preprocessor">.GetDirectoryName</span>(Assembly<span class="preprocessor">.GetExecutingAssembly</span>()<span class="preprocessor">.Location</span>), <span class="string">"TestAssembly.dll"</span>))<span class="comment">;</span>
+<figure class="highlight cs"><pre>Assembly asm = Assembly.LoadFile(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), <span class="string">"TestAssembly.dll"</span>));
 
-foreach (object obj <span class="keyword">in</span> EnumeratorHelper<span class="preprocessor">.GetEnumerable</span>(asm<span class="preprocessor">.Evidence</span><span class="preprocessor">.GetHostEnumerator</span>()))
-	if (obj is Hash)
-		Console<span class="preprocessor">.WriteLine</span>(@<span class="string">"&lt;System.Security.Policy.Hash version="</span><span class="string">"1"</span><span class="string">"&gt;&lt;RawData&gt;4D5A900003...00000&lt;/RawData&gt;&lt;/System.Security.Policy.Hash&gt;"</span>)<span class="comment">;</span>
-	else
-		Console<span class="preprocessor">.WriteLine</span>(obj<span class="preprocessor">.ToString</span>())<span class="comment">;</span>
+<span class="keyword">foreach</span> (<span class="keyword">object</span> obj <span class="keyword">in</span> EnumeratorHelper.GetEnumerable(asm.Evidence.GetHostEnumerator()))
+	<span class="keyword">if</span> (obj <span class="keyword">is</span> Hash)
+		Console.WriteLine(<span class="string">@"&lt;System.Security.Policy.Hash version=""1""&gt;&lt;RawData&gt;4D5A900003...00000&lt;/RawData&gt;&lt;/System.Security.Policy.Hash&gt;"</span>);
+	<span class="keyword">else</span>
+		Console.WriteLine(obj.ToString());
 </pre></figure>
 
 <p>This is the resulting output:</p>
@@ -481,7 +481,7 @@ foreach (object obj <span class="keyword">in</span> EnumeratorHelper<span class=
 
 <p>As we can see, it gives us the URL from where the assembly was loaded, our security zone (MyComputer since it was loaded locally), and finally the dummy hash.</p>
 <p>I’ve got a test server running called Mirage. Mirage is part of the Active Directory domain ipaper.lan and I’ve set a website up on it answering to the default address <a href="http://mirage.ipaper.lan" target="_blank">http://mirage.ipaper.lan</a>. When loading the TestAssembly from this website, the evidence changes a bit:</p>
-<figure class="highlight csharp"><pre><span class="keyword">Assembly</span> asm = <span class="keyword">Assembly</span>.LoadFrom(<span class="string">"http://mirage.ipaper.lan/TestAssembly.dll"</span>);
+<figure class="highlight cs"><pre>Assembly asm = Assembly.LoadFrom(<span class="string">"http://mirage.ipaper.lan/TestAssembly.dll"</span>);
 </pre></figure>
 
 
@@ -549,19 +549,19 @@ foreach (object obj <span class="keyword">in</span> EnumeratorHelper<span class=
 <a id="more"></a>
 
 
-<figure class="highlight csharp"><pre>StringBuilder sb = new StringBuilder()<span class="comment">;</span>
-sb<span class="preprocessor">.AppendLine</span>(<span class="string">"public static void Hello()"</span>)<span class="comment">;</span>
-sb<span class="preprocessor">.AppendLine</span>(<span class="string">"{"</span>)<span class="comment">;</span>
-sb<span class="preprocessor">.AppendLine</span>(<span class="string">"\tif(true)"</span>)<span class="comment">;</span>
-sb<span class="preprocessor">.AppendLine</span>(<span class="string">"\t\tConsole.WriteLine("</span>World!<span class="string">");"</span>)<span class="comment">;</span>
-sb<span class="preprocessor">.AppendLine</span>(<span class="string">"}"</span>)<span class="comment">;</span>
+<figure class="highlight cs"><pre>StringBuilder sb = <span class="keyword">new</span> StringBuilder();
+sb.AppendLine(<span class="string">"public static void Hello()"</span>);
+sb.AppendLine(<span class="string">"{"</span>);
+sb.AppendLine(<span class="string">"\tif(true)"</span>);
+sb.AppendLine(<span class="string">"\t\tConsole.WriteLine("</span>World!<span class="string">");"</span>);
+sb.AppendLine(<span class="string">"}"</span>);
 
-Console<span class="preprocessor">.Write</span>(sb<span class="preprocessor">.ToString</span>())<span class="comment">;</span>
-Console<span class="preprocessor">.Read</span>()<span class="comment">;</span>
+Console.Write(sb.ToString());
+Console.Read();
 </pre></figure>
 
 <p>This ought to result in the following snippet:</p>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">Hello</span>()
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">Hello</span>()
 {
 	<span class="keyword">if</span>(<span class="keyword">true</span>)
 		Console.WriteLine(<span class="string">"World!"</span>);
@@ -570,16 +570,16 @@ Console<span class="preprocessor">.Read</span>()<span class="comment">;</span>
 
 <p>Pretty simple code, but it’s a bit hard for the eyes, especially if there’s a lot of it.</p>
 <p>By utilizing the IDisposable interface, we can create a StringBuilder-esque class that handles the indentation for us. Here’s an example of how we might write the previous snippet using the IndentedStringBuilder (note that it’s not really a StringBuilder since StringBuilder’s a sealed class):</p>
-<figure class="highlight csharp"><pre>using (IndentedStringBuilder sb = new IndentedStringBuilder())
+<figure class="highlight cs"><pre><span class="keyword">using</span> (IndentedStringBuilder sb = <span class="keyword">new</span> IndentedStringBuilder())
 {
 	sb.AppendLine(<span class="string">"public static void Hello()"</span>);
 	sb.AppendLine(<span class="string">"{"</span>);
 
-	using (sb.IncreaseIndent())
+	<span class="keyword">using</span> (sb.IncreaseIndent())
 	{
 		sb.AppendLine(<span class="string">"if(true)"</span>);
 
-		using (sb.IncreaseIndent())
+		<span class="keyword">using</span> (sb.IncreaseIndent())
 			sb.AppendLine(<span class="string">"Console.WriteLine("</span>World!<span class="string">");"</span>);
 	}
 
@@ -592,7 +592,7 @@ Console<span class="preprocessor">.Read</span>()<span class="comment">;</span>
 
 <p>Each time Dispose() is called on the instance, the indentation level is decreased. Calling IncreaseIndent() increases the indentation level, as well as returning a reference to the IndentedStringBuilder instance itself. The using construct will make sure Dispose is called on the reference each time we exit the using block - and calling Dispose does not do anything to the object other than calling the Dispose method - which’ll decrease the indentation level.</p>
 <p>Here’s the IndentedStringBuilder class:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 <span class="keyword">using</span> System.Text;
 
 namespace Improve.Framework.Text
@@ -747,7 +747,7 @@ namespace Improve.Framework.Text
 <a id="more"></a>
 
 <p>The code is pretty much self explanatory if you keep the <a href="http://en.wikipedia.org/wiki/Dijkstra&#39;s_algorithm#Pseudocode" target="_blank">pseudo code implementation</a> next to it.</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 <span class="keyword">using</span> System.Collections.Generic;
 <span class="keyword">using</span> System.Linq;
 
@@ -827,8 +827,8 @@ namespace Improve.Framework.Algorithms
 </pre></figure>
 
 <p>Once we’ve made the list of nodes &amp; connections, invoking the algorithm is rather simple. We just need to provide an equality function as well as a distance function:</p>
-<figure class="highlight csharp"><pre><span class="comment">// Run Dijkstra's algorithm</span>
-<span class="keyword">List</span>&lt;Point2D&gt; result = Dijkstra&lt;Point2D&gt;.ShortestPath(connections, mouse, target, (p1, p2) =&gt; p1 == p2, (p1, p2) =&gt; p1.DistanceTo(p2));
+<figure class="highlight cs"><pre><span class="comment">// Run Dijkstra's algorithm</span>
+List&lt;Point2D&gt; result = Dijkstra&lt;Point2D&gt;.ShortestPath(connections, mouse, target, (p1, p2) =&gt; p1 == p2, (p1, p2) =&gt; p1.DistanceTo(p2));
 </pre></figure>
 
 <div class="video-container"><iframe src="//www.youtube.com/embed/ctEXUmZ5TDY" frameborder="0" allowfullscreen></iframe></div>
@@ -936,7 +936,7 @@ namespace Improve.Framework.Algorithms
 
 <p>The original method relied heavily on reflection to set the values directly. Reflection’s bad in regards of speed, mkay? But reflection is not necessarily evil, you can do great good with it. Now, the problem with the original method is that each field is set using reflection for each row, that’s [number of fields] * [number of rows] fields being set using reflection, resulting in pretty poor performance. If we compare it to the <a href="/performance-comparison-reading-data-from-the-database-strongly-typed/">manual way</a>, there’s obviously some kind of a gap. If we could just somehow, in a generic way, create mapper methods like we do manually…</p>
 <p>We’ll have to create a DynamicMethod that takes in a DbDataReader, converts the current row to a generic type T. We’ll call it MapDR, although it doesn’t really matter what it’s called.</p>
-<figure class="highlight csharp"><pre><span class="comment">// Our method will take in a single parameter, a DbDataReader</span>
+<figure class="highlight cs"><pre><span class="comment">// Our method will take in a single parameter, a DbDataReader</span>
 Type[] methodArgs = { <span class="keyword">typeof</span>(DbDataReader) };
 
 <span class="comment">// The MapDR method will map a DbDataReader row to an instance of type T</span>
@@ -945,30 +945,30 @@ ILGenerator il = dm.GetILGenerator();
 </pre></figure>
 
 <p>In this method, we’ll create an instance of the generic type T and store it as a variable.</p>
-<figure class="highlight csharp"><pre>// We<span class="attribute">'ll</span> have a single local <span class="keyword">variable</span>, the instance <span class="keyword">of</span> T we<span class="attribute">'re</span> mapping
-il.DeclareLocal(typeof(T));
+<figure class="highlight cs"><pre><span class="comment">// We'll have a single local variable, the instance of T we're mapping</span>
+il.DeclareLocal(<span class="keyword">typeof</span>(T));
 
-// Create a <span class="keyword">new</span> instance <span class="keyword">of</span> T <span class="keyword">and</span> save it as <span class="keyword">variable</span> <span class="number">0</span>
-il.Emit(OpCodes.Newobj, typeof(T).GetConstructor(<span class="keyword">Type</span>.EmptyTypes));
+<span class="comment">// Create a new instance of T and save it as variable 0</span>
+il.Emit(OpCodes.Newobj, <span class="keyword">typeof</span>(T).GetConstructor(Type.EmptyTypes));
 il.Emit(OpCodes.Stloc_0);
 </pre></figure>
 
 <p>Then we’ll look each property of the type.</p>
-<figure class="highlight csharp"><pre><span class="keyword">foreach</span> (PropertyInfo pi <span class="keyword">in</span> <span class="keyword">typeof</span>(T).GetProperties())
+<figure class="highlight cs"><pre><span class="keyword">foreach</span> (PropertyInfo pi <span class="keyword">in</span> <span class="keyword">typeof</span>(T).GetProperties())
 </pre></figure>
 
 <p>Now we’ll read the column value from the DbDataReader using the properties name. By reading it, we’re pushing it onto the stack.</p>
-<figure class="highlight csharp"><pre>// Load the T instance, SqlDataReader parameter <span class="keyword">and</span> the field name onto the stack
-il<span class="preprocessor">.Emit</span>(OpCodes<span class="preprocessor">.Ldloc</span>_0)<span class="comment">;</span>
-il<span class="preprocessor">.Emit</span>(OpCodes<span class="preprocessor">.Ldarg</span>_0)<span class="comment">;</span>
-il<span class="preprocessor">.Emit</span>(OpCodes<span class="preprocessor">.Ldstr</span>, pi<span class="preprocessor">.Name</span>)<span class="comment">;</span>
+<figure class="highlight cs"><pre><span class="comment">// Load the T instance, SqlDataReader parameter and the field name onto the stack</span>
+il.Emit(OpCodes.Ldloc_0);
+il.Emit(OpCodes.Ldarg_0);
+il.Emit(OpCodes.Ldstr, pi.Name);
 
-// <span class="keyword">Push</span> the column value onto the stack
-il<span class="preprocessor">.Emit</span>(OpCodes<span class="preprocessor">.Callvirt</span>, typeof(DbDataReader)<span class="preprocessor">.GetMethod</span>(<span class="string">"get_Item"</span>, new Type[] { typeof(string) }))<span class="comment">;</span>
+<span class="comment">// Push the column value onto the stack</span>
+il.Emit(OpCodes.Callvirt, <span class="keyword">typeof</span>(DbDataReader).GetMethod(<span class="string">"get_Item"</span>, <span class="keyword">new</span> Type[] { <span class="keyword">typeof</span>(<span class="keyword">string</span>) }));
 </pre></figure>
 
 <p>Now’s the ugly part. Depending on the type, there are different ways to convert it into the corresponding .NET type, i’ve made a switch statement handling most common types, although it does lack support for nullable types, guids and various other numeric formats. It should show to idea though. Converting the value will push the resulting correctly typed value onto the stack, and pop the original value in the process.</p>
-<figure class="highlight csharp"><pre><span class="comment">// Depending on the type of the property, convert the datareader column value to the type</span>
+<figure class="highlight cs"><pre><span class="comment">// Depending on the type of the property, convert the datareader column value to the type</span>
 <span class="keyword">switch</span> (pi.PropertyType.Name)
 {
 	<span class="keyword">case</span> <span class="string">"Int16"</span>:
@@ -999,20 +999,20 @@ il<span class="preprocessor">.Emit</span>(OpCodes<span class="preprocessor">.Cal
 </pre></figure>
 
 <p>And finally we set the properties value, thereby popping the value from the stack.</p>
-<figure class="highlight csharp"><pre>// <span class="keyword">Set</span> the T instances property value
-il<span class="preprocessor">.Emit</span>(OpCodes<span class="preprocessor">.Callvirt</span>, typeof(T)<span class="preprocessor">.GetMethod</span>(<span class="string">"set_"</span> + pi<span class="preprocessor">.Name</span>, new Type[] { pi<span class="preprocessor">.PropertyType</span> }))<span class="comment">;</span>
+<figure class="highlight cs"><pre><span class="comment">// Set the T instances property value</span>
+il.Emit(OpCodes.Callvirt, <span class="keyword">typeof</span>(T).GetMethod(<span class="string">"set_"</span> + pi.Name, <span class="keyword">new</span> Type[] { pi.PropertyType }));
 </pre></figure>
 
 <p>After we’ve mapped all the properties, we’ll load the T instance onto the stack and return it.</p>
-<figure class="highlight csharp"><pre>// Load the T instance onto the stack
-il<span class="preprocessor">.Emit</span>(OpCodes<span class="preprocessor">.Ldloc</span>_0)<span class="comment">;</span>
+<figure class="highlight cs"><pre><span class="comment">// Load the T instance onto the stack</span>
+il.Emit(OpCodes.Ldloc_0);
 
-// Return
-il<span class="preprocessor">.Emit</span>(OpCodes<span class="preprocessor">.Ret</span>)<span class="comment">;</span>
+<span class="comment">// Return</span>
+il.Emit(OpCodes.Ret);
 </pre></figure>
 
 <p>To improve performance, let’s cache this mapper method as it’ll work for the type T the next time we need it. Notice that what we’re caching is not the method itself, but a delegate to the method - enabling us to actually call the method.</p>
-<figure class="highlight csharp"><pre><span class="keyword">private</span> <span class="keyword">delegate</span> T mapEntity&lt;T&gt;(DbDataReader dr);
+<figure class="highlight cs"><pre><span class="keyword">private</span> <span class="keyword">delegate</span> T mapEntity&lt;T&gt;(DbDataReader dr);
 <span class="keyword">private</span> <span class="keyword">static</span> Dictionary&lt;Type, Delegate&gt; cachedMappers = <span class="keyword">new</span> Dictionary&lt;Type, Delegate&gt;();
 
 <span class="comment">// Cache the method so we won't have to create it again for the type T</span>
@@ -1023,13 +1023,13 @@ mapEntity&lt;T&gt; invokeMapEntity = (mapEntity&lt;T&gt;)cachedMappers[<span cla
 </pre></figure>
 
 <p>Now all we gotta do is loop the DbDataReader rows and return the mapped entities.</p>
-<figure class="highlight csharp"><pre>// <span class="keyword">For</span> each row, <span class="keyword">map</span> the row <span class="keyword">to</span> an instance <span class="keyword">of</span> T <span class="keyword">and</span> yield <span class="keyword">return</span> it
+<figure class="highlight cs"><pre><span class="comment">// For each row, map the row to an instance of T and yield return it</span>
 <span class="keyword">while</span> (dr.Read())
-	yield <span class="keyword">return</span> invokeMapEntity(dr);
+	<span class="keyword">yield</span> <span class="keyword">return</span> invokeMapEntity(dr);
 </pre></figure>
 
 <p>And of course, here’s the final method/class. Remember that this is more a proof of concept than a complete class. It ought to handle all necessary types. Also, it might be relevant to consider whether one should map public as well as private properties. Whether it should handle type validation errors, missing columns or not, I’m not sure. As it is now, it’ll throw a normal ArgumentOutOfRangeException in cases of missing columns, and relevant type conversion errors - all those can be handled by the callee using try/catch blocks.</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 <span class="keyword">using</span> System.Collections.Generic;
 <span class="keyword">using</span> System.Data.Common;
 <span class="keyword">using</span> System.Reflection;
@@ -1179,7 +1179,7 @@ namespace Improve.Framework.Data
 <p>But it comes at a cost. Performance.</p>
 <p>I set out to test various different ways we could query our database and generate a strongly typed List with the results in it. I’m using the <a href="http://codeplex.com/SqlServerSamples" target="_blank">standard AdventureWorks 2005 database</a> for my testing. For the actual profiling, I’ll be using <a href="/profiling-code-the-easy-way/">my CodeProfiler class</a> from a previous blogpost.</p>
 <p>I’ll be using two different entities, Product and CompleteProduct:</p>
-<figure class="highlight csharp"><pre>[Table(Name = <span class="string">"Production.Product"</span>)]
+<figure class="highlight cs"><pre>[Table(Name = <span class="string">"Production.Product"</span>)]
 <span class="keyword">public</span> <span class="keyword">class</span> Product
 {
 	[Column]
@@ -1256,22 +1256,22 @@ namespace Improve.Framework.Data
 
 <p>They both map to the same table, Production.Product. CompleteProduct covers all columns, Product just covers the ones I’m interested in.</p>
 <h2 id="Method_#1_-_Manually_mapping_from_DataReader">Method #1 - Manually mapping from DataReader</h2>
-<figure class="highlight csharp"><pre>private static void performDataReader()
+<figure class="highlight cs"><pre><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">performDataReader</span>()
 {
-	var result = new List&lt;Product&gt;();
+	<span class="keyword">var</span> result = <span class="keyword">new</span> List&lt;Product&gt;();
 
-	using (SqlConnection conn = new SqlConnection(CONNECTION_STRING))
+	<span class="keyword">using</span> (SqlConnection conn = <span class="keyword">new</span> SqlConnection(CONNECTION_STRING))
 	{
-		using (SqlCommand cmd = conn.CreateCommand())
+		<span class="keyword">using</span> (SqlCommand cmd = conn.CreateCommand())
 		{
 			cmd.CommandText = COMMAND_TEXT;
 
 			conn.Open();
-			using (SqlDataReader sqldr = cmd.ExecuteReader())
+			<span class="keyword">using</span> (SqlDataReader sqldr = cmd.ExecuteReader())
 			{
-				while (sqldr.Read())
+				<span class="keyword">while</span> (sqldr.Read())
 				{
-					Product p = new Product();
+					Product p = <span class="keyword">new</span> Product();
 					p.ProductID = Convert.ToInt32(sqldr[<span class="string">"ProductID"</span>]);
 					p.Name = sqldr[<span class="string">"Name"</span>].ToString();
 					p.ProductNumber = sqldr[<span class="string">"ProductNumber"</span>].ToString();
@@ -1291,31 +1291,31 @@ namespace Improve.Framework.Data
 <p>Pros: <em>Fast</em></p>
 <p>Cons: <em>Has to be written for each object model</em></p>
 <h2 id="Method_#2_-_Manully_mapping_from_DataTable">Method #2 - Manully mapping from DataTable</h2>
-<figure class="highlight csharp"><pre>private static DataTable getDT()
+<figure class="highlight cs"><pre><span class="keyword">private</span> <span class="keyword">static</span> DataTable <span class="title">getDT</span>()
 {
-	DataTable result = new DataTable();
+	DataTable result = <span class="keyword">new</span> DataTable();
 
-	using (SqlConnection conn = new SqlConnection(CONNECTION_STRING))
+	<span class="keyword">using</span> (SqlConnection conn = <span class="keyword">new</span> SqlConnection(CONNECTION_STRING))
 	{
-		using (SqlCommand cmd = conn.CreateCommand())
+		<span class="keyword">using</span> (SqlCommand cmd = conn.CreateCommand())
 		{
 			cmd.CommandText = COMMAND_TEXT;
 
-			using (SqlDataAdapter sqlda = new SqlDataAdapter(cmd))
+			<span class="keyword">using</span> (SqlDataAdapter sqlda = <span class="keyword">new</span> SqlDataAdapter(cmd))
 				sqlda.Fill(result);
 		}
 	}
 
-	return result;
+	<span class="keyword">return</span> result;
 }
 
-private static void performDataTable()
+<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">performDataTable</span>()
 {
-	var result = new List&lt;Product&gt;();
+	<span class="keyword">var</span> result = <span class="keyword">new</span> List&lt;Product&gt;();
 
-	foreach (DataRow dr in getDT().Rows)
+	<span class="keyword">foreach</span> (DataRow dr <span class="keyword">in</span> getDT().Rows)
 	{
-		Product p = new Product();
+		Product p = <span class="keyword">new</span> Product();
 		p.ProductID = Convert.ToInt32(dr[<span class="string">"ProductID"</span>]);
 		p.Name = dr[<span class="string">"Name"</span>].ToString();
 		p.ProductNumber = dr[<span class="string">"ProductNumber"</span>].ToString();
@@ -1333,20 +1333,20 @@ private static void performDataTable()
 <p>Cons: <em>Has to be written for each object model</em></p>
 <p>Comment: <em>I often use a getDT()’ish way of accessing my tables. It’s easier than using DataReaders as they’re disconnected, you can traverse them back and forth multiple times.</em></p>
 <h2 id="Method_#3_-_Automatic_mapping_using_DataContext-Translate">Method #3 - Automatic mapping using DataContext.Translate</h2>
-<figure class="highlight csharp"><pre>private static void performEntityQuery()
+<figure class="highlight cs"><pre><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">performEntityQuery</span>()
 {
 	List&lt;Product&gt; result;
 
-	using (SqlConnection conn = new SqlConnection(CONNECTION_STRING))
+	<span class="keyword">using</span> (SqlConnection conn = <span class="keyword">new</span> SqlConnection(CONNECTION_STRING))
 	{
-		using (DataContext dc = new DataContext(conn))
+		<span class="keyword">using</span> (DataContext dc = <span class="keyword">new</span> DataContext(conn))
 		{
-			using (SqlCommand cmd = conn.CreateCommand())
+			<span class="keyword">using</span> (SqlCommand cmd = conn.CreateCommand())
 			{
 				cmd.CommandText = COMMAND_TEXT;
 
 				conn.Open();
-				using(SqlDataReader sqldr = cmd.ExecuteReader())
+				<span class="keyword">using</span>(SqlDataReader sqldr = cmd.ExecuteReader())
 				{
 					result = dc.Translate&lt;Product&gt;(sqldr).ToList();
 				}
@@ -1359,7 +1359,7 @@ private static void performDataTable()
 <p>Pros: <em>Works for all object models, easy to use</em></p>
 <p>Cons: <em>Slow</em></p>
 <h2 id="Method_#4_-_Linq_to_SQL_query_for_complete_entity">Method #4 - Linq to SQL query for complete entity</h2>
-<figure class="highlight csharp"><pre><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">performLinqQuery</span>()
+<figure class="highlight cs"><pre><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">performLinqQuery</span>()
 {
 	List&lt;Product&gt; result;
 
@@ -1373,20 +1373,20 @@ private static void performDataTable()
 <p>Pros: <em>Could it be easier? Works for all object models</em></p>
 <p>Cons: <em>Slow</em></p>
 <h2 id="Method_#5_-_Linq_to_SQL_query_for_partial_entity">Method #5 - Linq to SQL query for partial entity</h2>
-<figure class="highlight csharp"><pre>private static void performSubsetLinqQuery()
+<figure class="highlight cs"><pre><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">performSubsetLinqQuery</span>()
 {
-	List&lt;Product&gt; result<span class="comment">;</span>
+	List&lt;Product&gt; result;
 
-	using (DataContext dc = new DataContext(CONNECTION_STRING))
+	<span class="keyword">using</span> (DataContext dc = <span class="keyword">new</span> DataContext(CONNECTION_STRING))
 	{
-		result = dc<span class="preprocessor">.GetTable</span>&lt;CompleteProduct&gt;()<span class="preprocessor">.OrderBy</span>(p =&gt; p<span class="preprocessor">.ProductID</span>)<span class="preprocessor">.Take</span>(rowcount)<span class="preprocessor">.Select</span>(p =&gt; new Product() {
-			ListPrice = p<span class="preprocessor">.ListPrice</span>,
-			ProductID = p<span class="preprocessor">.ProductID</span>,
-			MakeFlag = p<span class="preprocessor">.MakeFlag</span>,
-			Name = p<span class="preprocessor">.Name</span>,
-			ProductNumber = p<span class="preprocessor">.ProductNumber</span>,
-			SafetyStockLevel = p<span class="preprocessor">.SafetyStockLevel</span>,
-			SellStartDate = p<span class="preprocessor">.SellStartDate</span> })<span class="preprocessor">.ToList</span>()<span class="comment">;</span>
+		result = dc.GetTable&lt;CompleteProduct&gt;().OrderBy(p =&gt; p.ProductID).Take(rowcount).Select(p =&gt; <span class="keyword">new</span> Product() {
+			ListPrice = p.ListPrice,
+			ProductID = p.ProductID,
+			MakeFlag = p.MakeFlag,
+			Name = p.Name,
+			ProductNumber = p.ProductNumber,
+			SafetyStockLevel = p.SafetyStockLevel,
+			SellStartDate = p.SellStartDate }).ToList();
 	}
 }
 </pre></figure>
@@ -1395,36 +1395,36 @@ private static void performDataTable()
 <p>Cons: <em>Slow</em></p>
 <p>Comments: <em>In the previous method I retrieved complete Product entities. This time I’m retrieving only some columns of the CompleteProduct entity, mapping them over into a new Product. I’ve included this to see if there’s any performance difference in comparison to loading complete entities.</em></p>
 <h2 id="Method_#6_-_Automatically_mapping_from_DataReader">Method #6 - Automatically mapping from DataReader</h2>
-<figure class="highlight csharp"><pre>private static List&lt;T&gt; mapList&lt;T&gt;(SqlDataReader dr)
+<figure class="highlight cs"><pre><span class="keyword">private</span> <span class="keyword">static</span> List&lt;T&gt; mapList&lt;T&gt;(SqlDataReader dr)
 {
-	List&lt;T&gt; list = new List&lt;T&gt;();
+	List&lt;T&gt; list = <span class="keyword">new</span> List&lt;T&gt;();
 
-	PropertyInfo[] properties = typeof(T).GetProperties();
+	PropertyInfo[] properties = <span class="keyword">typeof</span>(T).GetProperties();
 	T t = Activator.CreateInstance&lt;T&gt;();
 
-	while(dr.Read())
+	<span class="keyword">while</span>(dr.Read())
 	{
-		foreach (PropertyInfo pi in properties)
-			pi.SetValue(t, dr[pi.Name], null);
+		<span class="keyword">foreach</span> (PropertyInfo pi <span class="keyword">in</span> properties)
+			pi.SetValue(t, dr[pi.Name], <span class="keyword">null</span>);
 
 		list.Add(t);
 	}
 
-	return list;
+	<span class="keyword">return</span> list;
 }
 
-private static void performAutomappedDataReader()
+<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">performAutomappedDataReader</span>()
 {
 	List&lt;Product&gt; result;
 
-	using (SqlConnection conn = new SqlConnection(CONNECTION_STRING))
+	<span class="keyword">using</span> (SqlConnection conn = <span class="keyword">new</span> SqlConnection(CONNECTION_STRING))
 	{
-		using (SqlCommand cmd = conn.CreateCommand())
+		<span class="keyword">using</span> (SqlCommand cmd = conn.CreateCommand())
 		{
 			cmd.CommandText = COMMAND_TEXT;
 
 			conn.Open();
-			using (SqlDataReader sqldr = cmd.ExecuteReader())
+			<span class="keyword">using</span> (SqlDataReader sqldr = cmd.ExecuteReader())
 			{
 				result = mapList&lt;Product&gt;(sqldr);
 			}
@@ -1436,18 +1436,18 @@ private static void performAutomappedDataReader()
 <p>Pros: <em>Simple to use, works for all object models</em></p>
 <p>Cons: <em>Slow, reflection based</em></p>
 <h2 id="Method_#7_-_Enhanced_automatic_mapping_from_DataReader">Method #7 - Enhanced automatic mapping from DataReader</h2>
-<figure class="highlight csharp"><pre>private static void performEnhancedAutomappedDataReader()
+<figure class="highlight cs"><pre><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">performEnhancedAutomappedDataReader</span>()
 {
 	List&lt;Product&gt; result;
 
-	using (SqlConnection conn = new SqlConnection(CONNECTION_STRING))
+	<span class="keyword">using</span> (SqlConnection conn = <span class="keyword">new</span> SqlConnection(CONNECTION_STRING))
 	{
-		using (SqlCommand cmd = conn.CreateCommand())
+		<span class="keyword">using</span> (SqlCommand cmd = conn.CreateCommand())
 		{
 			cmd.CommandText = COMMAND_TEXT;
 
 			conn.Open();
-			using (SqlDataReader sqldr = cmd.ExecuteReader())
+			<span class="keyword">using</span> (SqlDataReader sqldr = cmd.ExecuteReader())
 			{
 				result = EntityMapper.MapToEntities&lt;Product&gt;(sqldr).ToList();
 			}
@@ -1460,23 +1460,23 @@ private static void performAutomappedDataReader()
 <p>Cons: <em>???</em></p>
 <p>Comments: <em>This is an enhanced version of the previous method that I’ve made. Explaining the inner workings is outside the scope of this particular topic so I’ll have to explain it in my next post. For now, just imagine something very cool and sexy. UPDATE: <a href="/mapping-datareader-to-objects-using-reflection-emit/">you can read about the method here</a>.</em></p>
 <h2 id="Method_#8_-_SubSonic_SqlQuery">Method #8 - SubSonic SqlQuery</h2>
-<figure class="highlight csharp"><pre>private static void performSubSonicQuery()
+<figure class="highlight cs"><pre><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">performSubSonicQuery</span>()
 {
 	List&lt;Product&gt; result =
-		new Select
+		<span class="keyword">new</span> Select
 			(
-				Subsonic<span class="preprocessor">.Product</span><span class="preprocessor">.ProductIDColumn</span><span class="preprocessor">.QualifiedName</span>,
-				Subsonic<span class="preprocessor">.Product</span><span class="preprocessor">.NameColumn</span><span class="preprocessor">.QualifiedName</span>,
-				Subsonic<span class="preprocessor">.Product</span><span class="preprocessor">.ProductNumberColumn</span><span class="preprocessor">.QualifiedName</span>,
-				Subsonic<span class="preprocessor">.Product</span><span class="preprocessor">.MakeFlagColumn</span><span class="preprocessor">.QualifiedName</span>,
-				Subsonic<span class="preprocessor">.Product</span><span class="preprocessor">.SafetyStockLevelColumn</span><span class="preprocessor">.QualifiedName</span>,
-				Subsonic<span class="preprocessor">.Product</span><span class="preprocessor">.ListPriceColumn</span><span class="preprocessor">.QualifiedName</span>,
-				Subsonic<span class="preprocessor">.Product</span><span class="preprocessor">.SellStartDateColumn</span><span class="preprocessor">.QualifiedName</span>
+				Subsonic.Product.ProductIDColumn.QualifiedName,
+				Subsonic.Product.NameColumn.QualifiedName,
+				Subsonic.Product.ProductNumberColumn.QualifiedName,
+				Subsonic.Product.MakeFlagColumn.QualifiedName,
+				Subsonic.Product.SafetyStockLevelColumn.QualifiedName,
+				Subsonic.Product.ListPriceColumn.QualifiedName,
+				Subsonic.Product.SellStartDateColumn.QualifiedName
 			)
-			<span class="preprocessor">.Top</span>(rowcount<span class="preprocessor">.ToString</span>())
-			<span class="preprocessor">.From</span>(Subsonic<span class="preprocessor">.Product</span><span class="preprocessor">.Schema</span>)
-			<span class="preprocessor">.OrderAsc</span>(Subsonic<span class="preprocessor">.Product</span><span class="preprocessor">.ProductIDColumn</span><span class="preprocessor">.QualifiedName</span>)
-			<span class="preprocessor">.ExecuteTypedList</span>&lt;Product&gt;()<span class="comment">;</span>
+			.Top(rowcount.ToString())
+			.From(Subsonic.Product.Schema)
+			.OrderAsc(Subsonic.Product.ProductIDColumn.QualifiedName)
+			.ExecuteTypedList&lt;Product&gt;();
 }
 </pre></figure>
 
@@ -1484,7 +1484,7 @@ private static void performAutomappedDataReader()
 <p>Cons: <em>Slow</em></p>
 <p>Comments: <em>I’ve never used SubSonic before, so I may have overlooked some obvious performance enhancements, thus, take my numbers with a grain of salt.</em></p>
 <h2 id="Method_#9_-_NHibernate_CreateCriteria">Method #9 - NHibernate CreateCriteria</h2>
-<figure class="highlight csharp"><pre><span class="keyword">private</span> <span class="keyword">static</span> Configuration nhCfg;
+<figure class="highlight cs"><pre><span class="keyword">private</span> <span class="keyword">static</span> Configuration nhCfg;
 <span class="keyword">private</span> <span class="keyword">static</span> ISessionFactory nhFactory;
 
 <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">performNHibernateQuery</span>()
@@ -1502,7 +1502,7 @@ private static void performAutomappedDataReader()
 <p>Cons: <em>Slow</em></p>
 <p>Comments: <em>I’ve never used NHibernate before, so I may have overlooked some obvious performance enhancements, thus, take my numbers with a grain of salt.</em></p>
 <h2 id="Method_#10_-_Compiled_LinqQuery">Method #10 - Compiled LinqQuery</h2>
-<figure class="highlight csharp"><pre><span class="keyword">private</span> <span class="keyword">static</span> Func&lt;DataContext, <span class="keyword">int</span>, IEnumerable&lt;Product&gt;&gt; compiledQuery;
+<figure class="highlight cs"><pre><span class="keyword">private</span> <span class="keyword">static</span> Func&lt;DataContext, <span class="keyword">int</span>, IEnumerable&lt;Product&gt;&gt; compiledQuery;
 <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">performCompiledLinqQuery</span>()
 {
 	List&lt;Product&gt; result;
@@ -1518,45 +1518,45 @@ private static void performAutomappedDataReader()
 <p>Cons: <em>Requires a bit more setting up and helper functionality to store the compiled queries</em></p>
 <h2 id="The_profiling">The profiling</h2>
 <p>I profiled each of the test cases by returning 1, 10, 100, 1.000, 10.000 and 100.000 rows. The numbers are the total execution time of 50 iterations of each method. I’m on a quad core machine so I set the max parallelization degree to three, thus saving myself a core for running SQL Server and Windows.</p>
-<figure class="highlight csharp"><pre>static <span class="reserved">void</span> Main(string[] args)
+<figure class="highlight cs"><pre><span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
 {
-	<span class="regexp">//</span> Make sure we don<span class="string">'t get disturbed by other processes
+	<span class="comment">// Make sure we don't get disturbed by other processes</span>
 	Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.High;
 
-	// We'</span>ll <span class="reserved">let</span> NHibernate cache it<span class="string">'s Configuration and SessionFactory as we'</span>d probably <span class="keyword">do</span> <span class="keyword">this</span> <span class="keyword">in</span> most live applications
+	<span class="comment">// We'll let NHibernate cache it's Configuration and SessionFactory as we'd probably do this in most live applications</span>
 	nhCfg = <span class="keyword">new</span> Configuration();
 	nhCfg.AddAssembly(Assembly.GetExecutingAssembly());
 	nhFactory = nhCfg.BuildSessionFactory();
 
-	foreach(int rc <span class="keyword">in</span> <span class="keyword">new</span> int[] { <span class="number">1</span>, <span class="number">10</span>, <span class="number">100</span>, <span class="number">1000</span>, <span class="number">10000</span>, <span class="number">100000</span> })<span class="regexp">//</span>, <span class="number">100</span>, <span class="number">1000</span>, <span class="number">10000</span>, <span class="number">100000</span> })
+	<span class="keyword">foreach</span>(<span class="keyword">int</span> rc <span class="keyword">in</span> <span class="keyword">new</span> <span class="keyword">int</span>[] { <span class="number">1</span>, <span class="number">10</span>, <span class="number">100</span>, <span class="number">1000</span>, <span class="number">10000</span>, <span class="number">100000</span> })<span class="comment">//, 100, 1000, 10000, 100000 })</span>
 	{
 		Console.WriteLine(<span class="string">"Rowcount: "</span> + rc);
 		rowcount = rc;
 
-		<span class="regexp">//</span> Set the rowcount
+		<span class="comment">// Set the rowcount</span>
 		COMMAND_TEXT = ORIGINAL_COMMAND_TEXT.Replace(<span class="string">"{rowcount}"</span>, rowcount.ToString());
 
-		<span class="regexp">//</span> Make sure the enhanced automapped datareader does <span class="keyword">not</span> use cached resources from previous run
+		<span class="comment">// Make sure the enhanced automapped datareader does not use cached resources from previous run</span>
 		EntityMapper.ClearCachedMapperMethods();
 
-		<span class="regexp">//</span> Compile the query <span class="keyword">for</span> the compiled linq query test
-		compiledQuery = CompiledQuery.Compile&lt;DataContext, int, IEnumerable&lt;Product&gt;&gt;<span class="function"><span class="params">((DataContext dc, int takeCount) =&gt; dc.GetTable&lt;Product&gt;().OrderBy(p =&gt; p.ProductID).Take(takeCount))</span>;
+		<span class="comment">// Compile the query for the compiled linq query test</span>
+		compiledQuery = CompiledQuery.Compile&lt;DataContext, <span class="keyword">int</span>, IEnumerable&lt;Product&gt;&gt;((DataContext dc, <span class="keyword">int</span> takeCount) =&gt; dc.GetTable&lt;Product&gt;().OrderBy(p =&gt; p.ProductID).Take(takeCount));
 
-		<span class="title">Console</span>.<span class="title">WriteLine</span><span class="params">(<span class="string">"performDataReader: "</span> + CodeProfiler.ProfileAction(performDataReader, iterations, <span class="number">3</span>))</span>;
-		<span class="title">Console</span>.<span class="title">WriteLine</span><span class="params">(<span class="string">"performDataTable: "</span> + CodeProfiler.ProfileAction(performDataTable, iterations, <span class="number">3</span>))</span>;
-		<span class="title">Console</span>.<span class="title">WriteLine</span><span class="params">(<span class="string">"performEntityQuery: "</span> + CodeProfiler.ProfileAction(performEntityQuery, iterations, <span class="number">3</span>))</span>;
-		<span class="title">Console</span>.<span class="title">WriteLine</span><span class="params">(<span class="string">"performLinqQuery: "</span> + CodeProfiler.ProfileAction(performLinqQuery, iterations, <span class="number">3</span>))</span>;
-		<span class="title">Console</span>.<span class="title">WriteLine</span><span class="params">(<span class="string">"performCompiledLinqQuery: "</span> + CodeProfiler.ProfileAction(performCompiledLinqQuery, iterations, <span class="number">3</span>))</span>;
-		<span class="title">Console</span>.<span class="title">WriteLine</span><span class="params">(<span class="string">"performSubsetLinqQuery: "</span> + CodeProfiler.ProfileAction(performSubsetLinqQuery, iterations, <span class="number">3</span>))</span>;
-		<span class="title">Console</span>.<span class="title">WriteLine</span><span class="params">(<span class="string">"performAutomappedDataReader: "</span> + CodeProfiler.ProfileAction(performAutomappedDataReader, iterations, <span class="number">3</span>))</span>;
-		<span class="title">Console</span>.<span class="title">WriteLine</span><span class="params">(<span class="string">"performEnhancedAutomappedDataReader: "</span> + CodeProfiler.ProfileAction(performEnhancedAutomappedDataReader, iterations, <span class="number">3</span>))</span>;
-		<span class="title">Console</span>.<span class="title">WriteLine</span><span class="params">(<span class="string">"performSubSonicQuery: "</span> + CodeProfiler.ProfileAction(performSubSonicQuery, iterations, <span class="number">3</span>))</span>;
-		<span class="title">Console</span>.<span class="title">WriteLine</span><span class="params">(<span class="string">"performNHibernateQuery: "</span> + CodeProfiler.ProfileAction(performNHibernateQuery, iterations, <span class="number">3</span>))</span>;
+		Console.WriteLine(<span class="string">"performDataReader: "</span> + CodeProfiler.ProfileAction(performDataReader, iterations, <span class="number">3</span>));
+		Console.WriteLine(<span class="string">"performDataTable: "</span> + CodeProfiler.ProfileAction(performDataTable, iterations, <span class="number">3</span>));
+		Console.WriteLine(<span class="string">"performEntityQuery: "</span> + CodeProfiler.ProfileAction(performEntityQuery, iterations, <span class="number">3</span>));
+		Console.WriteLine(<span class="string">"performLinqQuery: "</span> + CodeProfiler.ProfileAction(performLinqQuery, iterations, <span class="number">3</span>));
+		Console.WriteLine(<span class="string">"performCompiledLinqQuery: "</span> + CodeProfiler.ProfileAction(performCompiledLinqQuery, iterations, <span class="number">3</span>));
+		Console.WriteLine(<span class="string">"performSubsetLinqQuery: "</span> + CodeProfiler.ProfileAction(performSubsetLinqQuery, iterations, <span class="number">3</span>));
+		Console.WriteLine(<span class="string">"performAutomappedDataReader: "</span> + CodeProfiler.ProfileAction(performAutomappedDataReader, iterations, <span class="number">3</span>));
+		Console.WriteLine(<span class="string">"performEnhancedAutomappedDataReader: "</span> + CodeProfiler.ProfileAction(performEnhancedAutomappedDataReader, iterations, <span class="number">3</span>));
+		Console.WriteLine(<span class="string">"performSubSonicQuery: "</span> + CodeProfiler.ProfileAction(performSubSonicQuery, iterations, <span class="number">3</span>));
+		Console.WriteLine(<span class="string">"performNHibernateQuery: "</span> + CodeProfiler.ProfileAction(performNHibernateQuery, iterations, <span class="number">3</span>));
 	}
 
-	<span class="title">Console</span>.<span class="title">Write</span><span class="params">(<span class="string">"Done"</span>)</span>;
-	<span class="title">Console</span>.<span class="title">Read</span><span class="params">()</span>;
-}</span>
+	Console.Write(<span class="string">"Done"</span>);
+	Console.Read();
+}
 </pre></figure>
 
 <h2 id="The_results">The results</h2>
@@ -1625,7 +1625,7 @@ private static void performAutomappedDataReader()
 <a id="more"></a>
 
 <p>There are just four functions in the class, all overload variations. In a nutshell, they’ll allow you to profile a single action with &amp; without warmup, multiple iterations and multiple iterations run i parallel. The code is more or less self explanable so I’ll just throw it out there:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 <span class="keyword">using</span> System.Collections.Generic;
 <span class="keyword">using</span> System.Diagnostics;
 <span class="keyword">using</span> System.Threading;
@@ -1736,22 +1736,22 @@ namespace CodeProfiler
 </pre></figure>
 
 <p>Using the CodeProfiler class, it’s easy for us to do code profiling, including measuring the effects of parallelization. Here’s an example of calculating the square root of the numbers 1 through 10 million 100 times, using 1-16 simultaneous threads. FYI I’m runing on a quad core machine.</p>
-<figure class="highlight csharp"><pre>using System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 
 namespace CodeProfiler
 {
 	class Program
 	{
-		static void Main(string[] args)
+		<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
 		{
 			Action action = () =&gt;
 			{
-				for (int i = 0; i &lt; 10000000; i++)
+				<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10000000</span>; i++)
 					Math.Sqrt(i);
 			};
 
-			for(int i=1; i&lt;=16; i++)
-				Console.WriteLine(i + <span class="string">" thread(s):t"</span> + CodeProfiler.ProfileAction(action, 100, i));
+			<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">1</span>; i&lt;=<span class="number">16</span>; i++)
+				Console.WriteLine(i + <span class="string">" thread(s):t"</span> + CodeProfiler.ProfileAction(action, <span class="number">100</span>, i));
 
 			Console.Read();
 		}

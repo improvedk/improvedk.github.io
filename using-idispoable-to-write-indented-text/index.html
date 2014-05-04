@@ -113,19 +113,19 @@
 <a id="more"></a>
 
 
-<figure class="highlight csharp"><pre>StringBuilder sb = new StringBuilder()<span class="comment">;</span>
-sb<span class="preprocessor">.AppendLine</span>(<span class="string">"public static void Hello()"</span>)<span class="comment">;</span>
-sb<span class="preprocessor">.AppendLine</span>(<span class="string">"{"</span>)<span class="comment">;</span>
-sb<span class="preprocessor">.AppendLine</span>(<span class="string">"\tif(true)"</span>)<span class="comment">;</span>
-sb<span class="preprocessor">.AppendLine</span>(<span class="string">"\t\tConsole.WriteLine("</span>World!<span class="string">");"</span>)<span class="comment">;</span>
-sb<span class="preprocessor">.AppendLine</span>(<span class="string">"}"</span>)<span class="comment">;</span>
+<figure class="highlight cs"><pre>StringBuilder sb = <span class="keyword">new</span> StringBuilder();
+sb.AppendLine(<span class="string">"public static void Hello()"</span>);
+sb.AppendLine(<span class="string">"{"</span>);
+sb.AppendLine(<span class="string">"\tif(true)"</span>);
+sb.AppendLine(<span class="string">"\t\tConsole.WriteLine("</span>World!<span class="string">");"</span>);
+sb.AppendLine(<span class="string">"}"</span>);
 
-Console<span class="preprocessor">.Write</span>(sb<span class="preprocessor">.ToString</span>())<span class="comment">;</span>
-Console<span class="preprocessor">.Read</span>()<span class="comment">;</span>
+Console.Write(sb.ToString());
+Console.Read();
 </pre></figure>
 
 <p>This ought to result in the following snippet:</p>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">Hello</span>()
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">Hello</span>()
 {
 	<span class="keyword">if</span>(<span class="keyword">true</span>)
 		Console.WriteLine(<span class="string">"World!"</span>);
@@ -134,16 +134,16 @@ Console<span class="preprocessor">.Read</span>()<span class="comment">;</span>
 
 <p>Pretty simple code, but it’s a bit hard for the eyes, especially if there’s a lot of it.</p>
 <p>By utilizing the IDisposable interface, we can create a StringBuilder-esque class that handles the indentation for us. Here’s an example of how we might write the previous snippet using the IndentedStringBuilder (note that it’s not really a StringBuilder since StringBuilder’s a sealed class):</p>
-<figure class="highlight csharp"><pre>using (IndentedStringBuilder sb = new IndentedStringBuilder())
+<figure class="highlight cs"><pre><span class="keyword">using</span> (IndentedStringBuilder sb = <span class="keyword">new</span> IndentedStringBuilder())
 {
 	sb.AppendLine(<span class="string">"public static void Hello()"</span>);
 	sb.AppendLine(<span class="string">"{"</span>);
 
-	using (sb.IncreaseIndent())
+	<span class="keyword">using</span> (sb.IncreaseIndent())
 	{
 		sb.AppendLine(<span class="string">"if(true)"</span>);
 
-		using (sb.IncreaseIndent())
+		<span class="keyword">using</span> (sb.IncreaseIndent())
 			sb.AppendLine(<span class="string">"Console.WriteLine("</span>World!<span class="string">");"</span>);
 	}
 
@@ -156,7 +156,7 @@ Console<span class="preprocessor">.Read</span>()<span class="comment">;</span>
 
 <p>Each time Dispose() is called on the instance, the indentation level is decreased. Calling IncreaseIndent() increases the indentation level, as well as returning a reference to the IndentedStringBuilder instance itself. The using construct will make sure Dispose is called on the reference each time we exit the using block - and calling Dispose does not do anything to the object other than calling the Dispose method - which’ll decrease the indentation level.</p>
 <p>Here’s the IndentedStringBuilder class:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 <span class="keyword">using</span> System.Text;
 
 namespace Improve.Framework.Text

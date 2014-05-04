@@ -117,7 +117,7 @@
 
 <p>While there is an overhead of exceptions being thrown, they’re not directly dangerous and will at worst affect scalability (ignoring the actual reason of the exception being thrown). The problem is that ASP.NET will <em>only catch exceptions on the processing thread</em>. That means, if you spawn a new thread and an exception is thrown (and is not caught inside the thread itself), it will propagate and eventually <em>crash the w3wp.exe process</em>.</p>
 <h3 id="Safe">Safe</h3>
-<figure class="highlight csharp"><pre><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">Page_Load</span>(<span class="keyword">object</span> sender, EventArgs e)
+<figure class="highlight cs"><pre><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">Page_Load</span>(<span class="keyword">object</span> sender, EventArgs e)
 {
 	Response.Write(<span class="string">"CAN HAZ W3WP.EXE?"</span>);
 
@@ -126,7 +126,7 @@
 </pre></figure>
 
 <h3 id="Unsafe,_will_crash_w3wp-exe">Unsafe, will crash w3wp.exe</h3>
-<figure class="highlight csharp"><pre><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">Page_Load</span>(<span class="keyword">object</span> sender, EventArgs e)
+<figure class="highlight cs"><pre><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">Page_Load</span>(<span class="keyword">object</span> sender, EventArgs e)
 {
 	Response.Write(<span class="string">"CAN HAZ W3WP.EXE?"</span>);
 
@@ -139,17 +139,17 @@
 
 <p>There are several repercussions of the w3wp.exe crashing. There’s a major overhead in spawning a new w3wp.exe process on the next request, you will loose all session (if you’re using inprocess session storage), application and cache state. If you have error reporting turned on, you furthermore also see the “DW20.exe” process running and taking up 100% CPU for a significant amount of time (depending on w3wp.exe memory usage, etc) - if this happens often, you might have a large amount of DW20.exe error reporting processes running, effectively crashing your server.</p>
 <p>So how do we avoid this? Simple, make sure <em>all code</em> in spawned threads is handling exceptions:</p>
-<figure class="highlight csharp"><pre>protected void Page_Load(object sender, EventArgs e)
+<figure class="highlight cs"><pre><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">Page_Load</span>(<span class="keyword">object</span> sender, EventArgs e)
 {
 	Response.Write(<span class="string">"CAN HAZ W3WP.EXE?"</span>);
 
-	new Thread(delegate()
+	<span class="keyword">new</span> Thread(<span class="keyword">delegate</span>()
 	{
-		try
+		<span class="keyword">try</span>
 		{
-			throw new Exception(<span class="string">"I'll be caught by our own exception handler :)"</span>);
+			<span class="keyword">throw</span> <span class="keyword">new</span> Exception(<span class="string">"I'll be caught by our own exception handler :)"</span>);
 		}
-		catch
+		<span class="keyword">catch</span>
 		{
 			Response.Write(<span class="string">"What doesn't kill me will make me stronger!"</span>);
 		}

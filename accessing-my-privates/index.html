@@ -113,7 +113,7 @@
 <a id="more"></a>
 
 
-<figure class="highlight csharp"><pre>[Serializable]
+<figure class="highlight cs"><pre>[Serializable]
 <span class="keyword">public</span> <span class="keyword">class</span> Domain
 {
 	<span class="comment">// Read</span>
@@ -130,7 +130,7 @@
 
 <p>Take this simple object as an example. It represents a website domain, it has an ID from the database aswell as a read only domain name and a belonging CompanyID.</p>
 <p>Now, I want to create a Load() function that given a domain ID will instantiate a new instance of a Domain object and populate its values from the database. Now, as the DomainID and DomainName variables are private, I’ll have to make a constructor method to pass in those values, right? It seems not, if my Load method is a static method of the Domain class itself:</p>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">static</span> Domain <span class="title">Load</span>(<span class="keyword">int</span> domainID)
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">static</span> Domain <span class="title">Load</span>(<span class="keyword">int</span> domainID)
 {
 	SqlCommand cmd = <span class="keyword">new</span> SqlCommand(<span class="string">"SELECT Domain, CompanyID FROM tblDomains WHERE DomainID = @DomainID"</span>);
 	cmd.Parameters.Add(<span class="string">"@DomainID"</span>, SqlDbType.Int).Value = domainID;

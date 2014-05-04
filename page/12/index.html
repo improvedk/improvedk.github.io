@@ -261,11 +261,11 @@
 <a id="more"></a>
 
 <p>When users need to upload files I often use the Flash based <a href="http://swfupload.org/" target="_blank">SWFUpload</a> component. It allows for multiple file selection and progress display during upload. Handling the uploaded files on the .NET side is rather easy:</p>
-<figure class="highlight csharp"><pre><span class="keyword">for</span> (int i = <span class="number">0</span>; i &lt; Request.Files.Count; i++)
+<figure class="highlight cs"><pre><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; Request.Files.Count; i++)
 {
     HttpPostedFile hpf = Request.Files[i];
 
-    // <span class="keyword">...</span> Save / process the HttpPostedFile
+    <span class="comment">// ... Save / process the HttpPostedFile</span>
 }
 </pre></figure>
 
@@ -273,22 +273,22 @@
 <p>There’s a bug in all current Flash players that causes the Flash player to send persistent cookies from Internet Explorer, no matter what browser you’re currently using. That is, if you’ve visited a given website in IE previously and you’re nor visiting it in Chrome/Firefox - yup, your IE cookies will be sent to the website instead of the Firefox/Chrome cookies! There’s a good <a href="http://swfupload.org/forum/generaldiscussion/383" target="_blank">description and discussion</a> at the SWFUpload site.</p>
 <p>This bug poses a number of problems if you’re using SWFUpload on a password protected site that relies on <a href="http://support.microsoft.com/kb/910443" target="_blank">cookie based forms authentication</a>. Whenever the file is uploaded, the users will appear to not be logged in. This is because the forms authentication ticket is stored in a cookie (which is correctly stored by Firefox/Chrome), but whenever the request is made IE’s cookies are sent and those do not contain a valid forms authentication ticket cookie.</p>
 <p>Luckily there’s a workaround for this. Basically we’ll need to tell our upload SWF the current SessionID as well as the contents of the forms authentication ticket cookie:</p>
-<figure class="highlight csharp"><pre>var flashVars = {
-    ASPSESSID: "<span class="vbscript">&lt;%= Session.SessionID %&gt;</span>",
-    AUTHID: "<span class="vbscript">&lt;%= <span class="built_in">Request</span>.Cookies[FormsAuthentication.FormsCookieName] == <span class="literal">null</span> ? <span class="string">""</span> : <span class="built_in">Request</span>.Cookies[FormsAuthentication.FormsCookieName].Value %&gt;</span>"
+<figure class="highlight cs"><pre><span class="keyword">var</span> flashVars = {
+    ASPSESSID: <span class="string">"&lt;%= Session.SessionID %&gt;"</span>,
+    AUTHID: <span class="string">"&lt;%= Request.Cookies[FormsAuthentication.FormsCookieName] == null ? "</span><span class="string">" : Request.Cookies[FormsAuthentication.FormsCookieName].Value %&gt;"</span>
 }
 </pre></figure>
 
 <p>Now we need to modify our SWFUpload code so it sends the SessionID and ticket values in the query string to the upload file, so instead of calling:</p>
-<figure class="highlight csharp"><pre>UploadFile_Upload<span class="preprocessor">.aspx</span>
+<figure class="highlight cs"><pre>UploadFile_Upload.aspx
 </pre></figure>
 
 <p>We’ll call:</p>
-<figure class="highlight csharp"><pre><span class="attribute">UploadFile_Upload.aspx?ASPSESSID</span>=<span class="string">e2u35jfs0pvevfugkfnmm045&AUTHID=E7BA5BDD2D6E9FBBC7CF613352EF10E01E0E8B0AD9920F62A465BC0CA20FB9CC2BA67F95D5A82F5D30B3162D6DFB3EA7FD505456E5EA5407094D03C1D48E6EE0B80F85F1B6AFD5F52FDC14C2ED6D77A8</span>
+<figure class="highlight cs"><pre>UploadFile_Upload.aspx?ASPSESSID=e2u35jfs0pvevfugkfnmm045&AUTHID=E7BA5BDD2D6E9FBBC7CF613352EF10E01E0E8B0AD9920F62A465BC0CA20FB9CC2BA67F95D5A82F5D30B3162D6DFB3EA7FD505456E5EA5407094D03C1D48E6EE0B80F85F1B6AFD5F52FDC14C2ED6D77A8
 </pre></figure>
 
 <p>Now that we have the SessionID and ticket value we can manually restore those cookies in Global.asax (or an HttpModule, doesn’t matter). We’ll be doing the fix in Application_BeginRequest as this allows us to fix the cookies before ASP.NET will perform its validation and thereby notice the missing session and forms authentication cookies.</p>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> Global : HttpApplication
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">class</span> Global : HttpApplication
 {
     <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">Application_BeginRequest</span>(<span class="keyword">object</span> sender, EventArgs e)
     {
@@ -335,7 +335,7 @@
 <p>However, since the client affinity is handled by a cookie - that cookie was now suffering from the same bug as before. Basicaly the IIS ARR load balancer thought it received a completely new client request and thus assigned the request to a random content server, giving a 1/[num_machines] chance of succeeding in case it randomly hit the correct content server.</p>
 <p>The solution is similar, though there is one major difference. The previous problem occurred on the actual content machines because those were missing a cookie value, in this case it’s the load balancer itself. Thus, deploying a fix on the content servers won’t do any good.</p>
 <p>We’ll create a new HttpModule that performs the fix in Application_BeginRequest - which occurs before IIS ARR assigns the request to a content server. To ensure this fix does not in any way affect normal requests in case something goes wrong, exceptions are being silently ignored. This is generally a bad practice, but in this case I really do not want to affect the load balancer as that’ll put down the website for all users if an error occurs. Note that while the handling is very similar to the previous bit of code, this time we’re modifying the actual Cookie header directly. If we don’t do this, IIS ARR won’t pick up the overwritten cookie values and thus still send the user to a random content server.</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 <span class="keyword">using</span> System.Text.RegularExpressions;
 <span class="keyword">using</span> System.Web;
 
@@ -447,7 +447,7 @@ namespace iPaper.Web.ArrCookieRestorer
 </pre></figure>
 
 <p>By providing the -X and -Y switches swfdump only prints out the movie height &amp; width. You can see all the switches on the <a href="http://www.swftools.org/swfdump.html" target="_blank">swfdump man page</a>. At this point it’s a simple matter of spinning up a swfdump process and parsing the output:</p>
-<figure class="highlight csharp"><pre><span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
+<figure class="highlight cs"><pre><span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
 {
     <span class="comment">// Set process properties</span>
     Process p = <span class="keyword">new</span> Process();
@@ -524,17 +524,17 @@ namespace iPaper.Web.ArrCookieRestorer
 
 <h2 id="Defending_against_the_improbable">Defending against the improbable</h2>
 <p>Say we have a web application that receives and ID through the query string and serves a file accordingly, usually we’d write that like:</p>
-<figure class="highlight csharp"><pre><span class="function">if(File.<span class="function">Exists(path)</span>)</span>
-    <span class="function">serveFile(path)</span>;
-else
-    <span class="function">serve404()</span>;
+<figure class="highlight cs"><pre><span class="keyword">if</span>(File.Exists(path))
+    serveFile(path);
+<span class="keyword">else</span>
+    serve404();
 </pre></figure>
 
 <p>This is what I’ve been doing in a large image serving website I run. However, it recently struck me that on average about 99.9% of all requests map to existing files, only those few .01% of all requests actually resulted in 404 errors being thrown.</p>
 <p>Given the above ratio, if we dropped the File.Exists() check, out of 10,000 requests only 10 of those would result in a FileNotFoundException being thrown while the rest would just be served as usual. That means in 99.9% of all requests we waste resources on performing a trivial File.Exists() request that we know will most likely come back true anyways. What’s worse is that this will hit the harddrive and actually cost us an IO operation!</p>
 <h2 id="A_local_test">A local test</h2>
 <p>Observe the following two methods. serveFileUnsafely will serve a file under the assumption that it probably exists and will rely on a FileNotFoundException being throw if it doesn’t exist. serveFileSafely will ensure the file exists before actually serving it (trusting nothing happens between File.Exists() and File.ReadAllText()).</p>
-<figure class="highlight csharp"><pre><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">serveFileUnsafely</span>(<span class="keyword">string</span> path)
+<figure class="highlight cs"><pre><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">serveFileUnsafely</span>(<span class="keyword">string</span> path)
 {
     <span class="keyword">try</span>
     {
@@ -557,7 +557,7 @@ else
 </pre></figure>
 
 <p>The following two methods will be used to measure the time taken to serve 100 requests. I have created 100 identical files named [1-100].txt, each containing just the text “Hello world!”. I have then deleted a random file so there’s only 99 left. Thus in this example we assume that only 99% of all requests map to existing files even though the actual app has a success rate in excess of 99.9%. Note that the two methods each hit a separate folder - Test and Test2. This is to avoid any advantage of prewarming the cache before running the second test.</p>
-<figure class="highlight csharp"><pre><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">testLocalUnsafely</span>()
+<figure class="highlight cs"><pre><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">testLocalUnsafely</span>()
 {
     <span class="keyword">for</span> (<span class="keyword">int</span> file = <span class="number">1</span>; file &lt;= <span class="number">100</span>; file++)
         serveFileUnsafely(<span class="string">@"E:\Test"</span> + file + <span class="string">".txt"</span>);
@@ -571,11 +571,11 @@ else
 </pre></figure>
 
 <p>The actual profiling goes like this. I’ll be using my <a href="http://www.improve.dk/blog/2008/04/16/profiling-code-the-easy-way" target="_blank">CodeProfiler</a> class to make the measurements, running a total of 500 iterations using a single thread - as well as running an automatic warmup iteration.</p>
-<figure class="highlight csharp"><pre>TimeSpan safeLocalTime = CodeProfiler.ProfileAction<span class="function"><span class="params">(() =&gt; testLocalSafely(), <span class="number">500</span>, <span class="number">1</span>)</span>;
-<span class="title">TimeSpan</span> <span class="title">unsafeLocalTime</span> = <span class="title">CodeProfiler</span>.<span class="title">ProfileAction</span><span class="params">(() =&gt; testLocalUnsafely(), <span class="number">500</span>, <span class="number">1</span>)</span>;
+<figure class="highlight cs"><pre>TimeSpan safeLocalTime = CodeProfiler.ProfileAction(() =&gt; testLocalSafely(), <span class="number">500</span>, <span class="number">1</span>);
+TimeSpan unsafeLocalTime = CodeProfiler.ProfileAction(() =&gt; testLocalUnsafely(), <span class="number">500</span>, <span class="number">1</span>);
 
-<span class="title">Console</span>.<span class="title">WriteLine</span><span class="params">(<span class="string">"Safe: "</span> + safeLocalTime.TotalSeconds)</span>;
-<span class="title">Console</span>.<span class="title">WriteLine</span><span class="params">(<span class="string">"Unsafe: "</span> + unsafeLocalTime.TotalSeconds)</span>;</span>
+Console.WriteLine(<span class="string">"Safe: "</span> + safeLocalTime.TotalSeconds);
+Console.WriteLine(<span class="string">"Unsafe: "</span> + unsafeLocalTime.TotalSeconds);
 </pre></figure>
 
 <p>And the results?</p>
@@ -589,7 +589,7 @@ else
 <p>Back to the real scenario. The web servers are not serving files off of local disks, they’re serving the files from a backend SAN exposed as CIFS shares.</p>
 <p>I’ve copied the two test file directories onto two directories on a remote share.</p>
 <p>Two new methods have been added. They’re identical to the last ones except that they access a remote share mapped to the local drive Z.</p>
-<figure class="highlight csharp"><pre><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">testShareUnsafely</span>()
+<figure class="highlight cs"><pre><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">testShareUnsafely</span>()
 {
     <span class="keyword">for</span> (<span class="keyword">int</span> file = <span class="number">1</span>; file &lt;= <span class="number">100</span>; file++)
         serveFileUnsafely(<span class="string">@"Z:\Test"</span> + file + <span class="string">".txt"</span>);
@@ -603,11 +603,11 @@ else
 </pre></figure>
 
 <p>The testing is performed like this. Note that I’m only running 10 iterations + warmup here as it’d otherwise take far too long time.</p>
-<figure class="highlight csharp"><pre>TimeSpan safeShareTime = CodeProfiler.ProfileAction<span class="function"><span class="params">(() =&gt; testShareSafely(), <span class="number">10</span>, <span class="number">1</span>)</span>;
-<span class="title">TimeSpan</span> <span class="title">unsafeShareTime</span> = <span class="title">CodeProfiler</span>.<span class="title">ProfileAction</span><span class="params">(() =&gt; testShareUnsafely(), <span class="number">10</span>, <span class="number">1</span>)</span>;
+<figure class="highlight cs"><pre>TimeSpan safeShareTime = CodeProfiler.ProfileAction(() =&gt; testShareSafely(), <span class="number">10</span>, <span class="number">1</span>);
+TimeSpan unsafeShareTime = CodeProfiler.ProfileAction(() =&gt; testShareUnsafely(), <span class="number">10</span>, <span class="number">1</span>);
 
-<span class="title">Console</span>.<span class="title">WriteLine</span><span class="params">(<span class="string">"Safe: "</span> + safeShareTime.TotalSeconds)</span>;
-<span class="title">Console</span>.<span class="title">WriteLine</span><span class="params">(<span class="string">"Unsafe: "</span> + unsafeShareTime.TotalSeconds)</span>;</span>
+Console.WriteLine(<span class="string">"Safe: "</span> + safeShareTime.TotalSeconds);
+Console.WriteLine(<span class="string">"Unsafe: "</span> + unsafeShareTime.TotalSeconds);
 </pre></figure>
 
 <p>The results?</p>
@@ -822,7 +822,7 @@ DBCC execution completed. If DBCC printed error messages, contact your system ad
 <a id="more"></a>
 
 <p>I’ve made a very simple web application project with a Default.aspx file that has the following codebehind code:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 <span class="keyword">using</span> System.IO;
 <span class="keyword">using</span> System.Web.UI;
 
@@ -925,29 +925,29 @@ namespace FileWritingWebsite
 <p>As in the original post my goal is to accept a URL like <a href="http://localhost/blog/2006/12/08/missing-windows-mobile-device-center" target="_blank">http://localhost/blog/2006/12/08/missing-windows-mobile-device-center</a> and map it to the BlogPost.aspx file in the root of my application. During the rewrite process I want to make the year, month, day and title available for the BlogPost.aspx file in an easily accessible way.</p>
 <h2 id="Rewriting_using_Global-asax">Rewriting using Global.asax</h2>
 <p>The easiest way of rewriting URL’s is to add a new Global.asax file to the root of your solution. Now paste in the following code:</p>
-<figure class="highlight csharp"><pre>using System<span class="comment">;</span>
-using System<span class="preprocessor">.Text</span><span class="preprocessor">.RegularExpressions</span><span class="comment">;</span>
-using System<span class="preprocessor">.Web</span><span class="comment">;</span>
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Text.RegularExpressions;
+<span class="keyword">using</span> System.Web;
 
 namespace IIS7UrlRewritingDoneProperly
 {
-	public class Global : HttpApplication
+	<span class="keyword">public</span> <span class="keyword">class</span> Global : HttpApplication
 	{
-		// Runs at the beginning of each request to the server
-		protected void Application_BeginRequest(object sender, EventArgs e)
+		<span class="comment">// Runs at the beginning of each request to the server</span>
+		<span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">Application_BeginRequest</span>(<span class="keyword">object</span> sender, EventArgs e)
 		{
-			// Match the specific blog post URL path as well as pull <span class="keyword">out</span> variables <span class="keyword">in</span> regex groups
-			Match m = Regex<span class="preprocessor">.Match</span>(Request<span class="preprocessor">.Url</span><span class="preprocessor">.LocalPath</span>, @<span class="string">"^/blog/(?&lt;year&gt;d{4})/(?&lt;month&gt;d{2})/(?&lt;day&gt;d{2})/(?&lt;title&gt;.*)/?$"</span>)<span class="comment">;</span>
+			<span class="comment">// Match the specific blog post URL path as well as pull out variables in regex groups</span>
+			Match m = Regex.Match(Request.Url.LocalPath, <span class="string">@"^/blog/(?&lt;year&gt;d{4})/(?&lt;month&gt;d{2})/(?&lt;day&gt;d{2})/(?&lt;title&gt;.*)/?$"</span>);
 
-			// If we match a blog posts URL, save the URL variables <span class="keyword">in</span> Context<span class="preprocessor">.Items</span> <span class="keyword">and</span> rewrite to /BlogPost<span class="preprocessor">.aspx</span>
-			if (m<span class="preprocessor">.Success</span>)
+			<span class="comment">// If we match a blog posts URL, save the URL variables in Context.Items and rewrite to /BlogPost.aspx</span>
+			<span class="keyword">if</span> (m.Success)
 			{
-				Context<span class="preprocessor">.Items</span>[<span class="string">"Title"</span>] = m<span class="preprocessor">.Groups</span>[<span class="string">"title"</span>]<span class="preprocessor">.Value</span><span class="comment">;</span>
-				Context<span class="preprocessor">.Items</span>[<span class="string">"Year"</span>] = m<span class="preprocessor">.Groups</span>[<span class="string">"year"</span>]<span class="preprocessor">.Value</span><span class="comment">;</span>
-				Context<span class="preprocessor">.Items</span>[<span class="string">"Month"</span>] = m<span class="preprocessor">.Groups</span>[<span class="string">"month"</span>]<span class="preprocessor">.Value</span><span class="comment">;</span>
-				Context<span class="preprocessor">.Items</span>[<span class="string">"Day"</span>] = m<span class="preprocessor">.Groups</span>[<span class="string">"day"</span>]<span class="preprocessor">.Value</span><span class="comment">;</span>
+				Context.Items[<span class="string">"Title"</span>] = m.Groups[<span class="string">"title"</span>].Value;
+				Context.Items[<span class="string">"Year"</span>] = m.Groups[<span class="string">"year"</span>].Value;
+				Context.Items[<span class="string">"Month"</span>] = m.Groups[<span class="string">"month"</span>].Value;
+				Context.Items[<span class="string">"Day"</span>] = m.Groups[<span class="string">"day"</span>].Value;
 
-				HttpContext<span class="preprocessor">.Current</span><span class="preprocessor">.RewritePath</span>(<span class="string">"/BlogPost.aspx"</span>)<span class="comment">;</span>
+				HttpContext.Current.RewritePath(<span class="string">"/BlogPost.aspx"</span>);
 			}
 		}
 	}
@@ -969,7 +969,7 @@ namespace IIS7UrlRewritingDoneProperly
 <div class="imgwrapper" style=""><div><a href="/how-to-do-url-rewriting-on-iis-7-properly/iis7urlrewritingdoneproperly_2_2.jpg" class="fancy"><img src="/how-to-do-url-rewriting-on-iis-7-properly/iis7urlrewritingdoneproperly_2_2.jpg" style="max-height: 250px"/></a></div></div>
 
 <p>Now paste the following code into the UrlRewriter.cs class file:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 <span class="keyword">using</span> System.Text.RegularExpressions;
 <span class="keyword">using</span> System.Web;
 

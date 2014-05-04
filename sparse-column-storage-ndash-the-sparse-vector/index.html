@@ -178,7 +178,7 @@
 <p>The same procedure can be repeated for the second record, but I’m going to leave that as an exercise for the reader :)</p>
 <h2 id="Writing_a_sparse_vector_parser_in_C">Writing a sparse vector parser in C</h2>
 <p>Once we know the structure of the sparse vector, writing a parser in C# is surprisingly simple:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 <span class="keyword">using</span> System.Collections.Generic;
 <span class="keyword">using</span> System.Linq;
 
@@ -228,7 +228,7 @@ namespace OrcaMDF.Core.Engine
 </pre></figure>
 
 <p>I won’t go into the code as it’s documented and follows the procedure we just went through. A quick test verifies that it achieves the same results as we just did by hand:</p>
-<figure class="highlight csharp"><pre>[TestFixture]
+<figure class="highlight cs"><pre>[TestFixture]
 <span class="keyword">public</span> <span class="keyword">class</span> SparseVectorParserTests
 {
 	[Test]

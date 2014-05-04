@@ -125,29 +125,29 @@
 <p>The only relevant info I could find on Google was <a href="http://forums.iis.net/t/1151841.aspx" target="_blank">this thread</a> on forums.iis.net. Besides various mutations of the restart option, the thread mentions it might be a permissions issue. I’m running IIS Manager under an administrative account and all application pools run under processes with access to the configuration directory. Running Process Monitor confirms that there are no permission issues.</p>
 <p>What I’ve found since then is that a simple file tocuh will fix the problem. That is, if I open the file in notepad and make/undo a change and save the file, all IIS’s will reload the configuration and all sites will have loaded correctly on all servers. Using Process Monitor I’ve verified that change notifications are being sent out to all servers, thereby notifying them of an update to the configuration, causing the reload in IIS. The aforementioned thread does note that IIS will basically start a timer with an interval of a few ms before it’ll update the site list of a config change - if reading the config file takes longer than this timeout, we may be in trouble. However, this issue should be fixed by a refresh and most certainly by a restart of the IIS. Also, since this is happening on all servers, it would seem weird that they all exceed the timeout.</p>
 <p>To add confusion, this bug is temporal. If I add three sites programmaticaly (three transactions - they’re not committed all at once, but in succession) using code like this:</p>
-<figure class="highlight csharp"><pre>using (ServerManager mgr = new ServerManager())
+<figure class="highlight cs"><pre><span class="keyword">using</span> (ServerManager mgr = <span class="keyword">new</span> ServerManager())
 {
-	if (mgr<span class="preprocessor">.Sites</span>[name] != null)
-		mgr<span class="preprocessor">.Sites</span><span class="preprocessor">.Remove</span>(mgr<span class="preprocessor">.Sites</span>[name])<span class="comment">;</span>
+	<span class="keyword">if</span> (mgr.Sites[name] != <span class="keyword">null</span>)
+		mgr.Sites.Remove(mgr.Sites[name]);
 
-	// Create site
-	Site site = mgr<span class="preprocessor">.Sites</span><span class="preprocessor">.Add</span>(name, <span class="string">"http"</span>, <span class="string">"*:80:"</span> + domain, physicalPath)<span class="comment">;</span>
+	<span class="comment">// Create site</span>
+	Site site = mgr.Sites.Add(name, <span class="string">"http"</span>, <span class="string">"*:80:"</span> + domain, physicalPath);
 
-	// <span class="keyword">Set</span> app pool
-	foreach (var app <span class="keyword">in</span> site<span class="preprocessor">.Applications</span>)
-		app<span class="preprocessor">.ApplicationPoolName</span> = pool<span class="comment">;</span>
+	<span class="comment">// Set app pool</span>
+	<span class="keyword">foreach</span> (<span class="keyword">var</span> app <span class="keyword">in</span> site.Applications)
+		app.ApplicationPoolName = pool;
 
-	// <span class="keyword">Add</span> extra bindings
-	foreach (string hostname <span class="keyword">in</span> extraBindings)
-		site<span class="preprocessor">.Bindings</span><span class="preprocessor">.Add</span>(<span class="string">"*:80:"</span> + hostname, <span class="string">"http"</span>)<span class="comment">;</span>
+	<span class="comment">// Add extra bindings</span>
+	<span class="keyword">foreach</span> (<span class="keyword">string</span> hostname <span class="keyword">in</span> extraBindings)
+		site.Bindings.Add(<span class="string">"*:80:"</span> + hostname, <span class="string">"http"</span>);
 
-	mgr<span class="preprocessor">.CommitChanges</span>()<span class="comment">;</span>
+	mgr.CommitChanges();
 }
 </pre></figure>
 
 <p>Sometimes all sites work, sometimes 1-3 of them don’t. Usually two of them will have failed while one will be working. Running the exact code again will fix the problem. The code is made so it’ll just recreate a website if it already exists and thus running the code again will basically just touch the file, causing reloads of the config files across the servers. If I try to access the sites programmatically, I’ll receive the same exception as is displayed in the IIS Manager and as a result I might actually be able to detect this issue and just keep retrying until all sites work.</p>
 <p>As an alternative, I’ve also tried just generating the complete applicationHost.config file from scratch so that all changes are definitely made at the same time. By creating the applicationHost.config file separately and then replacing the old one, I don’t get the “valid object” error any more. However, a random number of websites &amp; pools will be in the “stopped” state for no apparent reason. All sites &amp; pools have the auto start attributes set to true. I can start the sites manully without problems, it’s not a good solution though seeing as there’s hundreds of sites and it’ll take a considerably amount of time to start half of them manually. Fortunately that part is easy to script:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> (ServerManager mgr = <span class="keyword">new</span> ServerManager())
+<figure class="highlight cs"><pre><span class="keyword">using</span> (ServerManager mgr = <span class="keyword">new</span> ServerManager())
 {
 	<span class="comment">// Start all app pools</span>
 	<span class="keyword">foreach</span> (<span class="keyword">var</span> pool <span class="keyword">in</span> mgr.ApplicationPools)

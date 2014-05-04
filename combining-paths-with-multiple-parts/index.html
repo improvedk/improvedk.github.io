@@ -113,7 +113,7 @@
 <a id="more"></a>
 
 
-<figure class="highlight csharp"><pre><span class="keyword">string</span> partOne = <span class="string">@"C:"</span>;
+<figure class="highlight cs"><pre><span class="keyword">string</span> partOne = <span class="string">@"C:"</span>;
 <span class="keyword">string</span> partTwo = <span class="string">"Windows"</span>;
 <span class="keyword">string</span> partThree = <span class="string">@"System32\drivers"</span>;
 <span class="keyword">string</span> partFour = <span class="string">@"etc\hosts"</span>;
@@ -124,7 +124,7 @@ combinedPath = Path.Combine(Path.Combine(Path.Combine(partOne, partTwo), partThr
 
 <p>Often we won’t have all of our path parts in named variables, and even when we do, they’ll rarely be named partOne, partTwo, partX etc. If we mix literal strings with variables and multiple levels of nested Path.Combine calls, mayhem will arise.</p>
 <p>As an alternative I’m using a simple wrapper method above the Path.Combine method:</p>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> PathCombiner
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> PathCombiner
 {
 	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">string</span> <span class="title">Combine</span>(<span class="keyword">string</span> path1, <span class="keyword">string</span> path2, <span class="keyword">params</span> <span class="keyword">string</span>[] pathn)
 	{
@@ -139,19 +139,19 @@ combinedPath = Path.Combine(Path.Combine(Path.Combine(partOne, partTwo), partThr
 </pre></figure>
 
 <p>The C# <a href="http://msdn.microsoft.com/en-us/library/w5zay9db(VS.71" target="_blank">params</a>.aspx) keyword allows us to make a method take in any number of parameters of the same type - string in this case. Note that I’ve split the paths up into three parts - path1, path2 and pathn. If we were to only take the params string[] parameter, the user might send in no parameters at all - which wouldn’t make sense. By forcing the user to send in at least two paths, we maintain the interface of Path.Combine and just add extra functionality on top of it - though the user may still just send in two paths as before.</p>
-<figure class="highlight csharp"><pre>static void Main(string[] args)
+<figure class="highlight cs"><pre><span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
 {
-	string partOne = @<span class="string">"C:"</span>;
-	string partTwo = <span class="string">"Windows"</span>;
-	string partThree = @<span class="string">"System32\drivers"</span>;
-	string partFour = @<span class="string">"etc\hosts"</span>;
-	string combinedPath;
+	<span class="keyword">string</span> partOne = <span class="string">@"C:"</span>;
+	<span class="keyword">string</span> partTwo = <span class="string">"Windows"</span>;
+	<span class="keyword">string</span> partThree = <span class="string">@"System32\drivers"</span>;
+	<span class="keyword">string</span> partFour = <span class="string">@"etc\hosts"</span>;
+	<span class="keyword">string</span> combinedPath;
 
-	// Using System.IO.Path
+	<span class="comment">// Using System.IO.Path</span>
 	combinedPath = Path.Combine(Path.Combine(Path.Combine(partOne, partTwo), partThree), partFour);
 	Console.WriteLine(combinedPath);
 	
-	// Using PathCombiner
+	<span class="comment">// Using PathCombiner</span>
 	combinedPath = PathCombiner.Combine(partOne, partTwo, partThree, partFour);
 	Console.WriteLine(combinedPath);
 
@@ -160,7 +160,7 @@ combinedPath = Path.Combine(Path.Combine(Path.Combine(partOne, partTwo), partThr
 </pre></figure>
 
 <p>An extension method you say? The logical place to put this function would be in the Path class itself, perhaps named CombineMultiple. Unfortunately the Path class is static so we’re unable to extend it. Another option might be directly on string as a CombinePath method like this:</p>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> PathCombiner
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> PathCombiner
 {
 	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">string</span> <span class="title">Combine</span>(<span class="keyword">string</span> path1, <span class="keyword">string</span> path2, <span class="keyword">params</span> <span class="keyword">string</span>[] pathn)
 	{
@@ -180,34 +180,34 @@ combinedPath = Path.Combine(Path.Combine(Path.Combine(partOne, partTwo), partThr
 </pre></figure>
 
 <p>We’d call the extension method like so:</p>
-<figure class="highlight csharp"><pre>combinedPath = partOne<span class="preprocessor">.CombinePath</span>(partTwo)<span class="preprocessor">.CombinePath</span>(partThree)<span class="preprocessor">.CombinePath</span>(partFour)<span class="comment">;</span>
+<figure class="highlight cs"><pre>combinedPath = partOne.CombinePath(partTwo).CombinePath(partThree).CombinePath(partFour);
 </pre></figure>
 
 <p>While this does work, I really don’t recommend it. I’m against overly use of extension methods unless there’s a good reason. I think it’s much cleaner to contain this code in a separate class whose only purpose is path combining. Now devs are going to be confused when they sometimes see the CombinePath method in Intellisense and not at other times, depending on whether the namespace has been imported. Also, I think the PathCombiner.Combine syntax is the cleanest on top of that, but you be the judge:</p>
-<figure class="highlight csharp"><pre>string partOne = @<span class="string">"C:"</span><span class="comment">;</span>
-string partTwo = <span class="string">"Windows"</span><span class="comment">;</span>
-string partThree = @<span class="string">"System32\drivers"</span><span class="comment">;</span>
-string partFour = @<span class="string">"etc\hosts"</span><span class="comment">;</span>
-string combinedPath<span class="comment">;</span>
+<figure class="highlight cs"><pre><span class="keyword">string</span> partOne = <span class="string">@"C:"</span>;
+<span class="keyword">string</span> partTwo = <span class="string">"Windows"</span>;
+<span class="keyword">string</span> partThree = <span class="string">@"System32\drivers"</span>;
+<span class="keyword">string</span> partFour = <span class="string">@"etc\hosts"</span>;
+<span class="keyword">string</span> combinedPath;
 
-// Using System<span class="preprocessor">.IO</span><span class="preprocessor">.Path</span>
-combinedPath = Path<span class="preprocessor">.Combine</span>(Path<span class="preprocessor">.Combine</span>(Path<span class="preprocessor">.Combine</span>(partOne, partTwo), partThree), partFour)<span class="comment">;</span>
-Console<span class="preprocessor">.WriteLine</span>(combinedPath)<span class="comment">;</span>
+<span class="comment">// Using System.IO.Path</span>
+combinedPath = Path.Combine(Path.Combine(Path.Combine(partOne, partTwo), partThree), partFour);
+Console.WriteLine(combinedPath);
 
-// Using PathCombiner
-combinedPath = PathCombiner<span class="preprocessor">.Combine</span>(partOne, partTwo, partThree, partFour)<span class="comment">;</span>
-Console<span class="preprocessor">.WriteLine</span>(combinedPath)<span class="comment">;</span>
+<span class="comment">// Using PathCombiner</span>
+combinedPath = PathCombiner.Combine(partOne, partTwo, partThree, partFour);
+Console.WriteLine(combinedPath);
 
-combinedPath = partOne<span class="preprocessor">.CombinePath</span>(partTwo)<span class="preprocessor">.CombinePath</span>(partThree)<span class="preprocessor">.CombinePath</span>(partFour)<span class="comment">;</span>
-Console<span class="preprocessor">.WriteLine</span>(combinedPath)<span class="comment">;</span>
+combinedPath = partOne.CombinePath(partTwo).CombinePath(partThree).CombinePath(partFour);
+Console.WriteLine(combinedPath);
 
-Console<span class="preprocessor">.Read</span>()<span class="comment">;</span>
+Console.Read();
 </pre></figure>
 
 
-<figure class="highlight csharp"><pre>C:<span class="command">\Windows</span><span class="command">\System</span>32<span class="command">\drivers</span><span class="command">\etc</span><span class="command">\hosts</span>
-C:<span class="command">\Windows</span><span class="command">\System</span>32<span class="command">\drivers</span><span class="command">\etc</span><span class="command">\hosts</span>
-C:<span class="command">\Windows</span><span class="command">\System</span>32<span class="command">\drivers</span><span class="command">\etc</span><span class="command">\hosts</span>
+<figure class="highlight cs"><pre>C:\Windows\System32\drivers\etc\hosts
+C:\Windows\System32\drivers\etc\hosts
+C:\Windows\System32\drivers\etc\hosts
 </pre></figure>
 
 

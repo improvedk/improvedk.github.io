@@ -157,7 +157,7 @@
 <div class="imgwrapper" style=""><div><a href="/sql-server-mirroring-a-practical-approach/mirrortester_2.jpg" class="fancy"><img src="/sql-server-mirroring-a-practical-approach/mirrortester_2.jpg" style="max-height: 250px"/></a></div></div>
 
 <p>It continuously attempts to connect to the databases using three different connection strings:</p>
-<figure class="highlight csharp"><pre><span class="keyword">string</span> principalConnection = <span class="string">"Data Source=Mandalay;Connect Timeout=1;Initial Catalog=AdventureWorks;User Id=sa;Password=sadpassword;Pooling=false"</span>;
+<figure class="highlight cs"><pre><span class="keyword">string</span> principalConnection = <span class="string">"Data Source=Mandalay;Connect Timeout=1;Initial Catalog=AdventureWorks;User Id=sa;Password=sadpassword;Pooling=false"</span>;
 <span class="keyword">string</span> mirrorConnection = <span class="string">"Data Source=Rio;Connect Timeout=1;Initial Catalog=AdventureWorks;User Id=sa;Password=sadpassword;Pooling=false"</span>;
 <span class="keyword">string</span> totalConnection = <span class="string">"Data Source=Mandalay;Failover Partner=Rio;Connect Timeout=1;Initial Catalog=AdventureWorks;User Id=sa;Password=sadpassword;Pooling=false"</span>;
 </pre></figure>

@@ -165,7 +165,7 @@
 
 <p>While there is an overhead of exceptions being thrown, they’re not directly dangerous and will at worst affect scalability (ignoring the actual reason of the exception being thrown). The problem is that ASP.NET will <em>only catch exceptions on the processing thread</em>. That means, if you spawn a new thread and an exception is thrown (and is not caught inside the thread itself), it will propagate and eventually <em>crash the w3wp.exe process</em>.</p>
 <h3 id="Safe">Safe</h3>
-<figure class="highlight csharp"><pre><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">Page_Load</span>(<span class="keyword">object</span> sender, EventArgs e)
+<figure class="highlight cs"><pre><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">Page_Load</span>(<span class="keyword">object</span> sender, EventArgs e)
 {
 	Response.Write(<span class="string">"CAN HAZ W3WP.EXE?"</span>);
 
@@ -174,7 +174,7 @@
 </pre></figure>
 
 <h3 id="Unsafe,_will_crash_w3wp-exe">Unsafe, will crash w3wp.exe</h3>
-<figure class="highlight csharp"><pre><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">Page_Load</span>(<span class="keyword">object</span> sender, EventArgs e)
+<figure class="highlight cs"><pre><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">Page_Load</span>(<span class="keyword">object</span> sender, EventArgs e)
 {
 	Response.Write(<span class="string">"CAN HAZ W3WP.EXE?"</span>);
 
@@ -187,17 +187,17 @@
 
 <p>There are several repercussions of the w3wp.exe crashing. There’s a major overhead in spawning a new w3wp.exe process on the next request, you will loose all session (if you’re using inprocess session storage), application and cache state. If you have error reporting turned on, you furthermore also see the “DW20.exe” process running and taking up 100% CPU for a significant amount of time (depending on w3wp.exe memory usage, etc) - if this happens often, you might have a large amount of DW20.exe error reporting processes running, effectively crashing your server.</p>
 <p>So how do we avoid this? Simple, make sure <em>all code</em> in spawned threads is handling exceptions:</p>
-<figure class="highlight csharp"><pre>protected void Page_Load(object sender, EventArgs e)
+<figure class="highlight cs"><pre><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">Page_Load</span>(<span class="keyword">object</span> sender, EventArgs e)
 {
 	Response.Write(<span class="string">"CAN HAZ W3WP.EXE?"</span>);
 
-	new Thread(delegate()
+	<span class="keyword">new</span> Thread(<span class="keyword">delegate</span>()
 	{
-		try
+		<span class="keyword">try</span>
 		{
-			throw new Exception(<span class="string">"I'll be caught by our own exception handler :)"</span>);
+			<span class="keyword">throw</span> <span class="keyword">new</span> Exception(<span class="string">"I'll be caught by our own exception handler :)"</span>);
 		}
-		catch
+		<span class="keyword">catch</span>
 		{
 			Response.Write(<span class="string">"What doesn't kill me will make me stronger!"</span>);
 		}
@@ -312,27 +312,27 @@
 
 <p>There are two aspects of these solutions, one is readability &amp; maintanability, the other is pure performance. I said that my XmlDocument wrapper would be a lot faster than the serialization way using Reflection, but Kris wasn’t so sure. Admittedly, I hadn’t tested it out, so I though I might actually be wrong in that assumption. Let the testing commence.</p>
 <p>I’ll be using my User XML snippet as an example. This is how the XML is generated using my API:</p>
-<figure class="highlight csharp"><pre>XmlOutput xo = new XmlOutput()
-	<span class="preprocessor">.XmlDeclaration</span>()
-	<span class="preprocessor">.Node</span>(<span class="string">"root"</span>)<span class="preprocessor">.Within</span>()
-		<span class="preprocessor">.Node</span>(<span class="string">"user"</span>)<span class="preprocessor">.Within</span>()
-			<span class="preprocessor">.Node</span>(<span class="string">"username"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"orca"</span>)
-			<span class="preprocessor">.Node</span>(<span class="string">"realname"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Mark S. Rasmussen"</span>)
-			<span class="preprocessor">.Node</span>(<span class="string">"description"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"I'll handle any escaping (like &lt; & &gt; for example) needs automagically."</span>)
-			<span class="preprocessor">.Node</span>(<span class="string">"articles"</span>)<span class="preprocessor">.Within</span>()
-				<span class="preprocessor">.Node</span>(<span class="string">"article"</span>)<span class="preprocessor">.Attribute</span>(<span class="string">"id"</span>, <span class="string">"25"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Handling DBNulls"</span>)
-				<span class="preprocessor">.Node</span>(<span class="string">"article"</span>)<span class="preprocessor">.Attribute</span>(<span class="string">"id"</span>, <span class="string">"26"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Accessing my privates"</span>)
-				<span class="preprocessor">.EndWithin</span>()
-			<span class="preprocessor">.Node</span>(<span class="string">"hobbies"</span>)<span class="preprocessor">.Within</span>()
-				<span class="preprocessor">.Node</span>(<span class="string">"hobby"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Fishing"</span>)
-				<span class="preprocessor">.Node</span>(<span class="string">"hobby"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Photography"</span>)
-				<span class="preprocessor">.Node</span>(<span class="string">"hobby"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Work"</span>)<span class="comment">;</span>
+<figure class="highlight cs"><pre>XmlOutput xo = <span class="keyword">new</span> XmlOutput()
+	.XmlDeclaration()
+	.Node(<span class="string">"root"</span>).Within()
+		.Node(<span class="string">"user"</span>).Within()
+			.Node(<span class="string">"username"</span>).InnerText(<span class="string">"orca"</span>)
+			.Node(<span class="string">"realname"</span>).InnerText(<span class="string">"Mark S. Rasmussen"</span>)
+			.Node(<span class="string">"description"</span>).InnerText(<span class="string">"I'll handle any escaping (like &lt; & &gt; for example) needs automagically."</span>)
+			.Node(<span class="string">"articles"</span>).Within()
+				.Node(<span class="string">"article"</span>).Attribute(<span class="string">"id"</span>, <span class="string">"25"</span>).InnerText(<span class="string">"Handling DBNulls"</span>)
+				.Node(<span class="string">"article"</span>).Attribute(<span class="string">"id"</span>, <span class="string">"26"</span>).InnerText(<span class="string">"Accessing my privates"</span>)
+				.EndWithin()
+			.Node(<span class="string">"hobbies"</span>).Within()
+				.Node(<span class="string">"hobby"</span>).InnerText(<span class="string">"Fishing"</span>)
+				.Node(<span class="string">"hobby"</span>).InnerText(<span class="string">"Photography"</span>)
+				.Node(<span class="string">"hobby"</span>).InnerText(<span class="string">"Work"</span>);
 
-string output = xo<span class="preprocessor">.GetOuterXml</span>()<span class="comment">;</span>
+<span class="keyword">string</span> output = xo.GetOuterXml();
 </pre></figure>
 
 <p>Note that I just retrieve the complete XML in a string, I don’t print or save this, it’s just to get a valid comparison point. This is how we’ll generate the same code using the XmlSerializer:</p>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> User
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">class</span> User
 {
 	<span class="keyword">public</span> <span class="keyword">string</span> Username;
 	<span class="keyword">public</span> <span class="keyword">string</span> Realname;
@@ -358,7 +358,7 @@ string output = xo<span class="preprocessor">.GetOuterXml</span>()<span class="c
 </pre></figure>
 
 
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">string</span> <span class="title">ConvertToXml</span>(<span class="keyword">object</span> item)
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">string</span> <span class="title">ConvertToXml</span>(<span class="keyword">object</span> item)
 {
 	XmlSerializer xmlser = <span class="keyword">new</span> XmlSerializer(item.GetType());
 
@@ -372,32 +372,32 @@ string output = xo<span class="preprocessor">.GetOuterXml</span>()<span class="c
 </pre></figure>
 
 
-<figure class="highlight csharp"><pre>User user = new User()<span class="comment">;</span>
-user<span class="preprocessor">.Username</span> = <span class="string">"orca"</span><span class="comment">;</span>
-user<span class="preprocessor">.Realname</span> = <span class="string">"Mark S. Rasmussen"</span><span class="comment">;</span>
-user<span class="preprocessor">.Description</span> = <span class="string">"I'll handle any escaping (like &lt; & &gt; for example) needs automagically."</span><span class="comment">;</span>
+<figure class="highlight cs"><pre>User user = <span class="keyword">new</span> User();
+user.Username = <span class="string">"orca"</span>;
+user.Realname = <span class="string">"Mark S. Rasmussen"</span>;
+user.Description = <span class="string">"I'll handle any escaping (like &lt; & &gt; for example) needs automagically."</span>;
 
-user<span class="preprocessor">.Articles</span> = new List&lt;Article&gt;()<span class="comment">;</span>
-user<span class="preprocessor">.Articles</span><span class="preprocessor">.Add</span>(new Article() { ID = <span class="number">25</span>, Content = <span class="string">"Handling DBNulls"</span> })<span class="comment">;</span>
-user<span class="preprocessor">.Articles</span><span class="preprocessor">.Add</span>(new Article() { ID = <span class="number">26</span>, Content = <span class="string">"Accessing my privates"</span>})<span class="comment">;</span>
+user.Articles = <span class="keyword">new</span> List&lt;Article&gt;();
+user.Articles.Add(<span class="keyword">new</span> Article() { ID = <span class="number">25</span>, Content = <span class="string">"Handling DBNulls"</span> });
+user.Articles.Add(<span class="keyword">new</span> Article() { ID = <span class="number">26</span>, Content = <span class="string">"Accessing my privates"</span>});
 
-user<span class="preprocessor">.Hobbies</span> = new List&lt;Hobby&gt;()<span class="comment">;</span>
-user<span class="preprocessor">.Hobbies</span><span class="preprocessor">.Add</span>(new Hobby() { Content = <span class="string">"Fishing"</span> })<span class="comment">;</span>
-user<span class="preprocessor">.Hobbies</span><span class="preprocessor">.Add</span>(new Hobby() { Content = <span class="string">"Photography"</span> })<span class="comment">;</span>
-user<span class="preprocessor">.Hobbies</span><span class="preprocessor">.Add</span>(new Hobby() { Content = <span class="string">"Work"</span> })<span class="comment">;</span>
+user.Hobbies = <span class="keyword">new</span> List&lt;Hobby&gt;();
+user.Hobbies.Add(<span class="keyword">new</span> Hobby() { Content = <span class="string">"Fishing"</span> });
+user.Hobbies.Add(<span class="keyword">new</span> Hobby() { Content = <span class="string">"Photography"</span> });
+user.Hobbies.Add(<span class="keyword">new</span> Hobby() { Content = <span class="string">"Work"</span> });
 
-string output = ConvertToXml(user)<span class="comment">;</span>
+<span class="keyword">string</span> output = ConvertToXml(user);
 </pre></figure>
 
 <p>Note that only the last codesnippet is the one being looped, the other two are simply one-time helpers to actually create the XML. I have run the tests in a number of iterations to get a total code time, furthermore, I’ve run each of the iteration tests 10 times to calculate the average execution time. This is the basic code to run the tests:</p>
-<figure class="highlight csharp"><pre>sw.Reset();
-<span class="constant">iterationTime</span> = 0;
-for (int testIteration = 0; testIteration &lt; testIterations; testIteration++)
+<figure class="highlight cs"><pre>sw.Reset();
+iterationTime = <span class="number">0</span>;
+<span class="keyword">for</span> (<span class="keyword">int</span> testIteration = <span class="number">0</span>; testIteration &lt; testIterations; testIteration++)
 {
 	sw.Start();
-	for (int i = 0; i &lt; iterations; i++)
+	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; iterations; i++)
 	{
-		// Perform XML creation
+		<span class="comment">// Perform XML creation</span>
 	}
 	sw.Stop();
 	iterationTime += sw.ElapsedMilliseconds;
@@ -405,7 +405,7 @@ for (int testIteration = 0; testIteration &lt; testIterations; testIteration++)
 
 	sw.Reset();
 }
-Console.WriteLine("Total XmlSerializer: " + iterationTime / testIterations);
+Console.WriteLine(<span class="string">"Total XmlSerializer: "</span> + iterationTime / testIterations);
 </pre></figure>
 
 <p>And finally, the results (times in ms on a base 10 logarithmic scale):</p>
@@ -483,7 +483,7 @@ Console.WriteLine("Total XmlSerializer: " + iterationTime / testIterations);
 <p>This had the great advantage that the client receives the image immediatly while the server continues logging afterwards. We use only a single thread, the actual request thread. A friend of mine pointed out I might want to move the logging out of the ASP.NET worker process so as to not block incoming requests. The thing is, this will require new thread spawning, and I really don’t mind blocking a worker process as we can easily tune the amount of concurrent worker processes, and the “Server too busy” functionality is actually there for a reason - I don’t wanna end up in a situation where the server is running a million logging threads but still accepting new connections willingly - in <em>that</em> case, I’d really like the server to block new requests.</p>
 <p>Anyways, although this looked good, this was the sole reason for the “Server too busy” errors we were experiencing! After some testing I discovered that if you call Response.TransmitFile() and then afterwards call Response.Close(), the request process is stuck! It will simply keep on living, and thus the “ASP.NETRequests Current” counter will keep increasing. It will not be removed until a pool recycle event is fired! This does not happen if you use Response.WriteFile, Response.BinaryWrite or if you manually stream the file, only if you use TransmitFile!</p>
 <h3 id="This_will_kill_your_application:">This will kill your application:</h3>
-<figure class="highlight csharp"><pre><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">Page_Load</span>(<span class="keyword">object</span> sender, EventArgs e)
+<figure class="highlight cs"><pre><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">Page_Load</span>(<span class="keyword">object</span> sender, EventArgs e)
 {
 	Response.Buffer = <span class="keyword">false</span>;
 	Response.TransmitFile(<span class="string">"Tree.jpg"</span>);
@@ -492,7 +492,7 @@ Console.WriteLine("Total XmlSerializer: " + iterationTime / testIterations);
 </pre></figure>
 
 <h3 id="But_this_won’t:">But this won’t:</h3>
-<figure class="highlight csharp"><pre><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">Page_Load</span>(<span class="keyword">object</span> sender, EventArgs e)
+<figure class="highlight cs"><pre><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">Page_Load</span>(<span class="keyword">object</span> sender, EventArgs e)
 {
 	Response.WriteFile(<span class="string">"Tree.jpg"</span>);
 	Response.Flush();
@@ -527,21 +527,21 @@ Console.WriteLine("Total XmlSerializer: " + iterationTime / testIterations);
 
 <p>I can replicate the exact same errors on Server 2003 with IIS running i *32 mode, Vista x64 and Server 2003 in x64 mode. It does not matter if you’re running ASPX pages or ASHX HttpHandlers, same problem.</p>
 <p>I used this code snippet to get a list of the current active requests in IIS (to verify that the “ASP.NETRequests Current” and “W3SVC_W3WPActive Requests” are not lying:</p>
-<figure class="highlight csharp"><pre>ServerManager iisManager = new ServerManager()<span class="comment">;</span>
+<figure class="highlight cs"><pre>ServerManager iisManager = <span class="keyword">new</span> ServerManager();
 
-foreach (WorkerProcess w3wp <span class="keyword">in</span> iisManager<span class="preprocessor">.WorkerProcesses</span>)
+<span class="keyword">foreach</span> (WorkerProcess w3wp <span class="keyword">in</span> iisManager.WorkerProcesses)
 {
-	Console<span class="preprocessor">.WriteLine</span>(<span class="string">"W3WP ({0})"</span>, w3wp<span class="preprocessor">.ProcessId</span>)<span class="comment">;</span>
+	Console.WriteLine(<span class="string">"W3WP ({0})"</span>, w3wp.ProcessId);
 
-	foreach (Request request <span class="keyword">in</span> w3wp<span class="preprocessor">.GetRequests</span>(<span class="number">0</span>)<span class="preprocessor">.Where</span>(req =&gt; req<span class="preprocessor">.Url</span> == <span class="string">"/default.aspx"</span>))
+	<span class="keyword">foreach</span> (Request request <span class="keyword">in</span> w3wp.GetRequests(<span class="number">0</span>).Where(req =&gt; req.Url == <span class="string">"/default.aspx"</span>))
 	{
-		Console<span class="preprocessor">.WriteLine</span>(<span class="string">"URL: "</span> + request<span class="preprocessor">.Url</span>)<span class="comment">;</span>
-		Console<span class="preprocessor">.WriteLine</span>(<span class="string">"TimeElapsed: "</span> + request<span class="preprocessor">.TimeElapsed</span>)<span class="comment">;</span>
-		Console<span class="preprocessor">.WriteLine</span>(<span class="string">"TimeInState: "</span> + request<span class="preprocessor">.TimeInState</span>)<span class="comment">;</span>
-		Console<span class="preprocessor">.WriteLine</span>(<span class="string">"TimeInModule: "</span> + request<span class="preprocessor">.TimeInModule</span>)<span class="comment">;</span>
-		Console<span class="preprocessor">.WriteLine</span>(<span class="string">"CurrentModule: "</span> + request<span class="preprocessor">.CurrentModule</span>)<span class="comment">;</span>
-		Console<span class="preprocessor">.WriteLine</span>(<span class="string">"PipelineState: "</span> + request<span class="preprocessor">.PipelineState</span>)<span class="comment">;</span>
-		Console<span class="preprocessor">.WriteLine</span>()<span class="comment">;</span>
+		Console.WriteLine(<span class="string">"URL: "</span> + request.Url);
+		Console.WriteLine(<span class="string">"TimeElapsed: "</span> + request.TimeElapsed);
+		Console.WriteLine(<span class="string">"TimeInState: "</span> + request.TimeInState);
+		Console.WriteLine(<span class="string">"TimeInModule: "</span> + request.TimeInModule);
+		Console.WriteLine(<span class="string">"CurrentModule: "</span> + request.CurrentModule);
+		Console.WriteLine(<span class="string">"PipelineState: "</span> + request.PipelineState);
+		Console.WriteLine();
 	}
 }
 </pre></figure>
@@ -616,95 +616,95 @@ foreach (WorkerProcess w3wp <span class="keyword">in</span> iisManager<span clas
 <p>Since the requests continue living, recycling the pool will time out and thus force the process to shut down, and thereby generating the above event. This may lead to increased memory usage depending on your recycle settings. So unless you have more requests than the Request queue limit setting on your application pool, within the recycle period, you will not notice this problem.</p>
 <h2 id="Fix">Fix</h2>
 <p>The easiest way to get around this problem (bug?) is to just spawn a new thread doing the logging so the main thread will complete right after TransmitFile. In most cases the logging operation will be rather fast so the threads will be shortlived and thus not create too many concurrent threading operations.</p>
-<figure class="highlight csharp"><pre>Response<span class="built_in">.</span>Buffer <span class="subst">=</span> <span class="literal">false</span>;
-Response<span class="built_in">.</span>TransmitFile(<span class="string">"Tree.jpg"</span>);
+<figure class="highlight cs"><pre>Response.Buffer = <span class="keyword">false</span>;
+Response.TransmitFile(<span class="string">"Tree.jpg"</span>);
 
-<span class="keyword">Thread</span> t <span class="subst">=</span> <span class="literal">new</span> <span class="keyword">Thread</span>(delegate()
+Thread t = <span class="keyword">new</span> Thread(<span class="keyword">delegate</span>()
 {
 	<span class="comment">// Logging</span>
 });
-t<span class="built_in">.</span>Start();
+t.Start();
 </pre></figure>
 
 <h2 id="Bonus_code">Bonus code</h2>
 <p>Jonathan Gilbert posted a couple of great comments regarding spawning your own threads in the process and the possibility of extracing the actual logging process into a separate service. Since my blogs comments suck in regards to posting code, here are his code parts:</p>
-<figure class="highlight csharp"><pre>static object log_sync = new object();
-static Queue&lt;LogData&gt; log_queue = new Queue&lt;LogData&gt;();
-static bool log_thread_running = false;
+<figure class="highlight cs"><pre><span class="keyword">static</span> <span class="keyword">object</span> log_sync = <span class="keyword">new</span> <span class="keyword">object</span>();
+<span class="keyword">static</span> Queue&lt;LogData&gt; log_queue = <span class="keyword">new</span> Queue&lt;LogData&gt;();
+<span class="keyword">static</span> <span class="keyword">bool</span> log_thread_running = <span class="keyword">false</span>;
 
-static void post_log_entry(LogData log_entry)
+<span class="keyword">static</span> <span class="keyword">void</span> post_log_entry(LogData log_entry)
 {
-	lock (log_sync)
+	<span class="keyword">lock</span> (log_sync)
 	{
 		log_queue.Enqueue(log_entry);
 
-		if (log_thread_running)
+		<span class="keyword">if</span> (log_thread_running)
 			Monitor.PulseAll(log_sync);
-		else
-			new Thread(log_thread_proc).Start();
+		<span class="keyword">else</span>
+			<span class="keyword">new</span> Thread(log_thread_proc).Start();
 	}
 }
 
-static void log_thread_proc()
+<span class="keyword">static</span> <span class="keyword">void</span> log_thread_proc()
 {
-	lock (log_sync)
+	<span class="keyword">lock</span> (log_sync)
 	{
-		if (log_thread_running)
-			return;
+		<span class="keyword">if</span> (log_thread_running)
+			<span class="keyword">return</span>;
 
-		log_thread_running = true;
+		log_thread_running = <span class="keyword">true</span>;
 
-		try
+		<span class="keyword">try</span>
 		{
-			while (true)
+			<span class="keyword">while</span> (<span class="keyword">true</span>)
 			{
-				while (log_queue.Count == 0)
+				<span class="keyword">while</span> (log_queue.Count == <span class="number">0</span>)
 					Monitor.Wait(log_sync);
 
-				LogData one_item = null;
-				List&lt;LogData&gt; multiple_items = null;
+				LogData one_item = <span class="keyword">null</span>;
+				List&lt;LogData&gt; multiple_items = <span class="keyword">null</span>;
 
-				if (log_queue.Count == 1)
+				<span class="keyword">if</span> (log_queue.Count == <span class="number">1</span>)
 					one_item = log_queue.Dequeue();
-				else
+				<span class="keyword">else</span>
 				{
-					multiple_items = new List&lt;LogData&gt;(log_queue);
+					multiple_items = <span class="keyword">new</span> List&lt;LogData&gt;(log_queue);
 					log_queue.Clear();
 				}
 
-				// The following block: Exit; try/finally{Enter}
-				// ..is the logical inverse of a lock() block. :-)
+				<span class="comment">// The following block: Exit; try/finally{Enter}</span>
+				<span class="comment">// ..is the logical inverse of a lock() block. :-)</span>
 				Monitor.Exit(log_sync);
 
-				try
+				<span class="keyword">try</span>
 				{
-					if (one_item != null)
+					<span class="keyword">if</span> (one_item != <span class="keyword">null</span>)
 						process_log_entry(one_item);
 
-					if (multiple_items != null)
-						foreach (LogData item in multiple_items)
+					<span class="keyword">if</span> (multiple_items != <span class="keyword">null</span>)
+						<span class="keyword">foreach</span> (LogData item <span class="keyword">in</span> multiple_items)
 							process_log_entry(item);
 				}
-				finally
+				<span class="keyword">finally</span>
 				{
 					Monitor.Enter(log_sync);
 				}
 			}
 		}
-		catch (Exception e)
+		<span class="keyword">catch</span> (Exception e)
 		{
-			// TODO: log this unexpected error
+			<span class="comment">// TODO: log this unexpected error</span>
 		}
-		finally
+		<span class="keyword">finally</span>
 		{
-			log_thread_running = false;
+			log_thread_running = <span class="keyword">false</span>;
 		}
 	}
 }
 </pre></figure>
 
 
-<figure class="highlight csharp"><pre><span class="keyword">static</span> <span class="keyword">object</span> log_sync = <span class="keyword">new</span> <span class="keyword">object</span>();
+<figure class="highlight cs"><pre><span class="keyword">static</span> <span class="keyword">object</span> log_sync = <span class="keyword">new</span> <span class="keyword">object</span>();
 <span class="keyword">static</span> BinaryFormatter log_formatter = <span class="keyword">new</span> BinaryFormatter(); <span class="comment">// in System.Runtime.Serialization.Formatters.Binary</span>
 <span class="keyword">static</span> Stream log_stream;
 
@@ -729,73 +729,73 @@ static void log_thread_proc()
 </pre></figure>
 
 
-<figure class="highlight csharp"><pre>class LogService : System.ServiceProcess.ServiceBase
+<figure class="highlight cs"><pre>class LogService : System.ServiceProcess.ServiceBase
 {
-	static void Main(string[] args)
+	<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
 	{
-		if ((args.Length &gt; 0) && string.Equals(args[0], <span class="string">"/console"</span>, StringComparison.InvariantCultureIgnoreCase))
+		<span class="keyword">if</span> ((args.Length &gt; <span class="number">0</span>) && <span class="keyword">string</span>.Equals(args[<span class="number">0</span>], <span class="string">"/console"</span>, StringComparison.InvariantCultureIgnoreCase))
 		{
-			LogService service = new LogService();
+			LogService service = <span class="keyword">new</span> LogService();
 
 			service.StartDirect();
 			Console.WriteLine(<span class="string">"Press enter to stop debugging"</span>);
 			Console.ReadLine();
 			service.StopDirect();
 		}
-		else
-			ServiceBase.Run(new LogService());
+		<span class="keyword">else</span>
+			ServiceBase.Run(<span class="keyword">new</span> LogService());
 	}
 
 	LogService()
 	{
 		ServiceName = <span class="string">"LogService"</span>;
-		CanStop = true;
+		CanStop = <span class="keyword">true</span>;
 	}
 
-	public void StartDirect()
+	<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">StartDirect</span>()
 	{
-		OnStart(null);
+		OnStart(<span class="keyword">null</span>);
 	}
 
-	public void StopDirect()
+	<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">StopDirect</span>()
 	{
 		OnStop();
 	}
 
-	protected override void OnStart(string[] args)
+	<span class="keyword">protected</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">OnStart</span>(<span class="keyword">string</span>[] args)
 	{
-		socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+		socket = <span class="keyword">new</span> Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
-		// Again, in implementation, change this to bind to port 0 and then after the Bind call
-		// has succeeded, read the port number back from the LocalEndPoint property and write it
-		// to a place where the ASP.NET side can read it.
-		socket.Bind(new IPEndPoint(IPAddress.Loopback, SecretPortNumber));
+		<span class="comment">// Again, in implementation, change this to bind to port 0 and then after the Bind call</span>
+		<span class="comment">// has succeeded, read the port number back from the LocalEndPoint property and write it</span>
+		<span class="comment">// to a place where the ASP.NET side can read it.</span>
+		socket.Bind(<span class="keyword">new</span> IPEndPoint(IPAddress.Loopback, SecretPortNumber));
 
-		socket.Listen(5);
+		socket.Listen(<span class="number">5</span>);
 
-		shutdown = false;
+		shutdown = <span class="keyword">false</span>;
 
-		Thread main_thread = new Thread(main_thread_proc);
+		Thread main_thread = <span class="keyword">new</span> Thread(main_thread_proc);
 
-		main_thread.IsBackground = true;
+		main_thread.IsBackground = <span class="keyword">true</span>;
 		main_thread.Start();
 	}
 
-	protected override void OnStop()
+	<span class="keyword">protected</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">OnStop</span>()
 	{
-		shutdown = true;
+		shutdown = <span class="keyword">true</span>;
 	}
 
 	Socket socket;
-	bool shutdown;
+	<span class="keyword">bool</span> shutdown;
 
-	void main_thread_proc()
+	<span class="keyword">void</span> main_thread_proc()
 	{
-		BinaryFormatter log_formatter = new BinaryFormatter();
+		BinaryFormatter log_formatter = <span class="keyword">new</span> BinaryFormatter();
 
-		using (NetworkStream log_stream = new NetworkStream(socket, true))
+		<span class="keyword">using</span> (NetworkStream log_stream = <span class="keyword">new</span> NetworkStream(socket, <span class="keyword">true</span>))
 		{
-			while (!shutdown)
+			<span class="keyword">while</span> (!shutdown)
 			{
 				LogData log_entry = (LogData)log_formatter.Deserialize(stream);
 
@@ -898,7 +898,7 @@ static void log_thread_proc()
 <div class="imgwrapper" style=""><div><a href="/sql-server-mirroring-a-practical-approach/mirrortester_2.jpg" class="fancy"><img src="/sql-server-mirroring-a-practical-approach/mirrortester_2.jpg" style="max-height: 250px"/></a></div></div>
 
 <p>It continuously attempts to connect to the databases using three different connection strings:</p>
-<figure class="highlight csharp"><pre><span class="keyword">string</span> principalConnection = <span class="string">"Data Source=Mandalay;Connect Timeout=1;Initial Catalog=AdventureWorks;User Id=sa;Password=sadpassword;Pooling=false"</span>;
+<figure class="highlight cs"><pre><span class="keyword">string</span> principalConnection = <span class="string">"Data Source=Mandalay;Connect Timeout=1;Initial Catalog=AdventureWorks;User Id=sa;Password=sadpassword;Pooling=false"</span>;
 <span class="keyword">string</span> mirrorConnection = <span class="string">"Data Source=Rio;Connect Timeout=1;Initial Catalog=AdventureWorks;User Id=sa;Password=sadpassword;Pooling=false"</span>;
 <span class="keyword">string</span> totalConnection = <span class="string">"Data Source=Mandalay;Failover Partner=Rio;Connect Timeout=1;Initial Catalog=AdventureWorks;User Id=sa;Password=sadpassword;Pooling=false"</span>;
 </pre></figure>
@@ -991,27 +991,27 @@ static void log_thread_proc()
 <a id="more"></a>
 
 
-<figure class="highlight csharp"><pre>using System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 
 namespace StringEnumeration
 {
 	class Program
 	{
-		static void Main(string[] args)
+		<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
 		{
-			string input = <span class="string">"Hello"</span>;
+			<span class="keyword">string</span> input = <span class="string">"Hello"</span>;
 
-			switch (input)
+			<span class="keyword">switch</span> (input)
 			{
-				case <span class="string">"Hello"</span>:
+				<span class="keyword">case</span> <span class="string">"Hello"</span>:
 					Console.WriteLine(<span class="string">"Hello world!"</span>);
-					break;
-				case <span class="string">"Goodbye"</span>:
+					<span class="keyword">break</span>;
+				<span class="keyword">case</span> <span class="string">"Goodbye"</span>:
 					Console.WriteLine(<span class="string">"Goodbye world!"</span>);
-					break;
-				default:
+					<span class="keyword">break</span>;
+				<span class="keyword">default</span>:
 					Console.WriteLine(<span class="string">"Does not compute!"</span>);
-					break;
+					<span class="keyword">break</span>;
 			}
 		}
 	}
@@ -1019,7 +1019,7 @@ namespace StringEnumeration
 </pre></figure>
 
 <p>The first step is to define the enumeration of values we need to have in our switch statement:</p>
-<figure class="highlight csharp"><pre><span class="keyword">enum</span> <span class="title">Input</span>
+<figure class="highlight cs"><pre><span class="keyword">enum</span> Input
 {
 	Hello,
 	Goodbye
@@ -1027,7 +1027,7 @@ namespace StringEnumeration
 </pre></figure>
 
 <p>We cannot convert from strings to the Input enumeration type directly, so we’ll have to use a magic function like this:</p>
-<figure class="highlight csharp"><pre>class EnumHelper
+<figure class="highlight cs"><pre>class EnumHelper
 {
 	<span class="keyword">public</span> <span class="keyword">static</span> T Parse&lt;T&gt;(<span class="keyword">string</span> input)
 	{
@@ -1037,19 +1037,19 @@ namespace StringEnumeration
 </pre></figure>
 
 <p>Using the above function, we can refactor our initial code like so:</p>
-<figure class="highlight csharp"><pre>string input = <span class="string">"Hello"</span><span class="comment">;</span>
+<figure class="highlight cs"><pre><span class="keyword">string</span> input = <span class="string">"Hello"</span>;
 
-switch (EnumHelper<span class="preprocessor">.Parse</span>&lt;Input&gt;(input))
+<span class="keyword">switch</span> (EnumHelper.Parse&lt;Input&gt;(input))
 {
-	case Input<span class="preprocessor">.Hello</span>:
-		Console<span class="preprocessor">.WriteLine</span>(<span class="string">"Hello world!"</span>)<span class="comment">;</span>
-		<span class="keyword">break</span><span class="comment">;</span>
-	case Input<span class="preprocessor">.Goodbye</span>:
-		Console<span class="preprocessor">.WriteLine</span>(<span class="string">"Goodbye world!"</span>)<span class="comment">;</span>
-		<span class="keyword">break</span><span class="comment">;</span>
-	default:
-		Console<span class="preprocessor">.WriteLine</span>(<span class="string">"Does not compute!"</span>)<span class="comment">;</span>
-		<span class="keyword">break</span><span class="comment">;</span>
+	<span class="keyword">case</span> Input.Hello:
+		Console.WriteLine(<span class="string">"Hello world!"</span>);
+		<span class="keyword">break</span>;
+	<span class="keyword">case</span> Input.Goodbye:
+		Console.WriteLine(<span class="string">"Goodbye world!"</span>);
+		<span class="keyword">break</span>;
+	<span class="keyword">default</span>:
+		Console.WriteLine(<span class="string">"Does not compute!"</span>);
+		<span class="keyword">break</span>;
 }
 </pre></figure>
 
@@ -1100,14 +1100,14 @@ switch (EnumHelper<span class="preprocessor">.Parse</span>&lt;Input&gt;(input))
 <a id="more"></a>
 
 <p>The primary timeout value is that of SqlConnection.ConnectionTimeout. This specifies how long time the SQL Server service has to respond to a connection attempt. You cannot set this value directly, you’ll have to set it as part of the connection string:</p>
-<figure class="highlight"><pre><span class="xml"><span class="tag"><span class="attribute">Data</span> <span class="attribute">Source</span>=<span class="value">server;Initial</span> <span class="attribute">Catalog</span>=<span class="value">databaseUser</span> <span class="attribute">Id</span>=<span class="value">username;Password=password;Connect</span> <span class="attribute">Timeout</span>=<span class="value">30</span></span></span>
+<figure class="highlight"><pre><span class="attribute">Data Source</span>=<span class="string">server;Initial Catalog=databaseUser Id=username;Password=password;Connect Timeout=30</span>
 </pre></figure>
 
 <p>Note that the value is expressed in seconds, not milliseconds. The default value is 30 seconds. Secondly, we can use the <a href="http://msdn2.microsoft.com/en-us/library/system.data.sqlclient.sqlcommand.commandtimeout.aspx" target="_blank">SqlCommand.CommandTimeout</a> value. This sets the timeout value of a specific query running on SQL Server. The problem with these two is that we’re missing a point in the pipeline, which goes:</p>
 <p>TCP Connection to SQL Server -&gt; SqlConnection.Open -&gt; SqlCommand.Execute</p>
 <p>The last two are covered, but if for some reason the SQL Server is dead, taken off the network, totally overloaded, we may get a timeout on the TCP level - and this could take a while. We currently have no way of controlling this timeout besides a server wide network level setting. Often, it’s not desirable to have your application potentially spending several minutes before receiving a TCP timeout - or sometimes simply wait indefinitely. We need some way to control this.</p>
 <p>What I present below is an example of a SqlConnection extension method called QuickOpen (in lack of a better name, it isn’t quicker, it simply fails quicker). It’ll take a timeout parameter in milliseconds, after which it’ll throw a simple Exception. You can modify this to a more proper exception, this is just to show the point. Overall, using this method will introduce a slight delay (a couple of ms), so use it only when necessary, or when a couple of ms per SqlConnection.Open doesn’t matter.</p>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> SqlExtensions
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> SqlExtensions
 {
 	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">QuickOpen</span>(<span class="keyword">this</span> SqlConnection conn, <span class="keyword">int</span> timeout)
 	{
@@ -1197,21 +1197,21 @@ switch (EnumHelper<span class="preprocessor">.Parse</span>&lt;Input&gt;(input))
 
 <p>When you setup an NLB cluster, you create a new virtual IP address that gets mapped to each individual server, besides their own static IP address. In this demo I’ll setup the cluster on the virtual IP address 192.168.0.50. Before we get too far, I should mention that if you are going to setup an NLB cluster in a production environment, you should use machines with dual NICs so one NIC can connect to the public lan while the other NIC connects to a private switched lan where only the cluster nodes are connected. This ensures that the internal cluster communication is not polluting the general network traffic, aswell as making it a lot more efficient since we’ll then be able to utilize <a href="http://en.wikipedia.org/wiki/Unicast" target="_blank">unicast communciation</a> between the nodes instead of relying on <a href="http://en.wikipedia.org/wiki/Multicast" target="_blank">multicast communication</a>.</p>
 <p>For demonstrating the effects of a node crash, I’ve created a very simple load testing tool, the main functionality is an infinite loop trying to make a request at a time while registering success/failures. It’ll also show the text result that is returned in a one-line textbox:</p>
-<figure class="highlight csharp"><pre>while (running)
+<figure class="highlight cs"><pre><span class="keyword">while</span> (running)
 {
 	HttpWebRequest req = (HttpWebRequest)WebRequest.Create(txtUrl.Text);
-	req.Timeout = 1000;
-	req.KeepAlive = false;
+	req.Timeout = <span class="number">1000</span>;
+	req.KeepAlive = <span class="keyword">false</span>;
 
-	try
+	<span class="keyword">try</span>
 	{
 		WebResponse res = req.GetResponse();
-		using (StreamReader sr = new StreamReader(res.GetResponseStream()))
+		<span class="keyword">using</span> (StreamReader sr = <span class="keyword">new</span> StreamReader(res.GetResponseStream()))
 			lastResult = sr.ReadToEnd();
 
 		successfulRequests++;
 	}
-	catch (WebException)
+	<span class="keyword">catch</span> (WebException)
 	{
 		failedRequests++;
 	}

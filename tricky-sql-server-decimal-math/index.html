@@ -190,26 +190,26 @@ DecimalColumn
 </pre></figure>
 
 <p>While testing in SQL Server Management Studio, this might be an obvious problem. When encountering the same problem from code, it’s much more difficult to notice - especially if you don’t know the precise schema you’re working against. Observe the following code working on an empty tblDecimalTest table.</p>
-<figure class="highlight csharp"><pre>using(SqlConnection conn = new SqlConnection(@"Data Source=.SQL2008;Initial Catalog=Test;Integrated Security=SSPI"))
+<figure class="highlight cs"><pre><span class="keyword">using</span>(SqlConnection conn = <span class="keyword">new</span> SqlConnection(<span class="string">@"Data Source=.SQL2008;Initial Catalog=Test;Integrated Security=SSPI"</span>))
 {
-	using(SqlCommand cmd = conn.CreateCommand())
+	<span class="keyword">using</span>(SqlCommand cmd = conn.CreateCommand())
 	{
-		decimal dec1 = 20.5M;
-		decimal dec2 = 27.52M;
+		<span class="keyword">decimal</span> dec1 = <span class="number">20.5</span>M;
+		<span class="keyword">decimal</span> dec2 = <span class="number">27.52</span>M;
 
-		cmd.CommandText = "<span class="operator"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> tblDecimalTest (DecimalColumn) <span class="keyword">VALUES</span> (@DecimalValue)<span class="string">";
-		cmd.Parameters.Add("</span>@DecimalValue<span class="string">", SqlDbType.Decimal).Value = dec1 / dec2;
+		cmd.CommandText = <span class="string">"INSERT INTO tblDecimalTest (DecimalColumn) VALUES (@DecimalValue)"</span>;
+		cmd.Parameters.Add(<span class="string">"@DecimalValue"</span>, SqlDbType.Decimal).Value = dec1 / dec2;
 
 		conn.Open();
 		cmd.ExecuteNonQuery();
 
-		cmd.CommandText = "</span><span class="keyword">SELECT</span> <span class="aggregate">COUNT</span>(*) <span class="keyword">FROM</span> tblDecimalTest <span class="keyword">WHERE</span> DecimalColumn = @DecimalValue<span class="string">";
-		Console.WriteLine("</span>Implicit <span class="keyword">cast</span>: <span class="string">" + cmd.ExecuteScalar());
+		cmd.CommandText = <span class="string">"SELECT COUNT(*) FROM tblDecimalTest WHERE DecimalColumn = @DecimalValue"</span>;
+		Console.WriteLine(<span class="string">"Implicit cast: "</span> + cmd.ExecuteScalar());
 
-		cmd.CommandText = "</span><span class="keyword">SELECT</span> <span class="aggregate">COUNT</span>(*) <span class="keyword">FROM</span> tblDecimalTest <span class="keyword">WHERE</span> DecimalColumn = <span class="keyword">CAST</span>(@DecimalValue <span class="keyword">as</span> <span class="keyword">dec</span>(<span class="number">5</span>,<span class="number">2</span>))<span class="string">";
-		Console.WriteLine("</span>Explicit <span class="keyword">cast</span>: <span class="string">" + cmd.ExecuteScalar());
+		cmd.CommandText = <span class="string">"SELECT COUNT(*) FROM tblDecimalTest WHERE DecimalColumn = CAST(@DecimalValue as dec(5,2))"</span>;
+		Console.WriteLine(<span class="string">"Explicit cast: "</span> + cmd.ExecuteScalar());
 	}
-}</span></span>
+}
 </pre></figure>
 
 <p>The result:</p>

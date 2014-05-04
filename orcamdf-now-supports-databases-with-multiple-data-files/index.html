@@ -160,7 +160,7 @@ USE SampleDatabase
 </pre></figure>
 
 <p>This would cause MyTable to be proportionally allocated between the three data files (the C column being used for the fill to require 100 pages of storage – to ensure we hit all three data files). And to parse it, all you’d do is the following:</p>
-<figure class="highlight csharp"><pre><span class="keyword">var</span> files = <span class="keyword">new</span>[]
+<figure class="highlight cs"><pre><span class="keyword">var</span> files = <span class="keyword">new</span>[]
     {
 		<span class="string">@"C:SampleDatabase_Data1.mdf"</span>,
 		<span class="string">@"C:SampleDatabase_Data2.ndf"</span>,

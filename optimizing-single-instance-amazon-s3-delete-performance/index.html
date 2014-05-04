@@ -148,25 +148,25 @@
 <h2 id="Multi-threaded_deletes">Multi-threaded deletes</h2>
 <p>The key to performance, as previously shown, is without doubt achieved by scaling out the number of threads.</p>
 <p>The following test code spins up a given number of threads and lets them run for 30 seconds, before they’re all aborted. Each thread is continually looping, firing off as many DeleteObjectRequest’s as it can. After 30 seconds, the average request/sec is calculated and output. I ran four repetitions of each, discarded the top and bottom result and calculated the average of the remaining two.</p>
-<figure class="highlight csharp"><pre>private <span class="reserved">const</span> string bucketName = <span class="string">"improve-eu.dk"</span>;
-private <span class="reserved">const</span> string serviceUrl = <span class="string">"s3-eu-west-1.amazonaws.com"</span>;
+<figure class="highlight cs"><pre><span class="keyword">private</span> <span class="keyword">const</span> <span class="keyword">string</span> bucketName = <span class="string">"improve-eu.dk"</span>;
+<span class="keyword">private</span> <span class="keyword">const</span> <span class="keyword">string</span> serviceUrl = <span class="string">"s3-eu-west-1.amazonaws.com"</span>;
 
-static <span class="reserved">void</span> Main(string[] args)
+<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
 {
-	<span class="reserved">var</span> config = <span class="keyword">new</span> AmazonS3Config().WithServiceURL(serviceUrl).WithCommunicationProtocol(Protocol.HTTP);
-	int numThreads = Convert.ToInt32(args[<span class="number">0</span>]);
-	int count = <span class="number">0</span>;
-	<span class="reserved">var</span> sw = <span class="keyword">new</span> Stopwatch();
+	<span class="keyword">var</span> config = <span class="keyword">new</span> AmazonS3Config().WithServiceURL(serviceUrl).WithCommunicationProtocol(Protocol.HTTP);
+	<span class="keyword">int</span> numThreads = Convert.ToInt32(args[<span class="number">0</span>]);
+	<span class="keyword">int</span> count = <span class="number">0</span>;
+	<span class="keyword">var</span> sw = <span class="keyword">new</span> Stopwatch();
 
-	<span class="regexp">//</span> Ensuring all connections have network connectivity
+	<span class="comment">// Ensuring all connections have network connectivity</span>
 	ServicePointManager.DefaultConnectionLimit = numThreads;
 
-	<span class="regexp">//</span> The actual job each thread will be performing
-	<span class="reserved">var</span> work = <span class="keyword">new</span> ThreadStart<span class="function"><span class="params">(() =&gt;
+	<span class="comment">// The actual job each thread will be performing</span>
+	<span class="keyword">var</span> work = <span class="keyword">new</span> ThreadStart(() =&gt;
 	{
-		using (<span class="reserved">var</span> s3Client = AWSClientFactory.CreateAmazonS3Client(ConfigurationManager.AppSettings[<span class="string">"AccessKeyID"</span>], ConfigurationManager.AppSettings[<span class="string">"SecretAccessKey"</span>], config))
+		<span class="keyword">using</span> (<span class="keyword">var</span> s3Client = AWSClientFactory.CreateAmazonS3Client(ConfigurationManager.AppSettings[<span class="string">"AccessKeyID"</span>], ConfigurationManager.AppSettings[<span class="string">"SecretAccessKey"</span>], config))
 		{
-			<span class="reserved">var</span> request = <span class="keyword">new</span> DeleteObjectRequest()
+			<span class="keyword">var</span> request = <span class="keyword">new</span> DeleteObjectRequest()
 				.WithBucketName(bucketName)
 				.WithKey(<span class="string">"xyz"</span>);
 
@@ -174,36 +174,36 @@ static <span class="reserved">void</span> Main(string[] args)
 			{
 				s3Client.DeleteObject(request);
 
-				<span class="regexp">//</span> Avoid extra counts <span class="keyword">while</span> threads are spinning down
+				<span class="comment">// Avoid extra counts while threads are spinning down</span>
 				<span class="keyword">if</span>(sw.ElapsedMilliseconds &lt;= <span class="number">30000</span>)
 					count++;
 			}
 		}
-	})</span>;
+	});
 
-	// <span class="title">Warmup</span>
-	<span class="title">using</span> <span class="params">(<span class="reserved">var</span> s3Client = AWSClientFactory.CreateAmazonS3Client(ConfigurationManager.AppSettings[<span class="string">"AccessKeyID"</span>], ConfigurationManager.AppSettings[<span class="string">"SecretAccessKey"</span>], config))</span>
+	<span class="comment">// Warmup</span>
+	<span class="keyword">using</span> (<span class="keyword">var</span> s3Client = AWSClientFactory.CreateAmazonS3Client(ConfigurationManager.AppSettings[<span class="string">"AccessKeyID"</span>], ConfigurationManager.AppSettings[<span class="string">"SecretAccessKey"</span>], config))
 	{
-		<span class="title">var</span> <span class="title">request</span> = <span class="title">new</span> <span class="title">DeleteObjectRequest</span><span class="params">()</span>
-			.<span class="title">WithBucketName</span><span class="params">(bucketName)</span>
-			.<span class="title">WithKey</span><span class="params">(<span class="string">"xyz"</span>)</span>;
-		<span class="title">s3Client</span>.<span class="title">DeleteObject</span><span class="params">(request)</span>;
+		<span class="keyword">var</span> request = <span class="keyword">new</span> DeleteObjectRequest()
+			.WithBucketName(bucketName)
+			.WithKey(<span class="string">"xyz"</span>);
+		s3Client.DeleteObject(request);
 	}
 
-	// <span class="title">Start</span> <span class="title">X</span> <span class="title">number</span> <span class="title">of</span> <span class="title">threads</span> <span class="title">and</span> <span class="title">let</span> <span class="title">them</span> <span class="title">upload</span> <span class="title">as</span> <span class="title">much</span> <span class="title">as</span> <span class="title">they</span> <span class="title">can</span>
-	<span class="title">var</span> <span class="title">threads</span> = <span class="title">new</span> <span class="title">List</span>&lt;<span class="title">Thread</span>&gt;<span class="params">()</span>;
-	<span class="title">for</span> <span class="params">(int j = <span class="number">0</span>; j &lt; numThreads; j++)</span>
-		<span class="title">threads</span>.<span class="title">Add</span><span class="params">(<span class="keyword">new</span> Thread(work))</span>;
+	<span class="comment">// Start X number of threads and let them upload as much as they can</span>
+	<span class="keyword">var</span> threads = <span class="keyword">new</span> List&lt;Thread&gt;();
+	<span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; numThreads; j++)
+		threads.Add(<span class="keyword">new</span> Thread(work));
 
-	<span class="title">sw</span>.<span class="title">Start</span><span class="params">()</span>;
-	<span class="title">threads</span>.<span class="title">ForEach</span><span class="params">(x =&gt; x.Start())</span>;
+	sw.Start();
+	threads.ForEach(x =&gt; x.Start());
 
-	// <span class="title">Wait</span> 30 <span class="title">secs</span>, <span class="title">stop</span> <span class="title">all</span> <span class="title">threads</span>, <span class="title">output</span> <span class="title">reqs</span>/<span class="title">sec</span> <span class="title">result</span>
-	<span class="title">Thread</span>.<span class="title">Sleep</span><span class="params">(<span class="number">30000</span>)</span>;
-	<span class="title">threads</span>.<span class="title">ForEach</span><span class="params">(x =&gt; x.Abort())</span>;
+	<span class="comment">// Wait 30 secs, stop all threads, output reqs/sec result</span>
+	Thread.Sleep(<span class="number">30000</span>);
+	threads.ForEach(x =&gt; x.Abort());
 
-	<span class="title">Console</span>.<span class="title">WriteLine</span><span class="params">((double)count / <span class="number">30</span>)</span>;
-}</span>
+	Console.WriteLine((<span class="keyword">double</span>)count / <span class="number">30</span>);
+}
 </pre></figure>
 
 <p>The following graph shows the results, testing with thread counts of 8, 16, 32, 64, 128, 256, being run on an m1.large instance, the more CPU-beefy c1.xlarge instance and finally the Danish Server 2003 Colo instance that I used in my last post:</p>
@@ -217,35 +217,35 @@ static <span class="reserved">void</span> Main(string[] args)
 <div class="imgwrapper" style=""><div><a href="/optimizing-single-instance-amazon-s3-delete-performance/image_42.png" class="fancy"><img src="/optimizing-single-instance-amazon-s3-delete-performance/image_42.png" style="max-height: 250px"/></a></div></div>
 
 <p>However, the code we’re running is already in a rather tight loop without much to optimize:</p>
-<figure class="highlight csharp"><pre><span class="keyword">while</span> (sw.<span class="constant">ElapsedMilliseconds</span> &lt;= <span class="number">30000</span>)
+<figure class="highlight cs"><pre><span class="keyword">while</span> (sw.ElapsedMilliseconds &lt;= <span class="number">30000</span>)
 {
-	s3Client.<span class="constant">DeleteObject</span>(request);
+	s3Client.DeleteObject(request);
 
-	<span class="regexp">//</span> <span class="constant">Avoid</span> extra counts <span class="keyword">while</span> threads are spinning down
-	<span class="keyword">if</span>(sw.<span class="constant">ElapsedMilliseconds</span> &lt;= <span class="number">30000</span>)
+	<span class="comment">// Avoid extra counts while threads are spinning down</span>
+	<span class="keyword">if</span>(sw.ElapsedMilliseconds &lt;= <span class="number">30000</span>)
 		count++;
 }
 </pre></figure>
 
 <p>It’s basically just a loop, reusing the same request and letting the AmazonS3Client do its part to send off the object. Internally, AmazonS3Client.DeleteObject() is firing off the asynchronous BeginPutObject and then immediately waiting for EndPutObject afterwards. If we dig further in, there’s a lot of generic AWS SDK framework overhead in constructing the requests, checking for all sorts of conditions that may arise, but are not particularly relevant to our case. How about we ditch the SDK and create our own requests?</p>
 <p>Following this guide on <a href="http://docs.amazonwebservices.com/AmazonS3/2006-03-01/dev/index.html?RESTAuthentication.html" target="_blank">signing and authenticating REST requests</a>, I constructed a method like this (minus the measuring and reformatting, this just shows the basic form):</p>
-<figure class="highlight csharp"><pre>var accessKeyID = "XYZ";
-var secretAccessKey = "SecretXYZ";
+<figure class="highlight cs"><pre><span class="keyword">var</span> accessKeyID = <span class="string">"XYZ"</span>;
+<span class="keyword">var</span> secretAccessKey = <span class="string">"SecretXYZ"</span>;
 
-using (var sha1 = new HMACSHA1())
+<span class="keyword">using</span> (<span class="keyword">var</span> sha1 = <span class="keyword">new</span> HMACSHA1())
 {
-	while(true)
+	<span class="keyword">while</span>(<span class="keyword">true</span>)
 	{
-		var webrequest = (HttpWebRequest)WebRequest.Create(<span class="string">"http://improve-eu.dk.s3-eu-west-1.amazonaws.com/xyz"</span>);
+		<span class="keyword">var</span> webrequest = (HttpWebRequest)WebRequest.Create(<span class="string">"http://improve-eu.dk.s3-eu-west-1.amazonaws.com/xyz"</span>);
 		webrequest.Method = <span class="string">"DELETE"</span>;
-		webrequest.ContentLength = 0;
-		webrequest.KeepAlive = false;
-		webrequest.AllowWriteStreamBuffering = false;
-		webrequest.AllowAutoRedirect = false;
+		webrequest.ContentLength = <span class="number">0</span>;
+		webrequest.KeepAlive = <span class="keyword">false</span>;
+		webrequest.AllowWriteStreamBuffering = <span class="keyword">false</span>;
+		webrequest.AllowAutoRedirect = <span class="keyword">false</span>;
 
-		var date = DateTime.UtcNow.ToString(<span class="string">"R"</span>);
+		<span class="keyword">var</span> date = DateTime.UtcNow.ToString(<span class="string">"R"</span>);
 
-		string stringToSign = 
+		<span class="keyword">string</span> stringToSign = 
 			<span class="string">"DELETE"</span> + <span class="string">"n"</span> +
 			<span class="string">"n"</span> +
 			<span class="string">"n"</span> +
@@ -253,7 +253,7 @@ using (var sha1 = new HMACSHA1())
 			<span class="string">"x-amz-date:"</span> + date + <span class="string">"n"</span> +
 			<span class="string">"/improve-eu.dk/xyz"</span>;
 
-		string signature = AWSSDKUtils.HMACSign(stringToSign, secretAccessKey, sha1);
+		<span class="keyword">string</span> signature = AWSSDKUtils.HMACSign(stringToSign, secretAccessKey, sha1);
 
 		webrequest.Headers.Add(<span class="string">"x-amz-date"</span>, date);
 		webrequest.Headers.Add(<span class="string">"Authorization"</span>, <span class="string">"AWS "</span> + accessKeyID + <span class="string">":"</span> + signature);

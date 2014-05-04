@@ -114,7 +114,7 @@
 
 <p>The original method relied heavily on reflection to set the values directly. Reflection’s bad in regards of speed, mkay? But reflection is not necessarily evil, you can do great good with it. Now, the problem with the original method is that each field is set using reflection for each row, that’s [number of fields] * [number of rows] fields being set using reflection, resulting in pretty poor performance. If we compare it to the <a href="/performance-comparison-reading-data-from-the-database-strongly-typed/">manual way</a>, there’s obviously some kind of a gap. If we could just somehow, in a generic way, create mapper methods like we do manually…</p>
 <p>We’ll have to create a DynamicMethod that takes in a DbDataReader, converts the current row to a generic type T. We’ll call it MapDR, although it doesn’t really matter what it’s called.</p>
-<figure class="highlight csharp"><pre><span class="comment">// Our method will take in a single parameter, a DbDataReader</span>
+<figure class="highlight cs"><pre><span class="comment">// Our method will take in a single parameter, a DbDataReader</span>
 Type[] methodArgs = { <span class="keyword">typeof</span>(DbDataReader) };
 
 <span class="comment">// The MapDR method will map a DbDataReader row to an instance of type T</span>
@@ -123,30 +123,30 @@ ILGenerator il = dm.GetILGenerator();
 </pre></figure>
 
 <p>In this method, we’ll create an instance of the generic type T and store it as a variable.</p>
-<figure class="highlight csharp"><pre>// We<span class="attribute">'ll</span> have a single local <span class="keyword">variable</span>, the instance <span class="keyword">of</span> T we<span class="attribute">'re</span> mapping
-il.DeclareLocal(typeof(T));
+<figure class="highlight cs"><pre><span class="comment">// We'll have a single local variable, the instance of T we're mapping</span>
+il.DeclareLocal(<span class="keyword">typeof</span>(T));
 
-// Create a <span class="keyword">new</span> instance <span class="keyword">of</span> T <span class="keyword">and</span> save it as <span class="keyword">variable</span> <span class="number">0</span>
-il.Emit(OpCodes.Newobj, typeof(T).GetConstructor(<span class="keyword">Type</span>.EmptyTypes));
+<span class="comment">// Create a new instance of T and save it as variable 0</span>
+il.Emit(OpCodes.Newobj, <span class="keyword">typeof</span>(T).GetConstructor(Type.EmptyTypes));
 il.Emit(OpCodes.Stloc_0);
 </pre></figure>
 
 <p>Then we’ll look each property of the type.</p>
-<figure class="highlight csharp"><pre><span class="keyword">foreach</span> (PropertyInfo pi <span class="keyword">in</span> <span class="keyword">typeof</span>(T).GetProperties())
+<figure class="highlight cs"><pre><span class="keyword">foreach</span> (PropertyInfo pi <span class="keyword">in</span> <span class="keyword">typeof</span>(T).GetProperties())
 </pre></figure>
 
 <p>Now we’ll read the column value from the DbDataReader using the properties name. By reading it, we’re pushing it onto the stack.</p>
-<figure class="highlight csharp"><pre>// Load the T instance, SqlDataReader parameter <span class="keyword">and</span> the field name onto the stack
-il<span class="preprocessor">.Emit</span>(OpCodes<span class="preprocessor">.Ldloc</span>_0)<span class="comment">;</span>
-il<span class="preprocessor">.Emit</span>(OpCodes<span class="preprocessor">.Ldarg</span>_0)<span class="comment">;</span>
-il<span class="preprocessor">.Emit</span>(OpCodes<span class="preprocessor">.Ldstr</span>, pi<span class="preprocessor">.Name</span>)<span class="comment">;</span>
+<figure class="highlight cs"><pre><span class="comment">// Load the T instance, SqlDataReader parameter and the field name onto the stack</span>
+il.Emit(OpCodes.Ldloc_0);
+il.Emit(OpCodes.Ldarg_0);
+il.Emit(OpCodes.Ldstr, pi.Name);
 
-// <span class="keyword">Push</span> the column value onto the stack
-il<span class="preprocessor">.Emit</span>(OpCodes<span class="preprocessor">.Callvirt</span>, typeof(DbDataReader)<span class="preprocessor">.GetMethod</span>(<span class="string">"get_Item"</span>, new Type[] { typeof(string) }))<span class="comment">;</span>
+<span class="comment">// Push the column value onto the stack</span>
+il.Emit(OpCodes.Callvirt, <span class="keyword">typeof</span>(DbDataReader).GetMethod(<span class="string">"get_Item"</span>, <span class="keyword">new</span> Type[] { <span class="keyword">typeof</span>(<span class="keyword">string</span>) }));
 </pre></figure>
 
 <p>Now’s the ugly part. Depending on the type, there are different ways to convert it into the corresponding .NET type, i’ve made a switch statement handling most common types, although it does lack support for nullable types, guids and various other numeric formats. It should show to idea though. Converting the value will push the resulting correctly typed value onto the stack, and pop the original value in the process.</p>
-<figure class="highlight csharp"><pre><span class="comment">// Depending on the type of the property, convert the datareader column value to the type</span>
+<figure class="highlight cs"><pre><span class="comment">// Depending on the type of the property, convert the datareader column value to the type</span>
 <span class="keyword">switch</span> (pi.PropertyType.Name)
 {
 	<span class="keyword">case</span> <span class="string">"Int16"</span>:
@@ -177,20 +177,20 @@ il<span class="preprocessor">.Emit</span>(OpCodes<span class="preprocessor">.Cal
 </pre></figure>
 
 <p>And finally we set the properties value, thereby popping the value from the stack.</p>
-<figure class="highlight csharp"><pre>// <span class="keyword">Set</span> the T instances property value
-il<span class="preprocessor">.Emit</span>(OpCodes<span class="preprocessor">.Callvirt</span>, typeof(T)<span class="preprocessor">.GetMethod</span>(<span class="string">"set_"</span> + pi<span class="preprocessor">.Name</span>, new Type[] { pi<span class="preprocessor">.PropertyType</span> }))<span class="comment">;</span>
+<figure class="highlight cs"><pre><span class="comment">// Set the T instances property value</span>
+il.Emit(OpCodes.Callvirt, <span class="keyword">typeof</span>(T).GetMethod(<span class="string">"set_"</span> + pi.Name, <span class="keyword">new</span> Type[] { pi.PropertyType }));
 </pre></figure>
 
 <p>After we’ve mapped all the properties, we’ll load the T instance onto the stack and return it.</p>
-<figure class="highlight csharp"><pre>// Load the T instance onto the stack
-il<span class="preprocessor">.Emit</span>(OpCodes<span class="preprocessor">.Ldloc</span>_0)<span class="comment">;</span>
+<figure class="highlight cs"><pre><span class="comment">// Load the T instance onto the stack</span>
+il.Emit(OpCodes.Ldloc_0);
 
-// Return
-il<span class="preprocessor">.Emit</span>(OpCodes<span class="preprocessor">.Ret</span>)<span class="comment">;</span>
+<span class="comment">// Return</span>
+il.Emit(OpCodes.Ret);
 </pre></figure>
 
 <p>To improve performance, let’s cache this mapper method as it’ll work for the type T the next time we need it. Notice that what we’re caching is not the method itself, but a delegate to the method - enabling us to actually call the method.</p>
-<figure class="highlight csharp"><pre><span class="keyword">private</span> <span class="keyword">delegate</span> T mapEntity&lt;T&gt;(DbDataReader dr);
+<figure class="highlight cs"><pre><span class="keyword">private</span> <span class="keyword">delegate</span> T mapEntity&lt;T&gt;(DbDataReader dr);
 <span class="keyword">private</span> <span class="keyword">static</span> Dictionary&lt;Type, Delegate&gt; cachedMappers = <span class="keyword">new</span> Dictionary&lt;Type, Delegate&gt;();
 
 <span class="comment">// Cache the method so we won't have to create it again for the type T</span>
@@ -201,13 +201,13 @@ mapEntity&lt;T&gt; invokeMapEntity = (mapEntity&lt;T&gt;)cachedMappers[<span cla
 </pre></figure>
 
 <p>Now all we gotta do is loop the DbDataReader rows and return the mapped entities.</p>
-<figure class="highlight csharp"><pre>// <span class="keyword">For</span> each row, <span class="keyword">map</span> the row <span class="keyword">to</span> an instance <span class="keyword">of</span> T <span class="keyword">and</span> yield <span class="keyword">return</span> it
+<figure class="highlight cs"><pre><span class="comment">// For each row, map the row to an instance of T and yield return it</span>
 <span class="keyword">while</span> (dr.Read())
-	yield <span class="keyword">return</span> invokeMapEntity(dr);
+	<span class="keyword">yield</span> <span class="keyword">return</span> invokeMapEntity(dr);
 </pre></figure>
 
 <p>And of course, here’s the final method/class. Remember that this is more a proof of concept than a complete class. It ought to handle all necessary types. Also, it might be relevant to consider whether one should map public as well as private properties. Whether it should handle type validation errors, missing columns or not, I’m not sure. As it is now, it’ll throw a normal ArgumentOutOfRangeException in cases of missing columns, and relevant type conversion errors - all those can be handled by the callee using try/catch blocks.</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 <span class="keyword">using</span> System.Collections.Generic;
 <span class="keyword">using</span> System.Data.Common;
 <span class="keyword">using</span> System.Reflection;

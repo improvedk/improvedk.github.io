@@ -123,21 +123,21 @@
 <div class="imgwrapper" style=""><div><a href="/using-fiddler-to-automatically-download-streamed-mp3s/image_44.png" class="fancy"><img src="/using-fiddler-to-automatically-download-streamed-mp3s/image_44.png" style="max-height: 250px"/></a></div></div>
 
 <p>Go to the OnBeforeResponse function and add the following bit of code to the end:</p>
-<figure class="highlight csharp"><pre>if(oSession<span class="preprocessor">.url</span><span class="preprocessor">.Contains</span>(<span class="string">"SomeStream.aspx"</span>)) {
-	var directory: String = <span class="string">"D:\Files\MP3"</span><span class="comment">;</span>
-	var path: String = System<span class="preprocessor">.IO</span><span class="preprocessor">.Path</span><span class="preprocessor">.Combine</span>(directory, Guid<span class="preprocessor">.NewGuid</span>() + <span class="string">".mp3"</span>)<span class="comment">;</span>
+<figure class="highlight cs"><pre><span class="keyword">if</span>(oSession.url.Contains(<span class="string">"SomeStream.aspx"</span>)) {
+	<span class="keyword">var</span> directory: String = <span class="string">"D:\Files\MP3"</span>;
+	<span class="keyword">var</span> path: String = System.IO.Path.Combine(directory, Guid.NewGuid() + <span class="string">".mp3"</span>);
 
-	oSession<span class="preprocessor">.SaveResponseBody</span>(path)<span class="comment">;</span>
-	var file: TagLib<span class="preprocessor">.File</span> = TagLib<span class="preprocessor">.File</span><span class="preprocessor">.Create</span>(path)<span class="comment">;</span>
+	oSession.SaveResponseBody(path);
+	<span class="keyword">var</span> file: TagLib.File = TagLib.File.Create(path);
 
-	if(file<span class="preprocessor">.Tag</span><span class="preprocessor">.Title</span><span class="preprocessor">.Length</span> &gt; <span class="number">0</span>)
+	<span class="keyword">if</span>(file.Tag.Title.Length &gt; <span class="number">0</span>)
 	{
-		var target: String = System<span class="preprocessor">.IO</span><span class="preprocessor">.Path</span><span class="preprocessor">.Combine</span>(directory, file<span class="preprocessor">.Tag</span><span class="preprocessor">.AlbumArtists</span> + <span class="string">" - "</span> + file<span class="preprocessor">.Tag</span><span class="preprocessor">.Title</span> + <span class="string">".mp3"</span>)<span class="comment">;</span>
+		<span class="keyword">var</span> target: String = System.IO.Path.Combine(directory, file.Tag.AlbumArtists + <span class="string">" - "</span> + file.Tag.Title + <span class="string">".mp3"</span>);
 
-		if(!System<span class="preprocessor">.IO</span><span class="preprocessor">.File</span><span class="preprocessor">.Exists</span>(target))
-			System<span class="preprocessor">.IO</span><span class="preprocessor">.File</span><span class="preprocessor">.Move</span>(path, target)<span class="comment">;</span>
-		else
-			System<span class="preprocessor">.IO</span><span class="preprocessor">.File</span><span class="preprocessor">.Delete</span>(path)<span class="comment">;</span>
+		<span class="keyword">if</span>(!System.IO.File.Exists(target))
+			System.IO.File.Move(path, target);
+		<span class="keyword">else</span>
+			System.IO.File.Delete(path);
 	}
 }
 </pre></figure>

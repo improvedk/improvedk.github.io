@@ -115,7 +115,7 @@
 <h2 id="Leveraging_Volume_Shadow_Copy_(VSS)_through_AlphaVSS">Leveraging Volume Shadow Copy (VSS) through AlphaVSS</h2>
 <p><a href="http://www.alphaleonis.com/2008/08/alphavss-bringing-windows-shadow-copy-service-vss-to-net/" target="_blank">AlphaVSS</a> is an excellent library for invoking VSS through .NET. While it can do much more, I’m using it to create a snapshot of a single active file, copy it and then dispose of the snapshot afterwards.</p>
 <p>The following class presents a single static method that’ll copy any file (locked or not) and copy it to the desired destination. It would be easy to adapt upon this sample to copy multiple files, directories, etc. Note that while a copy file progress clalback is supported, I don’t really care about the progress and am there sending a null reference when calling <a href="http://msdn.microsoft.com/en-us/library/aa363852(v=vs.85" target="_blank">CopyFileEx</a>.aspx).</p>
-<figure class="highlight csharp"><pre>class VssHelper
+<figure class="highlight cs"><pre>class VssHelper
 {
 	[DllImport(<span class="string">"kernel32.dll"</span>, SetLastError = <span class="keyword">true</span>, CharSet = CharSet.Auto)]
 	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">extern</span> <span class="keyword">bool</span> <span class="title">CopyFileEx</span>(<span class="keyword">string</span> lpExistingFileName, <span class="keyword">string</span> lpNewFileName, CopyProgressRoutine lpProgressRoutine, <span class="keyword">int</span> lpData, <span class="keyword">ref</span> <span class="keyword">int</span> pbCancel, <span class="keyword">uint</span> dwCopyFlags);

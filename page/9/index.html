@@ -485,7 +485,7 @@ DECLARE @NonclusteredIndexName sysname = 'CX_ID_Name'
 <h2 id="Leveraging_Volume_Shadow_Copy_(VSS)_through_AlphaVSS">Leveraging Volume Shadow Copy (VSS) through AlphaVSS</h2>
 <p><a href="http://www.alphaleonis.com/2008/08/alphavss-bringing-windows-shadow-copy-service-vss-to-net/" target="_blank">AlphaVSS</a> is an excellent library for invoking VSS through .NET. While it can do much more, I’m using it to create a snapshot of a single active file, copy it and then dispose of the snapshot afterwards.</p>
 <p>The following class presents a single static method that’ll copy any file (locked or not) and copy it to the desired destination. It would be easy to adapt upon this sample to copy multiple files, directories, etc. Note that while a copy file progress clalback is supported, I don’t really care about the progress and am there sending a null reference when calling <a href="http://msdn.microsoft.com/en-us/library/aa363852(v=vs.85" target="_blank">CopyFileEx</a>.aspx).</p>
-<figure class="highlight csharp"><pre>class VssHelper
+<figure class="highlight cs"><pre>class VssHelper
 {
 	[DllImport(<span class="string">"kernel32.dll"</span>, SetLastError = <span class="keyword">true</span>, CharSet = CharSet.Auto)]
 	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">extern</span> <span class="keyword">bool</span> <span class="title">CopyFileEx</span>(<span class="keyword">string</span> lpExistingFileName, <span class="keyword">string</span> lpNewFileName, CopyProgressRoutine lpProgressRoutine, <span class="keyword">int</span> lpData, <span class="keyword">ref</span> <span class="keyword">int</span> pbCancel, <span class="keyword">uint</span> dwCopyFlags);
@@ -673,7 +673,7 @@ DECLARE @NonclusteredIndexName sysname = 'CX_ID_Name'
 
 <h2 id="Unit_testing">Unit testing</h2>
 <p><a href="http://en.wikipedia.org/wiki/Unit_testing" target="_blank">Unit testing</a> is the process of testing the smallest parts of the code, which would be functions in object oriented programming. A sample test for the <a href="https://github.com/improvedk/OrcaMDF/blob/694dd0cff213dc48b5153b040a41fdc707914680/src/OrcaMDF.Core/Engine/SqlTypes/SqlBigInt.cs" target="_blank">SqlBigInt</a> data type parsing class could look like this:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 <span class="keyword">using</span> NUnit.Framework;
 <span class="keyword">using</span> OrcaMDF.Core.Engine.SqlTypes;
 
@@ -722,7 +722,7 @@ namespace OrcaMDF.Core.Tests.Engine.SqlTypes
 <li>Run OrcaMDF on the detached .mdf file and validate the results.</li>
 </ul>
 <p>A sample test, creating two user tables and validating the output from the DatabaseMetaData, looks like this:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System.Data.SqlClient;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System.Data.SqlClient;
 <span class="keyword">using</span> NUnit.Framework;
 <span class="keyword">using</span> OrcaMDF.Core.Engine;
 
@@ -1011,21 +1011,21 @@ DBCC PAGE (Test, 1, 114, 3)
 <div class="imgwrapper" style=""><div><a href="/using-fiddler-to-automatically-download-streamed-mp3s/image_44.png" class="fancy"><img src="/using-fiddler-to-automatically-download-streamed-mp3s/image_44.png" style="max-height: 250px"/></a></div></div>
 
 <p>Go to the OnBeforeResponse function and add the following bit of code to the end:</p>
-<figure class="highlight csharp"><pre>if(oSession<span class="preprocessor">.url</span><span class="preprocessor">.Contains</span>(<span class="string">"SomeStream.aspx"</span>)) {
-	var directory: String = <span class="string">"D:\Files\MP3"</span><span class="comment">;</span>
-	var path: String = System<span class="preprocessor">.IO</span><span class="preprocessor">.Path</span><span class="preprocessor">.Combine</span>(directory, Guid<span class="preprocessor">.NewGuid</span>() + <span class="string">".mp3"</span>)<span class="comment">;</span>
+<figure class="highlight cs"><pre><span class="keyword">if</span>(oSession.url.Contains(<span class="string">"SomeStream.aspx"</span>)) {
+	<span class="keyword">var</span> directory: String = <span class="string">"D:\Files\MP3"</span>;
+	<span class="keyword">var</span> path: String = System.IO.Path.Combine(directory, Guid.NewGuid() + <span class="string">".mp3"</span>);
 
-	oSession<span class="preprocessor">.SaveResponseBody</span>(path)<span class="comment">;</span>
-	var file: TagLib<span class="preprocessor">.File</span> = TagLib<span class="preprocessor">.File</span><span class="preprocessor">.Create</span>(path)<span class="comment">;</span>
+	oSession.SaveResponseBody(path);
+	<span class="keyword">var</span> file: TagLib.File = TagLib.File.Create(path);
 
-	if(file<span class="preprocessor">.Tag</span><span class="preprocessor">.Title</span><span class="preprocessor">.Length</span> &gt; <span class="number">0</span>)
+	<span class="keyword">if</span>(file.Tag.Title.Length &gt; <span class="number">0</span>)
 	{
-		var target: String = System<span class="preprocessor">.IO</span><span class="preprocessor">.Path</span><span class="preprocessor">.Combine</span>(directory, file<span class="preprocessor">.Tag</span><span class="preprocessor">.AlbumArtists</span> + <span class="string">" - "</span> + file<span class="preprocessor">.Tag</span><span class="preprocessor">.Title</span> + <span class="string">".mp3"</span>)<span class="comment">;</span>
+		<span class="keyword">var</span> target: String = System.IO.Path.Combine(directory, file.Tag.AlbumArtists + <span class="string">" - "</span> + file.Tag.Title + <span class="string">".mp3"</span>);
 
-		if(!System<span class="preprocessor">.IO</span><span class="preprocessor">.File</span><span class="preprocessor">.Exists</span>(target))
-			System<span class="preprocessor">.IO</span><span class="preprocessor">.File</span><span class="preprocessor">.Move</span>(path, target)<span class="comment">;</span>
-		else
-			System<span class="preprocessor">.IO</span><span class="preprocessor">.File</span><span class="preprocessor">.Delete</span>(path)<span class="comment">;</span>
+		<span class="keyword">if</span>(!System.IO.File.Exists(target))
+			System.IO.File.Move(path, target);
+		<span class="keyword">else</span>
+			System.IO.File.Delete(path);
 	}
 }
 </pre></figure>

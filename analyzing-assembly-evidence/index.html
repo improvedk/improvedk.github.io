@@ -115,7 +115,7 @@
 <p>There are two different overall origins of evidence, assembly provided and CLR provided. When the CLR loads an assembly, it recognizes the evidence based on the location the assembly is loaded from, file hash and so forth - this is the CLR provided evidence. The other type of evidence is custom evidence provided by the assembly itself. Although useful, we have to be careful not to blindly trust this evidence as it’s provided by the assembly manufacturer. Thus an assembly manufacturer might provide a piece of evidence claiming that the assembly is provided by Microsoft / Google / some other trustworthy corporation - even though that might not be the case.</p>
 <p>Any loaded assembly has an evidence property of type <a href="http://msdn.microsoft.com/en-us/library/system.security.policy.evidence.aspx" target="_blank">System.Security.Policy.Evidence</a>. The Evidence class has three relevant functions for obtaining the actual evidence, namely GetHostEnumerator, GetAssemblyEnumerator and GetEnumerator. GetHostEnumerator returns an IEnumerator containing the evidence policies, likewise the GetAssemblyEnumerator returns the assembly provided (and inherently untrustworthy) policies, while the GetEnumerator returns the union of the two.</p>
 <p>Just a quick tip. I hate using enumerators, I much prefer foreach loops. The following method will take an IEnumerator and yield an IEnumerable, enabling you to foreach the collection:</p>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">static</span> IEnumerable <span class="title">GetEnumerable</span>(IEnumerator enumerator)
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">static</span> IEnumerable <span class="title">GetEnumerable</span>(IEnumerator enumerator)
 {
 	<span class="keyword">while</span> (enumerator.MoveNext())
 		<span class="keyword">yield</span> <span class="keyword">return</span> enumerator.Current;
@@ -123,13 +123,13 @@
 </pre></figure>
 
 <p>I’ve created a simple assembly containing an empty class (the contents of the assembly is not relevant in regards to evidence) called TestAssembly. The following code will load in the TestAssembly from the application directory and enumerate the CLR provided evidence. Note that I’ve got a special case for the<a href="http://msdn.microsoft.com/en-us/library/system.security.policy.hash(VS.80" target="_blank">System.Security.Policy.Hash</a>.aspx) type as it includes a rather lengthy hash of the file. The hash evidence can be used to validate the assembly contents against a pre-known hash of the assembly as a simple way of tamper protecting your applications assemblies.</p>
-<figure class="highlight csharp"><pre>Assembly asm = Assembly<span class="preprocessor">.LoadFile</span>(Path<span class="preprocessor">.Combine</span>(Path<span class="preprocessor">.GetDirectoryName</span>(Assembly<span class="preprocessor">.GetExecutingAssembly</span>()<span class="preprocessor">.Location</span>), <span class="string">"TestAssembly.dll"</span>))<span class="comment">;</span>
+<figure class="highlight cs"><pre>Assembly asm = Assembly.LoadFile(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), <span class="string">"TestAssembly.dll"</span>));
 
-foreach (object obj <span class="keyword">in</span> EnumeratorHelper<span class="preprocessor">.GetEnumerable</span>(asm<span class="preprocessor">.Evidence</span><span class="preprocessor">.GetHostEnumerator</span>()))
-	if (obj is Hash)
-		Console<span class="preprocessor">.WriteLine</span>(@<span class="string">"&lt;System.Security.Policy.Hash version="</span><span class="string">"1"</span><span class="string">"&gt;&lt;RawData&gt;4D5A900003...00000&lt;/RawData&gt;&lt;/System.Security.Policy.Hash&gt;"</span>)<span class="comment">;</span>
-	else
-		Console<span class="preprocessor">.WriteLine</span>(obj<span class="preprocessor">.ToString</span>())<span class="comment">;</span>
+<span class="keyword">foreach</span> (<span class="keyword">object</span> obj <span class="keyword">in</span> EnumeratorHelper.GetEnumerable(asm.Evidence.GetHostEnumerator()))
+	<span class="keyword">if</span> (obj <span class="keyword">is</span> Hash)
+		Console.WriteLine(<span class="string">@"&lt;System.Security.Policy.Hash version=""1""&gt;&lt;RawData&gt;4D5A900003...00000&lt;/RawData&gt;&lt;/System.Security.Policy.Hash&gt;"</span>);
+	<span class="keyword">else</span>
+		Console.WriteLine(obj.ToString());
 </pre></figure>
 
 <p>This is the resulting output:</p>
@@ -148,7 +148,7 @@ foreach (object obj <span class="keyword">in</span> EnumeratorHelper<span class=
 
 <p>As we can see, it gives us the URL from where the assembly was loaded, our security zone (MyComputer since it was loaded locally), and finally the dummy hash.</p>
 <p>I’ve got a test server running called Mirage. Mirage is part of the Active Directory domain ipaper.lan and I’ve set a website up on it answering to the default address <a href="http://mirage.ipaper.lan" target="_blank">http://mirage.ipaper.lan</a>. When loading the TestAssembly from this website, the evidence changes a bit:</p>
-<figure class="highlight csharp"><pre><span class="keyword">Assembly</span> asm = <span class="keyword">Assembly</span>.LoadFrom(<span class="string">"http://mirage.ipaper.lan/TestAssembly.dll"</span>);
+<figure class="highlight cs"><pre>Assembly asm = Assembly.LoadFrom(<span class="string">"http://mirage.ipaper.lan/TestAssembly.dll"</span>);
 </pre></figure>
 
 

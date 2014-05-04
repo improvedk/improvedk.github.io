@@ -129,20 +129,20 @@
 <div class="imgwrapper" style=""><div><a href="/orcamdf-is-now-available-on-nuget/4.png" class="fancy"><img src="/orcamdf-is-now-available-on-nuget/4.png" style="max-height: 250px"/></a></div></div>
 
 <p>At this point the OrcaMDF.Core assembly will be available and all you have to do is start using it. For example you could print out all of the products along with their prices by modifying the Program.cs file like so (you’ll have to alter the path to AdventureWorks2008R2_Data.mdf file so it points to a local copy (which must not be in use by SQL Server) on your machine):</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 <span class="keyword">using</span> OrcaMDF.Core.Engine;
 
-<span class="class"><span class="keyword">namespace</span> <span class="title">ConsoleApplication1</span>
-{</span>
-	<span class="class"><span class="keyword">class</span> <span class="title">Program</span>
-	{</span>
+namespace ConsoleApplication1
+{
+	class Program
+	{
 		<span class="keyword">static</span> <span class="keyword">void</span> Main()
 		{
-			<span class="keyword">using</span> (<span class="keyword">var</span> db = <span class="keyword">new</span> Database(@<span class="string">"C:\AdventureWorks2008R2_Data.mdf"</span>))
+			<span class="keyword">using</span> (<span class="keyword">var</span> db = <span class="keyword">new</span> Database(<span class="string">@"C:\AdventureWorks2008R2_Data.mdf"</span>))
 			{
 				<span class="keyword">var</span> scanner = <span class="keyword">new</span> DataScanner(db);
 
-				<span class="keyword">foreach</span> (<span class="keyword">var</span> row in scanner.ScanTable(<span class="string">"Product"</span>))
+				<span class="keyword">foreach</span> (<span class="keyword">var</span> row <span class="keyword">in</span> scanner.ScanTable(<span class="string">"Product"</span>))
 				{
 					Console.WriteLine(row.Field&lt;<span class="keyword">string</span>&gt;(<span class="string">"Name"</span>));
 					Console.WriteLine(<span class="string">"Price: "</span> + row.Field&lt;<span class="keyword">double</span>&gt;(<span class="string">"ListPrice"</span>));

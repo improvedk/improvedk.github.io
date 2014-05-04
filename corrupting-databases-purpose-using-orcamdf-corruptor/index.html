@@ -127,8 +127,8 @@
 <h2 id="Examples">Examples</h2>
 <p>There are two overloads for the Corruptor.CorruptFile method, both of them return an IEnumerable of integers - a list of the page IDs that have been overwritten by zeros.</p>
 <p>The following code will corrupt 5% of the pages in the AdventureWorks2008R2LT.mdf file, after which it will output each page ID that has been corrupted. You can specify the percentage of pages to corrupt by changing the second parameter.</p>
-<figure class="highlight csharp"><pre>var corruptedPageIDs = Corruptor<span class="preprocessor">.CorruptFile</span>(@<span class="string">"C:\AdventureWorks2008R2LT.mdf"</span>, <span class="number">0.05</span>)<span class="comment">;</span>
-Console<span class="preprocessor">.WriteLine</span>(string<span class="preprocessor">.Join</span>(<span class="string">", "</span>, corruptedPageIDs))<span class="comment">;</span>
+<figure class="highlight cs"><pre><span class="keyword">var</span> corruptedPageIDs = Corruptor.CorruptFile(<span class="string">@"C:\AdventureWorks2008R2LT.mdf"</span>, <span class="number">0.05</span>);
+Console.WriteLine(<span class="keyword">string</span>.Join(<span class="string">", "</span>, corruptedPageIDs));
 </pre></figure>
 
 
@@ -139,8 +139,8 @@ Console<span class="preprocessor">.WriteLine</span>(string<span class="preproces
 </pre></figure>
 
 <p>To make the corruption hit even harder, you can also use the second overload of the CorruptFile method, allowing you to specify the exact number of pages to corrupt, within a certain range of page IDs. The following code will corrupt exactly 10 pages within the first 50 pages (zero-based), thus hitting mostly metadata.</p>
-<figure class="highlight csharp"><pre>var corruptedPageIDs = Corruptor<span class="preprocessor">.CorruptFile</span>(@<span class="string">"C:\AdventureWorks2008R2LT.mdf"</span>, <span class="number">10</span>, <span class="number">0</span>, <span class="number">49</span>)<span class="comment">;</span>
-Console<span class="preprocessor">.WriteLine</span>(string<span class="preprocessor">.Join</span>(<span class="string">", "</span>, corruptedPageIDs))<span class="comment">;</span>
+<figure class="highlight cs"><pre><span class="keyword">var</span> corruptedPageIDs = Corruptor.CorruptFile(<span class="string">@"C:\AdventureWorks2008R2LT.mdf"</span>, <span class="number">10</span>, <span class="number">0</span>, <span class="number">49</span>);
+Console.WriteLine(<span class="keyword">string</span>.Join(<span class="string">", "</span>, corruptedPageIDs));
 </pre></figure>
 
 

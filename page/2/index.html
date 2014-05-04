@@ -509,20 +509,20 @@ Followup: MachineOwner
 <div class="imgwrapper" style=""><div><a href="/orcamdf-is-now-available-on-nuget/4.png" class="fancy"><img src="/orcamdf-is-now-available-on-nuget/4.png" style="max-height: 250px"/></a></div></div>
 
 <p>At this point the OrcaMDF.Core assembly will be available and all you have to do is start using it. For example you could print out all of the products along with their prices by modifying the Program.cs file like so (you’ll have to alter the path to AdventureWorks2008R2_Data.mdf file so it points to a local copy (which must not be in use by SQL Server) on your machine):</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 <span class="keyword">using</span> OrcaMDF.Core.Engine;
 
-<span class="class"><span class="keyword">namespace</span> <span class="title">ConsoleApplication1</span>
-{</span>
-	<span class="class"><span class="keyword">class</span> <span class="title">Program</span>
-	{</span>
+namespace ConsoleApplication1
+{
+	class Program
+	{
 		<span class="keyword">static</span> <span class="keyword">void</span> Main()
 		{
-			<span class="keyword">using</span> (<span class="keyword">var</span> db = <span class="keyword">new</span> Database(@<span class="string">"C:\AdventureWorks2008R2_Data.mdf"</span>))
+			<span class="keyword">using</span> (<span class="keyword">var</span> db = <span class="keyword">new</span> Database(<span class="string">@"C:\AdventureWorks2008R2_Data.mdf"</span>))
 			{
 				<span class="keyword">var</span> scanner = <span class="keyword">new</span> DataScanner(db);
 
-				<span class="keyword">foreach</span> (<span class="keyword">var</span> row in scanner.ScanTable(<span class="string">"Product"</span>))
+				<span class="keyword">foreach</span> (<span class="keyword">var</span> row <span class="keyword">in</span> scanner.ScanTable(<span class="string">"Product"</span>))
 				{
 					Console.WriteLine(row.Field&lt;<span class="keyword">string</span>&gt;(<span class="string">"Name"</span>));
 					Console.WriteLine(<span class="string">"Price: "</span> + row.Field&lt;<span class="keyword">double</span>&gt;(<span class="string">"ListPrice"</span>));
@@ -899,7 +899,7 @@ OS Thread Id: <span class="number">0x14930</span> (<span class="number">20</span
 
 <h2 id="Enter_ConcurrentDictionary">Enter ConcurrentDictionary</h2>
 <p>The problem can be solved by changing just two lines of code. Instead of using a generic Dictionary, we’ll change it to a generic ConcurrentDictionary like so:</p>
-<figure class="highlight csharp"><pre><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">readonly</span> ConcurrentDictionary&lt;<span class="keyword">short</span>, ConcurrentDictionary&lt;SettingDescription, SettingDescriptionContainer&gt;&gt; cache =
+<figure class="highlight cs"><pre><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">readonly</span> ConcurrentDictionary&lt;<span class="keyword">short</span>, ConcurrentDictionary&lt;SettingDescription, SettingDescriptionContainer&gt;&gt; cache =
 	<span class="keyword">new</span> ConcurrentDictionary&lt;<span class="keyword">short</span>, ConcurrentDictionary&lt;SettingDescription, SettingDescriptionContainer&gt;&gt;();
 </pre></figure>
 
@@ -909,7 +909,7 @@ OS Thread Id: <span class="number">0x14930</span> (<span class="number">20</span
 </blockquote>
 <p>Performance wise ConcurrentDictionary is about 50% slower (anecdotally) than the regular Dictionary type but even if this code is run very often, that is absolutely negligible compared to making just a single database access call.</p>
 <p>Besides switching the Dictionary out with a ConcurrentDictionary, we also need to modify the init function since the ConcurrentDictionary way of adding items is slightly different:</p>
-<figure class="highlight csharp"><pre><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">object</span> syncRoot = <span class="keyword">new</span> <span class="keyword">object</span>();
+<figure class="highlight cs"><pre><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">object</span> syncRoot = <span class="keyword">new</span> <span class="keyword">object</span>();
 
 <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">init</span>(IPartnerConfig partnerConfig)
 {
@@ -987,24 +987,24 @@ OS Thread Id: <span class="number">0x14930</span> (<span class="number">20</span
 
 <h2 id="Looking_at_the_User_Code">Looking at the User Code</h2>
 <p>There were three methods in action, all of them in the SettingDescriptionCache class: GetAllDescriptions, init and GetAllDescriptionsAsDictionary. GetAllDescriptions and GetAllDescriptionsAsDictionary are for all intents and purposes identical and both implement a pattern like this:</p>
-<figure class="highlight csharp"><pre>public static IEnumerable&lt;SettingDescriptionContainer&gt; GetAllDescriptions(IPartnerConfig partnerConfig)
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">static</span> IEnumerable&lt;SettingDescriptionContainer&gt; <span class="title">GetAllDescriptions</span>(IPartnerConfig partnerConfig)
 {
-	// Optimistic return. If it fails we'll populate the cache and return it.
-	try
+	<span class="comment">// Optimistic return. If it fails we'll populate the cache and return it.</span>
+	<span class="keyword">try</span>
 	{
-		return cache[partnerConfig.PartnerID].Values;
+		<span class="keyword">return</span> cache[partnerConfig.PartnerID].Values;
 	}
-	catch (KeyNotFoundException)
+	<span class="keyword">catch</span> (KeyNotFoundException)
 	{
 		init(partnerConfig);
 	}
 
-	return cache[partnerConfig.PartnerID].Values;
+	<span class="keyword">return</span> cache[partnerConfig.PartnerID].Values;
 }
 </pre></figure>
 
 <p>Both methods access a static variable defined in the class like so:</p>
-<figure class="highlight csharp"><pre><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">readonly</span> Dictionary&lt;<span class="keyword">short</span>, Dictionary&lt;SettingDescription, SettingDescriptionContainer&gt;&gt; cache =
+<figure class="highlight cs"><pre><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">readonly</span> Dictionary&lt;<span class="keyword">short</span>, Dictionary&lt;SettingDescription, SettingDescriptionContainer&gt;&gt; cache =
 	<span class="keyword">new</span> Dictionary&lt;<span class="keyword">short</span>, Dictionary&lt;SettingDescription, SettingDescriptionContainer&gt;&gt;();
 </pre></figure>
 
@@ -1189,38 +1189,38 @@ OS Thread Id: <span class="number">0x14930</span> (<span class="number">20</span
 <div class="imgwrapper" style=""><div><a href="/debugging-in-production-part-1-analyzing-100-cpu-usage-using-windbg/Windbg4.png" class="fancy"><img src="/debugging-in-production-part-1-analyzing-100-cpu-usage-using-windbg/Windbg4.png" style="max-height: 250px"/></a></div></div>
 
 <p>Looking at the top frame in the call stack, it seems the thread is stuck in the BCL Dictionary.FindEntry() method:</p>
-<figure class="highlight csharp"><pre>System.Collections.Generic.Dictionary`<span class="number">2</span><span class="string">[[System.Int16, mscorlib],[System.__Canon, mscorlib]]</span>.FindEntry(Int16)
+<figure class="highlight cs"><pre>System.Collections.Generic.Dictionary`<span class="number">2</span>[[System.Int16, mscorlib],[System.__Canon, mscorlib]].FindEntry(Int16)
 </pre></figure>
 
 <p>Tracing back just a few more frames, this seems to be invoked from the following user function:</p>
-<figure class="highlight csharp"><pre>iPaper<span class="preprocessor">.BL</span><span class="preprocessor">.Backend</span><span class="preprocessor">.Modules</span><span class="preprocessor">.Paper</span><span class="preprocessor">.Settings</span><span class="preprocessor">.SettingDescriptionCache</span><span class="preprocessor">.GetAllDescriptions</span>()
+<figure class="highlight cs"><pre>iPaper.BL.Backend.Modules.Paper.Settings.SettingDescriptionCache.GetAllDescriptions()
 </pre></figure>
 
 <p>Performing the same act for the top five threads yields a rather clear unanimous picture:</p>
-<figure class="highlight csharp"><pre><span class="number">234</span>:
-System<span class="preprocessor">.Collections</span><span class="preprocessor">.Generic</span><span class="preprocessor">.Dictionary</span>`<span class="number">2</span>[[System<span class="preprocessor">.Int</span>16, mscorlib],[System.__Canon, mscorlib]]<span class="preprocessor">.FindEntry</span>(Int16)
+<figure class="highlight cs"><pre><span class="number">234</span>:
+System.Collections.Generic.Dictionary`<span class="number">2</span>[[System.Int16, mscorlib],[System.__Canon, mscorlib]].FindEntry(Int16)
 ...
-iPaper<span class="preprocessor">.BL</span><span class="preprocessor">.Backend</span><span class="preprocessor">.Modules</span><span class="preprocessor">.Paper</span><span class="preprocessor">.Settings</span><span class="preprocessor">.SettingDescriptionCache</span><span class="preprocessor">.GetAllDescriptions</span>(iPaper<span class="preprocessor">.BL</span><span class="preprocessor">.Backend</span><span class="preprocessor">.Infrastructure</span><span class="preprocessor">.PartnerConfiguration</span><span class="preprocessor">.IPartnerConfig</span>)
+iPaper.BL.Backend.Modules.Paper.Settings.SettingDescriptionCache.GetAllDescriptions(iPaper.BL.Backend.Infrastructure.PartnerConfiguration.IPartnerConfig)
 
 <span class="number">232</span>:
-System<span class="preprocessor">.Collections</span><span class="preprocessor">.Generic</span><span class="preprocessor">.Dictionary</span>`<span class="number">2</span>[[System<span class="preprocessor">.Int</span>16, mscorlib],[System.__Canon, mscorlib]]<span class="preprocessor">.Insert</span>(Int16, System.__Canon, Boolean)
+System.Collections.Generic.Dictionary`<span class="number">2</span>[[System.Int16, mscorlib],[System.__Canon, mscorlib]].Insert(Int16, System.__Canon, Boolean)
 ...
-iPaper<span class="preprocessor">.BL</span><span class="preprocessor">.Backend</span><span class="preprocessor">.Modules</span><span class="preprocessor">.Paper</span><span class="preprocessor">.Settings</span><span class="preprocessor">.SettingDescriptionCache</span><span class="preprocessor">.init</span>(iPaper<span class="preprocessor">.BL</span><span class="preprocessor">.Backend</span><span class="preprocessor">.Infrastructure</span><span class="preprocessor">.PartnerConfiguration</span><span class="preprocessor">.IPartnerConfig</span>)
+iPaper.BL.Backend.Modules.Paper.Settings.SettingDescriptionCache.init(iPaper.BL.Backend.Infrastructure.PartnerConfiguration.IPartnerConfig)
 
 <span class="number">238</span>:
-System<span class="preprocessor">.Collections</span><span class="preprocessor">.Generic</span><span class="preprocessor">.Dictionary</span>`<span class="number">2</span>[[System<span class="preprocessor">.Int</span>16, mscorlib],[System.__Canon, mscorlib]]<span class="preprocessor">.FindEntry</span>(Int16)
+System.Collections.Generic.Dictionary`<span class="number">2</span>[[System.Int16, mscorlib],[System.__Canon, mscorlib]].FindEntry(Int16)
 ...
-iPaper<span class="preprocessor">.BL</span><span class="preprocessor">.Backend</span><span class="preprocessor">.Modules</span><span class="preprocessor">.Paper</span><span class="preprocessor">.Settings</span><span class="preprocessor">.SettingDescriptionCache</span><span class="preprocessor">.GetAllDescriptions</span>(iPaper<span class="preprocessor">.BL</span><span class="preprocessor">.Backend</span><span class="preprocessor">.Infrastructure</span><span class="preprocessor">.PartnerConfiguration</span><span class="preprocessor">.IPartnerConfig</span>)
+iPaper.BL.Backend.Modules.Paper.Settings.SettingDescriptionCache.GetAllDescriptions(iPaper.BL.Backend.Infrastructure.PartnerConfiguration.IPartnerConfig)
 
 <span class="number">259</span>:
-System<span class="preprocessor">.Collections</span><span class="preprocessor">.Generic</span><span class="preprocessor">.Dictionary</span>`<span class="number">2</span>[[System<span class="preprocessor">.Int</span>16, mscorlib],[System.__Canon, mscorlib]]<span class="preprocessor">.FindEntry</span>(Int16)
+System.Collections.Generic.Dictionary`<span class="number">2</span>[[System.Int16, mscorlib],[System.__Canon, mscorlib]].FindEntry(Int16)
 ...
-iPaper<span class="preprocessor">.BL</span><span class="preprocessor">.Backend</span><span class="preprocessor">.Modules</span><span class="preprocessor">.Paper</span><span class="preprocessor">.Settings</span><span class="preprocessor">.SettingDescriptionCache</span><span class="preprocessor">.GetAllDescriptions</span>(iPaper<span class="preprocessor">.BL</span><span class="preprocessor">.Backend</span><span class="preprocessor">.Infrastructure</span><span class="preprocessor">.PartnerConfiguration</span><span class="preprocessor">.IPartnerConfig</span>)
+iPaper.BL.Backend.Modules.Paper.Settings.SettingDescriptionCache.GetAllDescriptions(iPaper.BL.Backend.Infrastructure.PartnerConfiguration.IPartnerConfig)
 
 <span class="number">328</span>:
-System<span class="preprocessor">.Collections</span><span class="preprocessor">.Generic</span><span class="preprocessor">.Dictionary</span>`<span class="number">2</span>[[System<span class="preprocessor">.Int</span>16, mscorlib],[System.__Canon, mscorlib]]<span class="preprocessor">.FindEntry</span>(Int16)
+System.Collections.Generic.Dictionary`<span class="number">2</span>[[System.Int16, mscorlib],[System.__Canon, mscorlib]].FindEntry(Int16)
 ...
-iPaper<span class="preprocessor">.BL</span><span class="preprocessor">.Backend</span><span class="preprocessor">.Modules</span><span class="preprocessor">.Paper</span><span class="preprocessor">.Settings</span><span class="preprocessor">.SettingDescriptionCache</span><span class="preprocessor">.GetAllDescriptionsAsDictionary</span>(iPaper<span class="preprocessor">.BL</span><span class="preprocessor">.Backend</span><span class="preprocessor">.Infrastructure</span><span class="preprocessor">.PartnerConfiguration</span><span class="preprocessor">.IPartnerConfig</span>)
+iPaper.BL.Backend.Modules.Paper.Settings.SettingDescriptionCache.GetAllDescriptionsAsDictionary(iPaper.BL.Backend.Infrastructure.PartnerConfiguration.IPartnerConfig)
 </pre></figure>
 
 <p>Interestingly, all of the threads are stuck inside internal methods in the base class library Dictionary class. All of them are invoked from the user SettingDescriptionCache class, though from different methods.</p>

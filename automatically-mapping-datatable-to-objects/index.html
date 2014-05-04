@@ -113,7 +113,7 @@
 <a id="more"></a>
 
 
-<figure class="highlight csharp"><pre><span class="keyword">struct</span> Test
+<figure class="highlight cs"><pre><span class="keyword">struct</span> Test
 {
 	<span class="keyword">public</span> <span class="keyword">string</span> Name;
 	<span class="keyword">public</span> <span class="keyword">int</span> Value;
@@ -128,34 +128,34 @@
 
 <p>Our objective is basically to transfer the DataRows in the DataTable into a List that can be transferred on to the next layer.</p>
 <p>The fastest way possible would be doing it manually like so:</p>
-<figure class="highlight csharp"><pre><span class="keyword">List</span> <span class="keyword">list</span> = <span class="keyword">new</span> <span class="keyword">List</span>();
-<span class="keyword">foreach</span> (DataRow dr in dt.Rows)
+<figure class="highlight cs"><pre>List list = <span class="keyword">new</span> List();
+<span class="keyword">foreach</span> (DataRow dr <span class="keyword">in</span> dt.Rows)
 {
 	Test t = <span class="keyword">new</span> Test();
 	t.Name = dr[<span class="string">"Name"</span>].ToString();
 	t.Value = Convert.ToInt32(dr[<span class="string">"Value"</span>]);
 
-	<span class="keyword">list</span>.Add(t);
+	list.Add(t);
 }
 </pre></figure>
 
 <p>But this takes a lot of time to write, especially if your objects vary a lot and you have to create a lot of them. That’s where my MapList function comes into play:</p>
-<figure class="highlight csharp"><pre><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">List</span> MapList(DataTable dt)
+<figure class="highlight cs"><pre><span class="keyword">private</span> <span class="keyword">static</span> List <span class="title">MapList</span>(DataTable dt)
 {
-	<span class="keyword">List</span> <span class="keyword">list</span> = <span class="keyword">new</span> <span class="keyword">List</span>();
+	List list = <span class="keyword">new</span> List();
 
-	FieldInfo[] fields = typeof(T).GetFields();
+	FieldInfo[] fields = <span class="keyword">typeof</span>(T).GetFields();
 	T t = Activator.CreateInstance();
 
-	<span class="keyword">foreach</span> (DataRow dr in dt.Rows)
+	<span class="keyword">foreach</span> (DataRow dr <span class="keyword">in</span> dt.Rows)
 	{
-		<span class="keyword">foreach</span> (FieldInfo fi in fields)
+		<span class="keyword">foreach</span> (FieldInfo fi <span class="keyword">in</span> fields)
 			fi.SetValueDirect(__makeref(t), dr[fi.Name]);
 
-		<span class="keyword">list</span>.Add(t);
+		list.Add(t);
 	}
 
-	<span class="keyword">return</span> <span class="keyword">list</span>;
+	<span class="keyword">return</span> list;
 }
 </pre></figure>
 

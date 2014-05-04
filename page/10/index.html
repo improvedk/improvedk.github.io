@@ -113,20 +113,20 @@
 <a id="more"></a>
 
 <p>In this example I’m looping all .mdf files in my local SQL Server data directory. Each one is loaded using OrcaMDF, the boot page is fetched and finally the database name is printed:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 <span class="keyword">using</span> System.IO;
 <span class="keyword">using</span> OrcaMDF.Core.Engine;
 
-<span class="class"><span class="keyword">namespace</span> <span class="title">OrcaMDF</span>.<span class="title">Adhoc</span>
-{</span>
-    <span class="class"><span class="keyword">class</span> <span class="title">Program</span>
-    {</span>
+namespace OrcaMDF.Adhoc
+{
+    class Program
+    {
         <span class="keyword">static</span> <span class="keyword">void</span> Main()
         {
-			<span class="keyword">foreach</span> (<span class="keyword">string</span> mdfPath in Directory.GetFiles(@<span class="string">"C:\Program Files\Microsoft SQL Server\MSSQL10_50.MSSQLSERVER\MSSQL\DATA"</span>))
+			<span class="keyword">foreach</span> (<span class="keyword">string</span> mdfPath <span class="keyword">in</span> Directory.GetFiles(<span class="string">@"C:\Program Files\Microsoft SQL Server\MSSQL10_50.MSSQLSERVER\MSSQL\DATA"</span>))
 			{
-				if (!mdfPath.ToLower().EndsWith(<span class="string">".mdf"</span>))
-					continue;
+				<span class="keyword">if</span> (!mdfPath.ToLower().EndsWith(<span class="string">".mdf"</span>))
+					<span class="keyword">continue</span>;
 
 				<span class="keyword">using</span> (<span class="keyword">var</span> file = <span class="keyword">new</span> MdfFile(mdfPath))
 				{
@@ -260,20 +260,20 @@
 <h2 id="Working_with_binary(3)_on_the_client_side">Working with binary(3) on the client side</h2>
 <p>Now that we’ve got our mediumint data type, all we need is to be able to insert &amp; query data from the client.</p>
 <p>Inserting is easy – just send values is as integers and it’ll be converted as appropriate – just make sure to check for over/underflows as necessary:</p>
-<figure class="highlight csharp"><pre>using(var conn = new SqlConnection("Data Source=.;Initial Catalog=MediumIntTest;Integrated Security=SSPI;"))
+<figure class="highlight cs"><pre><span class="keyword">using</span>(<span class="keyword">var</span> conn = <span class="keyword">new</span> SqlConnection(<span class="string">"Data Source=.;Initial Catalog=MediumIntTest;Integrated Security=SSPI;"</span>))
 {
-	var <span class="operator"><span class="keyword">insert</span> = new SqlCommand(<span class="string">"INSERT INTO ThreeByteInt (MediumInt) VALUES (@MediumInt)"</span>);</span>
-	<span class="operator"><span class="keyword">insert</span>.Parameters.<span class="keyword">Add</span>(<span class="string">"@MediumInt"</span>, SqlDbType.<span class="keyword">Int</span>).<span class="keyword">Value</span> = <span class="number">439848</span>;</span>
-	<span class="operator"><span class="keyword">insert</span>.<span class="keyword">Connection</span> = conn;</span>
+	<span class="keyword">var</span> insert = <span class="keyword">new</span> SqlCommand(<span class="string">"INSERT INTO ThreeByteInt (MediumInt) VALUES (@MediumInt)"</span>);
+	insert.Parameters.Add(<span class="string">"@MediumInt"</span>, SqlDbType.Int).Value = <span class="number">439848</span>;
+	insert.Connection = conn;
 
 	conn.Open();
-	<span class="operator"><span class="keyword">insert</span>.ExecuteNonQuery();</span>
+	insert.ExecuteNonQuery();
 	conn.Close();
 }
 </pre></figure>
 
 <p>Querying requires slightly more effort. We’ll still pass in the value as an integer, but we’ll have to perform a CAST in the query to avoid scans. We could also pass the value in as a three byte array, but provided we have access to the query text, it’s easier to perform the conversion there. Furthermore there’s no standard three byte integer type in C#, so we’ll have do perform some ugly magic to convert the three bytes into a normal .NET integer:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span>(<span class="keyword">var</span> conn = <span class="keyword">new</span> SqlConnection(<span class="string">"Data Source=.;Initial Catalog=MediumIntTest;Integrated Security=SSPI;"</span>))
+<figure class="highlight cs"><pre><span class="keyword">using</span>(<span class="keyword">var</span> conn = <span class="keyword">new</span> SqlConnection(<span class="string">"Data Source=.;Initial Catalog=MediumIntTest;Integrated Security=SSPI;"</span>))
 {
 	<span class="keyword">var</span> <span class="keyword">select</span> = <span class="keyword">new</span> SqlCommand(<span class="string">"SELECT MediumInt FROM ThreeByteInt WHERE MediumInt = CAST(@MediumInt AS binary(3))"</span>);
 	<span class="keyword">select</span>.Parameters.Add(<span class="string">"@MediumInt"</span>, SqlDbType.Int).Value = <span class="number">439848</span>;
@@ -352,13 +352,13 @@ DBCC PAGE (TextTest, 1, 101, 2)
 <div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_4.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_4.png" style="max-height: 250px"/></a></div></div>
 
 <p>And thus we have identified the first field of our header:</p>
-<figure class="highlight csharp"><pre>/*
+<figure class="highlight cs"><pre><span class="comment">/*
 	Bytes	Content
 	-----	-------
 	00-27	?
 	28-29	FreeCnt (smallint)
 	30-95	?
-*/
+*/</span>
 </pre></figure>
 
 <p>Continuing the search we see that m_freeData = 3895. In hex that’s 0x0F37 and 0x370F when swapped. And voilá, that’s stored right next to m_freeCnt:</p>
@@ -395,7 +395,7 @@ DBCC PAGE (TextTest, 1, 101, 2)
 <div class="imgwrapper" style=""><div><a href="/reverse-engineering-sql-server-page-headers/image_26.png" class="fancy"><img src="/reverse-engineering-sql-server-page-headers/image_26.png" style="max-height: 250px"/></a></div></div>
 
 <p>And thus we can update our header reference table:</p>
-<figure class="highlight csharp"><pre>/*
+<figure class="highlight cs"><pre><span class="comment">/*
 	Bytes	Content
 	-----	-------
 	00-27	?
@@ -403,7 +403,7 @@ DBCC PAGE (TextTest, 1, 101, 2)
 	30-49	?
 	50-51	XactReserved (smallint)
 	30-95	?
-*/
+*/</span>
 </pre></figure>
 
 <p>Continuing down this path, messing up the header, correlating messed up values with values parsed by DBCC PAGE, it’s possible to locate all the fields and their corresponding data types. If you see the following message, you know you’ve messed it up properly:</p>
@@ -411,7 +411,7 @@ DBCC PAGE (TextTest, 1, 101, 2)
 
 <p>You should be proud of yourself. No go clean up the mess you’ve made!</p>
 <p>Jumping forward, I’ve compiled a reference to the page header structure:</p>
-<figure class="highlight csharp"><pre>/*
+<figure class="highlight cs"><pre><span class="comment">/*
 	Bytes	Content
 	-----	-------
 	00	HeaderVersion (tinyint)
@@ -440,29 +440,29 @@ DBCC PAGE (TextTest, 1, 101, 2)
 	56-57	XdesIDPart1 (smallint)
 	58-59	GhostRecCnt (smallint)
 	60-95	?
-*/
+*/</span>
 </pre></figure>
 
 <p>I’m not sure what lies in the remaining bytes of the header as DBCC PAGE doesn’t seem to parse stuff there, and it seems to be zeroed out for all pages I’ve tested. I’m assuming it’s reserved bytes for future usage. Once we’ve got the format, parsing becomes a simple task of reading each field, field by field:</p>
-<figure class="highlight csharp"><pre>HeaderVersion = header[<span class="number">0</span>]<span class="comment">;</span>
-Type = (PageType)header[<span class="number">1</span>]<span class="comment">;</span>
-TypeFlagBits = header[<span class="number">2</span>]<span class="comment">;</span>
-Level = header[<span class="number">3</span>]<span class="comment">;</span>
-FlagBits = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">4</span>)<span class="comment">;</span>
-IndexID = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">6</span>)<span class="comment">;</span>
-PreviousPage = new PagePointer(BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">12</span>), BitConverter<span class="preprocessor">.ToInt</span>32(header, <span class="number">8</span>))<span class="comment">;</span>
-Pminlen = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">14</span>)<span class="comment">;</span>
-NextPage = new PagePointer(BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">20</span>), BitConverter<span class="preprocessor">.ToInt</span>32(header, <span class="number">16</span>))<span class="comment">;</span>
-SlotCnt = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">22</span>)<span class="comment">;</span>
-ObjectID = BitConverter<span class="preprocessor">.ToInt</span>32(header, <span class="number">24</span>)<span class="comment">;</span>
-FreeCnt = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">28</span>)<span class="comment">;</span>
-FreeData = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">30</span>)<span class="comment">;</span>
-Pointer = new PagePointer(BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">36</span>), BitConverter<span class="preprocessor">.ToInt</span>32(header, <span class="number">32</span>))<span class="comment">;</span>
-ReservedCnt = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">38</span>)<span class="comment">;</span>
-Lsn = <span class="string">"("</span> + BitConverter<span class="preprocessor">.ToInt</span>32(header, <span class="number">40</span>) + <span class="string">":"</span> + BitConverter<span class="preprocessor">.ToInt</span>32(header, <span class="number">44</span>) + <span class="string">":"</span> + BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">48</span>) + <span class="string">")"</span><span class="comment">;</span>
-XactReserved = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">50</span>)<span class="comment">;</span>
-XdesID = <span class="string">"("</span> + BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">56</span>) + <span class="string">":"</span> + BitConverter<span class="preprocessor">.ToInt</span>32(header, <span class="number">52</span>) + <span class="string">")"</span><span class="comment">;</span>
-GhostRecCnt = BitConverter<span class="preprocessor">.ToInt</span>16(header, <span class="number">58</span>)<span class="comment">;</span>
+<figure class="highlight cs"><pre>HeaderVersion = header[<span class="number">0</span>];
+Type = (PageType)header[<span class="number">1</span>];
+TypeFlagBits = header[<span class="number">2</span>];
+Level = header[<span class="number">3</span>];
+FlagBits = BitConverter.ToInt16(header, <span class="number">4</span>);
+IndexID = BitConverter.ToInt16(header, <span class="number">6</span>);
+PreviousPage = <span class="keyword">new</span> PagePointer(BitConverter.ToInt16(header, <span class="number">12</span>), BitConverter.ToInt32(header, <span class="number">8</span>));
+Pminlen = BitConverter.ToInt16(header, <span class="number">14</span>);
+NextPage = <span class="keyword">new</span> PagePointer(BitConverter.ToInt16(header, <span class="number">20</span>), BitConverter.ToInt32(header, <span class="number">16</span>));
+SlotCnt = BitConverter.ToInt16(header, <span class="number">22</span>);
+ObjectID = BitConverter.ToInt32(header, <span class="number">24</span>);
+FreeCnt = BitConverter.ToInt16(header, <span class="number">28</span>);
+FreeData = BitConverter.ToInt16(header, <span class="number">30</span>);
+Pointer = <span class="keyword">new</span> PagePointer(BitConverter.ToInt16(header, <span class="number">36</span>), BitConverter.ToInt32(header, <span class="number">32</span>));
+ReservedCnt = BitConverter.ToInt16(header, <span class="number">38</span>);
+Lsn = <span class="string">"("</span> + BitConverter.ToInt32(header, <span class="number">40</span>) + <span class="string">":"</span> + BitConverter.ToInt32(header, <span class="number">44</span>) + <span class="string">":"</span> + BitConverter.ToInt16(header, <span class="number">48</span>) + <span class="string">")"</span>;
+XactReserved = BitConverter.ToInt16(header, <span class="number">50</span>);
+XdesID = <span class="string">"("</span> + BitConverter.ToInt16(header, <span class="number">56</span>) + <span class="string">":"</span> + BitConverter.ToInt32(header, <span class="number">52</span>) + <span class="string">")"</span>;
+GhostRecCnt = BitConverter.ToInt16(header, <span class="number">58</span>);
 </pre></figure>
 
 <p>You can also see the <a href="https://github.com/improvedk/OrcaMDF/blob/master/src/OrcaMDF.Core/Engine/Pages/PageHeader.cs" target="_blank">full source of the header parsing at GitHub</a>.</p>
@@ -749,7 +749,7 @@ WHILE @Cnt &lt; <span class="number">100000</span> <span class="keyword">BEGIN</
 
 <h2 id="The_need_for_state_while_reading_bits_from_records">The need for state while reading bits from records</h2>
 <p>Obviously we can’t just read one field at a time, incrementing the fixed length data offset pointer for each read, as we usually do for normal fixed length data types. We need some kind of state that will tell us which byte we’re currently reading bits from, and when to read a new bit byte. Allow me to introduce RecordReadState:</p>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> RecordReadState
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">class</span> RecordReadState
 {
 	<span class="comment">// We start out having consumed all bits as none have been read</span>
 	<span class="keyword">private</span> <span class="keyword">int</span> currentBitIndex = <span class="number">8</span>;
@@ -776,7 +776,7 @@ WHILE @Cnt &lt; <span class="number">100000</span> <span class="keyword">BEGIN</
 <p>RecordReadState is currently only used for handling bits, but I’ve decided on not creating a BitReadState as we may need to save further read state further along. RecordReadState holds a single byte as well as a pointer that points to the next available bit in that byte. If the byte is exhausted (currentBixIndex = 8 (0-7 being the available bits)), AllBitsConsumed will return true, indicating we need to read in a new bit byte. GetNextBit simply reads the current bit from the bit byte, after which it increases the current bit index. <a href="https://github.com/improvedk/OrcaMDF/blob/58250bef24265900b6d94ec90be41b0647508b35/src/OrcaMDF.Core.Tests/Engine/Records/RecordReadStateTests.cs" target="_blank">See the tests</a> for demonstration.</p>
 <h2 id="Implementing_SqlBit">Implementing SqlBit</h2>
 <p>Once we have the read state implemented, we can implement the SqlBit type:</p>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlBit : ISqlType
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlBit : ISqlType
 {
 	<span class="keyword">private</span> <span class="keyword">readonly</span> RecordReadState readState;
 
@@ -865,7 +865,7 @@ WHILE @Cnt &lt; <span class="number">100000</span> <span class="keyword">BEGIN</
 
 <h2 id="Implementing_SqlDate">Implementing SqlDate</h2>
 <p>The simplest of the three is date – it’s a 3 byte fixed length type that stores the number of days passed since the default value of 1900-01-01. The only tricky part is that .NET does not have any standard representation of three byte integer values, only shorts &amp; ints which are either too large or too small. Thus, to read the number of days correctly, we’ll have to perform some shift magic to get the correct number into a .NET four byte integer. Once we’ve got the date, we can just create a new default DateTime and add the number of days.</p>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlDate : ISqlType
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlDate : ISqlType
 {
 	<span class="keyword">public</span> <span class="keyword">bool</span> IsVariableLength
 	{
@@ -921,7 +921,7 @@ WHILE @Cnt &lt; <span class="number">100000</span> <span class="keyword">BEGIN</
 </tr>
 </tbody>
 </table>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlDateTime : ISqlType
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlDateTime : ISqlType
 {
 	<span class="keyword">private</span> <span class="keyword">const</span> <span class="keyword">double</span> CLOCK_TICK_MS = <span class="number">10</span>d/<span class="number">3</span>d;
 
@@ -969,7 +969,7 @@ WHILE @Cnt &lt; <span class="number">100000</span> <span class="keyword">BEGIN</
 </tr>
 </tbody>
 </table>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlSmallDateTime : ISqlType
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlSmallDateTime : ISqlType
 {
 	<span class="keyword">public</span> <span class="keyword">bool</span> IsVariableLength
 	{
@@ -1044,7 +1044,7 @@ WHILE @Cnt &lt; <span class="number">100000</span> <span class="keyword">BEGIN</
 <a id="more"></a>
 
 
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">interface</span> ISqlType
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">interface</span> ISqlType
 {
 	<span class="keyword">bool</span> IsVariableLength { <span class="keyword">get</span>; }
 	<span class="keyword">short</span>? FixedLength { <span class="keyword">get</span>; }
@@ -1055,7 +1055,7 @@ WHILE @Cnt &lt; <span class="number">100000</span> <span class="keyword">BEGIN</
 <p><em>IsVariableLength</em> returns whether this data type has a fixed length size or is variable. <em>FixedLength</em> returns the fixed length of the data type, provided that it is fixed length, otherwise it returns null. The data type parser itself does not care about the length of variable length fields, the size of the input bytes will determine that. Finally <em>GetValue</em> parses the input bytes into and converts them into a .NET object of relevant type.</p>
 <h2 id="SqlInt_implementation">SqlInt implementation</h2>
 <p>int is very simple as it’s fixed length and is very straight forward to convert using BitConverter:</p>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlInt : ISqlType
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlInt : ISqlType
 {
 	<span class="keyword">public</span> <span class="keyword">bool</span> IsVariableLength
 	{
@@ -1078,7 +1078,7 @@ WHILE @Cnt &lt; <span class="number">100000</span> <span class="keyword">BEGIN</
 </pre></figure>
 
 <p>And the related tests:</p>
-<figure class="highlight csharp"><pre>[TestFixture]
+<figure class="highlight cs"><pre>[TestFixture]
 <span class="keyword">public</span> <span class="keyword">class</span> SqlIntTests
 {
 	[Test]
@@ -1110,7 +1110,7 @@ WHILE @Cnt &lt; <span class="number">100000</span> <span class="keyword">BEGIN</
 
 <h2 id="SqlNVarchar_implementation">SqlNVarchar implementation</h2>
 <p>nvarchar is very simple as well – note that we return null for the length as the length varies and the ISqlType implementation must be stateless. GetValue simply converts whatever amount of input bytes it gets into the relevant .NET data type, string in this case.</p>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlNVarchar : ISqlType
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlNVarchar : ISqlType
 {
 	<span class="keyword">public</span> <span class="keyword">bool</span> IsVariableLength
 	{
@@ -1130,7 +1130,7 @@ WHILE @Cnt &lt; <span class="number">100000</span> <span class="keyword">BEGIN</
 </pre></figure>
 
 <p>And the relevant test in this case:</p>
-<figure class="highlight csharp"><pre>[TestFixture]
+<figure class="highlight cs"><pre>[TestFixture]
 <span class="keyword">public</span> <span class="keyword">class</span> SqlNvarcharTests
 {
 	[Test]

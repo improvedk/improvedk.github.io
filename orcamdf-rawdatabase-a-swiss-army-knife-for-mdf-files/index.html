@@ -133,7 +133,7 @@
 <p>It’s still early in the development, but let me show some examples of what can be done using RawDatabase. While I’m running the code in <a href="http://www.linqpad.net/" target="_blank">LINQPad</a>, as that makes it easy to show the results, the result are just standard .NET objects. All examples are run against the AdventureWorks 2008R2 LT (Light Weight) database.</p>
 <h3 id="Getting_a_Single_Page">Getting a Single Page</h3>
 <p>In the most basic example, we’ll parse just a single page.</p>
-<figure class="highlight csharp"><pre><span class="comment">// Get page 197 in file 1</span>
+<figure class="highlight cs"><pre><span class="comment">// Get page 197 in file 1</span>
 <span class="keyword">var</span> db = <span class="keyword">new</span> RawDatabase(<span class="string">@"C:\AWLT2008R2.mdf"</span>);
 db.GetPage(<span class="number">1</span>, <span class="number">197</span>).Dump();
 </pre></figure>
@@ -142,17 +142,17 @@ db.GetPage(<span class="number">1</span>, <span class="number">197</span>).Dump(
 
 <h3 id="Parsing_the_Page_Header">Parsing the Page Header</h3>
 <p>Now that we’ve got a page, how about we dump the header values?</p>
-<figure class="highlight csharp"><pre>// Get the header of page <span class="number">197</span> <span class="keyword">in</span> file <span class="number">1</span>
-var db = new RawDatabase(@<span class="string">"C:\AWLT2008R2.mdf"</span>)<span class="comment">;</span>
-db<span class="preprocessor">.GetPage</span>(<span class="number">1</span>, <span class="number">197</span>)<span class="preprocessor">.Header</span><span class="preprocessor">.Dump</span>()<span class="comment">;</span>
+<figure class="highlight cs"><pre><span class="comment">// Get the header of page 197 in file 1</span>
+<span class="keyword">var</span> db = <span class="keyword">new</span> RawDatabase(<span class="string">@"C:\AWLT2008R2.mdf"</span>);
+db.GetPage(<span class="number">1</span>, <span class="number">197</span>).Header.Dump();
 </pre></figure>
 
 <div class="imgwrapper" style=""><div><a href="/orcamdf-rawdatabase-a-swiss-army-knife-for-mdf-files/A1.png" class="fancy"><img src="/orcamdf-rawdatabase-a-swiss-army-knife-for-mdf-files/A1.png" style="max-height: 250px"/></a></div></div>
 
 <h3 id="Parsing_the_Slot_Array">Parsing the Slot Array</h3>
 <p>Just as the header is available, you can also get the raw slot array entries.</p>
-<figure class="highlight csharp"><pre>// Get the slot <span class="keyword">array</span> entries <span class="keyword">of</span> page <span class="number">197</span> <span class="keyword">in</span> <span class="keyword">file</span> <span class="number">1</span>
-var db = <span class="keyword">new</span> RawDatabase(@<span class="string">"C:\AWLT2008R2.mdf"</span>);
+<figure class="highlight cs"><pre><span class="comment">// Get the slot array entries of page 197 in file 1</span>
+<span class="keyword">var</span> db = <span class="keyword">new</span> RawDatabase(<span class="string">@"C:\AWLT2008R2.mdf"</span>);
 db.GetPage(<span class="number">1</span>, <span class="number">197</span>).SlotArray.Dump();
 </pre></figure>
 
@@ -160,8 +160,8 @@ db.GetPage(<span class="number">1</span>, <span class="number">197</span>).SlotA
 
 <h3 id="Parsing_Records">Parsing Records</h3>
 <p>While getting the raw slot array entries can be useful, you’ll usually want to look at the records themselves. Fortunately, that’s easy to do too.</p>
-<figure class="highlight csharp"><pre>// Get <span class="keyword">all</span> records <span class="keyword">on</span> page <span class="number">197</span> <span class="keyword">in</span> <span class="keyword">file</span> <span class="number">1</span>
-var db = <span class="keyword">new</span> RawDatabase(@<span class="string">"C:\AWLT2008R2.mdf"</span>);
+<figure class="highlight cs"><pre><span class="comment">// Get all records on page 197 in file 1</span>
+<span class="keyword">var</span> db = <span class="keyword">new</span> RawDatabase(<span class="string">@"C:\AWLT2008R2.mdf"</span>);
 db.GetPage(<span class="number">1</span>, <span class="number">197</span>).Records.Dump();
 </pre></figure>
 
@@ -169,23 +169,23 @@ db.GetPage(<span class="number">1</span>, <span class="number">197</span>).Recor
 
 <h3 id="Retrieving_Data_from_Records">Retrieving Data from Records</h3>
 <p>Once you’ve got the records, you could now access the FixedLengthData or the VariableLengthOffsetValues properties to get the raw fixed length and variable length column values. However, what you’ll typically want is to get the actually parsed values. To spare you the work, OrcaMDF can parse it for you, if you just provide it the schema.</p>
-<figure class="highlight csharp"><pre>// Read the record contents of the first record on page <span class="number">197</span> of file <span class="number">1</span>
-var db = new RawDatabase(@<span class="string">"C:\AWLT2008R2.mdf"</span>)<span class="comment">;</span>
-RawPrimaryRecord firstRecord = (RawPrimaryRecord)db<span class="preprocessor">.GetPage</span>(<span class="number">1</span>, <span class="number">197</span>)<span class="preprocessor">.Records</span><span class="preprocessor">.First</span>()<span class="comment">;</span>
+<figure class="highlight cs"><pre><span class="comment">// Read the record contents of the first record on page 197 of file 1</span>
+<span class="keyword">var</span> db = <span class="keyword">new</span> RawDatabase(<span class="string">@"C:\AWLT2008R2.mdf"</span>);
+RawPrimaryRecord firstRecord = (RawPrimaryRecord)db.GetPage(<span class="number">1</span>, <span class="number">197</span>).Records.First();
 
-var values = RawColumnParser<span class="preprocessor">.Parse</span>(firstRecord, new IRawType[] {
-	RawType<span class="preprocessor">.Int</span>(<span class="string">"AddressID"</span>),
-	RawType<span class="preprocessor">.NVarchar</span>(<span class="string">"AddressLine1"</span>),
-	RawType<span class="preprocessor">.NVarchar</span>(<span class="string">"AddressLine2"</span>),
-	RawType<span class="preprocessor">.NVarchar</span>(<span class="string">"City"</span>),
-	RawType<span class="preprocessor">.NVarchar</span>(<span class="string">"StateProvince"</span>),
-	RawType<span class="preprocessor">.NVarchar</span>(<span class="string">"CountryRegion"</span>),
-	RawType<span class="preprocessor">.NVarchar</span>(<span class="string">"PostalCode"</span>),
-	RawType<span class="preprocessor">.UniqueIdentifier</span>(<span class="string">"rowguid"</span>),
-	RawType<span class="preprocessor">.DateTime</span>(<span class="string">"ModifiedDate"</span>)
-})<span class="comment">;</span>
+<span class="keyword">var</span> values = RawColumnParser.Parse(firstRecord, <span class="keyword">new</span> IRawType[] {
+	RawType.Int(<span class="string">"AddressID"</span>),
+	RawType.NVarchar(<span class="string">"AddressLine1"</span>),
+	RawType.NVarchar(<span class="string">"AddressLine2"</span>),
+	RawType.NVarchar(<span class="string">"City"</span>),
+	RawType.NVarchar(<span class="string">"StateProvince"</span>),
+	RawType.NVarchar(<span class="string">"CountryRegion"</span>),
+	RawType.NVarchar(<span class="string">"PostalCode"</span>),
+	RawType.UniqueIdentifier(<span class="string">"rowguid"</span>),
+	RawType.DateTime(<span class="string">"ModifiedDate"</span>)
+});
 	
-values<span class="preprocessor">.Dump</span>()<span class="comment">;</span>
+values.Dump();
 </pre></figure>
 
 <div class="imgwrapper" style=""><div><a href="/orcamdf-rawdatabase-a-swiss-army-knife-for-mdf-files/A4.png" class="fancy"><img src="/orcamdf-rawdatabase-a-swiss-army-knife-for-mdf-files/A4.png" style="max-height: 250px"/></a></div></div>
@@ -193,57 +193,57 @@ values<span class="preprocessor">.Dump</span>()<span class="comment">;</span>
 <p>RawColumnParser.Parse will, given a schema, automatically convert the raw bytes into a Dictionary&lt;string, object&gt;, the key being the column name from the schema and the value being the actual type of the column, e.g. int, short, Guid, string, etc. By letting you, the user, specify the schema, OrcaMDF can get rid of a slew of dependencies on metadata, thus ignoring any possible corruption in metadata. Given the availability of the Next &amp; PreviousPageID properties of the header, it would be simple to iterate through all linked pages, parsing all records of each page - basically performing a scan on a given allocation unit.</p>
 <h3 id="Filtering_Pages">Filtering Pages</h3>
 <p>Besides retrieving a specific page, RawDatabase also has a Pages property that enumerates over all pages in a database. Using this you could, for example, get a list of all IAM pages in the database.</p>
-<figure class="highlight csharp"><pre>// Get a list of all IAM pages <span class="keyword">in</span> the database
-var db = new RawDatabase(@<span class="string">"C:\AWLT2008R2.mdf"</span>)<span class="comment">;</span>
-db<span class="preprocessor">.Pages</span>
-	<span class="preprocessor">.Where</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.Type</span> == PageType<span class="preprocessor">.IAM</span>)
-	<span class="preprocessor">.Dump</span>()<span class="comment">;</span>
+<figure class="highlight cs"><pre><span class="comment">// Get a list of all IAM pages in the database</span>
+<span class="keyword">var</span> db = <span class="keyword">new</span> RawDatabase(<span class="string">@"C:\AWLT2008R2.mdf"</span>);
+db.Pages
+	.Where(x =&gt; x.Header.Type == PageType.IAM)
+	.Dump();
 </pre></figure>
 
 <div class="imgwrapper" style=""><div><a href="/orcamdf-rawdatabase-a-swiss-army-knife-for-mdf-files/A5.png" class="fancy"><img src="/orcamdf-rawdatabase-a-swiss-army-knife-for-mdf-files/A5.png" style="max-height: 250px"/></a></div></div>
 
 <p>And since this is powered by LINQ, it’s easy to project just the properties you want. For example, you could get all index pages and their slot counts like this:</p>
-<figure class="highlight csharp"><pre>// Get all index pages <span class="keyword">and</span> their slot counts
-var db = new RawDatabase(@<span class="string">"C:\AWLT2008R2.mdf"</span>)<span class="comment">;</span>
-db<span class="preprocessor">.Pages</span>
-	<span class="preprocessor">.Where</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.Type</span> == PageType<span class="preprocessor">.Index</span>)
-	<span class="preprocessor">.Select</span>(<span class="built_in">x</span> =&gt; new {
-		<span class="built_in">x</span><span class="preprocessor">.PageID</span>,
-		<span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.SlotCnt</span>
-	})<span class="preprocessor">.Dump</span>()<span class="comment">;</span>
+<figure class="highlight cs"><pre><span class="comment">// Get all index pages and their slot counts</span>
+<span class="keyword">var</span> db = <span class="keyword">new</span> RawDatabase(<span class="string">@"C:\AWLT2008R2.mdf"</span>);
+db.Pages
+	.Where(x =&gt; x.Header.Type == PageType.Index)
+	.Select(x =&gt; <span class="keyword">new</span> {
+		x.PageID,
+		x.Header.SlotCnt
+	}).Dump();
 </pre></figure>
 
 <div class="imgwrapper" style=""><div><a href="/orcamdf-rawdatabase-a-swiss-army-knife-for-mdf-files/A6.png" class="fancy"><img src="/orcamdf-rawdatabase-a-swiss-army-knife-for-mdf-files/A6.png" style="max-height: 250px"/></a></div></div>
 
 <p>Or let’s say you wanted to get all data pages with at least one record and more than 7000 bytes of free space - with the page id, free count, record count and average record size as the output:</p>
-<figure class="highlight csharp"><pre>var db = new RawDatabase(@<span class="string">"C:\AWLT2008R2.mdf"</span>)<span class="comment">;</span>
-db<span class="preprocessor">.Pages</span>
-	<span class="preprocessor">.Where</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.FreeCnt</span> &gt; <span class="number">7000</span>)
-	<span class="preprocessor">.Where</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.SlotCnt</span> &gt;= <span class="number">1</span>)
-	<span class="preprocessor">.Where</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.Type</span> == PageType<span class="preprocessor">.Data</span>)
-	<span class="preprocessor">.Select</span>(<span class="built_in">x</span> =&gt; new {
-	    <span class="built_in">x</span><span class="preprocessor">.PageID</span>,
-		<span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.FreeCnt</span>,
-		RecordCount = <span class="built_in">x</span><span class="preprocessor">.Records</span><span class="preprocessor">.Count</span>(),
-		RecordSize = (<span class="number">8096</span> - <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.FreeCnt</span>) / <span class="built_in">x</span><span class="preprocessor">.Records</span><span class="preprocessor">.Count</span>()
-	})<span class="preprocessor">.Dump</span>()<span class="comment">;</span>
+<figure class="highlight cs"><pre><span class="keyword">var</span> db = <span class="keyword">new</span> RawDatabase(<span class="string">@"C:\AWLT2008R2.mdf"</span>);
+db.Pages
+	.Where(x =&gt; x.Header.FreeCnt &gt; <span class="number">7000</span>)
+	.Where(x =&gt; x.Header.SlotCnt &gt;= <span class="number">1</span>)
+	.Where(x =&gt; x.Header.Type == PageType.Data)
+	.Select(x =&gt; <span class="keyword">new</span> {
+	    x.PageID,
+		x.Header.FreeCnt,
+		RecordCount = x.Records.Count(),
+		RecordSize = (<span class="number">8096</span> - x.Header.FreeCnt) / x.Records.Count()
+	}).Dump();
 </pre></figure>
 
 <div class="imgwrapper" style=""><div><a href="/orcamdf-rawdatabase-a-swiss-army-knife-for-mdf-files/A7.png" class="fancy"><img src="/orcamdf-rawdatabase-a-swiss-army-knife-for-mdf-files/A7.png" style="max-height: 250px"/></a></div></div>
 
 <p>And as a final example, imagine you’ve got just an MDF file but you seem to have forgotten what objects are stored inside of it. Fret not, we’ll just get the data from the sysschobjs base table! Sysschobjs is the base table that stores all object data, and fortunately it has a static object ID of <em>34</em>. Using this, we can filter down to all of the data pages for object 34, get all the records and then parse just the two first columns of the schema (you may specify a partial schema, as long as you only omit columns at the end), ending up in us dumping just the names (we could of course have gotten the full schema, if we wanted to).</p>
-<figure class="highlight csharp"><pre>var db = new RawDatabase(@<span class="string">"C:\AWLT2008R2.mdf"</span>)<span class="comment">;</span>
+<figure class="highlight cs"><pre><span class="keyword">var</span> db = <span class="keyword">new</span> RawDatabase(<span class="string">@"C:\AWLT2008R2.mdf"</span>);
 
-var records = db<span class="preprocessor">.Pages</span>
-	<span class="preprocessor">.Where</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.ObjectID</span> == <span class="number">34</span> && <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.Type</span> == PageType<span class="preprocessor">.Data</span>)
-	<span class="preprocessor">.SelectMany</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Records</span>)<span class="comment">;</span>
+<span class="keyword">var</span> records = db.Pages
+	.Where(x =&gt; x.Header.ObjectID == <span class="number">34</span> && x.Header.Type == PageType.Data)
+	.SelectMany(x =&gt; x.Records);
 	
-var rows = records<span class="preprocessor">.Select</span>(<span class="built_in">x</span> =&gt; RawColumnParser<span class="preprocessor">.Parse</span>((RawPrimaryRecord)<span class="built_in">x</span>, new IRawType[] {
-	RawType<span class="preprocessor">.Int</span>(<span class="string">"id"</span>),
-	RawType<span class="preprocessor">.NVarchar</span>(<span class="string">"name"</span>)
-}))<span class="comment">;</span>
+<span class="keyword">var</span> rows = records.Select(x =&gt; RawColumnParser.Parse((RawPrimaryRecord)x, <span class="keyword">new</span> IRawType[] {
+	RawType.Int(<span class="string">"id"</span>),
+	RawType.NVarchar(<span class="string">"name"</span>)
+}));
 
-rows<span class="preprocessor">.Select</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span>[<span class="string">"name"</span>])<span class="preprocessor">.Dump</span>()<span class="comment">;</span>
+rows.Select(x =&gt; x[<span class="string">"name"</span>]).Dump();
 </pre></figure>
 
 <div class="imgwrapper" style=""><div><a href="/orcamdf-rawdatabase-a-swiss-army-knife-for-mdf-files/A8.png" class="fancy"><img src="/orcamdf-rawdatabase-a-swiss-army-knife-for-mdf-files/A8.png" style="max-height: 250px"/></a></div></div>

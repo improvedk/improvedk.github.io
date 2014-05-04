@@ -115,14 +115,14 @@
 <h2 id="Making_it_more_“genetic”">Making it more “genetic”</h2>
 <p>The basic point is that I was only mutating my chromosomes, I wasn’t actually pairing them up and reproducing via a <a href="http://en.wikipedia.org/wiki/Crossover_(genetic_algorithm" target="_blank">crossover function</a>).</p>
 <p>I’ve changed my GeneticAlgorithm class slightly to give more control to the subclasses of how reproduction works, whether it be by mutation and/or crossover. What I’ve done is to change the Mutate method into a Reproduce method, taking in the complete survivor enumeration of IChromosome’s instead. That way, the implementing subclass has full control over the selection and breeding of the survivors.</p>
-<figure class="highlight csharp"><pre><span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+<figure class="highlight cs"><pre><span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
 <span class="comment"><span class="xmlDocTag">///</span> Creates an arbitrary number of mutated chromosomes, based on the input chromosome.</span>
 <span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
 <span class="keyword">protected</span> <span class="keyword">abstract</span> IEnumerable&lt;IChromosome&lt;T&gt;&gt; <span class="title">Reproduce</span>(IEnumerable&lt;IChromosome&lt;T&gt;&gt; survivors);
 </pre></figure>
 
 <p>The PerformEvolution method has been changed as well. Instead of selecting the survivor to mutate here, we let it be up to the subclass. Thus, we just loop until we’ve reached our ChromosomePopulationSize, while passing the survivors into the Reproduce method.</p>
-<figure class="highlight csharp"><pre><span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+<figure class="highlight cs"><pre><span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
 <span class="comment"><span class="xmlDocTag">///</span> Performs an evolution by picking up the generation survivors and mutating them.</span>
 <span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
 <span class="keyword">public</span> <span class="keyword">void</span> <span class="title">PerformEvolution</span>()
@@ -157,70 +157,70 @@
 </pre></figure>
 
 <p>Instead of overriding Mutate() in the RgbGuesser class, we’re now overriding Reproduce. Given that we have three basic genes in each of our chromosomes (R, G &amp; B), we can produce 2^3 different combinations, including the original two combinations AAA and BBB. Each time Reproduce is called, we’ll create all eight different combinations and mutate them slightly, before returning them to the GeneticAlgorithm. This way we’re producing eight children of each parent pair of chromosomes, and thus, as Matt^2 pointed out, allowing the chromosomes of developing partial solutions themselves more efficiently.</p>
-<figure class="highlight csharp"><pre>protected override IEnumerable&lt;IChromosome&lt;Rgb&gt;&gt; Reproduce(IEnumerable&lt;IChromosome&lt;Rgb&gt;&gt; survivors)
+<figure class="highlight cs"><pre><span class="keyword">protected</span> <span class="keyword">override</span> IEnumerable&lt;IChromosome&lt;Rgb&gt;&gt; <span class="title">Reproduce</span>(IEnumerable&lt;IChromosome&lt;Rgb&gt;&gt; survivors)
 {
-	// Get two random chromosomes from the survivors
-	var chromA = survivors
-		<span class="preprocessor">.OrderBy</span>(c =&gt; random<span class="preprocessor">.NextDouble</span>() * c<span class="preprocessor">.Fitness</span>)
-		<span class="preprocessor">.First</span>()<span class="comment">;</span>
+	<span class="comment">// Get two random chromosomes from the survivors</span>
+	<span class="keyword">var</span> chromA = survivors
+		.OrderBy(c =&gt; random.NextDouble() * c.Fitness)
+		.First();
 
-	var chromB = survivors
-		<span class="preprocessor">.OrderBy</span>(c =&gt; random<span class="preprocessor">.NextDouble</span>() * c<span class="preprocessor">.Fitness</span>)
-		<span class="preprocessor">.Where</span>(c =&gt; c != chromA)
-		<span class="preprocessor">.First</span>()<span class="comment">;</span>
+	<span class="keyword">var</span> chromB = survivors
+		.OrderBy(c =&gt; random.NextDouble() * c.Fitness)
+		.Where(c =&gt; c != chromA)
+		.First();
 
-	// Now generate <span class="keyword">and</span> return each different combination based on the two parents, with slight mutation
-	var aaa = new RgbChromosome(chromA<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.R</span>, chromA<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.G</span>, chromA<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.B</span>)<span class="comment">;</span>
-	mutateChromosome(aaa)<span class="comment">;</span>
-	yield return aaa<span class="comment">;</span>
+	<span class="comment">// Now generate and return each different combination based on the two parents, with slight mutation</span>
+	<span class="keyword">var</span> aaa = <span class="keyword">new</span> RgbChromosome(chromA.ChromosomeValue.R, chromA.ChromosomeValue.G, chromA.ChromosomeValue.B);
+	mutateChromosome(aaa);
+	<span class="keyword">yield</span> <span class="keyword">return</span> aaa;
 
-	var aab = new RgbChromosome(chromA<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.R</span>, chromA<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.G</span>, chromB<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.B</span>)<span class="comment">;</span>
-	mutateChromosome(aab)<span class="comment">;</span>
-	yield return aab<span class="comment">;</span>
+	<span class="keyword">var</span> aab = <span class="keyword">new</span> RgbChromosome(chromA.ChromosomeValue.R, chromA.ChromosomeValue.G, chromB.ChromosomeValue.B);
+	mutateChromosome(aab);
+	<span class="keyword">yield</span> <span class="keyword">return</span> aab;
 
-	var abb = new RgbChromosome(chromA<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.R</span>, chromB<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.G</span>, chromB<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.B</span>)<span class="comment">;</span>
-	mutateChromosome(abb)<span class="comment">;</span>
-	yield return abb<span class="comment">;</span>
+	<span class="keyword">var</span> abb = <span class="keyword">new</span> RgbChromosome(chromA.ChromosomeValue.R, chromB.ChromosomeValue.G, chromB.ChromosomeValue.B);
+	mutateChromosome(abb);
+	<span class="keyword">yield</span> <span class="keyword">return</span> abb;
 
-	var aba = new RgbChromosome(chromA<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.R</span>, chromB<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.G</span>, chromA<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.B</span>)<span class="comment">;</span>
-	mutateChromosome(aba)<span class="comment">;</span>
-	yield return aba<span class="comment">;</span>
+	<span class="keyword">var</span> aba = <span class="keyword">new</span> RgbChromosome(chromA.ChromosomeValue.R, chromB.ChromosomeValue.G, chromA.ChromosomeValue.B);
+	mutateChromosome(aba);
+	<span class="keyword">yield</span> <span class="keyword">return</span> aba;
 
-	var baa = new RgbChromosome(chromB<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.R</span>, chromA<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.G</span>, chromA<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.B</span>)<span class="comment">;</span>
-	mutateChromosome(baa)<span class="comment">;</span>
-	yield return baa<span class="comment">;</span>
+	<span class="keyword">var</span> baa = <span class="keyword">new</span> RgbChromosome(chromB.ChromosomeValue.R, chromA.ChromosomeValue.G, chromA.ChromosomeValue.B);
+	mutateChromosome(baa);
+	<span class="keyword">yield</span> <span class="keyword">return</span> baa;
 
-	var bba = new RgbChromosome(chromB<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.R</span>, chromB<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.G</span>, chromA<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.B</span>)<span class="comment">;</span>
-	mutateChromosome(bba)<span class="comment">;</span>
-	yield return bba<span class="comment">;</span>
+	<span class="keyword">var</span> bba = <span class="keyword">new</span> RgbChromosome(chromB.ChromosomeValue.R, chromB.ChromosomeValue.G, chromA.ChromosomeValue.B);
+	mutateChromosome(bba);
+	<span class="keyword">yield</span> <span class="keyword">return</span> bba;
 
-	var bab = new RgbChromosome(chromB<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.R</span>, chromA<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.G</span>, chromB<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.B</span>)<span class="comment">;</span>
-	mutateChromosome(bab)<span class="comment">;</span>
-	yield return bab<span class="comment">;</span>
+	<span class="keyword">var</span> bab = <span class="keyword">new</span> RgbChromosome(chromB.ChromosomeValue.R, chromA.ChromosomeValue.G, chromB.ChromosomeValue.B);
+	mutateChromosome(bab);
+	<span class="keyword">yield</span> <span class="keyword">return</span> bab;
 
-	var bbb = new RgbChromosome(chromB<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.R</span>, chromB<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.G</span>, chromB<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.B</span>)<span class="comment">;</span>
-	mutateChromosome(bbb)<span class="comment">;</span>
-	yield return bbb<span class="comment">;</span>
+	<span class="keyword">var</span> bbb = <span class="keyword">new</span> RgbChromosome(chromB.ChromosomeValue.R, chromB.ChromosomeValue.G, chromB.ChromosomeValue.B);
+	mutateChromosome(bbb);
+	<span class="keyword">yield</span> <span class="keyword">return</span> bbb;
 }
 
-private void mutateChromosome(IChromosome&lt;Rgb&gt; chromosome)
+<span class="keyword">private</span> <span class="keyword">void</span> <span class="title">mutateChromosome</span>(IChromosome&lt;Rgb&gt; chromosome)
 {
-	chromosome<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.R</span> = Math<span class="preprocessor">.Min</span>(<span class="number">255</span>, Math<span class="preprocessor">.Max</span>(<span class="number">0</span>, chromosome<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.R</span> + random<span class="preprocessor">.Next</span>(-<span class="number">5</span>, <span class="number">6</span>)))<span class="comment">;</span>
-	chromosome<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.G</span> = Math<span class="preprocessor">.Min</span>(<span class="number">255</span>, Math<span class="preprocessor">.Max</span>(<span class="number">0</span>, chromosome<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.G</span> + random<span class="preprocessor">.Next</span>(-<span class="number">5</span>, <span class="number">6</span>)))<span class="comment">;</span>
-	chromosome<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.B</span> = Math<span class="preprocessor">.Min</span>(<span class="number">255</span>, Math<span class="preprocessor">.Max</span>(<span class="number">0</span>, chromosome<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.B</span> + random<span class="preprocessor">.Next</span>(-<span class="number">5</span>, <span class="number">6</span>)))<span class="comment">;</span>
+	chromosome.ChromosomeValue.R = Math.Min(<span class="number">255</span>, Math.Max(<span class="number">0</span>, chromosome.ChromosomeValue.R + random.Next(-<span class="number">5</span>, <span class="number">6</span>)));
+	chromosome.ChromosomeValue.G = Math.Min(<span class="number">255</span>, Math.Max(<span class="number">0</span>, chromosome.ChromosomeValue.G + random.Next(-<span class="number">5</span>, <span class="number">6</span>)));
+	chromosome.ChromosomeValue.B = Math.Min(<span class="number">255</span>, Math.Max(<span class="number">0</span>, chromosome.ChromosomeValue.B + random.Next(-<span class="number">5</span>, <span class="number">6</span>)));
 }
 </pre></figure>
 
 <h2 id="Reducing_the_chance_of_mutation">Reducing the chance of mutation</h2>
 <p>As weenie points out in the comments, reducing the chance of mutation will actually improve results. By changing the mutateChromosome slightly, we only mutate it for every 1/3 reproductions.</p>
 <p>At this point we’ve got several variables to tune - population size, survivor count, mutation probability &amp; mutation severeness. This sounds like an optimal problem for an evolutionary algorithm :)</p>
-<figure class="highlight csharp"><pre>private void mutateChromosome(IChromosome&lt;Rgb&gt; chromosome)
+<figure class="highlight cs"><pre><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">mutateChromosome</span>(IChromosome&lt;Rgb&gt; chromosome)
 {
-	if (random<span class="preprocessor">.Next</span>(<span class="number">1</span>, <span class="number">4</span>) == <span class="number">1</span>)
+	<span class="keyword">if</span> (random.Next(<span class="number">1</span>, <span class="number">4</span>) == <span class="number">1</span>)
 	{
-		chromosome<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.R</span> = Math<span class="preprocessor">.Min</span>(<span class="number">255</span>, Math<span class="preprocessor">.Max</span>(<span class="number">0</span>, chromosome<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.R</span> + random<span class="preprocessor">.Next</span>(-<span class="number">5</span>, <span class="number">6</span>)))<span class="comment">;</span>
-		chromosome<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.G</span> = Math<span class="preprocessor">.Min</span>(<span class="number">255</span>, Math<span class="preprocessor">.Max</span>(<span class="number">0</span>, chromosome<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.G</span> + random<span class="preprocessor">.Next</span>(-<span class="number">5</span>, <span class="number">6</span>)))<span class="comment">;</span>
-		chromosome<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.B</span> = Math<span class="preprocessor">.Min</span>(<span class="number">255</span>, Math<span class="preprocessor">.Max</span>(<span class="number">0</span>, chromosome<span class="preprocessor">.ChromosomeValue</span><span class="preprocessor">.B</span> + random<span class="preprocessor">.Next</span>(-<span class="number">5</span>, <span class="number">6</span>)))<span class="comment">;</span>
+		chromosome.ChromosomeValue.R = Math.Min(<span class="number">255</span>, Math.Max(<span class="number">0</span>, chromosome.ChromosomeValue.R + random.Next(-<span class="number">5</span>, <span class="number">6</span>)));
+		chromosome.ChromosomeValue.G = Math.Min(<span class="number">255</span>, Math.Max(<span class="number">0</span>, chromosome.ChromosomeValue.G + random.Next(-<span class="number">5</span>, <span class="number">6</span>)));
+		chromosome.ChromosomeValue.B = Math.Min(<span class="number">255</span>, Math.Max(<span class="number">0</span>, chromosome.ChromosomeValue.B + random.Next(-<span class="number">5</span>, <span class="number">6</span>)));
 	}
 }
 </pre></figure>

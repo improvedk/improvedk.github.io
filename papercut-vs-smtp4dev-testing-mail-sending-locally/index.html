@@ -118,12 +118,12 @@
 <p><a href="http://papercut.codeplex.com" target="_blank">Papercut</a> and <a href="http://smtp4dev.codeplex.com" target="_blank">smtp4dev</a> are both applications that’ll emulate a remote SMTP server on your local machine. Instead of actually sending the mail onwards like a normal SMTP server, they’ll simply catch the mail and notify you. This means you’ll receive the mail instantly without any risks of being caught in spam filters or dying of old age before receiving the mail. I’ve tried out both Papercut and smtp4dev and here are some thoughts on both.</p>
 <p>For the testing I’m using this rather simple piece of code:</p>
 <h3 id="Program-cs_"><strong>Program.cs </strong></h3>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System.Net.Mail;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System.Net.Mail;
 
-<span class="class"><span class="keyword">namespace</span> <span class="title">MailTest</span>
-{</span>
-    <span class="class"><span class="keyword">class</span> <span class="title">Program</span>
-    {</span>
+namespace MailTest
+{
+    class Program
+    {
         <span class="keyword">static</span> <span class="keyword">void</span> Main()
         {
             <span class="keyword">var</span> sc = <span class="keyword">new</span> SmtpClient();

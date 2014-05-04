@@ -744,7 +744,7 @@
 <a id="more"></a>
 
 <p>I present to you my LoadPlugin function of my PluginHandler module:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System.Reflection;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System.Reflection;
 <span class="keyword">using</span> System;
 
 namespace MTH.Core
@@ -769,7 +769,7 @@ namespace MTH.Core
 <p>Inside the function we load the assembly and load through each type it hosts. For each type we check the IsAssignableFrom function which’ll check if the current type is of the specified type T, no matter if T is an abstract class, interface or any other type. If it matches, we return a new instance of that type. If no type match is found we return null so we can handle the problem in the calling function.</p>
 <p>Note that this is a very simple example function, there are many unhandled parameters! Security for instance. In most scenarios you would probably want to check the identity of the loaded assembly and set the security permissions dependingly. Also it is not possible to pass constructor parameters, this would require an extension of the function to take in an array of objects as constructor parameters.</p>
 <p>This is how easily we can load any number of plugins that have been placed in a certain plugin directory (in this case the plugins contains code that is to be run on application startup):</p>
-<figure class="highlight csharp"><pre><span class="keyword">foreach</span> (<span class="keyword">string</span> file <span class="keyword">in</span> Directory.GetFiles(Application.StartupPath + <span class="string">"\Plugins\Startup"</span>, <span class="string">"*.dll"</span>))
+<figure class="highlight cs"><pre><span class="keyword">foreach</span> (<span class="keyword">string</span> file <span class="keyword">in</span> Directory.GetFiles(Application.StartupPath + <span class="string">"\Plugins\Startup"</span>, <span class="string">"*.dll"</span>))
 {
 	IRunnable startupPlugin = PluginHandler.LoadPlugin&lt;IRunnable&gt;(file);
 
@@ -779,7 +779,7 @@ namespace MTH.Core
 </pre></figure>
 
 <p>All that is required is that the assemblies in the PluginsStartup folder contain a type that implements the IRunnable interface:</p>
-<figure class="highlight csharp"><pre>
+<figure class="highlight cs"><pre>
 <span class="keyword">public</span> <span class="keyword">interface</span> IRunnable
 {
 	<span class="keyword">void</span> Run();
@@ -852,7 +852,7 @@ namespace MTH.Core
 <p>We have an identity column, the URL, a column reprensenting the creation time of the link, the IP of the creator (for abuse checking) and finally a simple counter that counts how many times the link has been visited.</p>
 <h2 id="The_“Create_a_short_link_webservice”_–_ShortLinkService">The “Create a short link webservice” – ShortLinkService</h2>
 <p>I’ll dive right into it and present the complete code for the webservice, ShortLinkService.cs:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System.Web.Services;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System.Web.Services;
 <span class="keyword">using</span> System.Data.SqlClient;
 <span class="keyword">using</span> System.Data;
 <span class="keyword">using</span> System.Web;
@@ -898,7 +898,7 @@ namespace MTH.Core
 <p>That was the complete short link webservice code. All it does is to simply take a URL and return a corresponding short url.</p>
 <h2 id="The_redirector_website">The redirector website</h2>
 <p>This is the website running at <a href="http://link.improve.dk" target="_blank">http://link.improve.dk</a>. I’ve setup <a href="http://scottwater.com/blog/articles/Wildcard.aspx" target="_blank">wildcard mapping</a> so all requests passes through to the ASPNET engine. This enables me to write the redirection functionality in the Global.asax file like so:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System.Web;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System.Web;
 <span class="keyword">using</span> System;
 <span class="keyword">using</span> System.Text.RegularExpressions;
 <span class="keyword">using</span> System.Data.SqlClient;
@@ -940,7 +940,7 @@ namespace MTH.Core
 
 <p>Simply right click the ShortLinkClient project and select properties. Then go to the Signing tab, check “Sign the assembly” and choose “New…” from the dropdown list. This’ll create a new strong name key file for the library. You do not have to password protect it.</p>
 <p>Make sure the ShortLinkClient.cs code matches the following:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System.Runtime.InteropServices;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System.Runtime.InteropServices;
 <span class="keyword">using</span> System.Text.RegularExpressions;
 
 namespace Improve

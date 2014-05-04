@@ -633,7 +633,7 @@ node14_2_ <span class="keyword">on</span> node14_.Id=node14_2_.NodeId <span clas
 
 <h3 id="Exception_output">Exception output</h3>
 <p>Inevitably, you’ll probably run into an exception or two. Take the following piece of code for example; it works perfectly, but I forgot to assign the IAM user access to the bucket I’m trying to interact with (and before you remind me to remove the keys, don’t worry, the IAM user was temporary and no longer exists):</p>
-<figure class="highlight csharp"><pre><span class="keyword">var</span> accessKeyID = <span class="string">"AKIAIKB6FI6SSOGGOP7A"</span>;
+<figure class="highlight cs"><pre><span class="keyword">var</span> accessKeyID = <span class="string">"AKIAIKB6FI6SSOGGOP7A"</span>;
 <span class="keyword">var</span> secretKey = <span class="string">"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"</span>;
 
 <span class="keyword">using</span> (<span class="keyword">var</span> client = AWSClientFactory.CreateAmazonS3Client(accessKeyID, secretKey))

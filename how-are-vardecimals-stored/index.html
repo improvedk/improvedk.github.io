@@ -226,7 +226,7 @@ Bin: 11000010 00011110 11011100 00100000</span></pre>
 Bin: <span style="background-color: #dfce04;">1</span>1000010 <span style="color: #a5a5a5;">00011110 11011100 00100000</span></span></pre>
 
 <p>By shifting the bits 7 spots to the right, all we’re left with is the most significant bit, the least significant position. This means we’ll get a value of 1 is the sign is positive, and 0 if it’s negative.</p>
-<figure class="highlight csharp"><pre><span class="keyword">decimal</span> sign = (<span class="keyword">value</span>[<span class="number">0</span>] &gt;&gt; <span class="number">7</span>) == <span class="number">1</span> ? <span class="number">1</span> : -<span class="number">1</span>;
+<figure class="highlight cs"><pre><span class="keyword">decimal</span> sign = (<span class="keyword">value</span>[<span class="number">0</span>] &gt;&gt; <span class="number">7</span>) == <span class="number">1</span> ? <span class="number">1</span> : -<span class="number">1</span>;
 </pre></figure>
 
 <h3 id="Reading_the_exponent">Reading the exponent</h3>
@@ -240,16 +240,16 @@ Bin: 1<span style="background-color: #dfce04;">1000010</span> <span style="color
 <h3 id="Reading_the_mantissa">Reading the mantissa</h3>
 <p>Next up is the mantissa value. As mentioned, we need to read it in chunks of 10 bits, while taking care of there potentially being some truncated bits.</p>
 <p>First, we need to know how many bits there are available. Doing this is straightforward – we simply multiply the number of mantissa bytes (which is all of the bytes, except one) by 8:</p>
-<figure class="highlight csharp"><pre><span class="keyword">int</span> totalBits = (<span class="keyword">value</span>.Length - <span class="number">1</span>) * <span class="number">8</span>;
+<figure class="highlight cs"><pre><span class="keyword">int</span> totalBits = (<span class="keyword">value</span>.Length - <span class="number">1</span>) * <span class="number">8</span>;
 </pre></figure>
 
 <p>Once we know how many bits are available (3 bytes of 8 bits = 24 in this case), we can calculate the number of chunks:</p>
-<figure class="highlight csharp"><pre><span class="keyword">int</span> mantissaChunks = (<span class="keyword">int</span>)Math.Ceiling(totalBits / <span class="number">10</span>d);
+<figure class="highlight cs"><pre><span class="keyword">int</span> mantissaChunks = (<span class="keyword">int</span>)Math.Ceiling(totalBits / <span class="number">10</span>d);
 </pre></figure>
 
 <p>Since each chunk takes up 10 bits, we just need to divide the total number of bits by 10. If there’s padding at the end, to match a byte boundary, it’ll all be 0’s and won’t change the end result. Thus for a 2-byte mantissa we’ll have 8 bits to spare, which will all be non-significant 0’s. For a 3-byte mantissa we’ll have 4 bits to spare – once again adding 0 to the total mantissa value.</p>
 <p>At this point we’re ready to read the chunk values. Before doing so, we’ll allocate two variables:</p>
-<figure class="highlight csharp"><pre><span class="keyword">decimal</span> mantissa = <span class="number">0</span>;
+<figure class="highlight cs"><pre><span class="keyword">decimal</span> mantissa = <span class="number">0</span>;
 <span class="keyword">int</span> bitPointer = <span class="number">8</span>;
 </pre></figure>
 
@@ -258,7 +258,7 @@ Bin: 1<span style="background-color: #dfce04;">1000010</span> <span style="color
 <div class="imgwrapper" style=""><div><a href="/how-are-vardecimals-stored/image_26.png" class="fancy"><img src="/how-are-vardecimals-stored/image_26.png" style="max-height: 250px"/></a></div></div>
 
 <p>To easily access all of the bits, and to avoid doing a lot of manual bit shifting, I initialize a BitArray that contains all of the data bits:</p>
-<figure class="highlight csharp"><pre><span class="keyword">var</span> mantissaBits = <span class="keyword">new</span> BitArray(<span class="keyword">value</span>);
+<figure class="highlight cs"><pre><span class="keyword">var</span> mantissaBits = <span class="keyword">new</span> BitArray(<span class="keyword">value</span>);
 </pre></figure>
 
 <p>Using this, you have to know how the bit array maps into the bytes. Visually, it looks like this, the mantissaBits array index being on top:</p>
@@ -268,29 +268,29 @@ Bin: 1<span style="background-color: #dfce04;">1000010</span> <span style="color
 <p>Looking at just the first 8 bits, the manitssaBits array aligns nicely with the direction we need to read. The first entry (mantissaBits[0]) points to the first/rightmost bit in the first byte. The second entry points to the second bit we need to read, and so forth. Thus, the first 8 bits are straightforward to read. The next two however, they require us to skip 6 entries in the mantissaBits array so we read index 14 and 15, as those point to the last two bits in the next byte.</p>
 <p>Reading the second chunk, we have to go back and read bit index 8-13 and then skip to index 20-23, ignoring entries 16-19 as they’re just irrelevant padding. This is rather tricky to get right. Fortunately we can freely choose to read the bits from the least significant to the most significant, or the other way around.</p>
 <p>Let’s first look at the implementation:</p>
-<figure class="highlight csharp"><pre>for (int chunk = mantissaChunks; chunk &gt; 0; chunk--)
+<figure class="highlight cs"><pre><span class="keyword">for</span> (<span class="keyword">int</span> chunk = mantissaChunks; chunk &gt; <span class="number">0</span>; chunk--)
 {
-	// The cumulative value for this 10-bit chunk
-	decimal chunkValue = 0;
+	<span class="comment">// The cumulative value for this 10-bit chunk</span>
+	<span class="keyword">decimal</span> chunkValue = <span class="number">0</span>;
 
-	// For each bit in the chunk, shift it into position, provided it's set
-	for (int chunkBit = 9; chunkBit &gt;= 0; chunkBit--)
+	<span class="comment">// For each bit in the chunk, shift it into position, provided it's set</span>
+	<span class="keyword">for</span> (<span class="keyword">int</span> chunkBit = <span class="number">9</span>; chunkBit &gt;= <span class="number">0</span>; chunkBit--)
 	{
-		// Since we're looping bytes left-to-right, but read bits right-to-left, we need
-		// to transform the bit pointer into a relative index within the current byte.
-		int byteAwareBitPointer = bitPointer + 7 - bitPointer % 8 - (7 - (7 - bitPointer % 8));
+		<span class="comment">// Since we're looping bytes left-to-right, but read bits right-to-left, we need</span>
+		<span class="comment">// to transform the bit pointer into a relative index within the current byte.</span>
+		<span class="keyword">int</span> byteAwareBitPointer = bitPointer + <span class="number">7</span> - bitPointer % <span class="number">8</span> - (<span class="number">7</span> - (<span class="number">7</span> - bitPointer % <span class="number">8</span>));
 
-		// If the bit is set and it's available (SQL Server will truncate 0's), shift it into position
-		if (mantissaBits.Length &gt; bitPointer && mantissaBits[byteAwareBitPointer])
-			chunkValue += (1 &lt;&lt; chunkBit);
+		<span class="comment">// If the bit is set and it's available (SQL Server will truncate 0's), shift it into position</span>
+		<span class="keyword">if</span> (mantissaBits.Length &gt; bitPointer && mantissaBits[byteAwareBitPointer])
+			chunkValue += (<span class="number">1</span> &lt;&lt; chunkBit);
 
 		bitPointer++;
 	}
 
-	// Once all bits are in position, we need to raise the significance according to the chunk
-	// position. First chunk is most significant, last is the least significant. Each chunk
-	// defining three digits.
-	mantissa += chunkValue * (decimal)Math.Pow(10, (chunk - 1) * 3);
+	<span class="comment">// Once all bits are in position, we need to raise the significance according to the chunk</span>
+	<span class="comment">// position. First chunk is most significant, last is the least significant. Each chunk</span>
+	<span class="comment">// defining three digits.</span>
+	mantissa += chunkValue * (<span class="keyword">decimal</span>)Math.Pow(<span class="number">10</span>, (chunk - <span class="number">1</span>) * <span class="number">3</span>);
 }
 </pre></figure>
 
@@ -315,7 +315,7 @@ Bin: 1<span style="background-color: #dfce04;">1000010</span> <span style="color
 </pre></figure>
 
 <p>Implemented like so:</p>
-<figure class="highlight csharp"><pre>mantissa = mantissa / (decimal)<span class="built_in">Math</span>.Pow(<span class="number">10</span>, <span class="built_in">Math</span>.Floor(<span class="built_in">Math</span>.Log10((double)mantissa)));
+<figure class="highlight cs"><pre>mantissa = mantissa / (<span class="keyword">decimal</span>)Math.Pow(<span class="number">10</span>, Math.Floor(Math.Log10((<span class="keyword">double</span>)mantissa)));
 </pre></figure>
 
 <p>This results in the mantissa having a value of 1.2345</p>
@@ -323,7 +323,7 @@ Bin: 1<span style="background-color: #dfce04;">1000010</span> <span style="color
 <p>Before you beat me to it – this implementation is far from fast. To start with, we could easily shift whole groups of bits into position instead of just one at a time. That’d ensure each chunk would take no more than two shifting operations, instead of ~10 in this implementation. However, my goal for this implementation is code clarity first and foremost. I’m nowhere near the point where I want to look at optimizing OrcaMDF for speed.</p>
 <h3 id="Putting_it_all_together">Putting it all together</h3>
 <p>Once we have the sign, the exponent and the mantissa, we simply calculate the final value like so:</p>
-<figure class="highlight csharp"><pre><span class="keyword">return</span> sign * mantissa * (<span class="keyword">decimal</span>)Math.Pow(<span class="number">10</span>, exponent);
+<figure class="highlight cs"><pre><span class="keyword">return</span> sign * mantissa * (<span class="keyword">decimal</span>)Math.Pow(<span class="number">10</span>, exponent);
 </pre></figure>
 
 <p>In our case it has the following result:</p>

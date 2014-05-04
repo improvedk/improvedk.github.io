@@ -113,7 +113,7 @@
 <a id="more"></a>
 
 <p>The code is pretty much self explanatory if you keep the <a href="http://en.wikipedia.org/wiki/Dijkstra&#39;s_algorithm#Pseudocode" target="_blank">pseudo code implementation</a> next to it.</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 <span class="keyword">using</span> System.Collections.Generic;
 <span class="keyword">using</span> System.Linq;
 
@@ -193,8 +193,8 @@ namespace Improve.Framework.Algorithms
 </pre></figure>
 
 <p>Once we’ve made the list of nodes &amp; connections, invoking the algorithm is rather simple. We just need to provide an equality function as well as a distance function:</p>
-<figure class="highlight csharp"><pre><span class="comment">// Run Dijkstra's algorithm</span>
-<span class="keyword">List</span>&lt;Point2D&gt; result = Dijkstra&lt;Point2D&gt;.ShortestPath(connections, mouse, target, (p1, p2) =&gt; p1 == p2, (p1, p2) =&gt; p1.DistanceTo(p2));
+<figure class="highlight cs"><pre><span class="comment">// Run Dijkstra's algorithm</span>
+List&lt;Point2D&gt; result = Dijkstra&lt;Point2D&gt;.ShortestPath(connections, mouse, target, (p1, p2) =&gt; p1 == p2, (p1, p2) =&gt; p1.DistanceTo(p2));
 </pre></figure>
 
 <div class="video-container"><iframe src="//www.youtube.com/embed/ctEXUmZ5TDY" frameborder="0" allowfullscreen></iframe></div>

@@ -113,27 +113,27 @@
 <a id="more"></a>
 
 
-<figure class="highlight csharp"><pre>using System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 
 namespace StringEnumeration
 {
 	class Program
 	{
-		static void Main(string[] args)
+		<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
 		{
-			string input = <span class="string">"Hello"</span>;
+			<span class="keyword">string</span> input = <span class="string">"Hello"</span>;
 
-			switch (input)
+			<span class="keyword">switch</span> (input)
 			{
-				case <span class="string">"Hello"</span>:
+				<span class="keyword">case</span> <span class="string">"Hello"</span>:
 					Console.WriteLine(<span class="string">"Hello world!"</span>);
-					break;
-				case <span class="string">"Goodbye"</span>:
+					<span class="keyword">break</span>;
+				<span class="keyword">case</span> <span class="string">"Goodbye"</span>:
 					Console.WriteLine(<span class="string">"Goodbye world!"</span>);
-					break;
-				default:
+					<span class="keyword">break</span>;
+				<span class="keyword">default</span>:
 					Console.WriteLine(<span class="string">"Does not compute!"</span>);
-					break;
+					<span class="keyword">break</span>;
 			}
 		}
 	}
@@ -141,7 +141,7 @@ namespace StringEnumeration
 </pre></figure>
 
 <p>The first step is to define the enumeration of values we need to have in our switch statement:</p>
-<figure class="highlight csharp"><pre><span class="keyword">enum</span> <span class="title">Input</span>
+<figure class="highlight cs"><pre><span class="keyword">enum</span> Input
 {
 	Hello,
 	Goodbye
@@ -149,7 +149,7 @@ namespace StringEnumeration
 </pre></figure>
 
 <p>We cannot convert from strings to the Input enumeration type directly, so we’ll have to use a magic function like this:</p>
-<figure class="highlight csharp"><pre>class EnumHelper
+<figure class="highlight cs"><pre>class EnumHelper
 {
 	<span class="keyword">public</span> <span class="keyword">static</span> T Parse&lt;T&gt;(<span class="keyword">string</span> input)
 	{
@@ -159,19 +159,19 @@ namespace StringEnumeration
 </pre></figure>
 
 <p>Using the above function, we can refactor our initial code like so:</p>
-<figure class="highlight csharp"><pre>string input = <span class="string">"Hello"</span><span class="comment">;</span>
+<figure class="highlight cs"><pre><span class="keyword">string</span> input = <span class="string">"Hello"</span>;
 
-switch (EnumHelper<span class="preprocessor">.Parse</span>&lt;Input&gt;(input))
+<span class="keyword">switch</span> (EnumHelper.Parse&lt;Input&gt;(input))
 {
-	case Input<span class="preprocessor">.Hello</span>:
-		Console<span class="preprocessor">.WriteLine</span>(<span class="string">"Hello world!"</span>)<span class="comment">;</span>
-		<span class="keyword">break</span><span class="comment">;</span>
-	case Input<span class="preprocessor">.Goodbye</span>:
-		Console<span class="preprocessor">.WriteLine</span>(<span class="string">"Goodbye world!"</span>)<span class="comment">;</span>
-		<span class="keyword">break</span><span class="comment">;</span>
-	default:
-		Console<span class="preprocessor">.WriteLine</span>(<span class="string">"Does not compute!"</span>)<span class="comment">;</span>
-		<span class="keyword">break</span><span class="comment">;</span>
+	<span class="keyword">case</span> Input.Hello:
+		Console.WriteLine(<span class="string">"Hello world!"</span>);
+		<span class="keyword">break</span>;
+	<span class="keyword">case</span> Input.Goodbye:
+		Console.WriteLine(<span class="string">"Goodbye world!"</span>);
+		<span class="keyword">break</span>;
+	<span class="keyword">default</span>:
+		Console.WriteLine(<span class="string">"Does not compute!"</span>);
+		<span class="keyword">break</span>;
 }
 </pre></figure>
 

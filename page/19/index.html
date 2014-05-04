@@ -110,7 +110,7 @@
 <a id="more"></a>
 
 
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 <span class="keyword">using</span> System.Runtime.InteropServices;
 <span class="keyword">using</span> System.Drawing;
 <span class="keyword">using</span> System.Collections;
@@ -191,7 +191,7 @@ namespace Cascading_Windows
 <a id="more"></a>
 
 
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 <span class="keyword">using</span> System.Collections.Generic;
 <span class="keyword">using</span> System.ComponentModel;
 <span class="keyword">using</span> System.Data;
@@ -305,7 +305,7 @@ namespace Animating_windows
 <a id="more"></a>
 
 
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 <span class="keyword">using</span> System.Runtime.InteropServices;
 <span class="keyword">using</span> System.Text.RegularExpressions;
 
@@ -413,117 +413,117 @@ namespace Activating_windows
 <a id="more"></a>
 
 
-<figure class="highlight csharp"><pre>using System;
-using System.Runtime.InteropServices;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Runtime.InteropServices;
 
 namespace Getting_key_state
 {
 	class Program
 	{
-		// The GetAsyncKeyState takes a virtual key code as the nVirtKey parameter. It then checks on the state of
-		// this key (down/up). The return code is either zero for up or any non-zero value for pressed,
-		// thus it's easiest to convert the result to a boolean and use that result.
+		<span class="comment">// The GetAsyncKeyState takes a virtual key code as the nVirtKey parameter. It then checks on the state of</span>
+		<span class="comment">// this key (down/up). The return code is either zero for up or any non-zero value for pressed,</span>
+		<span class="comment">// thus it's easiest to convert the result to a boolean and use that result.</span>
 		[DllImport(<span class="string">"user32.dll"</span>)]
-		public static extern short GetAsyncKeyState(int nVirtKey);
+		<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">extern</span> <span class="keyword">short</span> <span class="title">GetAsyncKeyState</span>(<span class="keyword">int</span> nVirtKey);
 
-		// These are all the possible values in the VK enumeration. It covers most of the special buttons on a keyboard.
-		// See http://msdn.microsoft.com/library/default.asp?url=/library/en-us/winui/winui/WindowsUserInterface/UserInput/VirtualKeyCodes.asp
-		// for full documentation.
-		public enum VK : int
+		<span class="comment">// These are all the possible values in the VK enumeration. It covers most of the special buttons on a keyboard.</span>
+		<span class="comment">// See http://msdn.microsoft.com/library/default.asp?url=/library/en-us/winui/winui/WindowsUserInterface/UserInput/VirtualKeyCodes.asp</span>
+		<span class="comment">// for full documentation.</span>
+		<span class="keyword">public</span> <span class="keyword">enum</span> VK : <span class="keyword">int</span>
 		{
-			NUMPAD7 = 0x67,
-			NUMPAD8 = 0x68,
-			NUMPAD9 = 0x69,
-			MULTIPLY = 0x6A,
-			ADD = 0x6B,
-			SEPARATOR = 0x6C,
-			SUBTRACT = 0x6D,
-			DECIMAL = 0x6E,
-			DIVIDE = 0x6F,
-			F1 = 0x70,
-			F2 = 0x71,
-			F3 = 0x72,
-			F4 = 0x73,
-			F5 = 0x74,
-			F6 = 0x75,
-			F7 = 0x76,
-			F8 = 0x77,
-			F9 = 0x78,
-			F10 = 0x79,
-			F11 = 0x7A,
-			F12 = 0x7B,
-			NUMLOCK = 0x90,
-			SCROLL = 0x91,
-			LSHIFT = 0xA0,
-			RSHIFT = 0xA1,
-			LCONTROL = 0xA2,
-			RCONTROL = 0xA3,
-			LMENU = 0xA4,
-			RMENU = 0xA5,
-			BACK = 0x08,
-			TAB = 0x09,
-			RETURN = 0x0D,
-			SHIFT = 0x10,
-			CONTROL = 0x11,
-			MENU = 0x12,
-			PAUSE = 0x13,
-			CAPITAL = 0x14,
-			ESCAPE = 0x1B,
-			SPACE = 0x20,
-			END = 0x23,
-			HOME = 0x24,
-			LEFT = 0x25,
-			UP = 0x26,
-			RIGHT = 0x27,
-			DOWN = 0x28,
-			PRINT = 0x2A,
-			SNAPSHOT = 0x2C,
-			INSERT = 0x2D,
-			DELETE = 0x2E,
-			LWIN = 0x5B,
-			RWIN = 0x5C,
-			NUMPAD0 = 0x60,
-			NUMPAD1 = 0x61,
-			NUMPAD2 = 0x62,
-			NUMPAD3 = 0x63,
-			NUMPAD4 = 0x64,
-			NUMPAD5 = 0x65,
-			NUMPAD6 = 0x66,
-			A = 0x41,
-			B = 0x42,
-			C = 0x43,
-			D = 0x44,
-			E = 0x45,
-			F = 0x46,
-			G = 0x47,
-			H = 0x48,
-			I = 0x49,
-			J = 0x4A,
-			K = 0x4B,
-			L = 0x4C,
-			M = 0x4D,
-			N = 0x4E,
-			O = 0x4F,
-			P = 0x50,
-			Q = 0x51,
-			R = 0x52,
-			S = 0x53,
-			T = 0x54,
-			U = 0x55,
-			V = 0x56,
-			W = 0x57,
-			X = 0x58,
-			Y = 0x59,
-			Z = 0x5A
+			NUMPAD7 = <span class="number">0x67</span>,
+			NUMPAD8 = <span class="number">0x68</span>,
+			NUMPAD9 = <span class="number">0x69</span>,
+			MULTIPLY = <span class="number">0x6A</span>,
+			ADD = <span class="number">0x6B</span>,
+			SEPARATOR = <span class="number">0x6C</span>,
+			SUBTRACT = <span class="number">0x6D</span>,
+			DECIMAL = <span class="number">0x6E</span>,
+			DIVIDE = <span class="number">0x6F</span>,
+			F1 = <span class="number">0x70</span>,
+			F2 = <span class="number">0x71</span>,
+			F3 = <span class="number">0x72</span>,
+			F4 = <span class="number">0x73</span>,
+			F5 = <span class="number">0x74</span>,
+			F6 = <span class="number">0x75</span>,
+			F7 = <span class="number">0x76</span>,
+			F8 = <span class="number">0x77</span>,
+			F9 = <span class="number">0x78</span>,
+			F10 = <span class="number">0x79</span>,
+			F11 = <span class="number">0x7A</span>,
+			F12 = <span class="number">0x7B</span>,
+			NUMLOCK = <span class="number">0x90</span>,
+			SCROLL = <span class="number">0x91</span>,
+			LSHIFT = <span class="number">0xA0</span>,
+			RSHIFT = <span class="number">0xA1</span>,
+			LCONTROL = <span class="number">0xA2</span>,
+			RCONTROL = <span class="number">0xA3</span>,
+			LMENU = <span class="number">0xA4</span>,
+			RMENU = <span class="number">0xA5</span>,
+			BACK = <span class="number">0x08</span>,
+			TAB = <span class="number">0x09</span>,
+			RETURN = <span class="number">0x0D</span>,
+			SHIFT = <span class="number">0x10</span>,
+			CONTROL = <span class="number">0x11</span>,
+			MENU = <span class="number">0x12</span>,
+			PAUSE = <span class="number">0x13</span>,
+			CAPITAL = <span class="number">0x14</span>,
+			ESCAPE = <span class="number">0x1B</span>,
+			SPACE = <span class="number">0x20</span>,
+			END = <span class="number">0x23</span>,
+			HOME = <span class="number">0x24</span>,
+			LEFT = <span class="number">0x25</span>,
+			UP = <span class="number">0x26</span>,
+			RIGHT = <span class="number">0x27</span>,
+			DOWN = <span class="number">0x28</span>,
+			PRINT = <span class="number">0x2A</span>,
+			SNAPSHOT = <span class="number">0x2C</span>,
+			INSERT = <span class="number">0x2D</span>,
+			DELETE = <span class="number">0x2E</span>,
+			LWIN = <span class="number">0x5B</span>,
+			RWIN = <span class="number">0x5C</span>,
+			NUMPAD0 = <span class="number">0x60</span>,
+			NUMPAD1 = <span class="number">0x61</span>,
+			NUMPAD2 = <span class="number">0x62</span>,
+			NUMPAD3 = <span class="number">0x63</span>,
+			NUMPAD4 = <span class="number">0x64</span>,
+			NUMPAD5 = <span class="number">0x65</span>,
+			NUMPAD6 = <span class="number">0x66</span>,
+			A = <span class="number">0x41</span>,
+			B = <span class="number">0x42</span>,
+			C = <span class="number">0x43</span>,
+			D = <span class="number">0x44</span>,
+			E = <span class="number">0x45</span>,
+			F = <span class="number">0x46</span>,
+			G = <span class="number">0x47</span>,
+			H = <span class="number">0x48</span>,
+			I = <span class="number">0x49</span>,
+			J = <span class="number">0x4A</span>,
+			K = <span class="number">0x4B</span>,
+			L = <span class="number">0x4C</span>,
+			M = <span class="number">0x4D</span>,
+			N = <span class="number">0x4E</span>,
+			O = <span class="number">0x4F</span>,
+			P = <span class="number">0x50</span>,
+			Q = <span class="number">0x51</span>,
+			R = <span class="number">0x52</span>,
+			S = <span class="number">0x53</span>,
+			T = <span class="number">0x54</span>,
+			U = <span class="number">0x55</span>,
+			V = <span class="number">0x56</span>,
+			W = <span class="number">0x57</span>,
+			X = <span class="number">0x58</span>,
+			Y = <span class="number">0x59</span>,
+			Z = <span class="number">0x5A</span>
 		}
 
-		static void Main(string[] args)
+		<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
 		{
-			// We'll call GetAsyncKeyState passing in the A keycode as a parameter.
-			Console.WriteLine(Convert.ToBoolean(GetAsyncKeyState((int)VK.A)));
+			<span class="comment">// We'll call GetAsyncKeyState passing in the A keycode as a parameter.</span>
+			Console.WriteLine(Convert.ToBoolean(GetAsyncKeyState((<span class="keyword">int</span>)VK.A)));
 
-			// And then we'll pass the shift keycode as a control check.
-			Console.WriteLine(Convert.ToBoolean(GetAsyncKeyState((int)VK.SHIFT)));
+			<span class="comment">// And then we'll pass the shift keycode as a control check.</span>
+			Console.WriteLine(Convert.ToBoolean(GetAsyncKeyState((<span class="keyword">int</span>)VK.SHIFT)));
 
 			Console.ReadLine();
 		}
@@ -579,68 +579,68 @@ namespace Getting_key_state
 <a id="more"></a>
 
 
-<figure class="highlight csharp"><pre>using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Collections.Generic;
+<span class="keyword">using</span> System.Text;
+<span class="keyword">using</span> System.Runtime.InteropServices;
+<span class="keyword">using</span> System.Text.RegularExpressions;
 
 namespace Minimizing_and_maximizing_windows
 {
 	class Program
 	{
-		// The ShowWindowAsync method alters the windows show state through the nCmdShow parameter.
-		// The nCmdShow parameter can have any of the SW values.
-		// See http://msdn.microsoft.com/library/en-us/winui/winui/windowsuserinterface/windowing/windows/windowreference/windowfunctions/showwindowasync.asp
-		// for full documentation.
+		<span class="comment">// The ShowWindowAsync method alters the windows show state through the nCmdShow parameter.</span>
+		<span class="comment">// The nCmdShow parameter can have any of the SW values.</span>
+		<span class="comment">// See http://msdn.microsoft.com/library/en-us/winui/winui/windowsuserinterface/windowing/windows/windowreference/windowfunctions/showwindowasync.asp</span>
+		<span class="comment">// for full documentation.</span>
 		[DllImport(<span class="string">"user32.dll"</span>)]
-		public static extern bool ShowWindowAsync(int hWnd, int nCmdShow);
+		<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">extern</span> <span class="keyword">bool</span> <span class="title">ShowWindowAsync</span>(<span class="keyword">int</span> hWnd, <span class="keyword">int</span> nCmdShow);
 
-		// An enumeration containing all the possible SW values.
-		public enum SW : int
+		<span class="comment">// An enumeration containing all the possible SW values.</span>
+		<span class="keyword">public</span> <span class="keyword">enum</span> SW : <span class="keyword">int</span>
 		{
-			HIDE = 0,
-			SHOWNORMAL = 1,
-			SHOWMINIMIZED = 2,
-			SHOWMAXIMIZED = 3,
-			SHOWNOACTIVATE = 4,
-			SHOW = 5,
-			MINIMIZE = 6,
-			SHOWMINNOACTIVE = 7,
-			SHOWNA = 8,
-			RESTORE = 9,
-			SHOWDEFAULT = 10
+			HIDE = <span class="number">0</span>,
+			SHOWNORMAL = <span class="number">1</span>,
+			SHOWMINIMIZED = <span class="number">2</span>,
+			SHOWMAXIMIZED = <span class="number">3</span>,
+			SHOWNOACTIVATE = <span class="number">4</span>,
+			SHOW = <span class="number">5</span>,
+			MINIMIZE = <span class="number">6</span>,
+			SHOWMINNOACTIVE = <span class="number">7</span>,
+			SHOWNA = <span class="number">8</span>,
+			RESTORE = <span class="number">9</span>,
+			SHOWDEFAULT = <span class="number">10</span>
 		}
 
-		static void Main(string[] args)
+		<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
 		{
-			// Introduced in the <span class="string">"Finding specific windows"</span> blog, we use the WindowFinder class to find all Internet Explorer main window instances.
-			Finding_specific_windows.WindowFinder wf = new Finding_specific_windows.WindowFinder();
-			wf.FindWindows(0, null, new Regex(<span class="string">"- (Windows|Microsoft) Internet Explorer"</span>), new Regex(<span class="string">"iexplore"</span>), new Finding_specific_windows.WindowFinder.FoundWindowCallback(foundWindow));
+			<span class="comment">// Introduced in the "Finding specific windows" blog, we use the WindowFinder class to find all Internet Explorer main window instances.</span>
+			Finding_specific_windows.WindowFinder wf = <span class="keyword">new</span> Finding_specific_windows.WindowFinder();
+			wf.FindWindows(<span class="number">0</span>, <span class="keyword">null</span>, <span class="keyword">new</span> Regex(<span class="string">"- (Windows|Microsoft) Internet Explorer"</span>), <span class="keyword">new</span> Regex(<span class="string">"iexplore"</span>), <span class="keyword">new</span> Finding_specific_windows.WindowFinder.FoundWindowCallback(foundWindow));
 
 			Console.Read();
 		}
 
-		static bool foundWindow(int handle)
+		<span class="keyword">static</span> <span class="keyword">bool</span> foundWindow(<span class="keyword">int</span> handle)
 		{
-			// After an Internet Explorer window has been found, randomly either maximize or minimize it.
-			if (new Random().Next(0, 2) == 0)
+			<span class="comment">// After an Internet Explorer window has been found, randomly either maximize or minimize it.</span>
+			<span class="keyword">if</span> (<span class="keyword">new</span> Random().Next(<span class="number">0</span>, <span class="number">2</span>) == <span class="number">0</span>)
 			{
-				// Maximize the window.
-				ShowWindowAsync(handle, (int)SW.SHOWMAXIMIZED);
+				<span class="comment">// Maximize the window.</span>
+				ShowWindowAsync(handle, (<span class="keyword">int</span>)SW.SHOWMAXIMIZED);
 
 				Console.WriteLine(<span class="string">"Window maximized"</span>);
 			}
-			else
+			<span class="keyword">else</span>
 			{
-				// Minimize the window.
-				ShowWindowAsync(handle, (int)SW.MINIMIZE);
+				<span class="comment">// Minimize the window.</span>
+				ShowWindowAsync(handle, (<span class="keyword">int</span>)SW.MINIMIZE);
 
 				Console.WriteLine(<span class="string">"Window minimized"</span>);
 			}
 
-			// Since we return true, this will be done for any and all Internet Explorer instances.
-			return true;
+			<span class="comment">// Since we return true, this will be done for any and all Internet Explorer instances.</span>
+			<span class="keyword">return</span> <span class="keyword">true</span>;
 		}
 	}
 }
@@ -694,70 +694,70 @@ namespace Minimizing_and_maximizing_windows
 <a id="more"></a>
 
 
-<figure class="highlight csharp"><pre>using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
-using System.Drawing;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Collections.Generic;
+<span class="keyword">using</span> System.Text;
+<span class="keyword">using</span> System.Runtime.InteropServices;
+<span class="keyword">using</span> System.Text.RegularExpressions;
+<span class="keyword">using</span> System.Drawing;
 
 namespace Modifying_window_location_and_size
 {
 	class Program
 	{
-		// The SetWindowPos function is used to both resize and change the location of windows. The uFlags parameter
-		// can take any number of flags, with zero being a neutral flag, the same goes for the hWndInsertAfter parameter.
-		// X, Y is the new location of the window, cx and cy is the new height / width of the window. Via uFlags it can
-		// be set to ignore the new location and/or the new size of the window.
-		// See http://msdn2.microsoft.com/en-us/library/ms633545.aspx for full documentation.
+		<span class="comment">// The SetWindowPos function is used to both resize and change the location of windows. The uFlags parameter</span>
+		<span class="comment">// can take any number of flags, with zero being a neutral flag, the same goes for the hWndInsertAfter parameter.</span>
+		<span class="comment">// X, Y is the new location of the window, cx and cy is the new height / width of the window. Via uFlags it can</span>
+		<span class="comment">// be set to ignore the new location and/or the new size of the window.</span>
+		<span class="comment">// See http://msdn2.microsoft.com/en-us/library/ms633545.aspx for full documentation.</span>
 		[DllImport(<span class="string">"user32.dll"</span>)]
-		public static extern bool SetWindowPos(int hWnd, int hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+		<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">extern</span> <span class="keyword">bool</span> <span class="title">SetWindowPos</span>(<span class="keyword">int</span> hWnd, <span class="keyword">int</span> hWndInsertAfter, <span class="keyword">int</span> X, <span class="keyword">int</span> Y, <span class="keyword">int</span> cx, <span class="keyword">int</span> cy, <span class="keyword">uint</span> uFlags);
 
-		// An enumeration containing all the possible HWND values.
-		public enum HWND : int
+		<span class="comment">// An enumeration containing all the possible HWND values.</span>
+		<span class="keyword">public</span> <span class="keyword">enum</span> HWND : <span class="keyword">int</span>
 		{
-			BOTTOM = 1,
-			NOTOPMOST = -2,
-			TOPMOST = -1,
-			TOP = 0
+			BOTTOM = <span class="number">1</span>,
+			NOTOPMOST = -<span class="number">2</span>,
+			TOPMOST = -<span class="number">1</span>,
+			TOP = <span class="number">0</span>
 		}
 
-		// And enumeration containing all the possible SWP values.
-		public enum SWP : uint
+		<span class="comment">// And enumeration containing all the possible SWP values.</span>
+		<span class="keyword">public</span> <span class="keyword">enum</span> SWP : <span class="keyword">uint</span>
 		{
-			ASYNCWINDOWPOS = 0x4000,
-			DEFERERASE = 0x2000,
-			FRAMECHANGED = 0x0020,
-			HIDEWINDOW = 0x0080,
-			NOACTIVATE = 0x0010,
-			NOCOPYBITS = 0x0100,
-			NOMOVE = 0x0002,
-			NOOWNERZORDER = 0x0200,
-			NOREDRAW = 0x0008,
-			NOSENDCHANGING = 0x0400,
-			NOSIZE = 0x0001,
-			NOZORDER = 0x0004,
-			SHOWWINDOW = 0x0040
+			ASYNCWINDOWPOS = <span class="number">0x4000</span>,
+			DEFERERASE = <span class="number">0x2000</span>,
+			FRAMECHANGED = <span class="number">0x0020</span>,
+			HIDEWINDOW = <span class="number">0x0080</span>,
+			NOACTIVATE = <span class="number">0x0010</span>,
+			NOCOPYBITS = <span class="number">0x0100</span>,
+			NOMOVE = <span class="number">0x0002</span>,
+			NOOWNERZORDER = <span class="number">0x0200</span>,
+			NOREDRAW = <span class="number">0x0008</span>,
+			NOSENDCHANGING = <span class="number">0x0400</span>,
+			NOSIZE = <span class="number">0x0001</span>,
+			NOZORDER = <span class="number">0x0004</span>,
+			SHOWWINDOW = <span class="number">0x0040</span>
 		}
 
-		static void Main(string[] args)
+		<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
 		{
-			// Introduced in the <span class="string">"Finding specific windows"</span> blog, we use the WindowFinder class to find all Internet Explorer main window instances.
-			Finding_specific_windows.WindowFinder wf = new Finding_specific_windows.WindowFinder();
-			wf.FindWindows(0, null, new Regex(<span class="string">"- (Windows|Microsoft) Internet Explorer"</span>), new Regex(<span class="string">"iexplore"</span>), new Finding_specific_windows.WindowFinder.FoundWindowCallback(foundWindow));
+			<span class="comment">// Introduced in the "Finding specific windows" blog, we use the WindowFinder class to find all Internet Explorer main window instances.</span>
+			Finding_specific_windows.WindowFinder wf = <span class="keyword">new</span> Finding_specific_windows.WindowFinder();
+			wf.FindWindows(<span class="number">0</span>, <span class="keyword">null</span>, <span class="keyword">new</span> Regex(<span class="string">"- (Windows|Microsoft) Internet Explorer"</span>), <span class="keyword">new</span> Regex(<span class="string">"iexplore"</span>), <span class="keyword">new</span> Finding_specific_windows.WindowFinder.FoundWindowCallback(foundWindow));
 
 			Console.Read();
 		}
 
-		static bool foundWindow(int handle)
+		<span class="keyword">static</span> <span class="keyword">bool</span> foundWindow(<span class="keyword">int</span> handle)
 		{
-			// After an Internet Explorer window has been found, relocate it to (50,50) and set it's size to 600x500px.
-			SetWindowPos(handle, 0, 50, 50, 600, 500, 0);
+			<span class="comment">// After an Internet Explorer window has been found, relocate it to (50,50) and set it's size to 600x500px.</span>
+			SetWindowPos(handle, <span class="number">0</span>, <span class="number">50</span>, <span class="number">50</span>, <span class="number">600</span>, <span class="number">500</span>, <span class="number">0</span>);
 
 			Console.WriteLine(<span class="string">"Window resized and relocated"</span>);
 
-			// Since we return true, this will be done for any and all Internet Explorer instances.
-			return true;
+			<span class="comment">// Since we return true, this will be done for any and all Internet Explorer instances.</span>
+			<span class="keyword">return</span> <span class="keyword">true</span>;
 		}
 	}
 }
@@ -813,7 +813,7 @@ namespace Modifying_window_location_and_size
 <a id="more"></a>
 
 <p>Note that the location is not in relation to it’s parent windows location, it is always the absolute screen position.</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System.Runtime.InteropServices;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System.Runtime.InteropServices;
 <span class="keyword">using</span> System.Drawing;
 <span class="keyword">using</span> System.Text.RegularExpressions;
 <span class="keyword">using</span> System;
@@ -957,7 +957,7 @@ namespace Getting_window_location_and_size
 <a id="more"></a>
 
 
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System.Runtime.InteropServices;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System.Runtime.InteropServices;
 <span class="keyword">using</span> System;
 <span class="keyword">using</span> System.Text;
 <span class="keyword">using</span> System.Text.RegularExpressions;
@@ -1190,7 +1190,7 @@ namespace Searching_for_windows
 <a id="more"></a>
 
 
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System.Runtime.InteropServices;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System.Runtime.InteropServices;
 <span class="keyword">using</span> System.Text;
 <span class="keyword">using</span> System;
 
@@ -1315,7 +1315,7 @@ namespace Enumerating_windows
 <a id="more"></a>
 
 <p><a href="http://www.improve.dk/blog/2007/04/03/getting-text-from-handle" target="_blank">Like before</a>, open an Internet Explorer browser and obtain a handle to the address field.</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 <span class="keyword">using</span> System.Runtime.InteropServices;
 <span class="keyword">using</span> System.Globalization;
 

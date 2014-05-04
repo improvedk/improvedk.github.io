@@ -118,7 +118,7 @@
 
 <h2 id="Enter_ConcurrentDictionary">Enter ConcurrentDictionary</h2>
 <p>The problem can be solved by changing just two lines of code. Instead of using a generic Dictionary, we’ll change it to a generic ConcurrentDictionary like so:</p>
-<figure class="highlight csharp"><pre><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">readonly</span> ConcurrentDictionary&lt;<span class="keyword">short</span>, ConcurrentDictionary&lt;SettingDescription, SettingDescriptionContainer&gt;&gt; cache =
+<figure class="highlight cs"><pre><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">readonly</span> ConcurrentDictionary&lt;<span class="keyword">short</span>, ConcurrentDictionary&lt;SettingDescription, SettingDescriptionContainer&gt;&gt; cache =
 	<span class="keyword">new</span> ConcurrentDictionary&lt;<span class="keyword">short</span>, ConcurrentDictionary&lt;SettingDescription, SettingDescriptionContainer&gt;&gt;();
 </pre></figure>
 
@@ -128,7 +128,7 @@
 </blockquote>
 <p>Performance wise ConcurrentDictionary is about 50% slower (anecdotally) than the regular Dictionary type but even if this code is run very often, that is absolutely negligible compared to making just a single database access call.</p>
 <p>Besides switching the Dictionary out with a ConcurrentDictionary, we also need to modify the init function since the ConcurrentDictionary way of adding items is slightly different:</p>
-<figure class="highlight csharp"><pre><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">object</span> syncRoot = <span class="keyword">new</span> <span class="keyword">object</span>();
+<figure class="highlight cs"><pre><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">object</span> syncRoot = <span class="keyword">new</span> <span class="keyword">object</span>();
 
 <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">init</span>(IPartnerConfig partnerConfig)
 {

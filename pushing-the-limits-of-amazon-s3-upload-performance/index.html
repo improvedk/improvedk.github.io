@@ -123,107 +123,107 @@
 <p>I tried running the tests both with and without MD5 checksum generation &amp; verification, but I saw no measurable difference in the outcome.</p>
 <p>At no point, in any of the test environments, were the CPUs stressed to the point where they were close to becoming bottlenecks. As the test object is all in-memory and no disk is involved, I’ve ruled out disks as a bottleneck factor as well. Thus, the number one of piece of hardware affecting the results is the network interface card (NIC).</p>
 <p>Before starting the four repetitions of the test, I fire off a single PutObject request to warm up the stack. The test code is relatively simple, it runs in an infinite loop, checking whether we need to upload more objects, or whether we’re done. If done, it breaks the loop and ends the thread. When launching I start up X amount of threads and immediately after join with them to wait for them all to complete. The runtime includes the amount of time required to instantiate the threads, though it should have no measurable impact on the result. The runtime calculation is done using integer math for output simplicity, but the impact should be minimal in the big picture.</p>
-<figure class="highlight csharp"><pre>using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Diagnostics;
-using System.Net;
-using System.Threading;
-using Amazon;
-using Amazon.S3;
-using Amazon.S3.Model;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Collections.Generic;
+<span class="keyword">using</span> System.Configuration;
+<span class="keyword">using</span> System.Diagnostics;
+<span class="keyword">using</span> System.Net;
+<span class="keyword">using</span> System.Threading;
+<span class="keyword">using</span> Amazon;
+<span class="keyword">using</span> Amazon.S3;
+<span class="keyword">using</span> Amazon.S3.Model;
 
 namespace S3Optimization
 {
-	<span class="class"><span class="keyword">class</span> <span class="title">Program</span></span>
+	class Program
 	{
-		private <span class="reserved">const</span> string bucketName = <span class="string">"improve.dk"</span>;
-		private <span class="reserved">const</span> string serviceUrl = <span class="string">"s3-eu-west-1.amazonaws.com"</span>;
+		<span class="keyword">private</span> <span class="keyword">const</span> <span class="keyword">string</span> bucketName = <span class="string">"improve.dk"</span>;
+		<span class="keyword">private</span> <span class="keyword">const</span> <span class="keyword">string</span> serviceUrl = <span class="string">"s3-eu-west-1.amazonaws.com"</span>;
 
-		<span class="regexp">//</span> ConnectionLimit ObjSizeInKB
-		static <span class="reserved">void</span> Main(string[] args)
+		<span class="comment">// ConnectionLimit ObjSizeInKB</span>
+		<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
 		{
-			int repetitions = <span class="number">4</span>;
-			int uploadCount = <span class="number">512</span>;
-			int objSize = Convert.ToInt32(args[<span class="number">1</span>]) * <span class="number">1024</span>;
-			int numThreads = Convert.ToInt32(args[<span class="number">0</span>]);
-			string dir = <span class="string">"Optimization/"</span> + Guid.NewGuid();
-			<span class="reserved">var</span> config = <span class="keyword">new</span> AmazonS3Config().WithServiceURL(serviceUrl).WithCommunicationProtocol(Protocol.HTTPS);
-			<span class="reserved">var</span> sw = <span class="keyword">new</span> Stopwatch();
-			object locker = <span class="keyword">new</span> object();
-			string obj = randomString(objSize);
+			<span class="keyword">int</span> repetitions = <span class="number">4</span>;
+			<span class="keyword">int</span> uploadCount = <span class="number">512</span>;
+			<span class="keyword">int</span> objSize = Convert.ToInt32(args[<span class="number">1</span>]) * <span class="number">1024</span>;
+			<span class="keyword">int</span> numThreads = Convert.ToInt32(args[<span class="number">0</span>]);
+			<span class="keyword">string</span> dir = <span class="string">"Optimization/"</span> + Guid.NewGuid();
+			<span class="keyword">var</span> config = <span class="keyword">new</span> AmazonS3Config().WithServiceURL(serviceUrl).WithCommunicationProtocol(Protocol.HTTPS);
+			<span class="keyword">var</span> sw = <span class="keyword">new</span> Stopwatch();
+			<span class="keyword">object</span> locker = <span class="keyword">new</span> <span class="keyword">object</span>();
+			<span class="keyword">string</span> obj = randomString(objSize);
 
-			<span class="regexp">//</span> Ensuring all connections have network connectivity
+			<span class="comment">// Ensuring all connections have network connectivity</span>
 			ServicePointManager.DefaultConnectionLimit = numThreads;
 
-			<span class="regexp">//</span> The actual job each thread will be performing
-			<span class="reserved">var</span> work = <span class="keyword">new</span> ThreadStart<span class="function"><span class="params">(() =&gt;
+			<span class="comment">// The actual job each thread will be performing</span>
+			<span class="keyword">var</span> work = <span class="keyword">new</span> ThreadStart(() =&gt;
 				{
-					using (<span class="reserved">var</span> s3Client = AWSClientFactory.CreateAmazonS3Client(ConfigurationManager.AppSettings[<span class="string">"AccessKeyID"</span>], ConfigurationManager.AppSettings[<span class="string">"SecretAccessKey"</span>], config))
+					<span class="keyword">using</span> (<span class="keyword">var</span> s3Client = AWSClientFactory.CreateAmazonS3Client(ConfigurationManager.AppSettings[<span class="string">"AccessKeyID"</span>], ConfigurationManager.AppSettings[<span class="string">"SecretAccessKey"</span>], config))
 					{
-						<span class="keyword">while</span> (<span class="literal">true</span>)
+						<span class="keyword">while</span> (<span class="keyword">true</span>)
 						{
-							lock (locker)
+							<span class="keyword">lock</span> (locker)
 							{
 								<span class="keyword">if</span> (uploadCount &lt;= <span class="number">0</span>)
 									<span class="keyword">break</span>;
 								uploadCount--;
 							}
 
-							<span class="reserved">var</span> request = <span class="keyword">new</span> PutObjectRequest()
+							<span class="keyword">var</span> request = <span class="keyword">new</span> PutObjectRequest()
 								.WithBucketName(bucketName)
 								.WithKey(dir + <span class="string">"/"</span> + Guid.NewGuid())
 								.WithContentBody(obj);
 							s3Client.PutObject(request);
 						}
 					}
-				})</span>;
+				});
 
-			// <span class="title">Warmup</span>
-			<span class="title">using</span> <span class="params">(<span class="reserved">var</span> s3Client = AWSClientFactory.CreateAmazonS3Client(ConfigurationManager.AppSettings[<span class="string">"AccessKeyID"</span>], ConfigurationManager.AppSettings[<span class="string">"SecretAccessKey"</span>], config))</span>
+			<span class="comment">// Warmup</span>
+			<span class="keyword">using</span> (<span class="keyword">var</span> s3Client = AWSClientFactory.CreateAmazonS3Client(ConfigurationManager.AppSettings[<span class="string">"AccessKeyID"</span>], ConfigurationManager.AppSettings[<span class="string">"SecretAccessKey"</span>], config))
 			{
-				<span class="title">var</span> <span class="title">request</span> = <span class="title">new</span> <span class="title">PutObjectRequest</span><span class="params">()</span>
-					.<span class="title">WithBucketName</span><span class="params">(bucketName)</span>
-					.<span class="title">WithKey</span><span class="params">(dir + <span class="string">"/"</span> + Guid.NewGuid())</span>
-					.<span class="title">WithContentBody</span><span class="params">(obj)</span>;
-				<span class="title">s3Client</span>.<span class="title">PutObject</span><span class="params">(request)</span>;
+				<span class="keyword">var</span> request = <span class="keyword">new</span> PutObjectRequest()
+					.WithBucketName(bucketName)
+					.WithKey(dir + <span class="string">"/"</span> + Guid.NewGuid())
+					.WithContentBody(obj);
+				s3Client.PutObject(request);
 			}
 
-			// <span class="title">Actual</span> <span class="title">timing</span>
-			<span class="title">sw</span>.<span class="title">Start</span><span class="params">()</span>;
-			<span class="title">for</span><span class="params">(int i=<span class="number">0</span>; i&lt;repetitions; i++)</span>
+			<span class="comment">// Actual timing</span>
+			sw.Start();
+			<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>; i&lt;repetitions; i++)
 			{
-				<span class="title">int</span> <span class="title">originalUploadCount</span> = <span class="title">uploadCount</span>;
+				<span class="keyword">int</span> originalUploadCount = uploadCount;
 
-				<span class="title">var</span> <span class="title">threads</span> = <span class="title">new</span> <span class="title">List</span><span class="params">()</span>;
-				<span class="title">for</span><span class="params">(int j=<span class="number">0</span>; j&lt;numthreads; j++)</span>="" <span class="title">threads</span>.<span class="title">add</span><span class="params">(<span class="keyword">new</span>=<span class="string">""</span> thread(work))</span>;="" <span class="title">threads</span>.<span class="title">foreach</span><span class="params">(x=<span class="string">""</span>&gt; x.Start())</span>;
-				<span class="title">threads</span>.<span class="title">ForEach</span><span class="params">(x =&gt; x.Join())</span>;
+				<span class="keyword">var</span> threads = <span class="keyword">new</span> List();
+				<span class="keyword">for</span>(<span class="keyword">int</span> j=<span class="number">0</span>; j&lt;numthreads; j++)=<span class="string">""</span> threads.add(<span class="keyword">new</span>=<span class="string">""</span> thread(work));=<span class="string">""</span> threads.<span class="keyword">foreach</span>(x=<span class="string">""</span>&gt; x.Start());
+				threads.ForEach(x =&gt; x.Join());
 
-				<span class="title">uploadCount</span> = <span class="title">originalUploadCount</span>;
+				uploadCount = originalUploadCount;
 			}
-			<span class="title">sw</span>.<span class="title">Stop</span><span class="params">()</span>;
+			sw.Stop();
 
-			<span class="title">Console</span>.<span class="title">WriteLine</span><span class="params">(sw.ElapsedMilliseconds / repetitions)</span>;
+			Console.WriteLine(sw.ElapsedMilliseconds / repetitions);
 		}
 
-		<span class="title">static</span> <span class="title">string</span> <span class="title">randomString</span><span class="params">(int size)</span>
+		<span class="keyword">static</span> <span class="keyword">string</span> randomString(<span class="keyword">int</span> size)
 		{
-			<span class="title">var</span> <span class="title">rnd</span> = <span class="title">new</span> <span class="title">Random</span><span class="params">()</span>;
-			<span class="title">var</span> <span class="title">chars</span> = "<span class="title">ABCDEFGHIJKLMNOPQRSTUVWXYZ</span>";
+			<span class="keyword">var</span> rnd = <span class="keyword">new</span> Random();
+			<span class="keyword">var</span> chars = <span class="string">"ABCDEFGHIJKLMNOPQRSTUVWXYZ"</span>;
 
-			<span class="title">char</span>[] <span class="title">buffer</span> = <span class="title">new</span> <span class="title">char</span>[<span class="title">size</span>];
+			<span class="keyword">char</span>[] buffer = <span class="keyword">new</span> <span class="keyword">char</span>[size];
 
-			<span class="title">for</span> <span class="params">(int i = <span class="number">0</span>; i &lt; size; i++)</span>
-				<span class="title">buffer</span>[<span class="title">i</span>] = <span class="title">chars</span>[<span class="title">rnd</span>.<span class="title">Next</span><span class="params">(chars.Length)</span>];
+			<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; size; i++)
+				buffer[i] = chars[rnd.Next(chars.Length)];
 
-			<span class="title">return</span> <span class="title">new</span> <span class="title">string</span><span class="params">(buffer)</span>;
+			<span class="keyword">return</span> <span class="keyword">new</span> <span class="keyword">string</span>(buffer);
 		}
 	}
-}</span>
+}
 </pre></figure>
 
 <p>For running the tests, I’m using the following test runner application, testing all combinations of thread count and object size between 1 and 256/2048 respectively (in powers of 2):</p>
-<figure class="highlight csharp"><pre><span class="keyword">var</span> psi = <span class="keyword">new</span> ProcessStartInfo(<span class="string">"S3Optimization.exe"</span>)
+<figure class="highlight cs"><pre><span class="keyword">var</span> psi = <span class="keyword">new</span> ProcessStartInfo(<span class="string">"S3Optimization.exe"</span>)
     {
         UseShellExecute = <span class="keyword">false</span>,
 		RedirectStandardOutput = <span class="keyword">true</span>

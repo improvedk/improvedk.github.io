@@ -113,7 +113,7 @@
 <a id="more"></a>
 
 <p>There are just four functions in the class, all overload variations. In a nutshell, they’ll allow you to profile a single action with &amp; without warmup, multiple iterations and multiple iterations run i parallel. The code is more or less self explanable so I’ll just throw it out there:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 <span class="keyword">using</span> System.Collections.Generic;
 <span class="keyword">using</span> System.Diagnostics;
 <span class="keyword">using</span> System.Threading;
@@ -224,22 +224,22 @@ namespace CodeProfiler
 </pre></figure>
 
 <p>Using the CodeProfiler class, it’s easy for us to do code profiling, including measuring the effects of parallelization. Here’s an example of calculating the square root of the numbers 1 through 10 million 100 times, using 1-16 simultaneous threads. FYI I’m runing on a quad core machine.</p>
-<figure class="highlight csharp"><pre>using System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 
 namespace CodeProfiler
 {
 	class Program
 	{
-		static void Main(string[] args)
+		<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
 		{
 			Action action = () =&gt;
 			{
-				for (int i = 0; i &lt; 10000000; i++)
+				<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10000000</span>; i++)
 					Math.Sqrt(i);
 			};
 
-			for(int i=1; i&lt;=16; i++)
-				Console.WriteLine(i + <span class="string">" thread(s):t"</span> + CodeProfiler.ProfileAction(action, 100, i));
+			<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">1</span>; i&lt;=<span class="number">16</span>; i++)
+				Console.WriteLine(i + <span class="string">" thread(s):t"</span> + CodeProfiler.ProfileAction(action, <span class="number">100</span>, i));
 
 			Console.Read();
 		}

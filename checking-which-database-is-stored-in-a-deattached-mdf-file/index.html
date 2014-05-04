@@ -116,20 +116,20 @@
 <a id="more"></a>
 
 <p>In this example I’m looping all .mdf files in my local SQL Server data directory. Each one is loaded using OrcaMDF, the boot page is fetched and finally the database name is printed:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 <span class="keyword">using</span> System.IO;
 <span class="keyword">using</span> OrcaMDF.Core.Engine;
 
-<span class="class"><span class="keyword">namespace</span> <span class="title">OrcaMDF</span>.<span class="title">Adhoc</span>
-{</span>
-    <span class="class"><span class="keyword">class</span> <span class="title">Program</span>
-    {</span>
+namespace OrcaMDF.Adhoc
+{
+    class Program
+    {
         <span class="keyword">static</span> <span class="keyword">void</span> Main()
         {
-			<span class="keyword">foreach</span> (<span class="keyword">string</span> mdfPath in Directory.GetFiles(@<span class="string">"C:\Program Files\Microsoft SQL Server\MSSQL10_50.MSSQLSERVER\MSSQL\DATA"</span>))
+			<span class="keyword">foreach</span> (<span class="keyword">string</span> mdfPath <span class="keyword">in</span> Directory.GetFiles(<span class="string">@"C:\Program Files\Microsoft SQL Server\MSSQL10_50.MSSQLSERVER\MSSQL\DATA"</span>))
 			{
-				if (!mdfPath.ToLower().EndsWith(<span class="string">".mdf"</span>))
-					continue;
+				<span class="keyword">if</span> (!mdfPath.ToLower().EndsWith(<span class="string">".mdf"</span>))
+					<span class="keyword">continue</span>;
 
 				<span class="keyword">using</span> (<span class="keyword">var</span> file = <span class="keyword">new</span> MdfFile(mdfPath))
 				{

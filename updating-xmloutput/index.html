@@ -115,16 +115,16 @@
 <p>I have been using the class myself for most of my xml writing requirements lately (in appropriate scenarios) and I’ve ended up augmenting it a little bit. Nothing major, just a couple of helpful changes.</p>
 <h2 id="Automatic_xml_declaration">Automatic xml declaration</h2>
 <p>Instead of manually declaring our xml declaration each time:</p>
-<figure class="highlight csharp"><pre>XmlOutput xo = new XmlOutput()
-	<span class="preprocessor">.XmlDeclaration</span>()
-	<span class="preprocessor">.Node</span>(<span class="string">"root"</span>)<span class="preprocessor">.Within</span>()
-		<span class="preprocessor">.Node</span>(<span class="string">"result"</span>)<span class="preprocessor">.Attribute</span>(<span class="string">"type"</span>, <span class="string">"boolean"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"true"</span>)<span class="comment">;</span>
+<figure class="highlight cs"><pre>XmlOutput xo = <span class="keyword">new</span> XmlOutput()
+	.XmlDeclaration()
+	.Node(<span class="string">"root"</span>).Within()
+		.Node(<span class="string">"result"</span>).Attribute(<span class="string">"type"</span>, <span class="string">"boolean"</span>).InnerText(<span class="string">"true"</span>);
 </pre></figure>
 
 <p>XmlOutput will instead add an XmlDeclaration with the default parameters:</p>
-<figure class="highlight csharp"><pre>var xo = new XmlOutput()
-	<span class="preprocessor">.Node</span>(<span class="string">"root"</span>)<span class="preprocessor">.Within</span>()
-		<span class="preprocessor">.Node</span>(<span class="string">"result"</span>)<span class="preprocessor">.Attribute</span>(<span class="string">"type"</span>, <span class="string">"boolean"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"true"</span>)<span class="comment">;</span>
+<figure class="highlight cs"><pre><span class="keyword">var</span> xo = <span class="keyword">new</span> XmlOutput()
+	.Node(<span class="string">"root"</span>).Within()
+		.Node(<span class="string">"result"</span>).Attribute(<span class="string">"type"</span>, <span class="string">"boolean"</span>).InnerText(<span class="string">"true"</span>);
 </pre></figure>
 
 <p>Note that this is a breaking change, meaning it will result in different output than the earlier version did. While you could make an XmlDocument without an XmlDeclaration earlier, you can no longer do this.</p>
@@ -132,7 +132,7 @@
 <p>XmlOutput will throw an InvalidOperationException in case an XmlDeclaration has already been added to the document. I do not allow for overwriting the existing XmlDeclaration as XmlOutput really is forward-only writing and since it might often be a flaw that the XmlDeclaration is overwritten.</p>
 <h2 id="IDisposable">IDisposable</h2>
 <p>Just as I <a href="/using-idispoable-to-write-indented-text/">used IDisposable to easily write indented text</a>, I’ve done the same to XmlOutput. For smaller bits of xml, it might cause more bloat than good - but it’s optional when to use it. Using IDisposable will simply call EndWithin() in the Dispose method, making indented xml generation more readable.</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> (xo.Node(<span class="string">"user"</span>).Within())
+<figure class="highlight cs"><pre><span class="keyword">using</span> (xo.Node(<span class="string">"user"</span>).Within())
 {
 	xo.Node(<span class="string">"username"</span>).InnerText(<span class="string">"orca"</span>);
 
@@ -157,21 +157,21 @@
 <p><a href="XmlOutput_State_Machine.zip">XmlOutput_State_Machine.zip - Visio diagram</a></p>
 <p>So basically, calling a Create method will return an IXmlOutputStartDocument which only supports creating a Node and creating an XmlDeclaration. If you create an XmlDeclaration, you’ll get an IXmlOutputCanWriteFirstNode which only allows you to create a node as that’s the only valid option (ignoring read-only operations). Continuing on, creating a Node at that point will return you an IXmlOutputInsideRootNode which again supports creating either sibling nodes, attributes or innertext. If you call InnerText at this point, we get to a blind alley at the IXmlOutputInsideRootNodeWithText which only allows creating attributes.</p>
 <p>Now, on paper, this seems great. The problem however becomes apparent when we start using it:</p>
-<figure class="highlight csharp"><pre>// xo <span class="keyword">is</span> now an IXmlOutputCanWriteFirstNode
-var xo = XmlOutput.Create()
+<figure class="highlight cs"><pre><span class="comment">// xo is now an IXmlOutputCanWriteFirstNode</span>
+<span class="keyword">var</span> xo = XmlOutput.Create()
 	.XmlDeclaration();
 
-// We<span class="attribute">'ve</span> created a root node <span class="keyword">and</span> ignored the returned IXmlOutputInsideRootNode
+<span class="comment">// We've created a root node and ignored the returned IXmlOutputInsideRootNode</span>
 xo.Node(<span class="string">"root"</span>);
 
-// This fails! Since xo <span class="keyword">is</span> an IXmlOutputCanWriteFirstNode, we<span class="attribute">'re</span> <span class="keyword">not</span> allowed <span class="keyword">to</span> create attributes.
-// Creating the root node above should<span class="attribute">'ve</span> changed our <span class="keyword">type</span> <span class="keyword">to</span> IXmlOutputInsideRootNode, but it can<span class="attribute">'t</span> since
-// xo <span class="keyword">is</span> statically typed as an IXmlOutputCanWriteFirstNode
-xo.<span class="keyword">Attribute</span>(<span class="string">"hello"</span>, <span class="string">"world"</span>);
+<span class="comment">// This fails! Since xo is an IXmlOutputCanWriteFirstNode, we're not allowed to create attributes.</span>
+<span class="comment">// Creating the root node above should've changed our type to IXmlOutputInsideRootNode, but it can't since</span>
+<span class="comment">// xo is statically typed as an IXmlOutputCanWriteFirstNode</span>
+xo.Attribute(<span class="string">"hello"</span>, <span class="string">"world"</span>);
 </pre></figure>
 
 <p>One way to get around this is to create a new variable after each operation, but I don’t really think I’ll have to explain why this is a bad idea:</p>
-<figure class="highlight csharp"><pre><span class="comment">// xo1 is now an IXmlOutputCanWriteFirstNode</span>
+<figure class="highlight cs"><pre><span class="comment">// xo1 is now an IXmlOutputCanWriteFirstNode</span>
 <span class="keyword">var</span> xo1 = XmlOutput.Create()
 	.XmlDeclaration();
 
@@ -187,7 +187,7 @@ xo.<span class="keyword">Attribute</span>(<span class="string">"hello"</span>, <
 <p>This will result in us having create a single node inside the root node. We are still within the root node scope (creating another Node will also be a child of the rootnode, but a sibling of the just created node). The problem is, at this point we’re able to call EndWithin() since the IXmlOutputOutsideNode interface allows it, but we can’t move out of the root node scope as we’re on the bottom of the stack. Unless we create interfaces like IXmlOutputOutsideNodeLevel1, Level2, LevelX interfaces, we can’t really support allowing and disallowing EndWithin depending on stack level - and this is a mess I don’t want to get into.</p>
 <p>So what’s the conclusion? While the interface based help in regards to fluent interfaces is a great idea, it’s not really easy to implement, as least not as long as we need some kind of recursive functionality on our interfaces. If we had a simple linear fluent interface, it might be easier for us to support it, though we will still have the variable issue.</p>
 <h3 id="Code">Code</h3>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 <span class="keyword">using</span> System.Collections.Generic;
 <span class="keyword">using</span> System.Xml;
 

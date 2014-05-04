@@ -113,7 +113,7 @@
 <a id="more"></a>
 
 <p>The code required for verifying Mailgun forwards is very simple and doesn’t require much explanation:</p>
-<figure class="highlight csharp"><pre><span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
+<figure class="highlight cs"><pre><span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
 <span class="comment"><span class="xmlDocTag">///</span> Verifies that the signature matches the timestamp & token.</span>
 <span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
 <span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>True if the signature is valid, otherwise false.<span class="xmlDocTag">&lt;/returns&gt;</span></span>
@@ -130,7 +130,7 @@
 </pre></figure>
 
 <p>Use sample:</p>
-<figure class="highlight csharp"><pre><span class="comment">// All these values are provided by the Mailgun request</span>
+<figure class="highlight cs"><pre><span class="comment">// All these values are provided by the Mailgun request</span>
 <span class="keyword">var</span> key = <span class="string">"key-x3ifab7xngqxep7923iuab251q5vhox0"</span>;
 <span class="keyword">var</span> timestamp = <span class="number">1568491354</span>;
 <span class="keyword">var</span> token = <span class="string">"asdoij2893dm98m2x0a9sdkf09k423cdm"</span>;

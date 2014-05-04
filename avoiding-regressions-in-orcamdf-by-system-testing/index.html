@@ -120,7 +120,7 @@
 
 <h2 id="Unit_testing">Unit testing</h2>
 <p><a href="http://en.wikipedia.org/wiki/Unit_testing" target="_blank">Unit testing</a> is the process of testing the smallest parts of the code, which would be functions in object oriented programming. A sample test for the <a href="https://github.com/improvedk/OrcaMDF/blob/694dd0cff213dc48b5153b040a41fdc707914680/src/OrcaMDF.Core/Engine/SqlTypes/SqlBigInt.cs" target="_blank">SqlBigInt</a> data type parsing class could look like this:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 <span class="keyword">using</span> NUnit.Framework;
 <span class="keyword">using</span> OrcaMDF.Core.Engine.SqlTypes;
 
@@ -169,7 +169,7 @@ namespace OrcaMDF.Core.Tests.Engine.SqlTypes
 <li>Run OrcaMDF on the detached .mdf file and validate the results.</li>
 </ul>
 <p>A sample test, creating two user tables and validating the output from the DatabaseMetaData, looks like this:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System.Data.SqlClient;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System.Data.SqlClient;
 <span class="keyword">using</span> NUnit.Framework;
 <span class="keyword">using</span> OrcaMDF.Core.Engine;
 

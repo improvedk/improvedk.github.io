@@ -123,29 +123,29 @@
 <p>As in the original post my goal is to accept a URL like <a href="http://localhost/blog/2006/12/08/missing-windows-mobile-device-center" target="_blank">http://localhost/blog/2006/12/08/missing-windows-mobile-device-center</a> and map it to the BlogPost.aspx file in the root of my application. During the rewrite process I want to make the year, month, day and title available for the BlogPost.aspx file in an easily accessible way.</p>
 <h2 id="Rewriting_using_Global-asax">Rewriting using Global.asax</h2>
 <p>The easiest way of rewriting URL’s is to add a new Global.asax file to the root of your solution. Now paste in the following code:</p>
-<figure class="highlight csharp"><pre>using System<span class="comment">;</span>
-using System<span class="preprocessor">.Text</span><span class="preprocessor">.RegularExpressions</span><span class="comment">;</span>
-using System<span class="preprocessor">.Web</span><span class="comment">;</span>
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Text.RegularExpressions;
+<span class="keyword">using</span> System.Web;
 
 namespace IIS7UrlRewritingDoneProperly
 {
-	public class Global : HttpApplication
+	<span class="keyword">public</span> <span class="keyword">class</span> Global : HttpApplication
 	{
-		// Runs at the beginning of each request to the server
-		protected void Application_BeginRequest(object sender, EventArgs e)
+		<span class="comment">// Runs at the beginning of each request to the server</span>
+		<span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">Application_BeginRequest</span>(<span class="keyword">object</span> sender, EventArgs e)
 		{
-			// Match the specific blog post URL path as well as pull <span class="keyword">out</span> variables <span class="keyword">in</span> regex groups
-			Match m = Regex<span class="preprocessor">.Match</span>(Request<span class="preprocessor">.Url</span><span class="preprocessor">.LocalPath</span>, @<span class="string">"^/blog/(?&lt;year&gt;d{4})/(?&lt;month&gt;d{2})/(?&lt;day&gt;d{2})/(?&lt;title&gt;.*)/?$"</span>)<span class="comment">;</span>
+			<span class="comment">// Match the specific blog post URL path as well as pull out variables in regex groups</span>
+			Match m = Regex.Match(Request.Url.LocalPath, <span class="string">@"^/blog/(?&lt;year&gt;d{4})/(?&lt;month&gt;d{2})/(?&lt;day&gt;d{2})/(?&lt;title&gt;.*)/?$"</span>);
 
-			// If we match a blog posts URL, save the URL variables <span class="keyword">in</span> Context<span class="preprocessor">.Items</span> <span class="keyword">and</span> rewrite to /BlogPost<span class="preprocessor">.aspx</span>
-			if (m<span class="preprocessor">.Success</span>)
+			<span class="comment">// If we match a blog posts URL, save the URL variables in Context.Items and rewrite to /BlogPost.aspx</span>
+			<span class="keyword">if</span> (m.Success)
 			{
-				Context<span class="preprocessor">.Items</span>[<span class="string">"Title"</span>] = m<span class="preprocessor">.Groups</span>[<span class="string">"title"</span>]<span class="preprocessor">.Value</span><span class="comment">;</span>
-				Context<span class="preprocessor">.Items</span>[<span class="string">"Year"</span>] = m<span class="preprocessor">.Groups</span>[<span class="string">"year"</span>]<span class="preprocessor">.Value</span><span class="comment">;</span>
-				Context<span class="preprocessor">.Items</span>[<span class="string">"Month"</span>] = m<span class="preprocessor">.Groups</span>[<span class="string">"month"</span>]<span class="preprocessor">.Value</span><span class="comment">;</span>
-				Context<span class="preprocessor">.Items</span>[<span class="string">"Day"</span>] = m<span class="preprocessor">.Groups</span>[<span class="string">"day"</span>]<span class="preprocessor">.Value</span><span class="comment">;</span>
+				Context.Items[<span class="string">"Title"</span>] = m.Groups[<span class="string">"title"</span>].Value;
+				Context.Items[<span class="string">"Year"</span>] = m.Groups[<span class="string">"year"</span>].Value;
+				Context.Items[<span class="string">"Month"</span>] = m.Groups[<span class="string">"month"</span>].Value;
+				Context.Items[<span class="string">"Day"</span>] = m.Groups[<span class="string">"day"</span>].Value;
 
-				HttpContext<span class="preprocessor">.Current</span><span class="preprocessor">.RewritePath</span>(<span class="string">"/BlogPost.aspx"</span>)<span class="comment">;</span>
+				HttpContext.Current.RewritePath(<span class="string">"/BlogPost.aspx"</span>);
 			}
 		}
 	}
@@ -167,7 +167,7 @@ namespace IIS7UrlRewritingDoneProperly
 <div class="imgwrapper" style=""><div><a href="/how-to-do-url-rewriting-on-iis-7-properly/iis7urlrewritingdoneproperly_2_2.jpg" class="fancy"><img src="/how-to-do-url-rewriting-on-iis-7-properly/iis7urlrewritingdoneproperly_2_2.jpg" style="max-height: 250px"/></a></div></div>
 
 <p>Now paste the following code into the UrlRewriter.cs class file:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 <span class="keyword">using</span> System.Text.RegularExpressions;
 <span class="keyword">using</span> System.Web;
 

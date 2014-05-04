@@ -113,68 +113,68 @@
 <a id="more"></a>
 
 
-<figure class="highlight csharp"><pre>using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Collections.Generic;
+<span class="keyword">using</span> System.Text;
+<span class="keyword">using</span> System.Runtime.InteropServices;
+<span class="keyword">using</span> System.Text.RegularExpressions;
 
 namespace Minimizing_and_maximizing_windows
 {
 	class Program
 	{
-		// The ShowWindowAsync method alters the windows show state through the nCmdShow parameter.
-		// The nCmdShow parameter can have any of the SW values.
-		// See http://msdn.microsoft.com/library/en-us/winui/winui/windowsuserinterface/windowing/windows/windowreference/windowfunctions/showwindowasync.asp
-		// for full documentation.
+		<span class="comment">// The ShowWindowAsync method alters the windows show state through the nCmdShow parameter.</span>
+		<span class="comment">// The nCmdShow parameter can have any of the SW values.</span>
+		<span class="comment">// See http://msdn.microsoft.com/library/en-us/winui/winui/windowsuserinterface/windowing/windows/windowreference/windowfunctions/showwindowasync.asp</span>
+		<span class="comment">// for full documentation.</span>
 		[DllImport(<span class="string">"user32.dll"</span>)]
-		public static extern bool ShowWindowAsync(int hWnd, int nCmdShow);
+		<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">extern</span> <span class="keyword">bool</span> <span class="title">ShowWindowAsync</span>(<span class="keyword">int</span> hWnd, <span class="keyword">int</span> nCmdShow);
 
-		// An enumeration containing all the possible SW values.
-		public enum SW : int
+		<span class="comment">// An enumeration containing all the possible SW values.</span>
+		<span class="keyword">public</span> <span class="keyword">enum</span> SW : <span class="keyword">int</span>
 		{
-			HIDE = 0,
-			SHOWNORMAL = 1,
-			SHOWMINIMIZED = 2,
-			SHOWMAXIMIZED = 3,
-			SHOWNOACTIVATE = 4,
-			SHOW = 5,
-			MINIMIZE = 6,
-			SHOWMINNOACTIVE = 7,
-			SHOWNA = 8,
-			RESTORE = 9,
-			SHOWDEFAULT = 10
+			HIDE = <span class="number">0</span>,
+			SHOWNORMAL = <span class="number">1</span>,
+			SHOWMINIMIZED = <span class="number">2</span>,
+			SHOWMAXIMIZED = <span class="number">3</span>,
+			SHOWNOACTIVATE = <span class="number">4</span>,
+			SHOW = <span class="number">5</span>,
+			MINIMIZE = <span class="number">6</span>,
+			SHOWMINNOACTIVE = <span class="number">7</span>,
+			SHOWNA = <span class="number">8</span>,
+			RESTORE = <span class="number">9</span>,
+			SHOWDEFAULT = <span class="number">10</span>
 		}
 
-		static void Main(string[] args)
+		<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
 		{
-			// Introduced in the <span class="string">"Finding specific windows"</span> blog, we use the WindowFinder class to find all Internet Explorer main window instances.
-			Finding_specific_windows.WindowFinder wf = new Finding_specific_windows.WindowFinder();
-			wf.FindWindows(0, null, new Regex(<span class="string">"- (Windows|Microsoft) Internet Explorer"</span>), new Regex(<span class="string">"iexplore"</span>), new Finding_specific_windows.WindowFinder.FoundWindowCallback(foundWindow));
+			<span class="comment">// Introduced in the "Finding specific windows" blog, we use the WindowFinder class to find all Internet Explorer main window instances.</span>
+			Finding_specific_windows.WindowFinder wf = <span class="keyword">new</span> Finding_specific_windows.WindowFinder();
+			wf.FindWindows(<span class="number">0</span>, <span class="keyword">null</span>, <span class="keyword">new</span> Regex(<span class="string">"- (Windows|Microsoft) Internet Explorer"</span>), <span class="keyword">new</span> Regex(<span class="string">"iexplore"</span>), <span class="keyword">new</span> Finding_specific_windows.WindowFinder.FoundWindowCallback(foundWindow));
 
 			Console.Read();
 		}
 
-		static bool foundWindow(int handle)
+		<span class="keyword">static</span> <span class="keyword">bool</span> foundWindow(<span class="keyword">int</span> handle)
 		{
-			// After an Internet Explorer window has been found, randomly either maximize or minimize it.
-			if (new Random().Next(0, 2) == 0)
+			<span class="comment">// After an Internet Explorer window has been found, randomly either maximize or minimize it.</span>
+			<span class="keyword">if</span> (<span class="keyword">new</span> Random().Next(<span class="number">0</span>, <span class="number">2</span>) == <span class="number">0</span>)
 			{
-				// Maximize the window.
-				ShowWindowAsync(handle, (int)SW.SHOWMAXIMIZED);
+				<span class="comment">// Maximize the window.</span>
+				ShowWindowAsync(handle, (<span class="keyword">int</span>)SW.SHOWMAXIMIZED);
 
 				Console.WriteLine(<span class="string">"Window maximized"</span>);
 			}
-			else
+			<span class="keyword">else</span>
 			{
-				// Minimize the window.
-				ShowWindowAsync(handle, (int)SW.MINIMIZE);
+				<span class="comment">// Minimize the window.</span>
+				ShowWindowAsync(handle, (<span class="keyword">int</span>)SW.MINIMIZE);
 
 				Console.WriteLine(<span class="string">"Window minimized"</span>);
 			}
 
-			// Since we return true, this will be done for any and all Internet Explorer instances.
-			return true;
+			<span class="comment">// Since we return true, this will be done for any and all Internet Explorer instances.</span>
+			<span class="keyword">return</span> <span class="keyword">true</span>;
 		}
 	}
 }

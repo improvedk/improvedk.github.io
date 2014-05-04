@@ -116,7 +116,7 @@
 <p>So what is the benefit of using TxF? The benefit is that we can now perform ACID operations in the file level, meaning we can perform several file operations (whether that be moves, deletions, creations etc) and make sure all of them are committed atomically. It also provides isolation from/for other processes, so whenever a transaction has been started, we will always see a consistent view of a view until we have committed the transaction, even though it has been modified otherwhere. Surendra Verma has a great video on Channel 9 <a href="http://channel9.msdn.com/shows/Going+Deep/Surendra-Verma-Vista-Transactional-File-System/" target="_blank">explaining TxF</a>. Jon Cargille and Christian Allred has another video on Channel 9 that goes even more in-depth on the <a href="http://channel9.msdn.com/shows/Going+Deep/Transactional-Vista-Kernel-Transaction-Manager-and-friends-TxF-TxR/" target="_blank">inner workings on TxF and the Vista KTM</a>.</p>
 <p>Why hasn’t TxF gotten more momentum? Most likely because it’s not part of the BCL! To utilize TxF we have to call Win32 API functions, which is a big step away from lazily utilizing database transactions by just wrapping our code inside of a <a href="http://msdn.microsoft.com/en-us/library/system.transactions.transactionscope.aspx" target="_blank">TransactionScope</a>.</p>
 <p>Using TxF is actually quite simple once we’ve made a couple of necessary managed wrapper classes. Let me present you to KtmTransactionHandle:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 <span class="keyword">using</span> System.ComponentModel;
 <span class="keyword">using</span> System.Runtime.InteropServices;
 <span class="keyword">using</span> System.Transactions;
@@ -184,7 +184,7 @@ namespace TxFTest
 
 <p>The KtmTransactionHandle represents a specific transaction going on inside of the <a href="http://en.wikipedia.org/wiki/Kernel_Transaction_Manager" target="_blank">KTM</a>. In the code, there’s references for further reading of the specific fucntions, most of them stemming from MSDN. Note that the CreateTransactionHandle method assumes there’s already a current transaction, if there is not, an exception will be thrown.</p>
 <p>The second class we need is called TransactedFile. I basically made this to be used as a direct replacement of System.IO.File. It does not include all of the functionality of System.IO.File, but it does have the two most important ones, Open and Delete - most of the other functions are just wrappers of these two, so they are easily appended later on.</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 <span class="keyword">using</span> System.ComponentModel;
 <span class="keyword">using</span> System.IO;
 <span class="keyword">using</span> System.Runtime.InteropServices;
@@ -359,50 +359,50 @@ namespace TxFTest
 <p>The Open and Delete methods both try to obtain a KTM transaction handle as their first action. If a current transaction does not exist, they will throw an exception since KtmTransactionHandle assumes one exists. We could modify these to either perform a transacted operation or non transacted, depending on the availability of a current transaction, but in this case we’re explicitly assuming a transaction will be available.</p>
 <p>Next up the Delete operation will attempt to delete the file using the DeleteFileTransactedW function, passing in the KTM transaction handle. The Open function first tries to obtain a <a href="http://msdn.microsoft.com/en-us/library/microsoft.win32.safehandles.safefilehandle.aspx" target="_blank">SafeFileHandle</a> for the file, which is basically a wrapper class around a normal file handle. Using the SafeFileHandle, we can create a new FileStream, passing in the file handle as a parameter.</p>
 <p>Using these two classes, we can now perform transactional file operations:</p>
-<figure class="highlight csharp"><pre>using System;
-using System.Data.SqlClient;
-using System.Transactions;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Data.SqlClient;
+<span class="keyword">using</span> System.Transactions;
 
 namespace TxFTest
 {
 	class Program
 	{
-		static void Main(string[] args)
+		<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
 		{
-			try
+			<span class="keyword">try</span>
 			{
-				using (var ts = new TransactionScope())
+				<span class="keyword">using</span> (<span class="keyword">var</span> ts = <span class="keyword">new</span> TransactionScope())
 				{
 					TransactedFile.WriteAllText(<span class="string">"test.txt"</span>, <span class="string">"hello world"</span>);
 				}
 
-				// At this point test.txt does not exist since we didn't ts.complete()
+				<span class="comment">// At this point test.txt does not exist since we didn't ts.complete()</span>
 
-				using (var ts = new TransactionScope())
+				<span class="keyword">using</span> (<span class="keyword">var</span> ts = <span class="keyword">new</span> TransactionScope())
 				{
 					TransactedFile.WriteAllText(<span class="string">"test.txt"</span>, <span class="string">"hello world"</span>);
 
-					// The transaction hasn't been committed, so the file is still not logically available outisde
-					// of the transaction, but it is available inside of the transaction
+					<span class="comment">// The transaction hasn't been committed, so the file is still not logically available outisde</span>
+					<span class="comment">// of the transaction, but it is available inside of the transaction</span>
 					Console.WriteLine(TransactedFile.ReadAllText(<span class="string">"test.txt"</span>));
 
-					// After the transaction is committed, the file is available outside of the transaction
+					<span class="comment">// After the transaction is committed, the file is available outside of the transaction</span>
 					ts.Complete();
 				}
 
-				// Since the TransactionScope works for both database and files, we can combine the two. This is great for ensuring
-				// integrity when we store database related files
-				using (var ts = new TransactionScope())
+				<span class="comment">// Since the TransactionScope works for both database and files, we can combine the two. This is great for ensuring</span>
+				<span class="comment">// integrity when we store database related files</span>
+				<span class="keyword">using</span> (<span class="keyword">var</span> ts = <span class="keyword">new</span> TransactionScope())
 				{
-					SqlCommand cmd = new SqlCommand(<span class="string">"INSERT INTO SomeTable (A, B) VALUES ('a', 'b'); SELECT @@IDENTITY"</span>);
-					int insertedID = Convert.ToInt32(cmd.ExecuteScalar());
+					SqlCommand cmd = <span class="keyword">new</span> SqlCommand(<span class="string">"INSERT INTO SomeTable (A, B) VALUES ('a', 'b'); SELECT @@IDENTITY"</span>);
+					<span class="keyword">int</span> insertedID = Convert.ToInt32(cmd.ExecuteScalar());
 
 					TransactedFile.WriteAllText(insertedID + <span class="string">".txt"</span>, <span class="string">"Blob file related to inserted database row"</span>);
 
 					ts.Complete();
 				}
 			}
-			catch (Exception ex)
+			<span class="keyword">catch</span> (Exception ex)
 			{
 				Console.WriteLine(ex);
 			}

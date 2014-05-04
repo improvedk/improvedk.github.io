@@ -161,7 +161,7 @@ SQL <span class="built_in">Server</span> <span class="keyword">is</span> termina
 </pre></figure>
 
 <p>Once the instance has been shut down, I’ve located my MDF file, stored at <strong>D:\MSSQL Databases\AdventureWorksLT2008R2.mdf</strong>. Knowing the path to the MDF file, I’ll now intentially corrupt 5% of the pages in the database (at a database size of 5,312KB this will end up corrupting 33 random pages, out of a total of 664 pages).</p>
-<figure class="highlight csharp"><pre>Corruptor.CorruptFile(@"D:<span class="command">\MSSQL</span> Databases<span class="command">\AdventureWorksLT</span>2008R2.mdf", 0.05);
+<figure class="highlight cs"><pre>Corruptor.CorruptFile(<span class="string">@"D:\MSSQL Databases\AdventureWorksLT2008R2.mdf"</span>, <span class="number">0.05</span>);
 </pre></figure>
 
 <p>At this point I have no idea about which pages were actually corrupted, I just know that 33 random pages just got overwritten by all zeros.</p>
@@ -230,7 +230,7 @@ Books Online.
 </pre></figure>
 
 <p>If you then try opening the database using the OrcaMDF Database class, you’ll get a result like this:</p>
-<figure class="highlight csharp"><pre><span class="keyword">var</span> db = <span class="keyword">new</span> Database(<span class="string">@"D:\MSSQL Databases\AdventureWorksLT2008R2.mdf"</span>);
+<figure class="highlight cs"><pre><span class="keyword">var</span> db = <span class="keyword">new</span> Database(<span class="string">@"D:\MSSQL Databases\AdventureWorksLT2008R2.mdf"</span>);
 </pre></figure>
 
 <div class="imgwrapper" style=""><div><a href="/sql-server-corruption-recovery-when-all-else-fails/Capture.png" class="fancy"><img src="/sql-server-corruption-recovery-when-all-else-fails/Capture.png" style="max-height: 250px"/></a></div></div>
@@ -239,12 +239,12 @@ Books Online.
 <h3 id="RawDatabase">RawDatabase</h3>
 <p>While the OrcaMDF <strong>Database</strong> class can’t read the database file either, <strong>RawDatabase</strong> can. RawDatabase doesn’t care about metadata, it doesn’t read anything but what you tell it to, and as a result of that, it’s much more resilient to corruption.</p>
 <p>Given that we know the corruption has resulted in pages being zeroed out, we could easily gather a list of corrupted pages by just searching for pages whose logical page ID doesn’t match the one in the header:</p>
-<figure class="highlight csharp"><pre>var db = new RawDatabase(@<span class="string">"D:\MSSQL Databases\AdventureWorksLT2008R2.mdf"</span>)
-db<span class="preprocessor">.Pages</span>
-  <span class="preprocessor">.Where</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.PageID</span> != <span class="built_in">x</span><span class="preprocessor">.PageID</span>)
-  <span class="preprocessor">.Select</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.PageID</span>)
-  <span class="preprocessor">.ToList</span>()
-  <span class="preprocessor">.ForEach</span>(Console<span class="preprocessor">.WriteLine</span>)<span class="comment">;</span>
+<figure class="highlight cs"><pre><span class="keyword">var</span> db = <span class="keyword">new</span> RawDatabase(<span class="string">@"D:\MSSQL Databases\AdventureWorksLT2008R2.mdf"</span>)
+db.Pages
+  .Where(x =&gt; x.Header.PageID != x.PageID)
+  .Select(x =&gt; x.PageID)
+  .ToList()
+  .ForEach(Console.WriteLine);
 </pre></figure>
 
 
@@ -271,10 +271,10 @@ db<span class="preprocessor">.Pages</span>
 <div class="imgwrapper" style=""><div><a href="/sql-server-corruption-recovery-when-all-else-fails/Capture1.png" class="fancy"><img src="/sql-server-corruption-recovery-when-all-else-fails/Capture1.png" style="max-height: 250px"/></a></div></div>
 
 <p>The only thing I’m looking for here is the object id, provided by the <strong>id</strong> column. In contrast to all user tables, the system tables have their actual object id stored in the page header, which allows us to easily query for pages by their id. Knowing sys.sysschobjs has ID <strong>34</strong>, let’s see if we can get a list of all the pages belonging to it (note that the .Dump() method is native to <a href="http://www.linqpad.net/" target="_blank">LinqPad</a> - all it does is to output the resulting objects as a table):</p>
-<figure class="highlight csharp"><pre>var db = new RawDatabase(@<span class="string">"D:\MSSQL Databases\AdventureWorksLT2008R2.mdf"</span>)<span class="comment">;</span>
-db<span class="preprocessor">.Pages</span>
-  <span class="preprocessor">.Where</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.ObjectID</span> == <span class="number">34</span>)
-  <span class="preprocessor">.Dump</span>()<span class="comment">;</span>
+<figure class="highlight cs"><pre><span class="keyword">var</span> db = <span class="keyword">new</span> RawDatabase(<span class="string">@"D:\MSSQL Databases\AdventureWorksLT2008R2.mdf"</span>);
+db.Pages
+  .Where(x =&gt; x.Header.ObjectID == <span class="number">34</span>)
+  .Dump();
 </pre></figure>
 
 <div class="imgwrapper" style=""><div><a href="/sql-server-corruption-recovery-when-all-else-fails/Capture2.png" class="fancy"><img src="/sql-server-corruption-recovery-when-all-else-fails/Capture2.png" style="max-height: 250px"/></a></div></div>
@@ -286,28 +286,28 @@ db<span class="preprocessor">.Pages</span>
 <div class="imgwrapper" style=""><div><a href="/sql-server-corruption-recovery-when-all-else-fails/Capture3.png" class="fancy"><img src="/sql-server-corruption-recovery-when-all-else-fails/Capture3.png" style="max-height: 250px"/></a></div></div>
 
 <p>Once we have the schema of sys.sysschobjs, we can make RawDatabase parse the actual rows for us, after which we can filter it down to just the user tables, seeing as we don’t care about procedures, views, indexes and so forth:</p>
-<figure class="highlight csharp"><pre>var db = new RawDatabase(@<span class="string">"D:\MSSQL Databases\AdventureWorksLT2008R2.mdf"</span>)<span class="comment">;</span>
-var pages = db<span class="preprocessor">.Pages</span><span class="preprocessor">.Where</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.ObjectID</span> == <span class="number">34</span> && <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.Type</span> == PageType<span class="preprocessor">.Data</span>)<span class="comment">;</span>
-var records = pages<span class="preprocessor">.SelectMany</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Records</span>)<span class="preprocessor">.Select</span>(<span class="built_in">x</span> =&gt; (RawPrimaryRecord)<span class="built_in">x</span>)<span class="comment">;</span>
-var rows = RawColumnParser<span class="preprocessor">.Parse</span>(records, new IRawType[] {
-	RawType<span class="preprocessor">.Int</span>(<span class="string">"id"</span>),
-	RawType<span class="preprocessor">.NVarchar</span>(<span class="string">"name"</span>),
-	RawType<span class="preprocessor">.Int</span>(<span class="string">"nsid"</span>),
-	RawType<span class="preprocessor">.TinyInt</span>(<span class="string">"nsclass"</span>),
-	RawType<span class="preprocessor">.Int</span>(<span class="string">"status"</span>),
-	RawType<span class="preprocessor">.Char</span>(<span class="string">"type"</span>, <span class="number">2</span>),
-	RawType<span class="preprocessor">.Int</span>(<span class="string">"pid"</span>),
-	RawType<span class="preprocessor">.TinyInt</span>(<span class="string">"pclass"</span>),
-	RawType<span class="preprocessor">.Int</span>(<span class="string">"intprop"</span>),
-	RawType<span class="preprocessor">.DateTime</span>(<span class="string">"created"</span>),
-	RawType<span class="preprocessor">.DateTime</span>(<span class="string">"modified"</span>)
-})<span class="comment">;</span>
+<figure class="highlight cs"><pre><span class="keyword">var</span> db = <span class="keyword">new</span> RawDatabase(<span class="string">@"D:\MSSQL Databases\AdventureWorksLT2008R2.mdf"</span>);
+<span class="keyword">var</span> pages = db.Pages.Where(x =&gt; x.Header.ObjectID == <span class="number">34</span> && x.Header.Type == PageType.Data);
+<span class="keyword">var</span> records = pages.SelectMany(x =&gt; x.Records).Select(x =&gt; (RawPrimaryRecord)x);
+<span class="keyword">var</span> rows = RawColumnParser.Parse(records, <span class="keyword">new</span> IRawType[] {
+	RawType.Int(<span class="string">"id"</span>),
+	RawType.NVarchar(<span class="string">"name"</span>),
+	RawType.Int(<span class="string">"nsid"</span>),
+	RawType.TinyInt(<span class="string">"nsclass"</span>),
+	RawType.Int(<span class="string">"status"</span>),
+	RawType.Char(<span class="string">"type"</span>, <span class="number">2</span>),
+	RawType.Int(<span class="string">"pid"</span>),
+	RawType.TinyInt(<span class="string">"pclass"</span>),
+	RawType.Int(<span class="string">"intprop"</span>),
+	RawType.DateTime(<span class="string">"created"</span>),
+	RawType.DateTime(<span class="string">"modified"</span>)
+});
 
-rows<span class="preprocessor">.Where</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span>[<span class="string">"type"</span>]<span class="preprocessor">.ToString</span>()<span class="preprocessor">.Trim</span>() == <span class="string">"U"</span>)
-	<span class="preprocessor">.Select</span>(<span class="built_in">x</span> =&gt; new {
-		ObjectID = (int)<span class="built_in">x</span>[<span class="string">"id"</span>],
-		Name = <span class="built_in">x</span>[<span class="string">"name"</span>]
-	})<span class="preprocessor">.Dump</span>()<span class="comment">;</span>
+rows.Where(x =&gt; x[<span class="string">"type"</span>].ToString().Trim() == <span class="string">"U"</span>)
+	.Select(x =&gt; <span class="keyword">new</span> {
+		ObjectID = (<span class="keyword">int</span>)x[<span class="string">"id"</span>],
+		Name = x[<span class="string">"name"</span>]
+	}).Dump();
 </pre></figure>
 
 <div class="imgwrapper" style=""><div><a href="/sql-server-corruption-recovery-when-all-else-fails/Capture4.png" class="fancy"><img src="/sql-server-corruption-recovery-when-all-else-fails/Capture4.png" style="max-height: 250px"/></a></div></div>
@@ -315,53 +315,53 @@ rows<span class="preprocessor">.Where</span>(<span class="built_in">x</span> =&g
 <p>We just went from a completely useless suspect database, with no knowledge of the schema, to now having a list of each user table name &amp; object id. Sure, if one of the pages belonging to sys.syschobjs was corrupt, we’d be missing some of the tables without knowing it. Even so, this is a good start, and there are ways of detecting the missing pages (we could look for broken page header references, for example).</p>
 <h3 id="Getting_Schemas">Getting Schemas</h3>
 <p>As we saw for sys.sysschobjs, if we are to parse any of the user table data, we need to know the schema of the tables. The schema happens to be stored in the <strong>sys.syscolpars</strong> base table, and if we lookup in sys.sysschobjs for ‘sys.syscolpars’, we’ll get an object ID of <strong>41</strong>. As we did before, we can get a list of all pages belonging to sys.syscolpars:</p>
-<figure class="highlight csharp"><pre>var db = new RawDatabase(@<span class="string">"D:\MSSQL Databases\AdventureWorksLT2008R2.mdf"</span>)<span class="comment">;</span>
-db<span class="preprocessor">.Pages</span>
-  <span class="preprocessor">.Where</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.ObjectID</span> == <span class="number">41</span>)
-  <span class="preprocessor">.Dump</span>()<span class="comment">;</span>
+<figure class="highlight cs"><pre><span class="keyword">var</span> db = <span class="keyword">new</span> RawDatabase(<span class="string">@"D:\MSSQL Databases\AdventureWorksLT2008R2.mdf"</span>);
+db.Pages
+  .Where(x =&gt; x.Header.ObjectID == <span class="number">41</span>)
+  .Dump();
 </pre></figure>
 
 <div class="imgwrapper" style=""><div><a href="/sql-server-corruption-recovery-when-all-else-fails/Capture5.png" class="fancy"><img src="/sql-server-corruption-recovery-when-all-else-fails/Capture5.png" style="max-height: 250px"/></a></div></div>
 
 <p>By looking up the schema of sys.syscolpars using sp_help, in the working database, we can parse the actual rows much the same way:</p>
-<figure class="highlight csharp"><pre>// Parse sys<span class="preprocessor">.syscolpars</span>
-var db = new RawDatabase(@<span class="string">"D:\MSSQL Databases\AdventureWorksLT2008R2.mdf"</span>)<span class="comment">;</span>
-var pages = db<span class="preprocessor">.Pages</span><span class="preprocessor">.Where</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.ObjectID</span> == <span class="number">41</span> && <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.Type</span> == PageType<span class="preprocessor">.Data</span>)<span class="comment">;</span>
-var records = pages<span class="preprocessor">.SelectMany</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Records</span>)<span class="preprocessor">.Select</span>(<span class="built_in">x</span> =&gt; (RawPrimaryRecord)<span class="built_in">x</span>)<span class="comment">;</span>
-var rows = RawColumnParser<span class="preprocessor">.Parse</span>(records, new IRawType[] {
-	RawType<span class="preprocessor">.Int</span>(<span class="string">"id"</span>),
-	RawType<span class="preprocessor">.SmallInt</span>(<span class="string">"number"</span>),
-	RawType<span class="preprocessor">.Int</span>(<span class="string">"colid"</span>),
-	RawType<span class="preprocessor">.NVarchar</span>(<span class="string">"name"</span>),
-	RawType<span class="preprocessor">.TinyInt</span>(<span class="string">"xtype"</span>),
-	RawType<span class="preprocessor">.Int</span>(<span class="string">"utype"</span>),
-	RawType<span class="preprocessor">.SmallInt</span>(<span class="string">"length"</span>),
-	RawType<span class="preprocessor">.TinyInt</span>(<span class="string">"prec"</span>),
-	RawType<span class="preprocessor">.TinyInt</span>(<span class="string">"scale"</span>),
-	RawType<span class="preprocessor">.Int</span>(<span class="string">"collationid"</span>),
-	RawType<span class="preprocessor">.Int</span>(<span class="string">"status"</span>),
-	RawType<span class="preprocessor">.SmallInt</span>(<span class="string">"maxinrow"</span>),
-	RawType<span class="preprocessor">.Int</span>(<span class="string">"xmlns"</span>),
-	RawType<span class="preprocessor">.Int</span>(<span class="string">"dflt"</span>),
-	RawType<span class="preprocessor">.Int</span>(<span class="string">"chk"</span>),
-	RawType<span class="preprocessor">.VarBinary</span>(<span class="string">"idtval"</span>)
-})<span class="comment">;</span>
+<figure class="highlight cs"><pre><span class="comment">// Parse sys.syscolpars</span>
+<span class="keyword">var</span> db = <span class="keyword">new</span> RawDatabase(<span class="string">@"D:\MSSQL Databases\AdventureWorksLT2008R2.mdf"</span>);
+<span class="keyword">var</span> pages = db.Pages.Where(x =&gt; x.Header.ObjectID == <span class="number">41</span> && x.Header.Type == PageType.Data);
+<span class="keyword">var</span> records = pages.SelectMany(x =&gt; x.Records).Select(x =&gt; (RawPrimaryRecord)x);
+<span class="keyword">var</span> rows = RawColumnParser.Parse(records, <span class="keyword">new</span> IRawType[] {
+	RawType.Int(<span class="string">"id"</span>),
+	RawType.SmallInt(<span class="string">"number"</span>),
+	RawType.Int(<span class="string">"colid"</span>),
+	RawType.NVarchar(<span class="string">"name"</span>),
+	RawType.TinyInt(<span class="string">"xtype"</span>),
+	RawType.Int(<span class="string">"utype"</span>),
+	RawType.SmallInt(<span class="string">"length"</span>),
+	RawType.TinyInt(<span class="string">"prec"</span>),
+	RawType.TinyInt(<span class="string">"scale"</span>),
+	RawType.Int(<span class="string">"collationid"</span>),
+	RawType.Int(<span class="string">"status"</span>),
+	RawType.SmallInt(<span class="string">"maxinrow"</span>),
+	RawType.Int(<span class="string">"xmlns"</span>),
+	RawType.Int(<span class="string">"dflt"</span>),
+	RawType.Int(<span class="string">"chk"</span>),
+	RawType.VarBinary(<span class="string">"idtval"</span>)
+});
 
-rows<span class="preprocessor">.Select</span>(<span class="built_in">x</span> =&gt; new {
-	ObjectID = (int)<span class="built_in">x</span>[<span class="string">"id"</span>],
-	ColumnID = (int)<span class="built_in">x</span>[<span class="string">"colid"</span>],
-	Number = (short)<span class="built_in">x</span>[<span class="string">"number"</span>],
-	TypeID = (byte)<span class="built_in">x</span>[<span class="string">"xtype"</span>],
-	Length = (short)<span class="built_in">x</span>[<span class="string">"length"</span>],
-	Name = <span class="built_in">x</span>[<span class="string">"name"</span>]
-})<span class="preprocessor">.Dump</span>()<span class="comment">;</span>
+rows.Select(x =&gt; <span class="keyword">new</span> {
+	ObjectID = (<span class="keyword">int</span>)x[<span class="string">"id"</span>],
+	ColumnID = (<span class="keyword">int</span>)x[<span class="string">"colid"</span>],
+	Number = (<span class="keyword">short</span>)x[<span class="string">"number"</span>],
+	TypeID = (<span class="keyword">byte</span>)x[<span class="string">"xtype"</span>],
+	Length = (<span class="keyword">short</span>)x[<span class="string">"length"</span>],
+	Name = x[<span class="string">"name"</span>]
+}).Dump();
 </pre></figure>
 
 <div class="imgwrapper" style=""><div><a href="/sql-server-corruption-recovery-when-all-else-fails/Capture6.png" class="fancy"><img src="/sql-server-corruption-recovery-when-all-else-fails/Capture6.png" style="max-height: 250px"/></a></div></div>
 
 <h3 id="Recovering_the_Customer_Table_Schema">Recovering the Customer Table Schema</h3>
 <p>While there are 12 tables, none are probably more important than the <strong>Customer</strong> table. Based on parsing the sys.sysschobjs base table, we know that the customer table has an object ID of <strong>117575457</strong>. Let’s try and filter down to just that object ID, using the code above:</p>
-<figure class="highlight csharp"><pre>rows.Where(x =&gt; (<span class="keyword">int</span>)x[<span class="string">"id"</span>] == <span class="number">117575457</span>).Select(x =&gt; <span class="keyword">new</span> {
+<figure class="highlight cs"><pre>rows.Where(x =&gt; (<span class="keyword">int</span>)x[<span class="string">"id"</span>] == <span class="number">117575457</span>).Select(x =&gt; <span class="keyword">new</span> {
 	ObjectID = (<span class="keyword">int</span>)x[<span class="string">"id"</span>],
 	ColumnID = (<span class="keyword">int</span>)x[<span class="string">"colid"</span>],
 	Number = (<span class="keyword">short</span>)x[<span class="string">"number"</span>],
@@ -408,108 +408,108 @@ rows<span class="preprocessor">.Select</span>(<span class="built_in">x</span> =&
 <p>All we need now is to find the pages belonging to the Customer table. That’s slightly easier said than done however. While each object has an object ID, as can be verified using sys.sysschobjs, that object ID is not what’s stored in the page headers, except for system objects. Thus we can’t just query for all pages whose Header.ObjectID == 117575457, as the value 117575457 won’t be stored in the header.</p>
 <h3 id="Recovering_the_Customer_Allocation_Unit">Recovering the Customer Allocation Unit</h3>
 <p>To find the pages belonging to the Customer table, we’ll first need to find the allocation unit to which it belongs. Unfortunately we already know that page 16 is corrupt - the first page of the <strong>sys.sysallocunits</strong> table, containing all of the metadata. However, we might just be lucky enough for that first page to contain the allocation units for all of the internal tables, which we do not care about. Let’s see if there are any other pages belonging to sys.sysallocunits:</p>
-<figure class="highlight csharp"><pre>var db = new RawDatabase(@<span class="string">"D:\MSSQL Databases\AdventureWorksLT2008R2.mdf"</span>)<span class="comment">;</span>
-db<span class="preprocessor">.Pages</span>
-  <span class="preprocessor">.Where</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.ObjectID</span> == <span class="number">7</span>)
-  <span class="preprocessor">.Dump</span>()<span class="comment">;</span>
+<figure class="highlight cs"><pre><span class="keyword">var</span> db = <span class="keyword">new</span> RawDatabase(<span class="string">@"D:\MSSQL Databases\AdventureWorksLT2008R2.mdf"</span>);
+db.Pages
+  .Where(x =&gt; x.Header.ObjectID == <span class="number">7</span>)
+  .Dump();
 </pre></figure>
 
 <div class="imgwrapper" style=""><div><a href="/sql-server-corruption-recovery-when-all-else-fails/Capture9.png" class="fancy"><img src="/sql-server-corruption-recovery-when-all-else-fails/Capture9.png" style="max-height: 250px"/></a></div></div>
 
 <p>There are 5 other pages available. Let’s try and parse them out so we have as much of the allocation unit data available, as possible. Once again we’ll get the schema from the working database, using sp_help, after which we can parse the remaining rows using RawDatabase. By looking up ‘sysallocunits’ in sysschobjs, we know it has an object ID of 7:</p>
-<figure class="highlight csharp"><pre>var db = new RawDatabase(@<span class="string">"D:\MSSQL Databases\AdventureWorksLT2008R2.mdf"</span>)<span class="comment">;</span>
-var pages = db<span class="preprocessor">.Pages</span><span class="preprocessor">.Where</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.ObjectID</span> == <span class="number">7</span> && <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.Type</span> == PageType<span class="preprocessor">.Data</span>)<span class="comment">;</span>
-var records = pages<span class="preprocessor">.SelectMany</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Records</span>)<span class="preprocessor">.Select</span>(<span class="built_in">x</span> =&gt; (RawPrimaryRecord)<span class="built_in">x</span>)<span class="comment">;</span>
-var rows = RawColumnParser<span class="preprocessor">.Parse</span>(records, new IRawType[] {
-	RawType<span class="preprocessor">.BigInt</span>(<span class="string">"auid"</span>),
-	RawType<span class="preprocessor">.TinyInt</span>(<span class="string">"type"</span>),
-	RawType<span class="preprocessor">.BigInt</span>(<span class="string">"ownerid"</span>),
-	RawType<span class="preprocessor">.Int</span>(<span class="string">"status"</span>),
-	RawType<span class="preprocessor">.SmallInt</span>(<span class="string">"fgid"</span>),
-	RawType<span class="preprocessor">.Binary</span>(<span class="string">"pgfirst"</span>, <span class="number">6</span>),
-	RawType<span class="preprocessor">.Binary</span>(<span class="string">"pgroot"</span>, <span class="number">6</span>),
-	RawType<span class="preprocessor">.Binary</span>(<span class="string">"pgfirstiam"</span>, <span class="number">6</span>),
-	RawType<span class="preprocessor">.BigInt</span>(<span class="string">"pcused"</span>),
-	RawType<span class="preprocessor">.BigInt</span>(<span class="string">"pcdata"</span>),
-	RawType<span class="preprocessor">.BigInt</span>(<span class="string">"pcreserved"</span>),
-	RawType<span class="preprocessor">.Int</span>(<span class="string">"dbfragid"</span>)
-})<span class="comment">;</span>
+<figure class="highlight cs"><pre><span class="keyword">var</span> db = <span class="keyword">new</span> RawDatabase(<span class="string">@"D:\MSSQL Databases\AdventureWorksLT2008R2.mdf"</span>);
+<span class="keyword">var</span> pages = db.Pages.Where(x =&gt; x.Header.ObjectID == <span class="number">7</span> && x.Header.Type == PageType.Data);
+<span class="keyword">var</span> records = pages.SelectMany(x =&gt; x.Records).Select(x =&gt; (RawPrimaryRecord)x);
+<span class="keyword">var</span> rows = RawColumnParser.Parse(records, <span class="keyword">new</span> IRawType[] {
+	RawType.BigInt(<span class="string">"auid"</span>),
+	RawType.TinyInt(<span class="string">"type"</span>),
+	RawType.BigInt(<span class="string">"ownerid"</span>),
+	RawType.Int(<span class="string">"status"</span>),
+	RawType.SmallInt(<span class="string">"fgid"</span>),
+	RawType.Binary(<span class="string">"pgfirst"</span>, <span class="number">6</span>),
+	RawType.Binary(<span class="string">"pgroot"</span>, <span class="number">6</span>),
+	RawType.Binary(<span class="string">"pgfirstiam"</span>, <span class="number">6</span>),
+	RawType.BigInt(<span class="string">"pcused"</span>),
+	RawType.BigInt(<span class="string">"pcdata"</span>),
+	RawType.BigInt(<span class="string">"pcreserved"</span>),
+	RawType.Int(<span class="string">"dbfragid"</span>)
+});
 
-rows<span class="preprocessor">.Select</span>(<span class="built_in">x</span> =&gt; new {
-	AllocationUnitID = (long)<span class="built_in">x</span>[<span class="string">"auid"</span>],
-	Type = (byte)<span class="built_in">x</span>[<span class="string">"type"</span>],
-	ContainerID = (long)<span class="built_in">x</span>[<span class="string">"ownerid"</span>]
-})<span class="preprocessor">.Dump</span>()<span class="comment">;</span>
+rows.Select(x =&gt; <span class="keyword">new</span> {
+	AllocationUnitID = (<span class="keyword">long</span>)x[<span class="string">"auid"</span>],
+	Type = (<span class="keyword">byte</span>)x[<span class="string">"type"</span>],
+	ContainerID = (<span class="keyword">long</span>)x[<span class="string">"ownerid"</span>]
+}).Dump();
 </pre></figure>
 
 <div class="imgwrapper" style=""><div><a href="/sql-server-corruption-recovery-when-all-else-fails/Capture10.png" class="fancy"><img src="/sql-server-corruption-recovery-when-all-else-fails/Capture10.png" style="max-height: 250px"/></a></div></div>
 
 <p>By itself, we can’t use this data, but we’ll need it in just a moment. First we need to get a hold of the Customer table partitions as well. We do so by looking up the schema of <strong>sys.sysrowsets</strong> using sp_help, after which we can parse it. Looking up ‘sysrowsets’ in sysschobjs, we know that sys.sysrowsets has an object ID of 5:</p>
-<figure class="highlight csharp"><pre>var db = new RawDatabase(@<span class="string">"D:\MSSQL Databases\AdventureWorksLT2008R2.mdf"</span>)<span class="comment">;</span>
-var pages = db<span class="preprocessor">.Pages</span><span class="preprocessor">.Where</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.ObjectID</span> == <span class="number">5</span> && <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.Type</span> == PageType<span class="preprocessor">.Data</span>)<span class="comment">;</span>
-var records = pages<span class="preprocessor">.SelectMany</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Records</span>)<span class="preprocessor">.Select</span>(<span class="built_in">x</span> =&gt; (RawPrimaryRecord)<span class="built_in">x</span>)<span class="comment">;</span>
-var rows = RawColumnParser<span class="preprocessor">.Parse</span>(records, new IRawType[] {
-	RawType<span class="preprocessor">.BigInt</span>(<span class="string">"rowsetid"</span>),
-	RawType<span class="preprocessor">.TinyInt</span>(<span class="string">"ownertype"</span>),
-	RawType<span class="preprocessor">.Int</span>(<span class="string">"idmajor"</span>),
-	RawType<span class="preprocessor">.Int</span>(<span class="string">"idminor"</span>),
-	RawType<span class="preprocessor">.Int</span>(<span class="string">"numpart"</span>),
-	RawType<span class="preprocessor">.Int</span>(<span class="string">"status"</span>),
-	RawType<span class="preprocessor">.SmallInt</span>(<span class="string">"fgidfs"</span>),
-	RawType<span class="preprocessor">.BigInt</span>(<span class="string">"rcrows"</span>),
-	RawType<span class="preprocessor">.TinyInt</span>(<span class="string">"cmprlevel"</span>),
-	RawType<span class="preprocessor">.TinyInt</span>(<span class="string">"fillfact"</span>),
-	RawType<span class="preprocessor">.SmallInt</span>(<span class="string">"maxnullbit"</span>),
-	RawType<span class="preprocessor">.Int</span>(<span class="string">"maxleaf"</span>),
-	RawType<span class="preprocessor">.SmallInt</span>(<span class="string">"maxint"</span>),
-	RawType<span class="preprocessor">.SmallInt</span>(<span class="string">"minleaf"</span>),
-	RawType<span class="preprocessor">.SmallInt</span>(<span class="string">"minint"</span>),
-	RawType<span class="preprocessor">.VarBinary</span>(<span class="string">"rsguid"</span>),
-	RawType<span class="preprocessor">.VarBinary</span>(<span class="string">"lockres"</span>),
-	RawType<span class="preprocessor">.Int</span>(<span class="string">"dbfragid"</span>)
-})<span class="comment">;</span>
+<figure class="highlight cs"><pre><span class="keyword">var</span> db = <span class="keyword">new</span> RawDatabase(<span class="string">@"D:\MSSQL Databases\AdventureWorksLT2008R2.mdf"</span>);
+<span class="keyword">var</span> pages = db.Pages.Where(x =&gt; x.Header.ObjectID == <span class="number">5</span> && x.Header.Type == PageType.Data);
+<span class="keyword">var</span> records = pages.SelectMany(x =&gt; x.Records).Select(x =&gt; (RawPrimaryRecord)x);
+<span class="keyword">var</span> rows = RawColumnParser.Parse(records, <span class="keyword">new</span> IRawType[] {
+	RawType.BigInt(<span class="string">"rowsetid"</span>),
+	RawType.TinyInt(<span class="string">"ownertype"</span>),
+	RawType.Int(<span class="string">"idmajor"</span>),
+	RawType.Int(<span class="string">"idminor"</span>),
+	RawType.Int(<span class="string">"numpart"</span>),
+	RawType.Int(<span class="string">"status"</span>),
+	RawType.SmallInt(<span class="string">"fgidfs"</span>),
+	RawType.BigInt(<span class="string">"rcrows"</span>),
+	RawType.TinyInt(<span class="string">"cmprlevel"</span>),
+	RawType.TinyInt(<span class="string">"fillfact"</span>),
+	RawType.SmallInt(<span class="string">"maxnullbit"</span>),
+	RawType.Int(<span class="string">"maxleaf"</span>),
+	RawType.SmallInt(<span class="string">"maxint"</span>),
+	RawType.SmallInt(<span class="string">"minleaf"</span>),
+	RawType.SmallInt(<span class="string">"minint"</span>),
+	RawType.VarBinary(<span class="string">"rsguid"</span>),
+	RawType.VarBinary(<span class="string">"lockres"</span>),
+	RawType.Int(<span class="string">"dbfragid"</span>)
+});
 
-rows<span class="preprocessor">.Where</span>(<span class="built_in">x</span> =&gt; (int)<span class="built_in">x</span>[<span class="string">"idmajor"</span>] == <span class="number">117575457</span>)<span class="preprocessor">.Select</span>(<span class="built_in">x</span> =&gt; new {
-	RowsetID = (long)<span class="built_in">x</span>[<span class="string">"rowsetid"</span>],
-	ObjectID = (int)<span class="built_in">x</span>[<span class="string">"idmajor"</span>],
-	IndexID = (int)<span class="built_in">x</span>[<span class="string">"idminor"</span>]
-})<span class="preprocessor">.Dump</span>()<span class="comment">;</span>
+rows.Where(x =&gt; (<span class="keyword">int</span>)x[<span class="string">"idmajor"</span>] == <span class="number">117575457</span>).Select(x =&gt; <span class="keyword">new</span> {
+	RowsetID = (<span class="keyword">long</span>)x[<span class="string">"rowsetid"</span>],
+	ObjectID = (<span class="keyword">int</span>)x[<span class="string">"idmajor"</span>],
+	IndexID = (<span class="keyword">int</span>)x[<span class="string">"idminor"</span>]
+}).Dump();
 </pre></figure>
 
 <div class="imgwrapper" style=""><div><a href="/sql-server-corruption-recovery-when-all-else-fails/Capture11.png" class="fancy"><img src="/sql-server-corruption-recovery-when-all-else-fails/Capture11.png" style="max-height: 250px"/></a></div></div>
 
 <p>By filtering down to just the Customer table’s object ID, we’ve now got the three partitions that belongs to the table - one for each allocation unit type - ROW_OVERFLOW_DATA (3), LOB_DATA (2) and IN_ROW_DATA (1). We don’t care about LOB and SLOB for now, all we need is the IN_ROW_DATA partition - giving us a RowsetID value of <strong>72057594039697408</strong>.</p>
 <p>Now that we have the RowsetID, let’s lookup the allocation unit using the data we got from sys.sysallocunits earlier on:</p>
-<figure class="highlight csharp"><pre>var db = new RawDatabase(@<span class="string">"D:\MSSQL Databases\AdventureWorksLT2008R2.mdf"</span>)<span class="comment">;</span>
-var pages = db<span class="preprocessor">.Pages</span><span class="preprocessor">.Where</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.ObjectID</span> == <span class="number">7</span> && <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.Type</span> == PageType<span class="preprocessor">.Data</span>)<span class="comment">;</span>
-var records = pages<span class="preprocessor">.SelectMany</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Records</span>)<span class="preprocessor">.Select</span>(<span class="built_in">x</span> =&gt; (RawPrimaryRecord)<span class="built_in">x</span>)<span class="comment">;</span>
-var rows = RawColumnParser<span class="preprocessor">.Parse</span>(records, new IRawType[] {
-	RawType<span class="preprocessor">.BigInt</span>(<span class="string">"auid"</span>),
-	RawType<span class="preprocessor">.TinyInt</span>(<span class="string">"type"</span>),
-	RawType<span class="preprocessor">.BigInt</span>(<span class="string">"ownerid"</span>),
-	RawType<span class="preprocessor">.Int</span>(<span class="string">"status"</span>),
-	RawType<span class="preprocessor">.SmallInt</span>(<span class="string">"fgid"</span>),
-	RawType<span class="preprocessor">.Binary</span>(<span class="string">"pgfirst"</span>, <span class="number">6</span>),
-	RawType<span class="preprocessor">.Binary</span>(<span class="string">"pgroot"</span>, <span class="number">6</span>),
-	RawType<span class="preprocessor">.Binary</span>(<span class="string">"pgfirstiam"</span>, <span class="number">6</span>),
-	RawType<span class="preprocessor">.BigInt</span>(<span class="string">"pcused"</span>),
-	RawType<span class="preprocessor">.BigInt</span>(<span class="string">"pcdata"</span>),
-	RawType<span class="preprocessor">.BigInt</span>(<span class="string">"pcreserved"</span>),
-	RawType<span class="preprocessor">.Int</span>(<span class="string">"dbfragid"</span>)
-})<span class="comment">;</span>
+<figure class="highlight cs"><pre><span class="keyword">var</span> db = <span class="keyword">new</span> RawDatabase(<span class="string">@"D:\MSSQL Databases\AdventureWorksLT2008R2.mdf"</span>);
+<span class="keyword">var</span> pages = db.Pages.Where(x =&gt; x.Header.ObjectID == <span class="number">7</span> && x.Header.Type == PageType.Data);
+<span class="keyword">var</span> records = pages.SelectMany(x =&gt; x.Records).Select(x =&gt; (RawPrimaryRecord)x);
+<span class="keyword">var</span> rows = RawColumnParser.Parse(records, <span class="keyword">new</span> IRawType[] {
+	RawType.BigInt(<span class="string">"auid"</span>),
+	RawType.TinyInt(<span class="string">"type"</span>),
+	RawType.BigInt(<span class="string">"ownerid"</span>),
+	RawType.Int(<span class="string">"status"</span>),
+	RawType.SmallInt(<span class="string">"fgid"</span>),
+	RawType.Binary(<span class="string">"pgfirst"</span>, <span class="number">6</span>),
+	RawType.Binary(<span class="string">"pgroot"</span>, <span class="number">6</span>),
+	RawType.Binary(<span class="string">"pgfirstiam"</span>, <span class="number">6</span>),
+	RawType.BigInt(<span class="string">"pcused"</span>),
+	RawType.BigInt(<span class="string">"pcdata"</span>),
+	RawType.BigInt(<span class="string">"pcreserved"</span>),
+	RawType.Int(<span class="string">"dbfragid"</span>)
+});
 
-rows<span class="preprocessor">.Where</span>(<span class="built_in">x</span> =&gt; (long)<span class="built_in">x</span>[<span class="string">"ownerid"</span>] == <span class="number">72057594039697408</span>)<span class="preprocessor">.Select</span>(<span class="built_in">x</span> =&gt; new {
-	AllocationUnitID = (long)<span class="built_in">x</span>[<span class="string">"auid"</span>],
-	Type = (byte)<span class="built_in">x</span>[<span class="string">"type"</span>],
-	ContainerID = (long)<span class="built_in">x</span>[<span class="string">"ownerid"</span>]
-})<span class="preprocessor">.Dump</span>()<span class="comment">;</span>
+rows.Where(x =&gt; (<span class="keyword">long</span>)x[<span class="string">"ownerid"</span>] == <span class="number">72057594039697408</span>).Select(x =&gt; <span class="keyword">new</span> {
+	AllocationUnitID = (<span class="keyword">long</span>)x[<span class="string">"auid"</span>],
+	Type = (<span class="keyword">byte</span>)x[<span class="string">"type"</span>],
+	ContainerID = (<span class="keyword">long</span>)x[<span class="string">"ownerid"</span>]
+}).Dump();
 </pre></figure>
 
 <div class="imgwrapper" style=""><div><a href="/sql-server-corruption-recovery-when-all-else-fails/Capture12.png" class="fancy"><img src="/sql-server-corruption-recovery-when-all-else-fails/Capture12.png" style="max-height: 250px"/></a></div></div>
 
 <h3 id="Recovering_the_Customers">Recovering the Customers</h3>
 <p>Now that we have the allocation unit ID, we can convert that into the object ID value, as stored in the page headers (big thanks goes out to <a href="http://www.sqlskills.com/blogs/paul/" target="_blank">Paul Randal</a> who was kind enough to blog about the <a href="http://www.sqlskills.com/blogs/paul/inside-the-storage-engine-how-are-allocation-unit-ids-calculated/" target="_blank">relationship between the allocation unit ID and the page header m_objId and m_indexId fields</a>):</p>
-<figure class="highlight csharp"><pre><span class="keyword">var</span> allocationUnitID = <span class="number">72057594041270272</span>;
+<figure class="highlight cs"><pre><span class="keyword">var</span> allocationUnitID = <span class="number">72057594041270272</span>;
 <span class="keyword">var</span> indexID = allocationUnitID &gt;&gt; <span class="number">48</span>;
 <span class="keyword">var</span> objectID = (allocationUnitID - (indexID &lt;&lt; <span class="number">48</span>)) &gt;&gt; <span class="number">16</span>;
 
@@ -523,44 +523,44 @@ Console.WriteLine(<span class="string">"ObjectID: "</span> + objectID);
 </pre></figure>
 
 <p>Now that we have not only the object ID, but also the index ID, we can easily get a list of all the pages belonging to the Customer table:</p>
-<figure class="highlight csharp"><pre>var db = new RawDatabase(@<span class="string">"D:\MSSQL Databases\AdventureWorksLT2008R2.mdf"</span>)<span class="comment">;</span>
-db<span class="preprocessor">.Pages</span>
-  <span class="preprocessor">.Where</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.ObjectID</span> == <span class="number">51</span> && <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.IndexID</span> == <span class="number">256</span>)
-  <span class="preprocessor">.Dump</span>()<span class="comment">;</span>
+<figure class="highlight cs"><pre><span class="keyword">var</span> db = <span class="keyword">new</span> RawDatabase(<span class="string">@"D:\MSSQL Databases\AdventureWorksLT2008R2.mdf"</span>);
+db.Pages
+  .Where(x =&gt; x.Header.ObjectID == <span class="number">51</span> && x.Header.IndexID == <span class="number">256</span>)
+  .Dump();
 </pre></figure>
 
 <div class="imgwrapper" style=""><div><a href="/sql-server-corruption-recovery-when-all-else-fails/Capture13.png" class="fancy"><img src="/sql-server-corruption-recovery-when-all-else-fails/Capture13.png" style="max-height: 250px"/></a></div></div>
 
 <p>And since we already know the schema for the Customer table, it’s a simple matter of making RawDatabase parse the actual rows:</p>
-<figure class="highlight csharp"><pre>var db = new RawDatabase(@<span class="string">"D:\MSSQL Databases\AdventureWorksLT2008R2.mdf"</span>)<span class="comment">;</span>
-var pages = db<span class="preprocessor">.Pages</span><span class="preprocessor">.Where</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.ObjectID</span> == <span class="number">51</span> && <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.IndexID</span> == <span class="number">256</span> && <span class="built_in">x</span><span class="preprocessor">.Header</span><span class="preprocessor">.Type</span> == PageType<span class="preprocessor">.Data</span>)<span class="comment">;</span>
-var records = pages<span class="preprocessor">.SelectMany</span>(<span class="built_in">x</span> =&gt; <span class="built_in">x</span><span class="preprocessor">.Records</span>)<span class="preprocessor">.Select</span>(<span class="built_in">x</span> =&gt; (RawPrimaryRecord)<span class="built_in">x</span>)<span class="comment">;</span>
-var rows = RawColumnParser<span class="preprocessor">.Parse</span>(records, new IRawType[] {
-	RawType<span class="preprocessor">.Int</span>(<span class="string">"CustomerID"</span>),
-	RawType<span class="preprocessor">.Bit</span>(<span class="string">"NameStyle"</span>),
-	RawType<span class="preprocessor">.NVarchar</span>(<span class="string">"Title"</span>),
-	RawType<span class="preprocessor">.NVarchar</span>(<span class="string">"FirstName"</span>),
-	RawType<span class="preprocessor">.NVarchar</span>(<span class="string">"MiddleName"</span>),
-	RawType<span class="preprocessor">.NVarchar</span>(<span class="string">"LastName"</span>),
-	RawType<span class="preprocessor">.NVarchar</span>(<span class="string">"Suffix"</span>),
-	RawType<span class="preprocessor">.NVarchar</span>(<span class="string">"CompanyName"</span>),
-	RawType<span class="preprocessor">.NVarchar</span>(<span class="string">"SalesPerson"</span>),
-	RawType<span class="preprocessor">.NVarchar</span>(<span class="string">"EmailAddress"</span>),
-	RawType<span class="preprocessor">.NVarchar</span>(<span class="string">"Phone"</span>),
-	RawType<span class="preprocessor">.Varchar</span>(<span class="string">"PasswordHash"</span>),
-	RawType<span class="preprocessor">.Varchar</span>(<span class="string">"PasswordSalt"</span>),
-	RawType<span class="preprocessor">.UniqueIdentifier</span>(<span class="string">"rowguid"</span>),
-	RawType<span class="preprocessor">.DateTime</span>(<span class="string">"ModifiedDate"</span>)
-})<span class="comment">;</span>
+<figure class="highlight cs"><pre><span class="keyword">var</span> db = <span class="keyword">new</span> RawDatabase(<span class="string">@"D:\MSSQL Databases\AdventureWorksLT2008R2.mdf"</span>);
+<span class="keyword">var</span> pages = db.Pages.Where(x =&gt; x.Header.ObjectID == <span class="number">51</span> && x.Header.IndexID == <span class="number">256</span> && x.Header.Type == PageType.Data);
+<span class="keyword">var</span> records = pages.SelectMany(x =&gt; x.Records).Select(x =&gt; (RawPrimaryRecord)x);
+<span class="keyword">var</span> rows = RawColumnParser.Parse(records, <span class="keyword">new</span> IRawType[] {
+	RawType.Int(<span class="string">"CustomerID"</span>),
+	RawType.Bit(<span class="string">"NameStyle"</span>),
+	RawType.NVarchar(<span class="string">"Title"</span>),
+	RawType.NVarchar(<span class="string">"FirstName"</span>),
+	RawType.NVarchar(<span class="string">"MiddleName"</span>),
+	RawType.NVarchar(<span class="string">"LastName"</span>),
+	RawType.NVarchar(<span class="string">"Suffix"</span>),
+	RawType.NVarchar(<span class="string">"CompanyName"</span>),
+	RawType.NVarchar(<span class="string">"SalesPerson"</span>),
+	RawType.NVarchar(<span class="string">"EmailAddress"</span>),
+	RawType.NVarchar(<span class="string">"Phone"</span>),
+	RawType.Varchar(<span class="string">"PasswordHash"</span>),
+	RawType.Varchar(<span class="string">"PasswordSalt"</span>),
+	RawType.UniqueIdentifier(<span class="string">"rowguid"</span>),
+	RawType.DateTime(<span class="string">"ModifiedDate"</span>)
+});
 
-rows<span class="preprocessor">.Select</span>(<span class="built_in">x</span> =&gt; new {
-	CustomerID = (int)<span class="built_in">x</span>[<span class="string">"CustomerID"</span>],
-	FirstName = (string)<span class="built_in">x</span>[<span class="string">"FirstName"</span>],
-	MiddleName = (string)<span class="built_in">x</span>[<span class="string">"MiddleName"</span>],
-	LastName = (string)<span class="built_in">x</span>[<span class="string">"LastName"</span>],
-	CompanyName = (string)<span class="built_in">x</span>[<span class="string">"CompanyName"</span>],
-	EmailAddress = (string)<span class="built_in">x</span>[<span class="string">"EmailAddress"</span>]
-})<span class="preprocessor">.Dump</span>()<span class="comment">;</span>
+rows.Select(x =&gt; <span class="keyword">new</span> {
+	CustomerID = (<span class="keyword">int</span>)x[<span class="string">"CustomerID"</span>],
+	FirstName = (<span class="keyword">string</span>)x[<span class="string">"FirstName"</span>],
+	MiddleName = (<span class="keyword">string</span>)x[<span class="string">"MiddleName"</span>],
+	LastName = (<span class="keyword">string</span>)x[<span class="string">"LastName"</span>],
+	CompanyName = (<span class="keyword">string</span>)x[<span class="string">"CompanyName"</span>],
+	EmailAddress = (<span class="keyword">string</span>)x[<span class="string">"EmailAddress"</span>]
+}).Dump();
 </pre></figure>
 
 <div class="imgwrapper" style=""><div><a href="/sql-server-corruption-recovery-when-all-else-fails/Capture15.png" class="fancy"><img src="/sql-server-corruption-recovery-when-all-else-fails/Capture15.png" style="max-height: 250px"/></a></div></div>

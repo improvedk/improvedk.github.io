@@ -116,7 +116,7 @@
 <a id="more"></a>
 
 
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">interface</span> ISqlType
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">interface</span> ISqlType
 {
 	<span class="keyword">bool</span> IsVariableLength { <span class="keyword">get</span>; }
 	<span class="keyword">short</span>? FixedLength { <span class="keyword">get</span>; }
@@ -127,7 +127,7 @@
 <p><em>IsVariableLength</em> returns whether this data type has a fixed length size or is variable. <em>FixedLength</em> returns the fixed length of the data type, provided that it is fixed length, otherwise it returns null. The data type parser itself does not care about the length of variable length fields, the size of the input bytes will determine that. Finally <em>GetValue</em> parses the input bytes into and converts them into a .NET object of relevant type.</p>
 <h2 id="SqlInt_implementation">SqlInt implementation</h2>
 <p>int is very simple as it’s fixed length and is very straight forward to convert using BitConverter:</p>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlInt : ISqlType
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlInt : ISqlType
 {
 	<span class="keyword">public</span> <span class="keyword">bool</span> IsVariableLength
 	{
@@ -150,7 +150,7 @@
 </pre></figure>
 
 <p>And the related tests:</p>
-<figure class="highlight csharp"><pre>[TestFixture]
+<figure class="highlight cs"><pre>[TestFixture]
 <span class="keyword">public</span> <span class="keyword">class</span> SqlIntTests
 {
 	[Test]
@@ -182,7 +182,7 @@
 
 <h2 id="SqlNVarchar_implementation">SqlNVarchar implementation</h2>
 <p>nvarchar is very simple as well – note that we return null for the length as the length varies and the ISqlType implementation must be stateless. GetValue simply converts whatever amount of input bytes it gets into the relevant .NET data type, string in this case.</p>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlNVarchar : ISqlType
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlNVarchar : ISqlType
 {
 	<span class="keyword">public</span> <span class="keyword">bool</span> IsVariableLength
 	{
@@ -202,7 +202,7 @@
 </pre></figure>
 
 <p>And the relevant test in this case:</p>
-<figure class="highlight csharp"><pre>[TestFixture]
+<figure class="highlight cs"><pre>[TestFixture]
 <span class="keyword">public</span> <span class="keyword">class</span> SqlNvarcharTests
 {
 	[Test]

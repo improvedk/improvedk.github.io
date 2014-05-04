@@ -119,11 +119,11 @@
 <a id="more"></a>
 
 <p>When users need to upload files I often use the Flash based <a href="http://swfupload.org/" target="_blank">SWFUpload</a> component. It allows for multiple file selection and progress display during upload. Handling the uploaded files on the .NET side is rather easy:</p>
-<figure class="highlight csharp"><pre><span class="keyword">for</span> (int i = <span class="number">0</span>; i &lt; Request.Files.Count; i++)
+<figure class="highlight cs"><pre><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; Request.Files.Count; i++)
 {
     HttpPostedFile hpf = Request.Files[i];
 
-    // <span class="keyword">...</span> Save / process the HttpPostedFile
+    <span class="comment">// ... Save / process the HttpPostedFile</span>
 }
 </pre></figure>
 
@@ -131,22 +131,22 @@
 <p>There’s a bug in all current Flash players that causes the Flash player to send persistent cookies from Internet Explorer, no matter what browser you’re currently using. That is, if you’ve visited a given website in IE previously and you’re nor visiting it in Chrome/Firefox - yup, your IE cookies will be sent to the website instead of the Firefox/Chrome cookies! There’s a good <a href="http://swfupload.org/forum/generaldiscussion/383" target="_blank">description and discussion</a> at the SWFUpload site.</p>
 <p>This bug poses a number of problems if you’re using SWFUpload on a password protected site that relies on <a href="http://support.microsoft.com/kb/910443" target="_blank">cookie based forms authentication</a>. Whenever the file is uploaded, the users will appear to not be logged in. This is because the forms authentication ticket is stored in a cookie (which is correctly stored by Firefox/Chrome), but whenever the request is made IE’s cookies are sent and those do not contain a valid forms authentication ticket cookie.</p>
 <p>Luckily there’s a workaround for this. Basically we’ll need to tell our upload SWF the current SessionID as well as the contents of the forms authentication ticket cookie:</p>
-<figure class="highlight csharp"><pre>var flashVars = {
-    ASPSESSID: "<span class="vbscript">&lt;%= Session.SessionID %&gt;</span>",
-    AUTHID: "<span class="vbscript">&lt;%= <span class="built_in">Request</span>.Cookies[FormsAuthentication.FormsCookieName] == <span class="literal">null</span> ? <span class="string">""</span> : <span class="built_in">Request</span>.Cookies[FormsAuthentication.FormsCookieName].Value %&gt;</span>"
+<figure class="highlight cs"><pre><span class="keyword">var</span> flashVars = {
+    ASPSESSID: <span class="string">"&lt;%= Session.SessionID %&gt;"</span>,
+    AUTHID: <span class="string">"&lt;%= Request.Cookies[FormsAuthentication.FormsCookieName] == null ? "</span><span class="string">" : Request.Cookies[FormsAuthentication.FormsCookieName].Value %&gt;"</span>
 }
 </pre></figure>
 
 <p>Now we need to modify our SWFUpload code so it sends the SessionID and ticket values in the query string to the upload file, so instead of calling:</p>
-<figure class="highlight csharp"><pre>UploadFile_Upload<span class="preprocessor">.aspx</span>
+<figure class="highlight cs"><pre>UploadFile_Upload.aspx
 </pre></figure>
 
 <p>We’ll call:</p>
-<figure class="highlight csharp"><pre><span class="attribute">UploadFile_Upload.aspx?ASPSESSID</span>=<span class="string">e2u35jfs0pvevfugkfnmm045&AUTHID=E7BA5BDD2D6E9FBBC7CF613352EF10E01E0E8B0AD9920F62A465BC0CA20FB9CC2BA67F95D5A82F5D30B3162D6DFB3EA7FD505456E5EA5407094D03C1D48E6EE0B80F85F1B6AFD5F52FDC14C2ED6D77A8</span>
+<figure class="highlight cs"><pre>UploadFile_Upload.aspx?ASPSESSID=e2u35jfs0pvevfugkfnmm045&AUTHID=E7BA5BDD2D6E9FBBC7CF613352EF10E01E0E8B0AD9920F62A465BC0CA20FB9CC2BA67F95D5A82F5D30B3162D6DFB3EA7FD505456E5EA5407094D03C1D48E6EE0B80F85F1B6AFD5F52FDC14C2ED6D77A8
 </pre></figure>
 
 <p>Now that we have the SessionID and ticket value we can manually restore those cookies in Global.asax (or an HttpModule, doesn’t matter). We’ll be doing the fix in Application_BeginRequest as this allows us to fix the cookies before ASP.NET will perform its validation and thereby notice the missing session and forms authentication cookies.</p>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> Global : HttpApplication
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">class</span> Global : HttpApplication
 {
     <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">Application_BeginRequest</span>(<span class="keyword">object</span> sender, EventArgs e)
     {
@@ -193,7 +193,7 @@
 <p>However, since the client affinity is handled by a cookie - that cookie was now suffering from the same bug as before. Basicaly the IIS ARR load balancer thought it received a completely new client request and thus assigned the request to a random content server, giving a 1/[num_machines] chance of succeeding in case it randomly hit the correct content server.</p>
 <p>The solution is similar, though there is one major difference. The previous problem occurred on the actual content machines because those were missing a cookie value, in this case it’s the load balancer itself. Thus, deploying a fix on the content servers won’t do any good.</p>
 <p>We’ll create a new HttpModule that performs the fix in Application_BeginRequest - which occurs before IIS ARR assigns the request to a content server. To ensure this fix does not in any way affect normal requests in case something goes wrong, exceptions are being silently ignored. This is generally a bad practice, but in this case I really do not want to affect the load balancer as that’ll put down the website for all users if an error occurs. Note that while the handling is very similar to the previous bit of code, this time we’re modifying the actual Cookie header directly. If we don’t do this, IIS ARR won’t pick up the overwritten cookie values and thus still send the user to a random content server.</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 <span class="keyword">using</span> System.Text.RegularExpressions;
 <span class="keyword">using</span> System.Web;
 

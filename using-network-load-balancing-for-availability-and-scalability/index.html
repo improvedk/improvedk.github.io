@@ -121,21 +121,21 @@
 
 <p>When you setup an NLB cluster, you create a new virtual IP address that gets mapped to each individual server, besides their own static IP address. In this demo I’ll setup the cluster on the virtual IP address 192.168.0.50. Before we get too far, I should mention that if you are going to setup an NLB cluster in a production environment, you should use machines with dual NICs so one NIC can connect to the public lan while the other NIC connects to a private switched lan where only the cluster nodes are connected. This ensures that the internal cluster communication is not polluting the general network traffic, aswell as making it a lot more efficient since we’ll then be able to utilize <a href="http://en.wikipedia.org/wiki/Unicast" target="_blank">unicast communciation</a> between the nodes instead of relying on <a href="http://en.wikipedia.org/wiki/Multicast" target="_blank">multicast communication</a>.</p>
 <p>For demonstrating the effects of a node crash, I’ve created a very simple load testing tool, the main functionality is an infinite loop trying to make a request at a time while registering success/failures. It’ll also show the text result that is returned in a one-line textbox:</p>
-<figure class="highlight csharp"><pre>while (running)
+<figure class="highlight cs"><pre><span class="keyword">while</span> (running)
 {
 	HttpWebRequest req = (HttpWebRequest)WebRequest.Create(txtUrl.Text);
-	req.Timeout = 1000;
-	req.KeepAlive = false;
+	req.Timeout = <span class="number">1000</span>;
+	req.KeepAlive = <span class="keyword">false</span>;
 
-	try
+	<span class="keyword">try</span>
 	{
 		WebResponse res = req.GetResponse();
-		using (StreamReader sr = new StreamReader(res.GetResponseStream()))
+		<span class="keyword">using</span> (StreamReader sr = <span class="keyword">new</span> StreamReader(res.GetResponseStream()))
 			lastResult = sr.ReadToEnd();
 
 		successfulRequests++;
 	}
-	catch (WebException)
+	<span class="keyword">catch</span> (WebException)
 	{
 		failedRequests++;
 	}

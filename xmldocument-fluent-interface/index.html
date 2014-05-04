@@ -120,49 +120,49 @@
 </pre></figure>
 
 <p>I’d usually create this bit of XML using a simple StringBuilder like so:</p>
-<figure class="highlight csharp"><pre>StringBuilder output = new StringBuilder();
-output.Append("<span class="pi">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>");
-output.Append("<span class="tag">&lt;<span class="title">root</span>&gt;</span>");
-output.Append("<span class="tag">&lt;<span class="title">result</span> <span class="attribute">type</span>=<span class="value">"boolean"</span>&gt;</span>true<span class="tag">&lt;/<span class="title">result</span>&gt;</span>");
-output.Append("<span class="tag">&lt;/<span class="title">root</span>&gt;</span>");
+<figure class="highlight cs"><pre>StringBuilder output = <span class="keyword">new</span> StringBuilder();
+output.Append(<span class="string">"&lt;?xml version="</span><span class="number">1.0</span><span class="string">" encoding="</span>utf-<span class="number">8</span><span class="string">"?&gt;"</span>);
+output.Append(<span class="string">"&lt;root&gt;"</span>);
+output.Append(<span class="string">"&lt;result type="</span>boolean<span class="string">"&gt;true&lt;/result&gt;"</span>);
+output.Append(<span class="string">"&lt;/root&gt;"</span>);
 </pre></figure>
 
 <p>This has the advantage of being very fast to write, but readability suffers from the escaped quotes, lack of indentation and there’s a whole lot of text when the XML becomes just a bit more advanced.</p>
 <p>A “prettier” way is to use the DOM through the XmlDocument like so:</p>
-<figure class="highlight csharp"><pre>XmlDocument xd = new XmlDocument()<span class="comment">;</span>
-xd<span class="preprocessor">.AppendChild</span>(xd<span class="preprocessor">.CreateXmlDeclaration</span>(<span class="string">"1.0"</span>, <span class="string">"utf-8"</span>, <span class="string">""</span>))<span class="comment">;</span>
+<figure class="highlight cs"><pre>XmlDocument xd = <span class="keyword">new</span> XmlDocument();
+xd.AppendChild(xd.CreateXmlDeclaration(<span class="string">"1.0"</span>, <span class="string">"utf-8"</span>, <span class="string">""</span>));
 
-XmlNode root = xd<span class="preprocessor">.CreateElement</span>(<span class="string">"root"</span>)<span class="comment">;</span>
-xd<span class="preprocessor">.AppendChild</span>(root)<span class="comment">;</span>
+XmlNode root = xd.CreateElement(<span class="string">"root"</span>);
+xd.AppendChild(root);
 
-XmlNode result = xd<span class="preprocessor">.CreateElement</span>(<span class="string">"result"</span>)<span class="comment">;</span>
-result<span class="preprocessor">.InnerText</span> = <span class="string">"true"</span><span class="comment">;</span>
+XmlNode result = xd.CreateElement(<span class="string">"result"</span>);
+result.InnerText = <span class="string">"true"</span>;
 
-XmlAttribute type = xd<span class="preprocessor">.CreateAttribute</span>(<span class="string">"type"</span>)<span class="comment">;</span>
-type<span class="preprocessor">.Value</span> = <span class="string">"boolean"</span><span class="comment">;</span>
+XmlAttribute type = xd.CreateAttribute(<span class="string">"type"</span>);
+type.Value = <span class="string">"boolean"</span>;
 
-result<span class="preprocessor">.Attributes</span><span class="preprocessor">.Append</span>(type)<span class="comment">;</span>
-root<span class="preprocessor">.AppendChild</span>(result)<span class="comment">;</span>
+result.Attributes.Append(type);
+root.AppendChild(result);
 </pre></figure>
 
 <p>While this does produce exactly the same XML, it takes up twice as many lines of code, excluding the whitespace lines. Without whitespace it is even more unreadable.</p>
 <p>Let me introduce you to my quick’n’simple fluent interface that uses XmlDocument internally, XmlOutput:</p>
-<figure class="highlight csharp"><pre>XmlOutput xo = new XmlOutput()
-	<span class="preprocessor">.XmlDeclaration</span>()
-	<span class="preprocessor">.Node</span>(<span class="string">"root"</span>)<span class="preprocessor">.Within</span>()
-		<span class="preprocessor">.Node</span>(<span class="string">"result"</span>)<span class="preprocessor">.Attribute</span>(<span class="string">"type"</span>, <span class="string">"boolean"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"true"</span>)<span class="comment">;</span>
+<figure class="highlight cs"><pre>XmlOutput xo = <span class="keyword">new</span> XmlOutput()
+	.XmlDeclaration()
+	.Node(<span class="string">"root"</span>).Within()
+		.Node(<span class="string">"result"</span>).Attribute(<span class="string">"type"</span>, <span class="string">"boolean"</span>).InnerText(<span class="string">"true"</span>);
 </pre></figure>
 
 <p>Using XmlOutput we’re down to four lines, the shortest example yet. While linecount is not, and should not be, a measurement of quality, it is preferred. I believe using XmlOutput is, by far, the most readable example.</p>
 <p>Basically, using Node() creates a new node within the current node. If no node has been created previously, it will automatically be the root node. Any time a new node is created, it automatically becomes the “current node”. Calling Within() moves the context into the current node, thus any newly created nodes will be created within that node. Attribute() will add an attribute to the current node, likewise will InnerText() set the InnerText of the current node. EndWithin() moves the context to the parent node, it is not mandatory for “closing” the nodes, it is only required when you actually need to move the scope.</p>
 <p>Let me present you with a couple of examples. Dynamic data:</p>
-<figure class="highlight csharp"><pre>XmlOutput xo = new XmlOutput()
-	<span class="preprocessor">.XmlDeclaration</span>()
-	<span class="preprocessor">.Node</span>(<span class="string">"root"</span>)<span class="preprocessor">.Within</span>()
-		<span class="preprocessor">.Node</span>(<span class="string">"numbers"</span>)<span class="preprocessor">.Within</span>()<span class="comment">;</span>
+<figure class="highlight cs"><pre>XmlOutput xo = <span class="keyword">new</span> XmlOutput()
+	.XmlDeclaration()
+	.Node(<span class="string">"root"</span>).Within()
+		.Node(<span class="string">"numbers"</span>).Within();
 
-for (int i = <span class="number">1</span><span class="comment">; i &lt;= 10; i++)</span>
-	xo<span class="preprocessor">.Node</span>(<span class="string">"number"</span>)<span class="preprocessor">.Attribute</span>(<span class="string">"value"</span>, i<span class="preprocessor">.ToString</span>())<span class="preprocessor">.InnerText</span>(<span class="string">"This is the number: "</span> + i)<span class="comment">;</span>
+<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= <span class="number">10</span>; i++)
+	xo.Node(<span class="string">"number"</span>).Attribute(<span class="string">"value"</span>, i.ToString()).InnerText(<span class="string">"This is the number: "</span> + i);
 </pre></figure>
 
 
@@ -184,21 +184,21 @@ for (int i = <span class="number">1</span><span class="comment">; i &lt;= 10; i+
 </pre></figure>
 
 <p>And complex structures:</p>
-<figure class="highlight csharp"><pre>XmlOutput xo = new XmlOutput()
-	<span class="preprocessor">.XmlDeclaration</span>()
-	<span class="preprocessor">.Node</span>(<span class="string">"root"</span>)<span class="preprocessor">.Within</span>()
-		<span class="preprocessor">.Node</span>(<span class="string">"user"</span>)<span class="preprocessor">.Within</span>()
-			<span class="preprocessor">.Node</span>(<span class="string">"username"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"orca"</span>)
-			<span class="preprocessor">.Node</span>(<span class="string">"realname"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Mark S. Rasmussen"</span>)
-			<span class="preprocessor">.Node</span>(<span class="string">"description"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"I'll handle any escaping (like &lt; & &gt; for example) needs automagically."</span>)
-			<span class="preprocessor">.Node</span>(<span class="string">"articles"</span>)<span class="preprocessor">.Within</span>()
-				<span class="preprocessor">.Node</span>(<span class="string">"article"</span>)<span class="preprocessor">.Attribute</span>(<span class="string">"id"</span>, <span class="string">"25"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Handling DBNulls"</span>)
-				<span class="preprocessor">.Node</span>(<span class="string">"article"</span>)<span class="preprocessor">.Attribute</span>(<span class="string">"id"</span>, <span class="string">"26"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Accessing my privates"</span>)
-				<span class="preprocessor">.EndWithin</span>()
-			<span class="preprocessor">.Node</span>(<span class="string">"hobbies"</span>)<span class="preprocessor">.Within</span>()
-				<span class="preprocessor">.Node</span>(<span class="string">"hobby"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Fishing"</span>)
-				<span class="preprocessor">.Node</span>(<span class="string">"hobby"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Photography"</span>)
-				<span class="preprocessor">.Node</span>(<span class="string">"hobby"</span>)<span class="preprocessor">.InnerText</span>(<span class="string">"Work"</span>)<span class="comment">;</span>
+<figure class="highlight cs"><pre>XmlOutput xo = <span class="keyword">new</span> XmlOutput()
+	.XmlDeclaration()
+	.Node(<span class="string">"root"</span>).Within()
+		.Node(<span class="string">"user"</span>).Within()
+			.Node(<span class="string">"username"</span>).InnerText(<span class="string">"orca"</span>)
+			.Node(<span class="string">"realname"</span>).InnerText(<span class="string">"Mark S. Rasmussen"</span>)
+			.Node(<span class="string">"description"</span>).InnerText(<span class="string">"I'll handle any escaping (like &lt; & &gt; for example) needs automagically."</span>)
+			.Node(<span class="string">"articles"</span>).Within()
+				.Node(<span class="string">"article"</span>).Attribute(<span class="string">"id"</span>, <span class="string">"25"</span>).InnerText(<span class="string">"Handling DBNulls"</span>)
+				.Node(<span class="string">"article"</span>).Attribute(<span class="string">"id"</span>, <span class="string">"26"</span>).InnerText(<span class="string">"Accessing my privates"</span>)
+				.EndWithin()
+			.Node(<span class="string">"hobbies"</span>).Within()
+				.Node(<span class="string">"hobby"</span>).InnerText(<span class="string">"Fishing"</span>)
+				.Node(<span class="string">"hobby"</span>).InnerText(<span class="string">"Photography"</span>)
+				.Node(<span class="string">"hobby"</span>).InnerText(<span class="string">"Work"</span>);
 </pre></figure>
 
 
@@ -222,7 +222,7 @@ for (int i = <span class="number">1</span><span class="comment">; i &lt;= 10; i+
 </pre></figure>
 
 <p>Finally, say hello to XmlOutput:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System.Xml;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System.Xml;
 <span class="keyword">using</span> System.Collections.Generic;
 
 <span class="keyword">public</span> <span class="keyword">class</span> XmlOutput

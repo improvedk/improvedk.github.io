@@ -580,7 +580,7 @@ DBCC IND (X, <span class="string">'OnlyFixedSparse'</span>, -<span class="number
 <p>The same procedure can be repeated for the second record, but I’m going to leave that as an exercise for the reader :)</p>
 <h2 id="Writing_a_sparse_vector_parser_in_C">Writing a sparse vector parser in C</h2>
 <p>Once we know the structure of the sparse vector, writing a parser in C# is surprisingly simple:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> System;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
 <span class="keyword">using</span> System.Collections.Generic;
 <span class="keyword">using</span> System.Linq;
 
@@ -630,7 +630,7 @@ namespace OrcaMDF.Core.Engine
 </pre></figure>
 
 <p>I won’t go into the code as it’s documented and follows the procedure we just went through. A quick test verifies that it achieves the same results as we just did by hand:</p>
-<figure class="highlight csharp"><pre>[TestFixture]
+<figure class="highlight cs"><pre>[TestFixture]
 <span class="keyword">public</span> <span class="keyword">class</span> SparseVectorParserTests
 {
 	[Test]
@@ -786,176 +786,176 @@ DBCC IND (X, OverflowTest, -<span class="number">1</span>)</span>
 <a id="more"></a>
 
 <p>As a result of some reverse engineering and empirical testing, I’ve made a SysrscolTIParser class that takes in the ti value (I have no idea what the acronym stands for – type information perhaps?), determines the type and parses it corresponding to the type. I won’t go into details as that’s all described in my <a href="/exploring-the-sys-system_internals_partition_columns-ti-field">previous post</a>.</p>
-<figure class="highlight csharp"><pre>using System;
-using OrcaMDF.Core.MetaData.Enumerations;
+<figure class="highlight cs"><pre><span class="keyword">using</span> System;
+<span class="keyword">using</span> OrcaMDF.Core.MetaData.Enumerations;
 
 namespace OrcaMDF.Core.MetaData
 {
-	public class SysrscolTIParser
+	<span class="keyword">public</span> <span class="keyword">class</span> SysrscolTIParser
 	{
-		public byte Scale;
-		public byte Precision;
-		public short MaxLength;
-		public short MaxInrowLength;
-		public int TypeID;
+		<span class="keyword">public</span> <span class="keyword">byte</span> Scale;
+		<span class="keyword">public</span> <span class="keyword">byte</span> Precision;
+		<span class="keyword">public</span> <span class="keyword">short</span> MaxLength;
+		<span class="keyword">public</span> <span class="keyword">short</span> MaxInrowLength;
+		<span class="keyword">public</span> <span class="keyword">int</span> TypeID;
 
-		public SysrscolTIParser(int ti)
+		<span class="keyword">public</span> <span class="title">SysrscolTIParser</span>(<span class="keyword">int</span> ti)
 		{
-			TypeID = ti & 0xFF;
+			TypeID = ti & <span class="number">0xFF</span>;
 
-			if (!Enum.IsDefined(typeof(SystemType), TypeID))
-				throw new ArgumentException(<span class="string">"Unknown TypeID '"</span> + TypeID + <span class="string">"'"</span>);
+			<span class="keyword">if</span> (!Enum.IsDefined(<span class="keyword">typeof</span>(SystemType), TypeID))
+				<span class="keyword">throw</span> <span class="keyword">new</span> ArgumentException(<span class="string">"Unknown TypeID '"</span> + TypeID + <span class="string">"'"</span>);
 
-			switch((SystemType)TypeID)
+			<span class="keyword">switch</span>((SystemType)TypeID)
 			{
-				case SystemType.Bigint:
-					MaxLength = MaxInrowLength = 8;
-					Precision = 19;
-					break;
+				<span class="keyword">case</span> SystemType.Bigint:
+					MaxLength = MaxInrowLength = <span class="number">8</span>;
+					Precision = <span class="number">19</span>;
+					<span class="keyword">break</span>;
 
-				// All CLR types internally stored as varbinaries
-				//case SystemType.Geography:
-				//case SystemType.Geometry:
-				//case SystemType.Hierarchyid:
-				case SystemType.Varbinary:
-				// Also covers SystemType.Sysname
-				case SystemType.Nvarchar:
-				case SystemType.Binary:
-				case SystemType.Char:
-				case SystemType.Nchar:
-				case SystemType.Image:
-				case SystemType.Ntext:
-				case SystemType.Text:
-				case SystemType.Varchar:
-				case SystemType.Xml:
-					MaxLength = (short)((ti & 0xFFFF00) &gt;&gt; 8);
-					if (MaxLength == 0)
+				<span class="comment">// All CLR types internally stored as varbinaries</span>
+				<span class="comment">//case SystemType.Geography:</span>
+				<span class="comment">//case SystemType.Geometry:</span>
+				<span class="comment">//case SystemType.Hierarchyid:</span>
+				<span class="keyword">case</span> SystemType.Varbinary:
+				<span class="comment">// Also covers SystemType.Sysname</span>
+				<span class="keyword">case</span> SystemType.Nvarchar:
+				<span class="keyword">case</span> SystemType.Binary:
+				<span class="keyword">case</span> SystemType.Char:
+				<span class="keyword">case</span> SystemType.Nchar:
+				<span class="keyword">case</span> SystemType.Image:
+				<span class="keyword">case</span> SystemType.Ntext:
+				<span class="keyword">case</span> SystemType.Text:
+				<span class="keyword">case</span> SystemType.Varchar:
+				<span class="keyword">case</span> SystemType.Xml:
+					MaxLength = (<span class="keyword">short</span>)((ti & <span class="number">0xFFFF00</span>) &gt;&gt; <span class="number">8</span>);
+					<span class="keyword">if</span> (MaxLength == <span class="number">0</span>)
 					{
-						MaxLength = -1;
-						MaxInrowLength = 8000;
+						MaxLength = -<span class="number">1</span>;
+						MaxInrowLength = <span class="number">8000</span>;
 					}
-					else
+					<span class="keyword">else</span>
 						MaxInrowLength = MaxLength;
-					break;
+					<span class="keyword">break</span>;
 
-				case SystemType.Bit:
-					MaxLength = MaxInrowLength = Precision = 1;
-					break;
+				<span class="keyword">case</span> SystemType.Bit:
+					MaxLength = MaxInrowLength = Precision = <span class="number">1</span>;
+					<span class="keyword">break</span>;
 
-				case SystemType.Date:
-					Precision = 10;
-					MaxLength = MaxInrowLength = 3;
-					break;
+				<span class="keyword">case</span> SystemType.Date:
+					Precision = <span class="number">10</span>;
+					MaxLength = MaxInrowLength = <span class="number">3</span>;
+					<span class="keyword">break</span>;
 
-				case SystemType.Datetime:
-					Scale = 3;
-					Precision = 23;
-					MaxLength = MaxInrowLength = 8;
-					break;
+				<span class="keyword">case</span> SystemType.Datetime:
+					Scale = <span class="number">3</span>;
+					Precision = <span class="number">23</span>;
+					MaxLength = MaxInrowLength = <span class="number">8</span>;
+					<span class="keyword">break</span>;
 
-				case SystemType.Datetime2:
-					Scale = (byte)((ti & 0xFF00) &gt;&gt; 8);
-					Precision = (byte)(20 + Scale);
-					if (Scale &lt; 3)
-						MaxLength = MaxInrowLength = 6;
-					else if (Scale &lt; 5)
-						MaxLength = MaxInrowLength = 7;
-					else
-						MaxLength = MaxInrowLength = 8;
-					break;
+				<span class="keyword">case</span> SystemType.Datetime2:
+					Scale = (<span class="keyword">byte</span>)((ti & <span class="number">0xFF00</span>) &gt;&gt; <span class="number">8</span>);
+					Precision = (<span class="keyword">byte</span>)(<span class="number">20</span> + Scale);
+					<span class="keyword">if</span> (Scale &lt; <span class="number">3</span>)
+						MaxLength = MaxInrowLength = <span class="number">6</span>;
+					<span class="keyword">else</span> <span class="keyword">if</span> (Scale &lt; <span class="number">5</span>)
+						MaxLength = MaxInrowLength = <span class="number">7</span>;
+					<span class="keyword">else</span>
+						MaxLength = MaxInrowLength = <span class="number">8</span>;
+					<span class="keyword">break</span>;
 
-				case SystemType.DatetimeOffset:
-					Scale = (byte)((ti & 0xFF00) &gt;&gt; 8);
-					Precision = (byte)(26 + (Scale &gt; 0 ? Scale + 1 : Scale));
-					if (Scale &lt; 3)
-						MaxLength = MaxInrowLength = 8;
-					else if (Scale &lt; 5)
-						MaxLength = MaxInrowLength = 9;
-					else
-						MaxLength = MaxInrowLength = 10;
-					break;
+				<span class="keyword">case</span> SystemType.DatetimeOffset:
+					Scale = (<span class="keyword">byte</span>)((ti & <span class="number">0xFF00</span>) &gt;&gt; <span class="number">8</span>);
+					Precision = (<span class="keyword">byte</span>)(<span class="number">26</span> + (Scale &gt; <span class="number">0</span> ? Scale + <span class="number">1</span> : Scale));
+					<span class="keyword">if</span> (Scale &lt; <span class="number">3</span>)
+						MaxLength = MaxInrowLength = <span class="number">8</span>;
+					<span class="keyword">else</span> <span class="keyword">if</span> (Scale &lt; <span class="number">5</span>)
+						MaxLength = MaxInrowLength = <span class="number">9</span>;
+					<span class="keyword">else</span>
+						MaxLength = MaxInrowLength = <span class="number">10</span>;
+					<span class="keyword">break</span>;
 
-				case SystemType.Decimal:
-				case SystemType.Numeric:
-					Precision = (byte)((ti & 0xFF00) &gt;&gt; 8);
-					Scale = (byte)((ti & 0xFF0000) &gt;&gt; 16);
-					if (Precision &lt; 10)
-						MaxLength = MaxInrowLength = 5;
-					else if (Precision &lt; 20)
-						MaxLength = MaxInrowLength = 9;
-					else if (Precision &lt; 29)
-						MaxLength = MaxInrowLength = 13;
-					else
-						MaxLength = MaxInrowLength = 17;
-					break;
+				<span class="keyword">case</span> SystemType.Decimal:
+				<span class="keyword">case</span> SystemType.Numeric:
+					Precision = (<span class="keyword">byte</span>)((ti & <span class="number">0xFF00</span>) &gt;&gt; <span class="number">8</span>);
+					Scale = (<span class="keyword">byte</span>)((ti & <span class="number">0xFF0000</span>) &gt;&gt; <span class="number">16</span>);
+					<span class="keyword">if</span> (Precision &lt; <span class="number">10</span>)
+						MaxLength = MaxInrowLength = <span class="number">5</span>;
+					<span class="keyword">else</span> <span class="keyword">if</span> (Precision &lt; <span class="number">20</span>)
+						MaxLength = MaxInrowLength = <span class="number">9</span>;
+					<span class="keyword">else</span> <span class="keyword">if</span> (Precision &lt; <span class="number">29</span>)
+						MaxLength = MaxInrowLength = <span class="number">13</span>;
+					<span class="keyword">else</span>
+						MaxLength = MaxInrowLength = <span class="number">17</span>;
+					<span class="keyword">break</span>;
 
-				case SystemType.Float:
-					Precision = 53;
-					MaxLength = MaxInrowLength = 8;
-					break;
+				<span class="keyword">case</span> SystemType.Float:
+					Precision = <span class="number">53</span>;
+					MaxLength = MaxInrowLength = <span class="number">8</span>;
+					<span class="keyword">break</span>;
 					
-				case SystemType.Int:
-					Precision = 10;
-					MaxLength = MaxInrowLength = 4;
-					break;
+				<span class="keyword">case</span> SystemType.Int:
+					Precision = <span class="number">10</span>;
+					MaxLength = MaxInrowLength = <span class="number">4</span>;
+					<span class="keyword">break</span>;
 
-				case SystemType.Money:
-					Scale = 4;
-					Precision = 19;
-					MaxLength = MaxInrowLength = 8;
-					break;
+				<span class="keyword">case</span> SystemType.Money:
+					Scale = <span class="number">4</span>;
+					Precision = <span class="number">19</span>;
+					MaxLength = MaxInrowLength = <span class="number">8</span>;
+					<span class="keyword">break</span>;
 
-				case SystemType.Real:
-					Precision = 24;
-					MaxLength = MaxInrowLength = 4;
-					break;
+				<span class="keyword">case</span> SystemType.Real:
+					Precision = <span class="number">24</span>;
+					MaxLength = MaxInrowLength = <span class="number">4</span>;
+					<span class="keyword">break</span>;
 
-				case SystemType.Smalldatetime:
-					Precision = 16;
-					MaxLength = MaxInrowLength = 4;
-					break;
+				<span class="keyword">case</span> SystemType.Smalldatetime:
+					Precision = <span class="number">16</span>;
+					MaxLength = MaxInrowLength = <span class="number">4</span>;
+					<span class="keyword">break</span>;
 
-				case SystemType.Smallint:
-					Precision = 5;
-					MaxLength = MaxInrowLength = 2;
-					break;
+				<span class="keyword">case</span> SystemType.Smallint:
+					Precision = <span class="number">5</span>;
+					MaxLength = MaxInrowLength = <span class="number">2</span>;
+					<span class="keyword">break</span>;
 
-				case SystemType.Smallmoney:
-					Scale = 4;
-					Precision = 10;
-					MaxLength = MaxInrowLength = 4;
-					break;
+				<span class="keyword">case</span> SystemType.Smallmoney:
+					Scale = <span class="number">4</span>;
+					Precision = <span class="number">10</span>;
+					MaxLength = MaxInrowLength = <span class="number">4</span>;
+					<span class="keyword">break</span>;
 
-				case SystemType.Sql_Variant:
-					MaxLength = MaxInrowLength = 8016;
-					break;
+				<span class="keyword">case</span> SystemType.Sql_Variant:
+					MaxLength = MaxInrowLength = <span class="number">8016</span>;
+					<span class="keyword">break</span>;
 
-				case SystemType.Time:
-					Scale = (byte)((ti & 0xFF00) &gt;&gt; 8);
-					Precision = (byte)(8 + (Scale &gt; 0 ? Scale + 1 : Scale));
-					if (Scale &lt; 3)
-						MaxLength = MaxInrowLength = 3;
-					else if (Scale &lt; 5)
-						MaxLength = MaxInrowLength = 4;
-					else
-						MaxLength = MaxInrowLength = 5;
-					break;
+				<span class="keyword">case</span> SystemType.Time:
+					Scale = (<span class="keyword">byte</span>)((ti & <span class="number">0xFF00</span>) &gt;&gt; <span class="number">8</span>);
+					Precision = (<span class="keyword">byte</span>)(<span class="number">8</span> + (Scale &gt; <span class="number">0</span> ? Scale + <span class="number">1</span> : Scale));
+					<span class="keyword">if</span> (Scale &lt; <span class="number">3</span>)
+						MaxLength = MaxInrowLength = <span class="number">3</span>;
+					<span class="keyword">else</span> <span class="keyword">if</span> (Scale &lt; <span class="number">5</span>)
+						MaxLength = MaxInrowLength = <span class="number">4</span>;
+					<span class="keyword">else</span>
+						MaxLength = MaxInrowLength = <span class="number">5</span>;
+					<span class="keyword">break</span>;
 
-				case SystemType.Timestamp:
-					MaxLength = MaxInrowLength = 8;
-					break;
+				<span class="keyword">case</span> SystemType.Timestamp:
+					MaxLength = MaxInrowLength = <span class="number">8</span>;
+					<span class="keyword">break</span>;
 
-				case SystemType.Tinyint:
-					Precision = 3;
-					MaxLength = MaxInrowLength = 1;
-					break;
+				<span class="keyword">case</span> SystemType.Tinyint:
+					Precision = <span class="number">3</span>;
+					MaxLength = MaxInrowLength = <span class="number">1</span>;
+					<span class="keyword">break</span>;
 
-				case SystemType.Uniqueidentifier:
-					MaxLength = MaxInrowLength = 16;
-					break;
+				<span class="keyword">case</span> SystemType.Uniqueidentifier:
+					MaxLength = MaxInrowLength = <span class="number">16</span>;
+					<span class="keyword">break</span>;
 
-				default:
-					throw new ArgumentException(<span class="string">"TypeID '"</span> + TypeID + <span class="string">"' not supported."</span>);
+				<span class="keyword">default</span>:
+					<span class="keyword">throw</span> <span class="keyword">new</span> ArgumentException(<span class="string">"TypeID '"</span> + TypeID + <span class="string">"' not supported."</span>);
 			}
 		}
 	}
@@ -963,441 +963,441 @@ namespace OrcaMDF.Core.MetaData
 </pre></figure>
 
 <p>It uses a SystemType enumeration for switching between the types (sorry, formatting isn’t being nice to me here):</p>
-<figure class="highlight csharp"><pre>namespace OrcaMDF.Core.MetaData.Enumerations
+<figure class="highlight cs"><pre>namespace OrcaMDF.Core.MetaData.Enumerations
 {
-	public enum SystemType
+	<span class="keyword">public</span> <span class="keyword">enum</span> SystemType
 	{
-		Image				= 34,
-		Text				= 35,
-		Uniqueidentifier		= 36,
-		Date				= 40,
-		Time				= 41,
-		Datetime2			= 42,
-		DatetimeOffset			= 43,
-		Tinyint				= 48,
-		Smallint			= 52,
-		Int				= 56,
-		Smalldatetime			= 58,
-		Real				= 59,
-		Money				= 60,
-		Datetime			= 61,
-		Float				= 62,
-		Sql_Variant			= 98,
-		Ntext				= 99,
-		Bit				= 104,
-		Decimal				= 106,
-		Numeric				= 108,
-		Smallmoney			= 122,
-		Bigint				= 127,
-		Hierarchyid			= 240,
-		Geometry			= 240,
-		Geography			= 240,
-		Varbinary			= 165,
-		Varchar				= 167,
-		Binary				= 173,
-		Char				= 175,
-		Timestamp			= 189,
-		Nvarchar			= 231,
-		Nchar				= 239,
-		Xml				= 241,
-		Sysname				= 231
+		Image				= <span class="number">34</span>,
+		Text				= <span class="number">35</span>,
+		Uniqueidentifier		= <span class="number">36</span>,
+		Date				= <span class="number">40</span>,
+		Time				= <span class="number">41</span>,
+		Datetime2			= <span class="number">42</span>,
+		DatetimeOffset			= <span class="number">43</span>,
+		Tinyint				= <span class="number">48</span>,
+		Smallint			= <span class="number">52</span>,
+		Int				= <span class="number">56</span>,
+		Smalldatetime			= <span class="number">58</span>,
+		Real				= <span class="number">59</span>,
+		Money				= <span class="number">60</span>,
+		Datetime			= <span class="number">61</span>,
+		Float				= <span class="number">62</span>,
+		Sql_Variant			= <span class="number">98</span>,
+		Ntext				= <span class="number">99</span>,
+		Bit				= <span class="number">104</span>,
+		Decimal				= <span class="number">106</span>,
+		Numeric				= <span class="number">108</span>,
+		Smallmoney			= <span class="number">122</span>,
+		Bigint				= <span class="number">127</span>,
+		Hierarchyid			= <span class="number">240</span>,
+		Geometry			= <span class="number">240</span>,
+		Geography			= <span class="number">240</span>,
+		Varbinary			= <span class="number">165</span>,
+		Varchar				= <span class="number">167</span>,
+		Binary				= <span class="number">173</span>,
+		Char				= <span class="number">175</span>,
+		Timestamp			= <span class="number">189</span>,
+		Nvarchar			= <span class="number">231</span>,
+		Nchar				= <span class="number">239</span>,
+		Xml				= <span class="number">241</span>,
+		Sysname				= <span class="number">231</span>
 	}
 }
 </pre></figure>
 
 <p>And last, but not least, a bunch of tests to verify the functionality:</p>
-<figure class="highlight csharp"><pre>using NUnit<span class="preprocessor">.Framework</span><span class="comment">;</span>
-using OrcaMDF<span class="preprocessor">.Core</span><span class="preprocessor">.MetaData</span><span class="comment">;</span>
+<figure class="highlight cs"><pre><span class="keyword">using</span> NUnit.Framework;
+<span class="keyword">using</span> OrcaMDF.Core.MetaData;
 
-namespace OrcaMDF<span class="preprocessor">.Core</span><span class="preprocessor">.Tests</span><span class="preprocessor">.MetaData</span>
+namespace OrcaMDF.Core.Tests.MetaData
 {
 	[TestFixture]
-	public class SysrscolTIParserTests
+	<span class="keyword">public</span> <span class="keyword">class</span> SysrscolTIParserTests
 	{
 		[Test]
-		public void Bigint()
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Bigint</span>()
 		{
-			var parser = new SysrscolTIParser(<span class="number">127</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">19</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">8</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">127</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">8</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+			<span class="keyword">var</span> parser = <span class="keyword">new</span> SysrscolTIParser(<span class="number">127</span>);
+			Assert.AreEqual(<span class="number">0</span>, parser.Scale);
+			Assert.AreEqual(<span class="number">19</span>, parser.Precision);
+			Assert.AreEqual(<span class="number">8</span>, parser.MaxLength);
+			Assert.AreEqual(<span class="number">127</span>, parser.TypeID);
+			Assert.AreEqual(<span class="number">8</span>, parser.MaxInrowLength);
 		}
 
 		[Test]
-		public void Binary()
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Binary</span>()
 		{
-			var parser = new SysrscolTIParser(<span class="number">12973</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">50</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">173</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">50</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+			<span class="keyword">var</span> parser = <span class="keyword">new</span> SysrscolTIParser(<span class="number">12973</span>);
+			Assert.AreEqual(<span class="number">0</span>, parser.Scale);
+			Assert.AreEqual(<span class="number">0</span>, parser.Precision);
+			Assert.AreEqual(<span class="number">50</span>, parser.MaxLength);
+			Assert.AreEqual(<span class="number">173</span>, parser.TypeID);
+			Assert.AreEqual(<span class="number">50</span>, parser.MaxInrowLength);
 		}
 
 		[Test]
-		public void Bit()
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Bit</span>()
 		{
-			var parser = new SysrscolTIParser(<span class="number">104</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">1</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">1</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">104</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">1</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+			<span class="keyword">var</span> parser = <span class="keyword">new</span> SysrscolTIParser(<span class="number">104</span>);
+			Assert.AreEqual(<span class="number">0</span>, parser.Scale);
+			Assert.AreEqual(<span class="number">1</span>, parser.Precision);
+			Assert.AreEqual(<span class="number">1</span>, parser.MaxLength);
+			Assert.AreEqual(<span class="number">104</span>, parser.TypeID);
+			Assert.AreEqual(<span class="number">1</span>, parser.MaxInrowLength);
 		}
 
 		[Test]
-		public void Char()
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Char</span>()
 		{
-			var parser = new SysrscolTIParser(<span class="number">2735</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">10</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">175</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">10</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+			<span class="keyword">var</span> parser = <span class="keyword">new</span> SysrscolTIParser(<span class="number">2735</span>);
+			Assert.AreEqual(<span class="number">0</span>, parser.Scale);
+			Assert.AreEqual(<span class="number">0</span>, parser.Precision);
+			Assert.AreEqual(<span class="number">10</span>, parser.MaxLength);
+			Assert.AreEqual(<span class="number">175</span>, parser.TypeID);
+			Assert.AreEqual(<span class="number">10</span>, parser.MaxInrowLength);
 		}
 
 		[Test]
-		public void Date()
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Date</span>()
 		{
-			var parser = new SysrscolTIParser(<span class="number">40</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">10</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">3</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">40</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">3</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+			<span class="keyword">var</span> parser = <span class="keyword">new</span> SysrscolTIParser(<span class="number">40</span>);
+			Assert.AreEqual(<span class="number">0</span>, parser.Scale);
+			Assert.AreEqual(<span class="number">10</span>, parser.Precision);
+			Assert.AreEqual(<span class="number">3</span>, parser.MaxLength);
+			Assert.AreEqual(<span class="number">40</span>, parser.TypeID);
+			Assert.AreEqual(<span class="number">3</span>, parser.MaxInrowLength);
 		}
 
 		[Test]
-		public void Datetime()
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Datetime</span>()
 		{
-			var parser = new SysrscolTIParser(<span class="number">61</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">3</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">23</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">8</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">61</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">8</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+			<span class="keyword">var</span> parser = <span class="keyword">new</span> SysrscolTIParser(<span class="number">61</span>);
+			Assert.AreEqual(<span class="number">3</span>, parser.Scale);
+			Assert.AreEqual(<span class="number">23</span>, parser.Precision);
+			Assert.AreEqual(<span class="number">8</span>, parser.MaxLength);
+			Assert.AreEqual(<span class="number">61</span>, parser.TypeID);
+			Assert.AreEqual(<span class="number">8</span>, parser.MaxInrowLength);
 		}
 
 		[Test]
-		public void Datetime2()
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Datetime2</span>()
 		{
-			var parser = new SysrscolTIParser(<span class="number">1834</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">7</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">27</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">8</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">42</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">8</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+			<span class="keyword">var</span> parser = <span class="keyword">new</span> SysrscolTIParser(<span class="number">1834</span>);
+			Assert.AreEqual(<span class="number">7</span>, parser.Scale);
+			Assert.AreEqual(<span class="number">27</span>, parser.Precision);
+			Assert.AreEqual(<span class="number">8</span>, parser.MaxLength);
+			Assert.AreEqual(<span class="number">42</span>, parser.TypeID);
+			Assert.AreEqual(<span class="number">8</span>, parser.MaxInrowLength);
 
-			parser = new SysrscolTIParser(<span class="number">810</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">3</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">23</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">7</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">42</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">7</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+			parser = <span class="keyword">new</span> SysrscolTIParser(<span class="number">810</span>);
+			Assert.AreEqual(<span class="number">3</span>, parser.Scale);
+			Assert.AreEqual(<span class="number">23</span>, parser.Precision);
+			Assert.AreEqual(<span class="number">7</span>, parser.MaxLength);
+			Assert.AreEqual(<span class="number">42</span>, parser.TypeID);
+			Assert.AreEqual(<span class="number">7</span>, parser.MaxInrowLength);
 		}
 
 		[Test]
-		public void Datetimeoffset()
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Datetimeoffset</span>()
 		{
-			var parser = new SysrscolTIParser(<span class="number">1835</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">7</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">34</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">10</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">43</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">10</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+			<span class="keyword">var</span> parser = <span class="keyword">new</span> SysrscolTIParser(<span class="number">1835</span>);
+			Assert.AreEqual(<span class="number">7</span>, parser.Scale);
+			Assert.AreEqual(<span class="number">34</span>, parser.Precision);
+			Assert.AreEqual(<span class="number">10</span>, parser.MaxLength);
+			Assert.AreEqual(<span class="number">43</span>, parser.TypeID);
+			Assert.AreEqual(<span class="number">10</span>, parser.MaxInrowLength);
 
-			parser = new SysrscolTIParser(<span class="number">1067</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">4</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">31</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">9</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">43</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">9</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+			parser = <span class="keyword">new</span> SysrscolTIParser(<span class="number">1067</span>);
+			Assert.AreEqual(<span class="number">4</span>, parser.Scale);
+			Assert.AreEqual(<span class="number">31</span>, parser.Precision);
+			Assert.AreEqual(<span class="number">9</span>, parser.MaxLength);
+			Assert.AreEqual(<span class="number">43</span>, parser.TypeID);
+			Assert.AreEqual(<span class="number">9</span>, parser.MaxInrowLength);
 		}
 
 		[Test]
-		public void Decimal()
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Decimal</span>()
 		{
-			var parser = new SysrscolTIParser(<span class="number">330858</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">5</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">12</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">9</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">106</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">9</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+			<span class="keyword">var</span> parser = <span class="keyword">new</span> SysrscolTIParser(<span class="number">330858</span>);
+			Assert.AreEqual(<span class="number">5</span>, parser.Scale);
+			Assert.AreEqual(<span class="number">12</span>, parser.Precision);
+			Assert.AreEqual(<span class="number">9</span>, parser.MaxLength);
+			Assert.AreEqual(<span class="number">106</span>, parser.TypeID);
+			Assert.AreEqual(<span class="number">9</span>, parser.MaxInrowLength);
 
-			parser = new SysrscolTIParser(<span class="number">396138</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">6</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">11</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">9</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">106</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">9</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+			parser = <span class="keyword">new</span> SysrscolTIParser(<span class="number">396138</span>);
+			Assert.AreEqual(<span class="number">6</span>, parser.Scale);
+			Assert.AreEqual(<span class="number">11</span>, parser.Precision);
+			Assert.AreEqual(<span class="number">9</span>, parser.MaxLength);
+			Assert.AreEqual(<span class="number">106</span>, parser.TypeID);
+			Assert.AreEqual(<span class="number">9</span>, parser.MaxInrowLength);
 		}
 
 		[Test]
-		public void Float()
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Float</span>()
 		{
-			var parser = new SysrscolTIParser(<span class="number">62</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">53</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">8</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">62</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">8</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+			<span class="keyword">var</span> parser = <span class="keyword">new</span> SysrscolTIParser(<span class="number">62</span>);
+			Assert.AreEqual(<span class="number">0</span>, parser.Scale);
+			Assert.AreEqual(<span class="number">53</span>, parser.Precision);
+			Assert.AreEqual(<span class="number">8</span>, parser.MaxLength);
+			Assert.AreEqual(<span class="number">62</span>, parser.TypeID);
+			Assert.AreEqual(<span class="number">8</span>, parser.MaxInrowLength);
 		}
 
 		[Test]
-		public void Varbinary()
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Varbinary</span>()
 		{
-			var parser = new SysrscolTIParser(<span class="number">165</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(-<span class="number">1</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">165</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">8000</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+			<span class="keyword">var</span> parser = <span class="keyword">new</span> SysrscolTIParser(<span class="number">165</span>);
+			Assert.AreEqual(<span class="number">0</span>, parser.Scale);
+			Assert.AreEqual(<span class="number">0</span>, parser.Precision);
+			Assert.AreEqual(-<span class="number">1</span>, parser.MaxLength);
+			Assert.AreEqual(<span class="number">165</span>, parser.TypeID);
+			Assert.AreEqual(<span class="number">8000</span>, parser.MaxInrowLength);
 
-			parser = new SysrscolTIParser(<span class="number">228517</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">892</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">165</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">892</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+			parser = <span class="keyword">new</span> SysrscolTIParser(<span class="number">228517</span>);
+			Assert.AreEqual(<span class="number">0</span>, parser.Scale);
+			Assert.AreEqual(<span class="number">0</span>, parser.Precision);
+			Assert.AreEqual(<span class="number">892</span>, parser.MaxLength);
+			Assert.AreEqual(<span class="number">165</span>, parser.TypeID);
+			Assert.AreEqual(<span class="number">892</span>, parser.MaxInrowLength);
 		}
 
 		[Test]
-		public void Image()
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Image</span>()
 		{
-			var parser = new SysrscolTIParser(<span class="number">4130</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">16</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">34</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">16</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+			<span class="keyword">var</span> parser = <span class="keyword">new</span> SysrscolTIParser(<span class="number">4130</span>);
+			Assert.AreEqual(<span class="number">0</span>, parser.Scale);
+			Assert.AreEqual(<span class="number">0</span>, parser.Precision);
+			Assert.AreEqual(<span class="number">16</span>, parser.MaxLength);
+			Assert.AreEqual(<span class="number">34</span>, parser.TypeID);
+			Assert.AreEqual(<span class="number">16</span>, parser.MaxInrowLength);
 		}
 
 		[Test]
-		public void Int()
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Int</span>()
 		{
-			var parser = new SysrscolTIParser(<span class="number">56</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">10</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">4</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">56</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">4</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+			<span class="keyword">var</span> parser = <span class="keyword">new</span> SysrscolTIParser(<span class="number">56</span>);
+			Assert.AreEqual(<span class="number">0</span>, parser.Scale);
+			Assert.AreEqual(<span class="number">10</span>, parser.Precision);
+			Assert.AreEqual(<span class="number">4</span>, parser.MaxLength);
+			Assert.AreEqual(<span class="number">56</span>, parser.TypeID);
+			Assert.AreEqual(<span class="number">4</span>, parser.MaxInrowLength);
 		}
 
 		[Test]
-		public void Money()
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Money</span>()
 		{
-			var parser = new SysrscolTIParser(<span class="number">60</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">4</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">19</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">8</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">60</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">8</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+			<span class="keyword">var</span> parser = <span class="keyword">new</span> SysrscolTIParser(<span class="number">60</span>);
+			Assert.AreEqual(<span class="number">4</span>, parser.Scale);
+			Assert.AreEqual(<span class="number">19</span>, parser.Precision);
+			Assert.AreEqual(<span class="number">8</span>, parser.MaxLength);
+			Assert.AreEqual(<span class="number">60</span>, parser.TypeID);
+			Assert.AreEqual(<span class="number">8</span>, parser.MaxInrowLength);
 		}
 
 		[Test]
-		public void Nchar()
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Nchar</span>()
 		{
-			var parser = new SysrscolTIParser(<span class="number">5359</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">20</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">239</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">20</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+			<span class="keyword">var</span> parser = <span class="keyword">new</span> SysrscolTIParser(<span class="number">5359</span>);
+			Assert.AreEqual(<span class="number">0</span>, parser.Scale);
+			Assert.AreEqual(<span class="number">0</span>, parser.Precision);
+			Assert.AreEqual(<span class="number">20</span>, parser.MaxLength);
+			Assert.AreEqual(<span class="number">239</span>, parser.TypeID);
+			Assert.AreEqual(<span class="number">20</span>, parser.MaxInrowLength);
 		}
 
 		[Test]
-		public void Ntext()
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Ntext</span>()
 		{
-			var parser = new SysrscolTIParser(<span class="number">4195</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">16</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">99</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">16</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+			<span class="keyword">var</span> parser = <span class="keyword">new</span> SysrscolTIParser(<span class="number">4195</span>);
+			Assert.AreEqual(<span class="number">0</span>, parser.Scale);
+			Assert.AreEqual(<span class="number">0</span>, parser.Precision);
+			Assert.AreEqual(<span class="number">16</span>, parser.MaxLength);
+			Assert.AreEqual(<span class="number">99</span>, parser.TypeID);
+			Assert.AreEqual(<span class="number">16</span>, parser.MaxInrowLength);
 		}
 
 		[Test]
-		public void Numeric()
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Numeric</span>()
 		{
-			var parser = new SysrscolTIParser(<span class="number">265580</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">4</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">13</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">9</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">108</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">9</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+			<span class="keyword">var</span> parser = <span class="keyword">new</span> SysrscolTIParser(<span class="number">265580</span>);
+			Assert.AreEqual(<span class="number">4</span>, parser.Scale);
+			Assert.AreEqual(<span class="number">13</span>, parser.Precision);
+			Assert.AreEqual(<span class="number">9</span>, parser.MaxLength);
+			Assert.AreEqual(<span class="number">108</span>, parser.TypeID);
+			Assert.AreEqual(<span class="number">9</span>, parser.MaxInrowLength);
 
-			parser = new SysrscolTIParser(<span class="number">135020</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">2</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">15</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">9</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">108</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">9</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+			parser = <span class="keyword">new</span> SysrscolTIParser(<span class="number">135020</span>);
+			Assert.AreEqual(<span class="number">2</span>, parser.Scale);
+			Assert.AreEqual(<span class="number">15</span>, parser.Precision);
+			Assert.AreEqual(<span class="number">9</span>, parser.MaxLength);
+			Assert.AreEqual(<span class="number">108</span>, parser.TypeID);
+			Assert.AreEqual(<span class="number">9</span>, parser.MaxInrowLength);
 		}
 
 		[Test]
-		public void Nvarchar()
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Nvarchar</span>()
 		{
-			var parser = new SysrscolTIParser(<span class="number">25831</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">100</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">231</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">100</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+			<span class="keyword">var</span> parser = <span class="keyword">new</span> SysrscolTIParser(<span class="number">25831</span>);
+			Assert.AreEqual(<span class="number">0</span>, parser.Scale);
+			Assert.AreEqual(<span class="number">0</span>, parser.Precision);
+			Assert.AreEqual(<span class="number">100</span>, parser.MaxLength);
+			Assert.AreEqual(<span class="number">231</span>, parser.TypeID);
+			Assert.AreEqual(<span class="number">100</span>, parser.MaxInrowLength);
 
-			parser = new SysrscolTIParser(<span class="number">231</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(-<span class="number">1</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">231</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">8000</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+			parser = <span class="keyword">new</span> SysrscolTIParser(<span class="number">231</span>);
+			Assert.AreEqual(<span class="number">0</span>, parser.Scale);
+			Assert.AreEqual(<span class="number">0</span>, parser.Precision);
+			Assert.AreEqual(-<span class="number">1</span>, parser.MaxLength);
+			Assert.AreEqual(<span class="number">231</span>, parser.TypeID);
+			Assert.AreEqual(<span class="number">8000</span>, parser.MaxInrowLength);
 		}
 
 		[Test]
-		public void Real()
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Real</span>()
 		{
-			var parser = new SysrscolTIParser(<span class="number">59</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">24</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">4</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">59</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">4</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+			<span class="keyword">var</span> parser = <span class="keyword">new</span> SysrscolTIParser(<span class="number">59</span>);
+			Assert.AreEqual(<span class="number">0</span>, parser.Scale);
+			Assert.AreEqual(<span class="number">24</span>, parser.Precision);
+			Assert.AreEqual(<span class="number">4</span>, parser.MaxLength);
+			Assert.AreEqual(<span class="number">59</span>, parser.TypeID);
+			Assert.AreEqual(<span class="number">4</span>, parser.MaxInrowLength);
 		}
 
 		[Test]
-		public void Smalldatetime()
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Smalldatetime</span>()
 		{
-			var parser = new SysrscolTIParser(<span class="number">58</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">16</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">4</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">58</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">4</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+			<span class="keyword">var</span> parser = <span class="keyword">new</span> SysrscolTIParser(<span class="number">58</span>);
+			Assert.AreEqual(<span class="number">0</span>, parser.Scale);
+			Assert.AreEqual(<span class="number">16</span>, parser.Precision);
+			Assert.AreEqual(<span class="number">4</span>, parser.MaxLength);
+			Assert.AreEqual(<span class="number">58</span>, parser.TypeID);
+			Assert.AreEqual(<span class="number">4</span>, parser.MaxInrowLength);
 		}
 
 		[Test]
-		public void Smallint()
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Smallint</span>()
 		{
-			var parser = new SysrscolTIParser(<span class="number">52</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">5</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">2</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">52</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">2</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+			<span class="keyword">var</span> parser = <span class="keyword">new</span> SysrscolTIParser(<span class="number">52</span>);
+			Assert.AreEqual(<span class="number">0</span>, parser.Scale);
+			Assert.AreEqual(<span class="number">5</span>, parser.Precision);
+			Assert.AreEqual(<span class="number">2</span>, parser.MaxLength);
+			Assert.AreEqual(<span class="number">52</span>, parser.TypeID);
+			Assert.AreEqual(<span class="number">2</span>, parser.MaxInrowLength);
 		}
 
 		[Test]
-		public void Smallmoney()
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Smallmoney</span>()
 		{
-			var parser = new SysrscolTIParser(<span class="number">122</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">4</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">10</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">4</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">122</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">4</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+			<span class="keyword">var</span> parser = <span class="keyword">new</span> SysrscolTIParser(<span class="number">122</span>);
+			Assert.AreEqual(<span class="number">4</span>, parser.Scale);
+			Assert.AreEqual(<span class="number">10</span>, parser.Precision);
+			Assert.AreEqual(<span class="number">4</span>, parser.MaxLength);
+			Assert.AreEqual(<span class="number">122</span>, parser.TypeID);
+			Assert.AreEqual(<span class="number">4</span>, parser.MaxInrowLength);
 		}
 
 		[Test]
-		public void Sql_Variant()
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Sql_Variant</span>()
 		{
-			var parser = new SysrscolTIParser(<span class="number">98</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">8016</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">98</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">8016</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+			<span class="keyword">var</span> parser = <span class="keyword">new</span> SysrscolTIParser(<span class="number">98</span>);
+			Assert.AreEqual(<span class="number">0</span>, parser.Scale);
+			Assert.AreEqual(<span class="number">0</span>, parser.Precision);
+			Assert.AreEqual(<span class="number">8016</span>, parser.MaxLength);
+			Assert.AreEqual(<span class="number">98</span>, parser.TypeID);
+			Assert.AreEqual(<span class="number">8016</span>, parser.MaxInrowLength);
 		}
 
 		[Test]
-		public void Text()
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Text</span>()
 		{
-			var parser = new SysrscolTIParser(<span class="number">4131</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">16</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">35</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">16</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+			<span class="keyword">var</span> parser = <span class="keyword">new</span> SysrscolTIParser(<span class="number">4131</span>);
+			Assert.AreEqual(<span class="number">0</span>, parser.Scale);
+			Assert.AreEqual(<span class="number">0</span>, parser.Precision);
+			Assert.AreEqual(<span class="number">16</span>, parser.MaxLength);
+			Assert.AreEqual(<span class="number">35</span>, parser.TypeID);
+			Assert.AreEqual(<span class="number">16</span>, parser.MaxInrowLength);
 		}
 
 		[Test]
-		public void Time()
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Time</span>()
 		{
-			var parser = new SysrscolTIParser(<span class="number">1833</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">7</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">16</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">5</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">41</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">5</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+			<span class="keyword">var</span> parser = <span class="keyword">new</span> SysrscolTIParser(<span class="number">1833</span>);
+			Assert.AreEqual(<span class="number">7</span>, parser.Scale);
+			Assert.AreEqual(<span class="number">16</span>, parser.Precision);
+			Assert.AreEqual(<span class="number">5</span>, parser.MaxLength);
+			Assert.AreEqual(<span class="number">41</span>, parser.TypeID);
+			Assert.AreEqual(<span class="number">5</span>, parser.MaxInrowLength);
 
-			parser = new SysrscolTIParser(<span class="number">1065</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">4</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">13</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">4</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">41</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">4</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+			parser = <span class="keyword">new</span> SysrscolTIParser(<span class="number">1065</span>);
+			Assert.AreEqual(<span class="number">4</span>, parser.Scale);
+			Assert.AreEqual(<span class="number">13</span>, parser.Precision);
+			Assert.AreEqual(<span class="number">4</span>, parser.MaxLength);
+			Assert.AreEqual(<span class="number">41</span>, parser.TypeID);
+			Assert.AreEqual(<span class="number">4</span>, parser.MaxInrowLength);
 		}
 
 		[Test]
-		public void Timestamp()
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Timestamp</span>()
 		{
-			var parser = new SysrscolTIParser(<span class="number">189</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">8</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">189</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">8</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+			<span class="keyword">var</span> parser = <span class="keyword">new</span> SysrscolTIParser(<span class="number">189</span>);
+			Assert.AreEqual(<span class="number">0</span>, parser.Scale);
+			Assert.AreEqual(<span class="number">0</span>, parser.Precision);
+			Assert.AreEqual(<span class="number">8</span>, parser.MaxLength);
+			Assert.AreEqual(<span class="number">189</span>, parser.TypeID);
+			Assert.AreEqual(<span class="number">8</span>, parser.MaxInrowLength);
 		}
 
 		[Test]
-		public void Tinyint()
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Tinyint</span>()
 		{
-			var parser = new SysrscolTIParser(<span class="number">48</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">3</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">1</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">48</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">1</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+			<span class="keyword">var</span> parser = <span class="keyword">new</span> SysrscolTIParser(<span class="number">48</span>);
+			Assert.AreEqual(<span class="number">0</span>, parser.Scale);
+			Assert.AreEqual(<span class="number">3</span>, parser.Precision);
+			Assert.AreEqual(<span class="number">1</span>, parser.MaxLength);
+			Assert.AreEqual(<span class="number">48</span>, parser.TypeID);
+			Assert.AreEqual(<span class="number">1</span>, parser.MaxInrowLength);
 		}
 
 		[Test]
-		public void Uniqueidentifier()
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Uniqueidentifier</span>()
 		{
-			var parser = new SysrscolTIParser(<span class="number">36</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">16</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">36</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">16</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+			<span class="keyword">var</span> parser = <span class="keyword">new</span> SysrscolTIParser(<span class="number">36</span>);
+			Assert.AreEqual(<span class="number">0</span>, parser.Scale);
+			Assert.AreEqual(<span class="number">0</span>, parser.Precision);
+			Assert.AreEqual(<span class="number">16</span>, parser.MaxLength);
+			Assert.AreEqual(<span class="number">36</span>, parser.TypeID);
+			Assert.AreEqual(<span class="number">16</span>, parser.MaxInrowLength);
 		}
 
 		[Test]
-		public void Varchar()
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Varchar</span>()
 		{
-			var parser = new SysrscolTIParser(<span class="number">12967</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">50</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">167</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">50</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+			<span class="keyword">var</span> parser = <span class="keyword">new</span> SysrscolTIParser(<span class="number">12967</span>);
+			Assert.AreEqual(<span class="number">0</span>, parser.Scale);
+			Assert.AreEqual(<span class="number">0</span>, parser.Precision);
+			Assert.AreEqual(<span class="number">50</span>, parser.MaxLength);
+			Assert.AreEqual(<span class="number">167</span>, parser.TypeID);
+			Assert.AreEqual(<span class="number">50</span>, parser.MaxInrowLength);
 
-			parser = new SysrscolTIParser(<span class="number">167</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(-<span class="number">1</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">167</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">8000</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+			parser = <span class="keyword">new</span> SysrscolTIParser(<span class="number">167</span>);
+			Assert.AreEqual(<span class="number">0</span>, parser.Scale);
+			Assert.AreEqual(<span class="number">0</span>, parser.Precision);
+			Assert.AreEqual(-<span class="number">1</span>, parser.MaxLength);
+			Assert.AreEqual(<span class="number">167</span>, parser.TypeID);
+			Assert.AreEqual(<span class="number">8000</span>, parser.MaxInrowLength);
 		}
 
 		[Test]
-		public void Xml()
+		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Xml</span>()
 		{
-			var parser = new SysrscolTIParser(<span class="number">241</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Scale</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">0</span>, parser<span class="preprocessor">.Precision</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(-<span class="number">1</span>, parser<span class="preprocessor">.MaxLength</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">241</span>, parser<span class="preprocessor">.TypeID</span>)<span class="comment">;</span>
-			Assert<span class="preprocessor">.AreEqual</span>(<span class="number">8000</span>, parser<span class="preprocessor">.MaxInrowLength</span>)<span class="comment">;</span>
+			<span class="keyword">var</span> parser = <span class="keyword">new</span> SysrscolTIParser(<span class="number">241</span>);
+			Assert.AreEqual(<span class="number">0</span>, parser.Scale);
+			Assert.AreEqual(<span class="number">0</span>, parser.Precision);
+			Assert.AreEqual(-<span class="number">1</span>, parser.MaxLength);
+			Assert.AreEqual(<span class="number">241</span>, parser.TypeID);
+			Assert.AreEqual(<span class="number">8000</span>, parser.MaxInrowLength);
 		}
 	}
 }
@@ -1568,22 +1568,22 @@ namespace OrcaMDF<span class="preprocessor">.Core</span><span class="preprocesso
 
 <h3 id="binary">binary</h3>
 <p>Converting the first system_type_id into hex yields 0n173 = 0xAD. Converting the ti value yields 0n12973 = 0x32AD. An empirical test for all columns shows this to be true for them all. Thus we can conclude that the first byte (printed as the rightmost due to <a href="http://en.wikipedia.org/wiki/Endianness" target="_blank">little endianness</a>) stores the type. Extracting the value requires a simple bitmask operation:</p>
-<figure class="highlight csharp"><pre><span class="attribute">12973 & 0x000000FF =</span>=<span class="string"> 173</span>
+<figure class="highlight cs"><pre><span class="number">12973</span> & <span class="number">0x000000FF</span> == <span class="number">173</span>
 </pre></figure>
 
 <p>As for the length, the second byte stores the value 0x32 = 0n50. As the length is a smallint (we know it can be up to 8000, thus requiring at least a smallint), we can assume the next two bytes cover that. To extract that value, we’ll need a bitmask, as well as a shift operation to shift the two middlemost bytes one step to the right:</p>
-<figure class="highlight csharp"><pre><span class="attribute">(12973 & 0x00FFFF00) &gt;&gt; 8 =</span>=<span class="string"> 50</span>
+<figure class="highlight cs"><pre>(<span class="number">12973</span> & <span class="number">0x00FFFF00</span>) &gt;&gt; <span class="number">8</span> == <span class="number">50</span>
 </pre></figure>
 
 <h3 id="datetime2">datetime2</h3>
 <p>This is the same for the char field. The datetime2 field is different as it stores the scale and precision values. 0n1322 in hex yields a value of 0x52A. 0x2A being the type (42). All that remains is the 0x5/0n5 which can only be the scale. A quick with a datetime(7) field yields the same result, though the precision is then 27. Thus I’ll conclude that for the datetime2 type, precision = 20 + scale. Extracting the scale from the second byte requires almost the same operation as before, just with a different bitmask:</p>
-<figure class="highlight csharp"><pre><span class="attribute">(1322 & 0x0000FF00) &gt;&gt; 8 =</span>=<span class="string"> 5</span>
+<figure class="highlight cs"><pre>(<span class="number">1322</span> & <span class="number">0x0000FF00</span>) &gt;&gt; <span class="number">8</span> == <span class="number">5</span>
 </pre></figure>
 
 <h3 id="decimal">decimal</h3>
 <p>Moving onto decimal, we now have both a scale and a precision to take care of. Converting 0n330858 to hex yields a value of 0x50C6A. 0x6A being the type (106). 0x0C being the precision and finally 0x5 being the scale. Note that this is different from datetime2 – now the scale is stored as the third byte and not the second!</p>
 <p>Extracting the third byte as the scale requires a similar bitmask &amp; shift operation as previously:</p>
-<figure class="highlight csharp"><pre><span class="attribute">(330858 & 0x00FF0000) &gt;&gt; 16 =</span>=<span class="string"> 5</span>
+<figure class="highlight cs"><pre>(<span class="number">330858</span> & <span class="number">0x00FF0000</span>) &gt;&gt; <span class="number">16</span> == <span class="number">5</span>
 </pre></figure>
 
 <h3 id="float">float</h3>

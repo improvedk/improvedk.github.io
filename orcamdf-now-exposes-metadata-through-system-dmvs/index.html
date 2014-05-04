@@ -129,20 +129,20 @@
 </pre></figure>
 
 <p>Doing the same in OrcaMDF could look like this:</p>
-<figure class="highlight csharp"><pre>using (var db = new Database(new[] { @<span class="string">"C:Test.mdf"</span> }))
+<figure class="highlight cs"><pre><span class="keyword">using</span> (<span class="keyword">var</span> db = <span class="keyword">new</span> Database(<span class="keyword">new</span>[] { <span class="string">@"C:Test.mdf"</span> }))
 {
-	var sys = db<span class="preprocessor">.Dmvs</span><span class="comment">;</span>
+	<span class="keyword">var</span> sys = db.Dmvs;
 
-	var table = sys<span class="preprocessor">.Tables</span><span class="preprocessor">.Where</span>(t =&gt; t<span class="preprocessor">.Name</span> == <span class="string">"Persons"</span>)<span class="preprocessor">.Single</span>()<span class="comment">;</span>
-	var columns = sys<span class="preprocessor">.Columns</span><span class="preprocessor">.Where</span>(c =&gt; c<span class="preprocessor">.ObjectID</span> == table<span class="preprocessor">.ObjectID</span>)<span class="comment">;</span>
+	<span class="keyword">var</span> table = sys.Tables.Where(t =&gt; t.Name == <span class="string">"Persons"</span>).Single();
+	<span class="keyword">var</span> columns = sys.Columns.Where(c =&gt; c.ObjectID == table.ObjectID);
 
-	foreach (var col <span class="keyword">in</span> columns)
-		Console<span class="preprocessor">.WriteLine</span>(col<span class="preprocessor">.Name</span>)<span class="comment">;</span>
+	<span class="keyword">foreach</span> (<span class="keyword">var</span> col <span class="keyword">in</span> columns)
+		Console.WriteLine(col.Name);
 }
 </pre></figure>
 
 <p>And if you prefer the more SQL-esque syntax of LINQ, you can of course do it like this as well:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span> (<span class="keyword">var</span> db = <span class="keyword">new</span> Database(<span class="keyword">new</span>[] { <span class="string">@"C:Test.mdf"</span> }))
+<figure class="highlight cs"><pre><span class="keyword">using</span> (<span class="keyword">var</span> db = <span class="keyword">new</span> Database(<span class="keyword">new</span>[] { <span class="string">@"C:Test.mdf"</span> }))
 {
 	<span class="keyword">var</span> sys = db.Dmvs;
 

@@ -184,20 +184,20 @@
 <h2 id="Working_with_binary(3)_on_the_client_side">Working with binary(3) on the client side</h2>
 <p>Now that we’ve got our mediumint data type, all we need is to be able to insert &amp; query data from the client.</p>
 <p>Inserting is easy – just send values is as integers and it’ll be converted as appropriate – just make sure to check for over/underflows as necessary:</p>
-<figure class="highlight csharp"><pre>using(var conn = new SqlConnection("Data Source=.;Initial Catalog=MediumIntTest;Integrated Security=SSPI;"))
+<figure class="highlight cs"><pre><span class="keyword">using</span>(<span class="keyword">var</span> conn = <span class="keyword">new</span> SqlConnection(<span class="string">"Data Source=.;Initial Catalog=MediumIntTest;Integrated Security=SSPI;"</span>))
 {
-	var <span class="operator"><span class="keyword">insert</span> = new SqlCommand(<span class="string">"INSERT INTO ThreeByteInt (MediumInt) VALUES (@MediumInt)"</span>);</span>
-	<span class="operator"><span class="keyword">insert</span>.Parameters.<span class="keyword">Add</span>(<span class="string">"@MediumInt"</span>, SqlDbType.<span class="keyword">Int</span>).<span class="keyword">Value</span> = <span class="number">439848</span>;</span>
-	<span class="operator"><span class="keyword">insert</span>.<span class="keyword">Connection</span> = conn;</span>
+	<span class="keyword">var</span> insert = <span class="keyword">new</span> SqlCommand(<span class="string">"INSERT INTO ThreeByteInt (MediumInt) VALUES (@MediumInt)"</span>);
+	insert.Parameters.Add(<span class="string">"@MediumInt"</span>, SqlDbType.Int).Value = <span class="number">439848</span>;
+	insert.Connection = conn;
 
 	conn.Open();
-	<span class="operator"><span class="keyword">insert</span>.ExecuteNonQuery();</span>
+	insert.ExecuteNonQuery();
 	conn.Close();
 }
 </pre></figure>
 
 <p>Querying requires slightly more effort. We’ll still pass in the value as an integer, but we’ll have to perform a CAST in the query to avoid scans. We could also pass the value in as a three byte array, but provided we have access to the query text, it’s easier to perform the conversion there. Furthermore there’s no standard three byte integer type in C#, so we’ll have do perform some ugly magic to convert the three bytes into a normal .NET integer:</p>
-<figure class="highlight csharp"><pre><span class="keyword">using</span>(<span class="keyword">var</span> conn = <span class="keyword">new</span> SqlConnection(<span class="string">"Data Source=.;Initial Catalog=MediumIntTest;Integrated Security=SSPI;"</span>))
+<figure class="highlight cs"><pre><span class="keyword">using</span>(<span class="keyword">var</span> conn = <span class="keyword">new</span> SqlConnection(<span class="string">"Data Source=.;Initial Catalog=MediumIntTest;Integrated Security=SSPI;"</span>))
 {
 	<span class="keyword">var</span> <span class="keyword">select</span> = <span class="keyword">new</span> SqlCommand(<span class="string">"SELECT MediumInt FROM ThreeByteInt WHERE MediumInt = CAST(@MediumInt AS binary(3))"</span>);
 	<span class="keyword">select</span>.Parameters.Add(<span class="string">"@MediumInt"</span>, SqlDbType.Int).Value = <span class="number">439848</span>;

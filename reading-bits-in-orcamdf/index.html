@@ -151,7 +151,7 @@
 
 <h2 id="The_need_for_state_while_reading_bits_from_records">The need for state while reading bits from records</h2>
 <p>Obviously we can’t just read one field at a time, incrementing the fixed length data offset pointer for each read, as we usually do for normal fixed length data types. We need some kind of state that will tell us which byte we’re currently reading bits from, and when to read a new bit byte. Allow me to introduce RecordReadState:</p>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> RecordReadState
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">class</span> RecordReadState
 {
 	<span class="comment">// We start out having consumed all bits as none have been read</span>
 	<span class="keyword">private</span> <span class="keyword">int</span> currentBitIndex = <span class="number">8</span>;
@@ -178,7 +178,7 @@
 <p>RecordReadState is currently only used for handling bits, but I’ve decided on not creating a BitReadState as we may need to save further read state further along. RecordReadState holds a single byte as well as a pointer that points to the next available bit in that byte. If the byte is exhausted (currentBixIndex = 8 (0-7 being the available bits)), AllBitsConsumed will return true, indicating we need to read in a new bit byte. GetNextBit simply reads the current bit from the bit byte, after which it increases the current bit index. <a href="https://github.com/improvedk/OrcaMDF/blob/58250bef24265900b6d94ec90be41b0647508b35/src/OrcaMDF.Core.Tests/Engine/Records/RecordReadStateTests.cs" target="_blank">See the tests</a> for demonstration.</p>
 <h2 id="Implementing_SqlBit">Implementing SqlBit</h2>
 <p>Once we have the read state implemented, we can implement the SqlBit type:</p>
-<figure class="highlight csharp"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlBit : ISqlType
+<figure class="highlight cs"><pre><span class="keyword">public</span> <span class="keyword">class</span> SqlBit : ISqlType
 {
 	<span class="keyword">private</span> <span class="keyword">readonly</span> RecordReadState readState;
 
