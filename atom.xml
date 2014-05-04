@@ -4,7 +4,7 @@
   
   <link href="/atom.xml" rel="self"/>
   <link href="http://improve.dk/"/>
-  <updated>2014-04-30T19:44:24.113Z</updated>
+  <updated>2014-05-04T15:34:19.851Z</updated>
   <id>http://improve.dk/</id>
   
   <author>
@@ -19,7 +19,7 @@
     <link href="http://improve.dk/redirecting-old-permalinks-on-statically-generated-blogs/"/>
     <id>http://improve.dk/redirecting-old-permalinks-on-statically-generated-blogs/</id>
     <published>2014-04-20T23:56:12.000Z</published>
-    <updated>2014-04-30T19:14:52.000Z</updated>
+    <updated>2014-05-04T15:16:34.000Z</updated>
     <content type="html"><![CDATA[<p>Having <a href="/migrating-from-wordpress-to-hexo/">just migrated from Wordpress to Hexo</a>, I quickly realized I forgot something. I forgot to redirect my old permalinks to the new ones…</p>
 <h2 id="Permalinks_Aren’t_Necessarily_Permanent">Permalinks Aren’t Necessarily Permanent</h2>
 <p>A permalink ought to live for the duration of your content, and most importantly, never change. However, having been through a number of different blog engines, not all of them support the same permalink structures, and might not even support redirecting old ones. As such, throgh the years my posts have ended up with multiple permalinks:</p>
@@ -40,54 +40,54 @@
 <h2 id="Static_Woes">Static Woes</h2>
 <p>Since I’ve migrated to <a href="http://hexo.io" target="_blank">Hexo</a> it’s not as simple, unfortunately. I no longer host my site on Apache, but on <a href="https://pages.github.com/" target="_blank">GitHub Pages</a>. GitHub Pages only allow static files to be served, so I’m no longer able to utilize the .htaccess rewriting rules. There’s also no server-side functionality available, so I can’t even manually send out a 302-redirect, needed to preserve my incoming links SEO value.</p>
 <p>What I ended up doing was to write a small script that would parse my Wordpress backup file and then recreate the /blog/ and /archive/ directories, as if the posts were actually stored there:</p>
-<figure class="highlight csharp"><pre><span class="built_in">string</span> template <span class="subst">=</span> @<span class="string">"layout: false
+<figure class="highlight cs"><pre><span class="keyword">string</span> template = <span class="string">@"layout: false
 ---
 &lt;!DOCTYPE html&gt;
 &lt;html&gt;
 	&lt;head&gt;
 		&lt;title&gt;Redirecting to [Title]&lt;/title&gt;
-  		&lt;link rel="</span><span class="string">"canonical"</span><span class="string">" href="</span><span class="string">"[Permalink]"</span><span class="string">"/&gt;
-		&lt;meta http-equiv="</span><span class="string">"content-type"</span><span class="string">" content="</span><span class="string">"text/html; charset=utf-8"</span><span class="string">" /&gt;
-		&lt;meta http-equiv="</span><span class="string">"refresh"</span><span class="string">" content="</span><span class="string">"0;url=[Permalink]"</span><span class="string">" /&gt;
+  		&lt;link rel=""canonical"" href=""[Permalink]""/&gt;
+		&lt;meta http-equiv=""content-type"" content=""text/html; charset=utf-8"" /&gt;
+		&lt;meta http-equiv=""refresh"" content=""0;url=[Permalink]"" /&gt;
 	&lt;/head&gt;
 	&lt;body&gt;
-		Redirecting to &lt;a href="</span><span class="string">"[Permalink]"</span><span class="string">"&gt;[Title]&lt;/a&gt;...
+		Redirecting to &lt;a href=""[Permalink]""&gt;[Title]&lt;/a&gt;...
 	&lt;/body&gt;
 &lt;/html&gt;"</span>;
 
-<span class="literal">void</span> Main()
+<span class="keyword">void</span> Main()
 {
-	<span class="built_in">var</span> outputPath <span class="subst">=</span> @<span class="string">"D:\Projects\improve.dk (GIT)\source\";
-	var xmlPath = @"</span>D:<span class="subst">\</span>Projects<span class="subst">\</span>improve<span class="built_in">.</span>dk (GIT)<span class="subst">\</span>marksrasmussen<span class="attribute">-blog</span><span class="built_in">.</span>wordpress<span class="number">.2014</span><span class="subst">-</span><span class="number">03</span><span class="subst">-</span><span class="number">08.</span><span class="built_in">xml</span><span class="string">";
-	var xml = File.ReadAllText(xmlPath);
-	var xd = new XmlDocument();
+	<span class="keyword">var</span> outputPath = <span class="string">@"D:\Projects\improve.dk (GIT)\source\"</span>;
+	<span class="keyword">var</span> xmlPath = <span class="string">@"D:\Projects\improve.dk (GIT)\marksrasmussen-blog.wordpress.2014-03-08.xml"</span>;
+	<span class="keyword">var</span> xml = File.ReadAllText(xmlPath);
+	<span class="keyword">var</span> xd = <span class="keyword">new</span> XmlDocument();
 	xd.LoadXml(xml);
 	
-	var nsmgr = new XmlNamespaceManager(xd.NameTable);
-	nsmgr.AddNamespace("</span>content<span class="string">", "</span>http:<span class="comment">//purl.org/rss/1.0/modules/content/");</span>
-	nsmgr<span class="built_in">.</span>AddNamespace(<span class="string">"wp"</span>, <span class="string">"http://wordpress.org/export/1.2/"</span>);
+	<span class="keyword">var</span> nsmgr = <span class="keyword">new</span> XmlNamespaceManager(xd.NameTable);
+	nsmgr.AddNamespace(<span class="string">"content"</span>, <span class="string">"http://purl.org/rss/1.0/modules/content/"</span>);
+	nsmgr.AddNamespace(<span class="string">"wp"</span>, <span class="string">"http://wordpress.org/export/1.2/"</span>);
 	
-	foreach (XmlNode item <span class="keyword">in</span> xd<span class="built_in">.</span>SelectNodes(<span class="string">"//item"</span>))
+	<span class="keyword">foreach</span> (XmlNode item <span class="keyword">in</span> xd.SelectNodes(<span class="string">"//item"</span>))
 	{
-		<span class="built_in">var</span> title <span class="subst">=</span> item<span class="built_in">.</span>SelectSingleNode(<span class="string">"title"</span>)<span class="built_in">.</span>InnerText;
-		<span class="built_in">var</span> <span class="built_in">date</span> <span class="subst">=</span> Convert<span class="built_in">.</span>ToDateTime(item<span class="built_in">.</span>SelectSingleNode(<span class="string">"pubDate"</span>)<span class="built_in">.</span>InnerText);
-		<span class="built_in">var</span> slug <span class="subst">=</span> item<span class="built_in">.</span>SelectSingleNode(<span class="string">"wp:post_name"</span>, nsmgr)<span class="built_in">.</span>InnerText;
+		<span class="keyword">var</span> title = item.SelectSingleNode(<span class="string">"title"</span>).InnerText;
+		<span class="keyword">var</span> date = Convert.ToDateTime(item.SelectSingleNode(<span class="string">"pubDate"</span>).InnerText);
+		<span class="keyword">var</span> slug = item.SelectSingleNode(<span class="string">"wp:post_name"</span>, nsmgr).InnerText;
 		
-		<span class="built_in">var</span> indexHtml <span class="subst">=</span> template
-			<span class="built_in">.</span>Replace(<span class="string">"[Permalink]"</span>, <span class="string">"http://improve.dk/"</span> <span class="subst">+</span> slug <span class="subst">+</span> <span class="string">"/"</span>)
-			<span class="built_in">.</span>Replace(<span class="string">"[Title]"</span>, HttpUtility<span class="built_in">.</span>HtmlEncode(title));
+		<span class="keyword">var</span> indexHtml = template
+			.Replace(<span class="string">"[Permalink]"</span>, <span class="string">"http://improve.dk/"</span> + slug + <span class="string">"/"</span>)
+			.Replace(<span class="string">"[Title]"</span>, HttpUtility.HtmlEncode(title));
 		
 		<span class="comment">// First create the /archive/ entry</span>
-		<span class="built_in">var</span> outputFolder <span class="subst">=</span> Path<span class="built_in">.</span>Combine(outputPath, <span class="string">"archive"</span>, <span class="built_in">date</span><span class="built_in">.</span>Year<span class="built_in">.</span>ToString(), <span class="built_in">date</span><span class="built_in">.</span>Month<span class="built_in">.</span>ToString()<span class="built_in">.</span>PadLeft(<span class="number">2</span>, <span class="string">'0'</span>), <span class="built_in">date</span><span class="built_in">.</span>Day<span class="built_in">.</span>ToString()<span class="built_in">.</span>PadLeft(<span class="number">2</span>, <span class="string">'0'</span>), slug <span class="subst">+</span> <span class="string">".aspx"</span>);
-		<span class="built_in">var</span> indexPath <span class="subst">=</span> Path<span class="built_in">.</span>Combine(outputFolder, <span class="string">"index.html"</span>);
-		Directory<span class="built_in">.</span>CreateDirectory(outputFolder);
-		File<span class="built_in">.</span>WriteAllText(indexPath, indexHtml);
+		<span class="keyword">var</span> outputFolder = Path.Combine(outputPath, <span class="string">"archive"</span>, date.Year.ToString(), date.Month.ToString().PadLeft(<span class="number">2</span>, <span class="string">'0'</span>), date.Day.ToString().PadLeft(<span class="number">2</span>, <span class="string">'0'</span>), slug + <span class="string">".aspx"</span>);
+		<span class="keyword">var</span> indexPath = Path.Combine(outputFolder, <span class="string">"index.html"</span>);
+		Directory.CreateDirectory(outputFolder);
+		File.WriteAllText(indexPath, indexHtml);
 		
 		<span class="comment">// Then the /blog/ entry</span>
-		outputFolder <span class="subst">=</span> Path<span class="built_in">.</span>Combine(outputPath, <span class="string">"blog"</span>, <span class="built_in">date</span><span class="built_in">.</span>Year<span class="built_in">.</span>ToString(), <span class="built_in">date</span><span class="built_in">.</span>Month<span class="built_in">.</span>ToString()<span class="built_in">.</span>PadLeft(<span class="number">2</span>, <span class="string">'0'</span>), <span class="built_in">date</span><span class="built_in">.</span>Day<span class="built_in">.</span>ToString()<span class="built_in">.</span>PadLeft(<span class="number">2</span>, <span class="string">'0'</span>), slug);
-		indexPath <span class="subst">=</span> Path<span class="built_in">.</span>Combine(outputFolder, <span class="string">"index.html"</span>);
-		Directory<span class="built_in">.</span>CreateDirectory(outputFolder);
-		File<span class="built_in">.</span>WriteAllText(indexPath, indexHtml);
+		outputFolder = Path.Combine(outputPath, <span class="string">"blog"</span>, date.Year.ToString(), date.Month.ToString().PadLeft(<span class="number">2</span>, <span class="string">'0'</span>), date.Day.ToString().PadLeft(<span class="number">2</span>, <span class="string">'0'</span>), slug);
+		indexPath = Path.Combine(outputFolder, <span class="string">"index.html"</span>);
+		Directory.CreateDirectory(outputFolder);
+		File.WriteAllText(indexPath, indexHtml);
 	}
 }
 </pre></figure>
