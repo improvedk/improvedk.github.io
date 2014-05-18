@@ -4,7 +4,7 @@
   
   <link href="/atom.xml" rel="self"/>
   <link href="http://improve.dk/"/>
-  <updated>2014-05-04T15:58:36.690Z</updated>
+  <updated>2014-05-18T15:32:28.672Z</updated>
   <id>http://improve.dk/</id>
   
   <author>
@@ -15,11 +15,36 @@
   <generator uri="http://zespia.tw/hexo/">Hexo</generator>
   
   <entry>
+    <title><![CDATA[Presenting at Microsoft DevCon 2014]]></title>
+    <link href="http://improve.dk/presenting-at-microsoft-devcon-2014/"/>
+    <id>http://improve.dk/presenting-at-microsoft-devcon-2014/</id>
+    <published>2014-05-18T13:27:00.000Z</published>
+    <updated>2014-05-18T15:31:15.000Z</updated>
+    <content type="html"><![CDATA[<p>I’m happy to announce that I’ll be presenting at Microsoft DevCon 2014 in Russia!</p>
+<a id="more"></a>
+
+<div class="imgwrapper" style=""><div><a href="/presenting-at-microsoft-devcon-2014/devcon.png" class="fancy"><img src="/presenting-at-microsoft-devcon-2014/devcon.png" style="max-height: 250px"/></a></div></div>
+
+<p>While visiting Russia will be a first-time experience for me, the topic I’m presenting on is not. In just 30 minutes I will try to give an overview of not only how SQL Server stores data internally, but also how it keeps track of that data.</p>
+<h2 id="Full_Abstract">Full Abstract</h2>
+<blockquote>
+<p><strong>Understanding SQL Server Data Files at the Byte Level</strong></p>
+<p><em>Think SQL Server is magical? You’re right! However, there’s some sense to the magic, and that’s what I’ll show you in this level 500 deep dive session. I will walk you through the internal storage format of MDF files, how we might go about parsing a complete database ourselves, using nothing but a hex editor. I will cover how SQL Server stores its own internal metadata about objects, how it knows where to find your data on disk, and once it finds it, how to read it.</em></p>
+</blockquote>
+]]></content>
+    <summary type="html"><![CDATA[<p>I’m happy to announce that I’ll be presenting at Microsoft DevCon 2014 in Russia!</p>
+]]></summary>
+    
+      <category term="Conferences and Presenting" scheme="http://improve.dk/category/Conferences%20and%20Presenting/"/>
+    
+  </entry>
+  
+  <entry>
     <title><![CDATA[Redirecting Old Permalinks on Statically Generated Blogs]]></title>
     <link href="http://improve.dk/redirecting-old-permalinks-on-statically-generated-blogs/"/>
     <id>http://improve.dk/redirecting-old-permalinks-on-statically-generated-blogs/</id>
     <published>2014-04-20T23:56:12.000Z</published>
-    <updated>2014-05-04T15:58:12.000Z</updated>
+    <updated>2014-05-18T13:25:32.000Z</updated>
     <content type="html"><![CDATA[<p>Having <a href="/migrating-from-wordpress-to-hexo/">just migrated from Wordpress to Hexo</a>, I quickly realized I forgot something. I forgot to redirect my old permalinks to the new ones…</p>
 <h2 id="Permalinks_Aren’t_Necessarily_Permanent">Permalinks Aren’t Necessarily Permanent</h2>
 <p>A permalink ought to live for the duration of your content, and most importantly, never change. However, having been through a number of different blog engines, not all of them support the same permalink structures, and might not even support redirecting old ones. As such, throgh the years my posts have ended up with multiple permalinks:</p>
@@ -271,7 +296,7 @@ hexo.extend.filter.register(<span class="string">'pre'</span>, <span class="func
     <link href="http://improve.dk/sql-server-corruption-recovery-when-all-else-fails/"/>
     <id>http://improve.dk/sql-server-corruption-recovery-when-all-else-fails/</id>
     <published>2013-11-06T00:00:00.000Z</published>
-    <updated>2014-05-04T15:43:11.000Z</updated>
+    <updated>2014-05-18T13:25:32.000Z</updated>
     <content type="html"><![CDATA[<p>In this post I want to walk through a number of SQL Server corruption recovery techniques for when you’re out of luck, have no backups, and the usual methods don’t work. I’ll be using the <a href="http://msftdbprodsamples.codeplex.com/releases/view/93587" target="_blank">AdventureWorksLT2008R2 sample database</a> as my victim.</p>
 <a id="more"></a>
 
@@ -743,7 +768,7 @@ rows.Select(x =&gt; <span class="keyword">new</span> {
     <link href="http://improve.dk/corrupting-databases-purpose-using-orcamdf-corruptor/"/>
     <id>http://improve.dk/corrupting-databases-purpose-using-orcamdf-corruptor/</id>
     <published>2013-11-05T00:00:00.000Z</published>
-    <updated>2014-05-04T15:43:28.000Z</updated>
+    <updated>2014-05-18T13:25:32.000Z</updated>
     <content type="html"><![CDATA[<p>Sometimes you must first do evil, to do good. Such is the case when you want to hone your skills in corruption recovery of SQL Server databases.</p>
 <a id="more"></a>
 
@@ -794,7 +819,7 @@ Console.WriteLine(<span class="keyword">string</span>.Join(<span class="string">
     <link href="http://improve.dk/orcamdf-rawdatabase-a-swiss-army-knife-for-mdf-files/"/>
     <id>http://improve.dk/orcamdf-rawdatabase-a-swiss-army-knife-for-mdf-files/</id>
     <published>2013-11-04T00:00:00.000Z</published>
-    <updated>2014-05-04T15:43:16.000Z</updated>
+    <updated>2014-05-18T13:25:32.000Z</updated>
     <content type="html"><![CDATA[<p>When I initially started working on <a href="/introducing-orcamdf/">OrcaMDF</a> I had just one goal, to gain a deeper knowledge of MDF file internals than I could through most books available.</p>
 <a id="more"></a>
 
@@ -1012,7 +1037,7 @@ rows.Select(x =&gt; x[<span class="string">"name"</span>]).Dump();
     <link href="http://improve.dk/optimizing-performance-programmatically-setting-readonlysessionstate/"/>
     <id>http://improve.dk/optimizing-performance-programmatically-setting-readonlysessionstate/</id>
     <published>2013-10-08T00:00:00.000Z</published>
-    <updated>2014-05-04T15:43:18.000Z</updated>
+    <updated>2014-05-18T13:25:32.000Z</updated>
     <content type="html"><![CDATA[<p>One of the main culprits when it comes to ASP.NET concurrency is caused by the fact that default sesion state has been implemented using a pessimistic locking pattern. Basically, any standard handler, whether that be an ASPX page, a generic handler or an ASMX web service, goes through the following steps:</p>
 <a id="more"></a>
 
@@ -1140,7 +1165,7 @@ rows.Select(x =&gt; x[<span class="string">"name"</span>]).Dump();
     <link href="http://improve.dk/verifying-mailgun-webhooks/"/>
     <id>http://improve.dk/verifying-mailgun-webhooks/</id>
     <published>2013-09-23T00:00:00.000Z</published>
-    <updated>2014-05-04T15:43:07.000Z</updated>
+    <updated>2014-05-18T13:25:32.000Z</updated>
     <content type="html"><![CDATA[<p><a href="http://www.mailgun.com/" target="_blank">Mailgun</a> has a very neat feature that enables you to basically convert incoming emails to a POST request to a URL of your choice, also known as a webhook. Using this, you can easily have your application respond to email events. However, as this URL/service needs to be publically available, verifying Mailgun webhooks is very important, ensuring requests actually come from Mailgun, and not someone impersonating Mailgun.</p>
 <a id="more"></a>
 
@@ -1456,7 +1481,7 @@ Followup: MachineOwner
     <link href="http://improve.dk/orcamdf-is-now-available-on-nuget/"/>
     <id>http://improve.dk/orcamdf-is-now-available-on-nuget/</id>
     <published>2013-05-13T00:00:00.000Z</published>
-    <updated>2014-05-04T15:43:17.000Z</updated>
+    <updated>2014-05-18T13:25:32.000Z</updated>
     <content type="html"><![CDATA[<p>Thanks to Justin Dearing (<a href="http://www.justaprogrammer.net/" target="_blank">b</a>|<a href="https://twitter.com/zippy1981" target="_blank">t</a>), OrcaMDF is now available on <a href="https://www.nuget.org/packages/OrcaMDF.Core" target="_blank">NuGet</a>!</p>
 <a id="more"></a>
 
@@ -1798,7 +1823,7 @@ OS Thread Id: <span class="number">0x14930</span> (<span class="number">20</span
     <link href="http://improve.dk/debugging-in-production-part-3-thread-safe-dictionaries/"/>
     <id>http://improve.dk/debugging-in-production-part-3-thread-safe-dictionaries/</id>
     <published>2013-04-30T00:00:00.000Z</published>
-    <updated>2014-05-04T15:43:26.000Z</updated>
+    <updated>2014-05-18T13:25:32.000Z</updated>
     <content type="html"><![CDATA[<p><a href="/debugging-in-production-part-2-latent-race-condition-bugs">In part 2 we found out that the concurrent access to a generic dictionary triggered a race condition bug</a> that caused threads to get stuck at 100% CPU usage. In this part, I’ll show how easy it is to rewrite the code, using the new thread-safe dictionaries in .NET 4.0, so it’s protected from race condition bugs like the one I encountered.</p>
 <a id="more"></a>
 
@@ -1851,7 +1876,7 @@ OS Thread Id: <span class="number">0x14930</span> (<span class="number">20</span
     <link href="http://improve.dk/debugging-in-production-part-2-latent-race-condition-bugs/"/>
     <id>http://improve.dk/debugging-in-production-part-2-latent-race-condition-bugs/</id>
     <published>2013-04-15T00:00:00.000Z</published>
-    <updated>2014-05-04T15:43:26.000Z</updated>
+    <updated>2014-05-18T13:25:32.000Z</updated>
     <content type="html"><![CDATA[<p>Having <a href="/debugging-in-production-part-1-analyzing-100-cpu-usage-using-windbg">analyzed the process dump in part 1</a>, let’s take a look at the code we suspect of causing the issue, in particular how race condition bugs can be avoided.</p>
 <a id="more"></a>
 
@@ -1939,115 +1964,6 @@ OS Thread Id: <span class="number">0x14930</span> (<span class="number">20</span
 ]]></summary>
     
       <category term="SQL Server - Community" scheme="http://improve.dk/category/SQL%20Server%20-%20Community/"/>
-    
-  </entry>
-  
-  <entry>
-    <title><![CDATA[Debugging in Production Part 1 - Analyzing 100% CPU Usage Using Windbg]]></title>
-    <link href="http://improve.dk/debugging-in-production-part-1-analyzing-100-cpu-usage-using-windbg/"/>
-    <id>http://improve.dk/debugging-in-production-part-1-analyzing-100-cpu-usage-using-windbg/</id>
-    <published>2013-04-08T00:00:00.000Z</published>
-    <updated>2014-05-04T15:43:27.000Z</updated>
-    <content type="html"><![CDATA[<p>This is the story of how a simple oversight resulted in a tough to catch bug. As is often the case, it worked on my machine and only manifested itself in production on a live site. In this series we will look at analyzing 100% CPU usage using Windbg.</p>
-<a id="more"></a>
-
-
-<h2 id="The_Symptom">The Symptom</h2>
-<p>Some HTTP requests were being rejected by one of our servers with status 503 indicating that the request queue limit had been reached. Looking at the CPU usage, it was clear why this was happening.</p>
-<div class="imgwrapper" style=""><div><a href="/debugging-in-production-part-1-analyzing-100-cpu-usage-using-windbg/CPU-Usage.png" class="fancy"><img src="/debugging-in-production-part-1-analyzing-100-cpu-usage-using-windbg/CPU-Usage.png" style="max-height: 250px"/></a></div></div>
-
-<p>Initially I <em>fixed</em> the issue by issuing an iisreset, clearing the queue and getting back to normal. But when this started occurring on multiple servers at random times, I knew there was something odd going on.</p>
-<h2 id="Isolating_the_Server_and_Creating_a_Dump">Isolating the Server and Creating a Dump</h2>
-<p>To analyze what’s happening, I needed to debug the process on the server while it was going on. So I sat around and waited for the next server to act up, and sure enough, within a couple of hours another one of our servers seemed to be stuck at 100% CPU. Immediately I pulled it out of our load balancers so it wasn’t being served any new requests, allowing me to do my work without causing trouble for the end users.</p>
-<p>In server 2008 it’s quite easy to create a dump file. Simply fire up the task manager, right click the process and choose “Create Dump File”.</p>
-<div class="imgwrapper" style=""><div><a href="/debugging-in-production-part-1-analyzing-100-cpu-usage-using-windbg/Task-Manager.png" class="fancy"><img src="/debugging-in-production-part-1-analyzing-100-cpu-usage-using-windbg/Task-Manager.png" style="max-height: 250px"/></a></div></div>
-
-<p>Do note that task manager comes in both an x64 and an x86 version. If you run the x64 version and make a dump of an x86 process, it’ll still create an x64 dump, making it unusable. As such, make sure you use whatever task manager that matches the architecture of the process you want to dump. On an x64 machine (with Windows on the C: drive) you can find the x86 task manager here: C:\Windows\SysWOW64\taskmgr.exe. Note that you can’t run both at the same time, so make sure to close the x64 taskmgr.exe process before starting the x86 one.</p>
-<p>Once the dump has been created, a message will tell you the location of the .DMP file. This is roughly twice the size of the process at the time of the dump, so make sure you have enough space on your C: drive.</p>
-<div class="imgwrapper" style=""><div><a href="/debugging-in-production-part-1-analyzing-100-cpu-usage-using-windbg/Dump.png" class="fancy"><img src="/debugging-in-production-part-1-analyzing-100-cpu-usage-using-windbg/Dump.png" style="max-height: 250px"/></a></div></div>
-
-
-<h2 id="Finding_the_Root_Cause_Using_Windbg">Finding the Root Cause Using Windbg</h2>
-<p>Now that we have the dump, we can open it up in Windbg and look around. You’ll need to have Windbg installed in the correct version (it comes in both x86 and x64 versions). While Windbg can only officially be installed as part of the whole Windows SDK, Windbg itself is xcopy deploy-able, and is <a href="http://www.windbg.org/" target="_blank">available for download here</a>.</p>
-<p>To make things simple, I just run Windbg on the server itself. That way I won’t run into issues with differing CLR versions being installed on the machine, making debugging quite difficult.</p>
-<p>Once Windbg is running, press Ctrl+D and open the .DMP file.</p>
-<div class="imgwrapper" style=""><div><a href="/debugging-in-production-part-1-analyzing-100-cpu-usage-using-windbg/Windbg1.png" class="fancy"><img src="/debugging-in-production-part-1-analyzing-100-cpu-usage-using-windbg/Windbg1.png" style="max-height: 250px"/></a></div></div>
-
-<p>The first command you’ll want to execute is this:</p>
-<figure class="highlight"><pre><span class="change">!loadby sos clr</span>
-</pre></figure>
-
-<p>This loads in the <a href="http://msdn.microsoft.com/en-us/library/bb190764.aspx" target="_blank">Son of Strike extension</a> that contains a lot of useful methods for debugging .NET code.</p>
-<h3 id="Identifying_Runaway_Threads">Identifying Runaway Threads</h3>
-<p>As we seem to have a runaway code issue, let’s start out by issuing the following command:</p>
-<figure class="highlight"><pre><span class="change">!runaway</span>
-</pre></figure>
-
-<div class="imgwrapper" style=""><div><a href="/debugging-in-production-part-1-analyzing-100-cpu-usage-using-windbg/Windbg2.png" class="fancy"><img src="/debugging-in-production-part-1-analyzing-100-cpu-usage-using-windbg/Windbg2.png" style="max-height: 250px"/></a></div></div>
-
-<p>This lists all the threads as well as the time spent executing user mode code. When dealing with a 100% CPU issue, you’ll generally see  some threads chugging away all the time. In this case it’s easy to see that looking at just the top four threads, we’ve already spent over 20 (effective) minutes executing user mode code - these threads would probably be worth investigating.</p>
-<h3 id="Analyzing_CLR_Stacks">Analyzing CLR Stacks</h3>
-<p>Now that we’ve identified some of the most interesting threads, we can select them one by one like so:<p></p>
-<figure class="highlight"><pre>~Xs
-</pre></figure>
-
-<p>Switching X out with a thread number (e.g. 234, 232, 238, 259, 328, etc.) allows us to <em>select</em> the thread. Notice how the lower left corner indicates the currently selected thread:</p>
-<div class="imgwrapper" style=""><div><a href="/debugging-in-production-part-1-analyzing-100-cpu-usage-using-windbg/Windbg3.png" class="fancy"><img src="/debugging-in-production-part-1-analyzing-100-cpu-usage-using-windbg/Windbg3.png" style="max-height: 250px"/></a></div></div>
-
-<p>Once selected, we can see what the thread is currently doing by executing the following command:</p>
-<figure class="highlight"><pre><span class="change">!CLRStack</span>
-</pre></figure>
-
-<div class="imgwrapper" style=""><div><a href="/debugging-in-production-part-1-analyzing-100-cpu-usage-using-windbg/Windbg4.png" class="fancy"><img src="/debugging-in-production-part-1-analyzing-100-cpu-usage-using-windbg/Windbg4.png" style="max-height: 250px"/></a></div></div>
-
-<p>Looking at the top frame in the call stack, it seems the thread is stuck in the BCL Dictionary.FindEntry() method:</p>
-<figure class="highlight cs"><pre>System.Collections.Generic.Dictionary`<span class="number">2</span>[[System.Int16, mscorlib],[System.__Canon, mscorlib]].FindEntry(Int16)
-</pre></figure>
-
-<p>Tracing back just a few more frames, this seems to be invoked from the following user function:</p>
-<figure class="highlight cs"><pre>iPaper.BL.Backend.Modules.Paper.Settings.SettingDescriptionCache.GetAllDescriptions()
-</pre></figure>
-
-<p>Performing the same act for the top five threads yields a rather clear unanimous picture:</p>
-<figure class="highlight cs"><pre><span class="number">234</span>:
-System.Collections.Generic.Dictionary`<span class="number">2</span>[[System.Int16, mscorlib],[System.__Canon, mscorlib]].FindEntry(Int16)
-...
-iPaper.BL.Backend.Modules.Paper.Settings.SettingDescriptionCache.GetAllDescriptions(iPaper.BL.Backend.Infrastructure.PartnerConfiguration.IPartnerConfig)
-
-<span class="number">232</span>:
-System.Collections.Generic.Dictionary`<span class="number">2</span>[[System.Int16, mscorlib],[System.__Canon, mscorlib]].Insert(Int16, System.__Canon, Boolean)
-...
-iPaper.BL.Backend.Modules.Paper.Settings.SettingDescriptionCache.init(iPaper.BL.Backend.Infrastructure.PartnerConfiguration.IPartnerConfig)
-
-<span class="number">238</span>:
-System.Collections.Generic.Dictionary`<span class="number">2</span>[[System.Int16, mscorlib],[System.__Canon, mscorlib]].FindEntry(Int16)
-...
-iPaper.BL.Backend.Modules.Paper.Settings.SettingDescriptionCache.GetAllDescriptions(iPaper.BL.Backend.Infrastructure.PartnerConfiguration.IPartnerConfig)
-
-<span class="number">259</span>:
-System.Collections.Generic.Dictionary`<span class="number">2</span>[[System.Int16, mscorlib],[System.__Canon, mscorlib]].FindEntry(Int16)
-...
-iPaper.BL.Backend.Modules.Paper.Settings.SettingDescriptionCache.GetAllDescriptions(iPaper.BL.Backend.Infrastructure.PartnerConfiguration.IPartnerConfig)
-
-<span class="number">328</span>:
-System.Collections.Generic.Dictionary`<span class="number">2</span>[[System.Int16, mscorlib],[System.__Canon, mscorlib]].FindEntry(Int16)
-...
-iPaper.BL.Backend.Modules.Paper.Settings.SettingDescriptionCache.GetAllDescriptionsAsDictionary(iPaper.BL.Backend.Infrastructure.PartnerConfiguration.IPartnerConfig)
-</pre></figure>
-
-<p>Interestingly, all of the threads are stuck inside internal methods in the base class library Dictionary class. All of them are invoked from the user SettingDescriptionCache class, though from different methods.</p>
-<p>Stay tuned for <a href="/debugging-in-production-part-2-latent-race-condition-bugs/">part 2 where we’ll dive into the user code and determine what’s happening</a>!</p>
-]]></content>
-    <summary type="html"><![CDATA[<p>This is the story of how a simple oversight resulted in a tough to catch bug. As is often the case, it worked on my machine and only manifested itself in production on a live site. In this series we will look at analyzing 100% CPU usage using Windbg.</p>
-]]></summary>
-    
-      <category term=".NET" scheme="http://improve.dk/category/.NET/"/>
-    
-      <category term="IIS" scheme="http://improve.dk/category/IIS/"/>
-    
-      <category term="Tools of the Trade" scheme="http://improve.dk/category/Tools%20of%20the%20Trade/"/>
-    
-      <category term="Windbg" scheme="http://improve.dk/category/Windbg/"/>
     
   </entry>
   

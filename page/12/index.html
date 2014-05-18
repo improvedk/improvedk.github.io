@@ -82,6 +82,53 @@
 	<article>
 	<div class="datebox">
 		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">17</span>
+		</div>
+		<div class="lower">2010</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/miracle-openworld-2010-slides/" title="Miracle OpenWorld 2010 Slides" rel="bookmark">Miracle OpenWorld 2010 Slides</a></h1>
+		<div class="categories">
+			
+				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>After getting some well needed sleep following Miracle OpenWorld 2010 and adhering to the we-do-not-use-sleep rule, I’m finally starting to get on top again, though my body still aches all over.</p>
+<a id="more"></a>
+
+<p>As promised, you can download the slides from my presentations below.</p>
+<p><a href="Dissecting_PDF_Documents_1.pdf">Dissecting_PDF_Documents_1.pdf - Slides</a><br><a href="SQL_Azure_for_DBAs.pdf">SQL_Azure_for_DBAs.pdf - Slides</a></p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
 			<span class="month">Mar</span>
 			<span class="day">17</span>
 		</div>
@@ -1022,72 +1069,6 @@ namespace MyUrlRewriter
 <p>At this point you should be able to run the website with the exact same URL rewriting functionality as we had before - though this time in a redistributable assembly called MyUrlRewriter.dll which can easily be included into any website by adding a single line to the section of the web.config file.</p>
 <h2 id="Not_Invented_Here_Syndrome">Not Invented Here Syndrome</h2>
 <p>If you have basic requirements to your URL rewriting solution you may often be able to settle with one of the many readymade HttpModules that you can simply plug into your application. IIS 7 also has a <a href="http://learn.iis.net/page.aspx/461/creating-rewrite-rules-for-the-url-rewrite-module/" target="_blank">URL Rewrite Module</a> that you can install and easily configure through the IIS manager.</p>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Oct</span>
-			<span class="day">07</span>
-		</div>
-		<div class="lower">2009</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/simple-file-synchronization-using-robocopy/" title="Simple File Synchronization Using Robocopy" rel="bookmark">Simple File Synchronization Using Robocopy</a></h1>
-		<div class="categories">
-			
-				<a href="/category/Windows/">Windows</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>On numerous occations I’ve had a need for synchronizing directories of files &amp; subdirectories. I’ve used it for synchronizing work files from my stationary PC to my laptop in the pre-always-on era (today I use SVN for almost all files that needs to be in synch). Recently I needed to implement a very KISS backup solution that simply synchronized two directories once a week for offsite storing of the backup data.</p>
-<a id="more"></a>
-
-<p>While seemingly simple the only hitch was that there would be several thousands of files in binary format, so compression was out of the question. All changes would be additions and deletions - that is, no incremental updates. Finally I’d only have access to the files through a share so it wouldn’t be possible to deploy a local backup solution that monitored for changes and only sent diffs.</p>
-<p>I started out using <a href="http://www.tgrmn.com/web/file_synchronization.htm" target="_blank">ViceVersa PRO</a> with the <a href="http://www.tgrmn.com/web/vvengine/vvengine.htm" target="_blank">VVEngine</a> addon for scheduling. It worked great for some time although it wasn’t the most speedy solution given my scenario. Some time later ViceVersa stopped working. Apparently it was simply unable to handle more than a million files (give or take a bit). Their forums are filled with people asking for solutions, though the only suggestion they have is to split the backup job into several smaller jobs. Hence I started taking backups of MyShare/A<em>, MyShare/B</em>, etc. This quickly grew out of hand as the number of files increased.</p>
-<p>Sometime later I was introduced to <a href="http://technet.microsoft.com/en-us/library/cc733145(WS.10" target="_blank">Robocopy</a>.aspx). Robocopy ships with Vista, Win7 and Server 2008. For server 2003 and XP it can be downloaded as part of the<a href="http://www.microsoft.com/Downloads/details.aspx?FamilyID=9d467a69-57ff-4ae7-96ee-b18c4790cffd&amp;displaylang=en" target="_blank">Windows Server 2003 Resource Kit Tools</a>.</p>
-<p>Robocopy (Robust File Copy) does one job extremely well - it copies files. It’s run from the command line, though there has been made a <a href="http://technet.microsoft.com/en-us/magazine/2006.11.utilityspotlight.aspx" target="_blank">wrapper GUI</a> for it. The basic syntax for calling robocopy is:</p>
-<figure class="highlight"><pre>robocopy &lt;Source&gt; &lt;Destination&gt; [&lt;File&gt;[ <span class="keyword">...</span>]] [&lt;Options&gt;]
-</pre></figure>
-
-<p>You give it a source and a destination address and it’ll make sure all files &amp; directories from the source are copied to the destination. If an error occurs it’ll wait for 30 seconds (configurable) before retrying, and it’ll continue doing this a million times (configurable). That means robocopy will survive a network error and just resume the copying process once the network is back up again.</p>
-<p>What makes robocopy really shine is not it’s ability to copy files, but it’s ability to mirror one directory into another. That means it’ll not just copy files, it’ll also delete any extra files in the destination directory. In comparison to ViceVersa, robocopy goes through the directory structure in a linear fashion and in doing so doesn’t have any major requirements of memory. ViceVersa would initially scan the source and destination and then perform the comparison. As source and destination became larger and larger, more memory was required to perform the initial comparison - until a certain point where it’d just give up.</p>
-<p>I ended up with the following command for mirroring the directories using robocopy:</p>
-<figure class="highlight"><pre>robocopy <span class="command">\\</span>SourceServer<span class="command">\Share</span> <span class="command">\\</span>DestinationServer<span class="command">\Share</span> /MIR /FFT /Z /XA:H /W:5
-</pre></figure>
-
-<ul>
-<li>/MIR specifies that robocopy should mirror the source directory and the destination directory. Beware that this may delete files at the destination.</li>
-<li>/FFT uses fat file timing instead of NTFS. This means the granularity is a bit less precise. For across-network share operations this seems to be much more reliable - just don’t rely on the file timings to be completely precise to the second.</li>
-<li>/Z ensures robocopy can resume the transfer of a large file in mid-file instead of restarting.</li>
-<li>/XA:H makes robocopy ignore hidden files, usually these will be system files that we’re not interested in.</li>
-<li>/W:5 reduces the wait time between failures to 5 seconds instead of the 30 second default.</li>
-</ul>
-<p>The robocopy script can be setup as a simply Scheduled Task that runs daily, hourly, weekly etc. Note that robocopy also contains a switch that’ll make robocopy monitor the source for changes and invoke the synchronization script each time a configurable number of changes has been made. This may work in your scenario, but be aware that robocopy will not just copy the changes, it will scan the complete directory structure just like a normal mirroring procedure. If there’s a lot of files &amp; directories, this may hamper performance.</p>
 
 
 				<div style="clear: both"></div>

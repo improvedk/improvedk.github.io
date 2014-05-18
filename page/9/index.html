@@ -83,6 +83,159 @@
 	<div class="datebox">
 		<div class="upper">
 			<span class="month">Jul</span>
+			<span class="day">11</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/converting-between-base-2-10-and-16-in-t-sql/" title="Converting Between Base 2, 10 and 16 in T-SQL" rel="bookmark">Converting Between Base 2, 10 and 16 in T-SQL</a></h1>
+		<div class="categories">
+			
+				<a href="/category/SQL Server - Tricks/">SQL Server - Tricks</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>There are many <a href="http://en.wikipedia.org/wiki/List_of_numeral_systems" target="_blank">numeral systems</a>, the most common ones in computer science being <a href="http://en.wikipedia.org/wiki/Binary_numeral_system" target="_blank">binary</a> (base 2), <a href="http://en.wikipedia.org/wiki/Decimal" target="_blank">decimal</a> (base 10) and <a href="http://en.wikipedia.org/wiki/Hexadecimal" target="_blank">hexadecimal</a> (base 16). All numbers can be expressed in either system and you may now and then need to convert between them.</p>
+<a id="more"></a>
+
+<p>Take the number 493.202.384 as an example, it can be be expressed as either 0n493202384 in decimal, 0x1D65ABD0 in hexadecimal or 0b11101011001011010101111010000 in binary. Note how the 0n prefix declares a decimal value, 0x a hexadecimal and 0b a binary value.</p>
+<h2 id="Converting_using_Google">Converting using Google</h2>
+<p>If you’ve got an internet connection, the quickest and simplest way is often to just use Google. We can convert the above number using “in X” queries:</p>
+<p><a href="http://www.google.dk/search?sourceid=chrome&amp;ie=UTF-8&amp;q=493202384+in+hex" target="_blank">493202384 in hex</a><br><a href="http://www.google.dk/search?sourceid=chrome&amp;ie=UTF-8&amp;q=493202384+in+binary" target="_blank">493202384 in binary</a></p>
+<h2 id="Converting_using_Windows_Calculator">Converting using Windows Calculator</h2>
+<p>You can also open Windows Calculator, switch to the programmer mode and type in the decimal value (or the hex/binary value):</p>
+<div class="imgwrapper" style=""><div><a href="/converting-between-base-2-10-and-16-in-t-sql/image_25.png" class="fancy"><img src="/converting-between-base-2-10-and-16-in-t-sql/image_25.png" style="max-height: 250px"/></a></div></div>
+
+<p>And from then on we can just switch the numerical system selector to the left:</p>
+<div class="imgwrapper" style=""><div><a href="/converting-between-base-2-10-and-16-in-t-sql/image_43.png" class="fancy"><img src="/converting-between-base-2-10-and-16-in-t-sql/image_43.png" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/converting-between-base-2-10-and-16-in-t-sql/image_63.png" class="fancy"><img src="/converting-between-base-2-10-and-16-in-t-sql/image_63.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Converting_between_decimal_&amp;_hex_in_T-SQL">Converting between decimal &amp; hex in T-SQL</h2>
+<p>Sometimes however, it’s just a tad easier if we could do it directly from a T-SQL query. Converting between decimal and hexadecimal is straightforward and can be done using just built in functions:</p>
+<figure class="highlight sql"><pre><span class="comment">-- Decimal to hex</span>
+<span class="operator"><span class="keyword">SELECT</span> <span class="keyword">CAST</span>(<span class="number">493202384</span> <span class="keyword">AS</span> varbinary)
+
+-- Hex <span class="keyword">to</span> <span class="keyword">decimal</span>
+<span class="keyword">SELECT</span> <span class="keyword">CAST</span>(<span class="number">0x1D65ABD0</span> <span class="keyword">AS</span> <span class="keyword">int</span>)
+
+-- <span class="keyword">Decimal</span> <span class="keyword">to</span> hex <span class="keyword">to</span> <span class="keyword">decimal</span>
+<span class="keyword">SELECT</span> <span class="keyword">CAST</span>(<span class="keyword">CAST</span>(<span class="number">493202384</span> <span class="keyword">AS</span> varbinary) <span class="keyword">AS</span> <span class="keyword">int</span>)</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/converting-between-base-2-10-and-16-in-t-sql/image_84.png" class="fancy"><img src="/converting-between-base-2-10-and-16-in-t-sql/image_84.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Converting_binary_to_decimal_using_T-SQL">Converting binary to decimal using T-SQL</h2>
+<p>Converting to/from binary is a bit more tricky though, as there are no built in functions for formatting a decimal number as a binary string, nor converting the latter to the first.</p>
+<p>The following function takes in a binary string and returns a bigint with the decimal value:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> FUNCTION [dbo].[BinaryToDecimal]
+(
+	@<span class="keyword">Input</span> <span class="keyword">varchar</span>(<span class="number">255</span>)
+)
+RETURNS bigint
+<span class="keyword">AS</span>
+<span class="keyword">BEGIN</span>
+
+	<span class="keyword">DECLARE</span> @Cnt tinyint = <span class="number">1</span>
+	<span class="keyword">DECLARE</span> @Len tinyint = LEN(@<span class="keyword">Input</span>)
+	<span class="keyword">DECLARE</span> @<span class="keyword">Output</span> bigint = <span class="keyword">CAST</span>(SUBSTRING(@<span class="keyword">Input</span>, @Len, <span class="number">1</span>) <span class="keyword">AS</span> bigint)
+
+	WHILE(@Cnt &lt; @Len) <span class="keyword">BEGIN</span>
+		<span class="keyword">SET</span> @<span class="keyword">Output</span> = @<span class="keyword">Output</span> + POWER(<span class="keyword">CAST</span>(SUBSTRING(@<span class="keyword">Input</span>, @Len - @Cnt, <span class="number">1</span>) * <span class="number">2</span> <span class="keyword">AS</span> bigint), @Cnt)
+
+		<span class="keyword">SET</span> @Cnt = @Cnt + <span class="number">1</span>
+	<span class="keyword">END</span>
+
+	RETURN @<span class="keyword">Output</span>	
+
+<span class="keyword">END</span></span>
+</pre></figure>
+
+<p>The function looks at each char in the input string (starting from behind), adding POWER(2, @Cnt) to the result if the bit is set – with special handling of the first (that is, from behind) character since POWER(2, 0) is 1 while we need it to be 0.</p>
+<p>Usage is straight forward:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span> dbo.BinaryToDecimal(<span class="string">'11101011001011010101111010000'</span>)</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/converting-between-base-2-10-and-16-in-t-sql/image_182.png" class="fancy"><img src="/converting-between-base-2-10-and-16-in-t-sql/image_182.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Converting_decimal_to_binary_using_T-SQL">Converting decimal to binary using T-SQL</h2>
+<p>The following function takes a bigint as input and returns a varchar with the binary representation, using the <a href="http://www.wikihow.com/Convert-from-Decimal-to-Binary" target="_blank">short division by two with remainder</a> algorithm:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> FUNCTION [dbo].[DecimalToBinary]
+(
+	@<span class="keyword">Input</span> bigint
+)
+RETURNS <span class="keyword">varchar</span>(<span class="number">255</span>)
+<span class="keyword">AS</span>
+<span class="keyword">BEGIN</span>
+
+	<span class="keyword">DECLARE</span> @<span class="keyword">Output</span> <span class="keyword">varchar</span>(<span class="number">255</span>) = <span class="string">''</span>
+
+	WHILE @<span class="keyword">Input</span> &gt; <span class="number">0</span> <span class="keyword">BEGIN</span>
+
+		<span class="keyword">SET</span> @<span class="keyword">Output</span> = @<span class="keyword">Output</span> + <span class="keyword">CAST</span>((@<span class="keyword">Input</span> % <span class="number">2</span>) <span class="keyword">AS</span> <span class="keyword">varchar</span>)
+		<span class="keyword">SET</span> @<span class="keyword">Input</span> = @<span class="keyword">Input</span> / <span class="number">2</span>
+
+	<span class="keyword">END</span>
+
+	RETURN REVERSE(@<span class="keyword">Output</span>)
+
+<span class="keyword">END</span></span>
+</pre></figure>
+
+<p>Again usage is straight forward:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span> dbo.DecimalToBinary(<span class="number">493202384</span>)</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/converting-between-base-2-10-and-16-in-t-sql/image_123.png" class="fancy"><img src="/converting-between-base-2-10-and-16-in-t-sql/image_123.png" style="max-height: 250px"/></a></div></div>
+
+<h2 id="Ensuring_correctness">Ensuring correctness</h2>
+<p>A simple test to ensure correct conversions would be to convert from A to B and back to A again, using both of the above functions. Thus whatever we give as input should be the output as well:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span> dbo.DecimalToBinary(dbo.BinaryToDecimal(<span class="string">'11101011001011010101111010000'</span>))
+<span class="keyword">SELECT</span> dbo.BinaryToDecimal(dbo.DecimalToBinary(<span class="number">493202384</span>))</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/converting-between-base-2-10-and-16-in-t-sql/image_202.png" class="fancy"><img src="/converting-between-base-2-10-and-16-in-t-sql/image_202.png" style="max-height: 250px"/></a></div></div>
+
+<p>Et voilá! Once we have the functions, they can easily be used in a normal query:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	object_id,
+	<span class="keyword">CAST</span>(object_id <span class="keyword">AS</span> varbinary) <span class="keyword">AS</span> object_id_hex,
+	dbo.DecimalToBinary(object_id) <span class="keyword">AS</span> object_id_binary
+<span class="keyword">FROM</span>
+	sys.objects</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/converting-between-base-2-10-and-16-in-t-sql/image_162.png" class="fancy"><img src="/converting-between-base-2-10-and-16-in-t-sql/image_162.png" style="max-height: 250px"/></a></div></div>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
 			<span class="day">06</span>
 		</div>
 		<div class="lower">2011</div>
@@ -1107,78 +1260,6 @@ DBCC PAGE (Test, 1, 114, 3)
 <p>Which is probably enough for most wind measurements. Hopefully.</p>
 <p>For the larger values in the 500-2000 ranges, we can employ the same technique by multiplying by 10. This only gives us a single digit of precision, but allows for values in the –3,276.8 to 3,276.7 range, stored using just 2 bytes per column. Employing the same technique we could also store values between 0 and 2.55 in a single byte tinyint column, with a precision of two digits.</p>
 <p>Unless you really need to save those bytes, I wouldn’t recommend you do this as it’s usually better to store the full precision. However, this does show that we can store decimals in integer data types with a bit of math involved.</p>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">May</span>
-			<span class="day">24</span>
-		</div>
-		<div class="lower">2011</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/avoiding-page-splits-byhellip-splitting-pages/" title="Avoiding Page Splits By Splitting Pages" rel="bookmark">Avoiding Page Splits By Splitting Pages</a></h1>
-		<div class="categories">
-			
-				<a href="/category/SQL Server - Optimization/">SQL Server - Optimization</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>Continuing my review of my old database designs, I stumbled upon yet another mind numbing design decision. Back then, I’d just recently learned about the whole page split problem and how you should always use sequentially valued clustered keys.  </p>
-<a id="more"></a>
-
-<p>This specific table needed to track a number of views for a given entity, storing a reference to the entity and the time of the view. As I knew page splits where bad, I added a clustered index key like so:</p>
-<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> EntityViews
-(
-	ViewID <span class="keyword">int</span> <span class="keyword">identity</span> <span class="keyword">PRIMARY</span> <span class="keyword">KEY</span> CLUSTERED,
-	EntityID <span class="keyword">int</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span>,
-	Created datetime <span class="keyword">NOT</span> <span class="keyword">NULL</span>,
-	OtherData <span class="keyword">char</span>(<span class="number">20</span>)
-)</span>
-</pre></figure>
-
-<p>With a schema like this, insertions won’t cause fragmentation as they’ll follow the nice &amp; sequential ViewID identity value. However, I did realize that all of my queries would be using EntityID and Created as a predicate, reading most, if not all, of the columns. By clustering on ViewID, I’d have to scan the entire table for all queries. As that obviously wouldn’t be efficient, I added a nonclustered index:</p>
-<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> NONCLUSTERED INDEX IDX_EntityID_Created <span class="keyword">ON</span> EntityViews (EntityID, Created) INCLUDE (OtherData)</span>
-</pre></figure>
-
-<p>If you’re shaking your head by now, good. This index solved my querying issue as I could now properly seek my data using (WHERE EntityID = x AND Created BETWEEN y AND z) predicates. However, the nonclustered index contains all of my columns, including ViewID as that’s the referenced clustered key. And thus I’m storing all my data twice! My clustered index is neatly avoiding fragmentation, but my nonclustered index (that contains all the same data!) is experiencing the exact fragmentation issues that I originally wanted to avoid!</p>
-<p>Realizing this fact, the correct schema would’ve been:</p>
-<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> EntityViews
-(
-	EntityID <span class="keyword">int</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span>,
-	Created datetime <span class="keyword">NOT</span> <span class="keyword">NULL</span>,
-	OtherData <span class="keyword">char</span>(<span class="number">20</span>)
-)
-<span class="keyword">CREATE</span> CLUSTERED INDEX CX_EntityID_Created <span class="keyword">ON</span> EntityViews (EntityID, Created)</span>
-</pre></figure>
-
-<p>We save the surrogate key value bytes for each row and all the data is stored only once. There’s no need for secondary indexes as all the data is stored in the natural querying order. However, page splitting will occur as EntityID won’t be sequential. This is easily avoided by scheduling REINDEX &amp; REUBILD as appropriate.</p>
-<p>Furthermore, as the clustered key is sorted on Created secondarily, older non-fragmented data won’t be affected – it’ll only affect the most recently added pages, which are probably in memory anyways and thus won’t cause problems for querying.</p>
 
 
 				<div style="clear: both"></div>

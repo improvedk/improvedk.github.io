@@ -83,6 +83,107 @@
 	<div class="datebox">
 		<div class="upper">
 			<span class="month">Apr</span>
+			<span class="day">28</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/converting-page-pointers-into-a-human-readable-format/" title="Converting Page Pointers Into a Humanly Readable Format" rel="bookmark">Converting Page Pointers Into a Humanly Readable Format</a></h1>
+		<div class="categories">
+			
+				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I often like to spend my weekends perusing the sys.system_internals_allocation_units table, looking for the remnants of Frodo and his crew. In the sys.system_internals_allocation_units there are several references to relevant pages:</p>
+<a id="more"></a>
+
+
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">select</span>
+	first_page,
+	root_page,
+	first_iam_page
+<span class="keyword">from</span>
+	sys.system_internals_allocation_units</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/converting-page-pointers-into-a-human-readable-format/image_2.png" class="fancy"><img src="/converting-page-pointers-into-a-human-readable-format/image_2.png" style="max-height: 250px"/></a></div></div>
+
+<p>Once you get used to reading these pointers, it becomes rather trivial – byte swap the last two pointers to get the file ID (0 or 1 in all of the above rows), and byte swap the first four bytes to get the page ID. To make it a bit more easier for myself and for those who do not read HEX natively, I’ve made a simple function to convert the pointers into a more easily read format.</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">create</span> function getPageLocationFromPointer
+(
+	@Pointer binary(<span class="number">6</span>)
+)
+returns <span class="keyword">varchar</span>(<span class="number">17</span>)
+<span class="keyword">begin</span>
+
+	return 
+		<span class="string">'('</span> + 
+		<span class="keyword">cast</span>(
+			<span class="keyword">cast</span>(
+				substring(@Pointer, <span class="number">6</span>, <span class="number">1</span>) +
+				substring(@Pointer, <span class="number">5</span>, <span class="number">1</span>)
+				<span class="keyword">as</span> <span class="keyword">smallint</span>
+			) <span class="keyword">as</span> <span class="keyword">varchar</span>
+		) +
+		<span class="string">':'</span> +
+		<span class="keyword">cast</span>(
+			<span class="keyword">cast</span>(
+				substring(@Pointer, <span class="number">4</span>, <span class="number">1</span>) +
+				substring(@Pointer, <span class="number">3</span>, <span class="number">1</span>) +
+				substring(@Pointer, <span class="number">2</span>, <span class="number">1</span>) +
+				substring(@Pointer, <span class="number">1</span>, <span class="number">1</span>)
+				<span class="keyword">as</span> <span class="keyword">int</span>
+			) <span class="keyword">as</span> <span class="keyword">varchar</span>
+		) +
+		<span class="string">')'</span>
+
+<span class="keyword">end</span></span>
+</pre></figure>
+
+<p>While not beautiful, it is rather simple. The result:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">select</span>
+	first_page,
+	dbo.getPageLocationFromPointer(first_page) <span class="keyword">as</span> first_page_location,
+	root_page,
+	dbo.getPageLocationFromPointer(root_page) <span class="keyword">as</span> root_page_location,
+	first_iam_page,
+	dbo.getPageLocationFromPointer(first_iam_page) <span class="keyword">as</span> first_iam_page_location
+<span class="keyword">from</span>
+	sys.system_internals_allocation_units</span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/converting-page-pointers-into-a-human-readable-format/image_4.png" class="fancy"><img src="/converting-page-pointers-into-a-human-readable-format/image_4.png" style="max-height: 250px"/></a></div></div>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
 			<span class="day">26</span>
 		</div>
 		<div class="lower">2011</div>
@@ -1014,53 +1115,6 @@ namespace MailTest
 }
 </pre></figure>
 
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Apr</span>
-			<span class="day">17</span>
-		</div>
-		<div class="lower">2010</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/miracle-openworld-2010-slides/" title="Miracle OpenWorld 2010 Slides" rel="bookmark">Miracle OpenWorld 2010 Slides</a></h1>
-		<div class="categories">
-			
-				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>After getting some well needed sleep following Miracle OpenWorld 2010 and adhering to the we-do-not-use-sleep rule, I’m finally starting to get on top again, though my body still aches all over.</p>
-<a id="more"></a>
-
-<p>As promised, you can download the slides from my presentations below.</p>
-<p><a href="Dissecting_PDF_Documents_1.pdf">Dissecting_PDF_Documents_1.pdf - Slides</a><br><a href="SQL_Azure_for_DBAs.pdf">SQL_Azure_for_DBAs.pdf - Slides</a></p>
 
 
 				<div style="clear: both"></div>

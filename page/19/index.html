@@ -82,6 +82,184 @@
 	<article>
 	<div class="datebox">
 		<div class="upper">
+			<span class="month">Jun</span>
+			<span class="day">10</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/creating-a-dotnet-bootstrapped-installer-using-nsis/" title="Creating a .NET Bootstrapped Installer Using NSIS" rel="bookmark">Creating a .NET Bootstrapped Installer Using NSIS</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>If you have ever deployed .NET windows applications, you have without doubt tried the Visual Studio Install project type. The Install project will create .MSI install applications for you, they’re great for basic installations, but nothing more than that. The .NET bootstrapper is quite lacking, at times it won’t be able to find the framework download file as it’s changed it’s location, at other times it’s not able to download it. And finally, if it does determine that the user needs the framework, it’s shown in an ugly uncustomizable GUI.</p>
+<a id="more"></a>
+
+<p>I’ve looked for an alternative, I’d prefer not to pay for using some of the well established installers such as Wise, InstallShield, ActiveInstall and so forth. What I found is a remnant of WinAmp, the <a href="http://nsis.sourceforge.net/Main_Page" target="_blank">NSIS (Nullsoft Scriptable Install System) project</a>.</p>
+<p>NSIS is both free and open source and it’s very much community driven. There are a plethora of plugins available for all sorts of different tasks, and of course you can write your own plugins for special needs.</p>
+<p>I won’t delve too deeply into why you should choose NSIS over any of the competitors, instead I’ll show you a step by step guide of how to create an NSIS installer that bootstraps the .NET 2.0 framework as well as running custom install and uninstall actions in .NET code.</p>
+<p>You will need two tools. The first (and actually the only required tool) is NSIS itself: <a href="http://nsis.sourceforge.net/Main_Page" target="_blank">Download NSIS from nsis.sourceforge.net</a>. While you can edit the install script in any text editor, using an IDE like HM NIS Edit (HMNE) makes it a whole lot easier: <a href="http://hmne.sourceforge.net/" target="_blank">Download HMNE from hmne.sourceforge.net</a>.</p>
+<p>Let’s first create the simple application that we will be installing. It doesn’t really matter what it is, in this example I’ve made a single Windows Forms Application:</p>
+<div class="imgwrapper" style=""><div><a href="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_1_2.jpg" class="fancy"><img src="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Now let’s start up HMNE. Click File -&gt; New Script From Wizard. Fill in the relevant application date on the first page.</p>
+<div class="imgwrapper" style=""><div><a href="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_2_2.jpg" class="fancy"><img src="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_2_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>You may choose a custom icon for the installer, the default icon is an NSIS standard icon. You can also choose the resulting installation files name as well as it’s output location. If no location is specified, it will be outputted to the location that contains our script file. A great feature of NSIS is that it’s got localized versions for a lot of different languages built in, simply select the languages that the user should be able to select and the installer will automatically be localized. You can choose a couple of different GUIs, I personally prefer the Modern one. As for compression, in my tests the LZMA compression works the best, though compression time and CPU usage might be a factor for very large projects.</p>
+<div class="imgwrapper" style=""><div><a href="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_3_2.jpg" class="fancy"><img src="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_3_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Now you specify where you want your application to be installed, notice the general use of variables like $PROGRAMFILES, $NSISDIR, $INSTDIR and so forth. You can also optionally choose a license file that the user must accept to continue the installation.</p>
+<div class="imgwrapper" style=""><div><a href="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_4_2.jpg" class="fancy"><img src="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_4_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Now you can setup the actual files that will be installed as part of the project. You cannot select a whole project output as you can in the Visual Studio Install project, instead you must manually select the files that should be installed, usually from the Debug/Release directories of your project(s).</p>
+<div class="imgwrapper" style=""><div><a href="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_5_2.jpg" class="fancy"><img src="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_5_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Optionally you can select which links you want to be placed in the application program group in the start menu, if such one should be created at all.</p>
+<div class="imgwrapper" style=""><div><a href="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_6_2.jpg" class="fancy"><img src="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_6_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>When the installation is done, the user can choose to view the Readme file and/or start the application - that is, if you specify an application and/or a readme file.</p>
+<div class="imgwrapper" style=""><div><a href="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_7_2.jpg" class="fancy"><img src="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_7_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Finally we can choose to include an uninstaller, as well as specifying our custom uninstallation confirmation and report texts. If no custom text is specified, the default texts will be used.</p>
+<p>When the wizard finishes, make sure to click “Save script” and “Convert file paths to relative paths”.</p>
+<p>Finally the install script is made and ready to run. Press Ctrl+9 to compile the script. If everything succeeds, you’ll see the Setup.exe file in the same directory as the one where you saved the install script. I will not be going over the various commands and settings that are being set in the script, for that I strongly recommend the excellent built in help documents, as well as the <a href="http://forums.winamp.com/forumdisplay.php?s=&amp;forumid=65" target="_blank">WinAmp NSIS forums</a>. Instead I’ll focus on how to bootstrap the .NET Framework 2.0 and how to run custom install and uninstall actions.</p>
+<p>Add these three lines to the top of your nsi file, they include some functions that we will need:</p>
+<figure class="highlight nsi"><pre>; Script generated <span class="keyword">by</span> <span class="operator">the</span> HM NIS Edit Script Wizard.
+!<span class="built_in">include</span> WordFunc.nsh
+!insertmacro VersionCompare
+!<span class="built_in">include</span> LogicLib.nsh
+</pre></figure>
+
+<p>Add this line right above the .onInit function, it makes a variable (untyped) that’ll contain a Yes/No value, depending on whether we need to install the .NET Framework or not.</p>
+<figure class="highlight nsi"><pre><span class="keyword">Var</span> InstallDotNET
+</pre></figure>
+
+<p>Now modify the .onInit function so it matches the below, as well as adding the GetDotNETVersion function. First we ask the user what language they want to continue in (!insertmacro MUI_LANGDLL_DISPLAY). After that we initialize the InstallDotNET variable to “No”. Depending on the result of the GetDotNETVersion we tell the user that we need to install the framework, either because the user does not have the framework at all, or because the version is less than 2.0. We won’t actually install the framework yet, we’ll just remember whether we have to or not.</p>
+<figure class="highlight nsi"><pre>Function .onInit
+  !insertmacro MUI_LANGDLL_DISPLAY
+
+  ; Check .NET version
+  StrCpy <span class="variable">$InstallDotNET</span> <span class="string">"No"</span>
+  Call GetDotNETVersion
+  Pop <span class="variable">$0</span>
+
+  <span class="variable">${If}</span> <span class="variable">$0</span> == <span class="string">"not found"</span>
+        StrCpy <span class="variable">$InstallDotNET</span> <span class="string">"Yes"</span>
+  	MessageBox MB_OK|MB_ICONINFORMATION <span class="string">"<span class="subst">${PRODUCT_NAME}</span> requires that the .NET Framework 2.0 is installed. The .NET Framework will be downloaded and installed automatically during installation of <span class="subst">${PRODUCT_NAME}</span>."</span>
+   	Return
+  <span class="variable">${EndIf}</span>
+
+  StrCpy <span class="variable">$0</span> <span class="variable">$0</span> <span class="string">""</span> <span class="number">1</span> <span class="comment"># skip "v"</span>
+
+  <span class="variable">${VersionCompare}</span> <span class="variable">$0</span> <span class="string">"2.0"</span> <span class="variable">$1</span>
+  <span class="variable">${If}</span> <span class="variable">$1</span> == <span class="number">2</span>
+        StrCpy <span class="variable">$InstallDotNET</span> <span class="string">"Yes"</span>
+  	MessageBox MB_OK|MB_ICONINFORMATION <span class="string">"<span class="subst">${PRODUCT_NAME}</span> requires that the .NET Framework 2.0 is installed. The .NET Framework will be downloaded and installed automatically during installation of <span class="subst">${PRODUCT_NAME}</span>."</span>
+   	Return
+  <span class="variable">${EndIf}</span>
+FunctionEnd
+
+Function GetDotNETVersion
+	Push <span class="variable">$0</span>
+	Push <span class="variable">$1</span>
+
+	System::Call <span class="string">"mscoree::GetCORVersion(w .r0, i <span class="subst">${NSIS_MAX_STRLEN}</span>, <span class="variable">*i</span>) i .r1"</span>
+	StrCmp <span class="variable">$1</span> <span class="string">"error"</span> <span class="number">0</span> +<span class="number">2</span>
+	StrCpy <span class="variable">$0</span> <span class="string">"not found"</span>
+
+	Pop <span class="variable">$1</span>
+	Exch <span class="variable">$0</span>
+FunctionEnd
+</pre></figure>
+
+<p>Before we continue, you’ll have to <a href="http://nsis.sourceforge.net/Inetc_plug-in" target="_blank">install the InetC plugin</a>.</p>
+<p>Now find the “MainSection” section (depending on what you called it in the wizard).</p>
+<p>Modify the section so it looks like the below. Your file names and amount may vary, the primary part of our concern is the first part. It will test whether the $InstallDotNET variable implies that we have to install the framework. If it does, it’ll hide the usual GUI elements of the installer and start the download of the .NET Framework from any URL you specify, this could be the official download URL or a location you host yourself. If the user cancels the download we’ll delete the half-finished file and abort. Otherwise we’ll execute the dotnetfx.exe file and wait for it to complete (hence we’ll now have the .NET Framework 2.0). After having installed the framework we delete the dotnetfx.exe file again. Finally we show the GUI again.</p>
+<figure class="highlight nsi"><pre>Section <span class="string">"MainSection"</span> SEC01
+  SetOutPath <span class="string">"<span class="variable">$INSTDIR</span>"</span>
+  SetOverwrite ifnewer
+
+  ; Get .NET <span class="keyword">if</span> required
+  <span class="variable">${If}</span> <span class="variable">$InstallDotNET</span> == <span class="string">"Yes"</span>
+     SetDetailsView hide
+     inetc::get /caption <span class="string">"Downloading .NET Framework 2.0"</span> /canceltext <span class="string">"Cancel"</span> <span class="string">"http://www.url_of_the_dotnetfx.exe_file"</span> <span class="string">"<span class="variable">$INSTDIRdotnetfx</span>.exe"</span> /end
+     Pop <span class="variable">$1</span>
+
+     <span class="variable">${If}</span> <span class="variable">$1</span> != <span class="string">"OK"</span>
+           Delete <span class="string">"<span class="variable">$INSTDIRdotnetfx</span>.exe"</span>
+           Abort <span class="string">"Installation cancelled."</span>
+     <span class="variable">${EndIf}</span>
+
+     ExecWait <span class="string">"<span class="variable">$INSTDIRdotnetfx</span>.exe"</span>
+     Delete <span class="string">"<span class="variable">$INSTDIRdotnetfx</span>.exe"</span>
+
+     SetDetailsView show
+  <span class="variable">${EndIf}</span> 
+
+  File <span class="string">"InstallbinDebugInstall.exe"</span>
+
+  File <span class="string">"InstallbinDebugUninstall.exe"</span>
+
+  File <span class="string">"MyApplicationbinDebugMyApplication.exe"</span>
+  CreateDirectory <span class="string">"<span class="variable">$SMPROGRAMSMy</span> application"</span>
+  CreateShortCut <span class="string">"<span class="variable">$SMPROGRAMSMy</span> applicationMy application.lnk"</span> <span class="string">"<span class="variable">$INSTDIRMyApplication</span>.exe"</span>
+  CreateShortCut <span class="string">"<span class="variable">$DESKTOPMy</span> application.lnk"</span> <span class="string">"<span class="variable">$INSTDIRMyApplication</span>.exe"</span>
+SectionEnd
+</pre></figure>
+
+<p>Now comes the part where I’ll introduce our custom .NET install and uninstall actions. Create two new Console Application projects in the solution called Uninstall and Install, like the following:</p>
+<div class="imgwrapper" style=""><div><a href="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_9_2.jpg" class="fancy"><img src="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_9_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Add the below function to your code, it’ll run the Install.exe file after the installation has successfully completed:</p>
+<figure class="highlight nsi"><pre><span class="title">Function</span> .<span class="built_in">on</span>InstSuccess
+         ExecWait <span class="string">"<span class="variable">$InstDirInstall</span>.exe"</span>
+FunctionEnd
+</pre></figure>
+
+<p>Locate the “Section Uninstall” part and add the following line as the very first:</p>
+<figure class="highlight nsi"><pre>ExecWait <span class="string">"<span class="variable">$InstDirUninstall</span>.exe"</span>
+</pre></figure>
+
+<p>Make sure to add both Install.exe and Uninstall.exe to the list of files that will be installed, in the Main Section. It will run the Uninstall.exe application before anything else, and wait for it to finish before continuing. After it’s done we’ll delete all the installed files, including the Install and Uninstall.exe applications - remember to add those to file deletions manually, following the syntax of the other file deletions.</p>
+<p>Now press Ctrl+9 to build the installer, and look at it run in all of its awesomeness:</p>
+<div class="imgwrapper" style=""><div><a href="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_10_2.jpg" class="fancy"><img src="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_10_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_11_2.jpg" class="fancy"><img src="/creating-a-dotnet-bootstrapped-installer-using-nsis/nsis_11_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>After having downloaded the .NET Framework 2.0, it’ll start the .NET installer and run it through as usual, the installation will continue as soon as the .NET installer finishes. There is currently no check for whether the user cancels the .NET installation midways or if it fails. A simple check could be made right afterwards by simple calling the GetDotNETVersion function again like we did just before, if it fails, the user hasn’t installed .NET for some unknown reason and we’ll have to abort.</p>
+<p>You can see <a href="http://www.improve.dk/downloads/InstallScript.txt" target="_blank">my complete install script here</a>. Download and rename to *.nsi to compile it.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
 			<span class="month">Apr</span>
 			<span class="day">14</span>
 		</div>
@@ -1269,103 +1447,6 @@ namespace Enumerating_windows
 
 <p>And the result:</p>
 <div class="imgwrapper" style=""><div><a href="/enumerating-windows/win32_5_1_2.jpg" class="fancy"><img src="/enumerating-windows/win32_5_1_2.jpg" style="max-height: 250px"/></a></div></div>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Apr</span>
-			<span class="day">06</span>
-		</div>
-		<div class="lower">2007</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/sending-keypresses-to-a-window/" title="Sending Keypresses to a Window Using PInvoke" rel="bookmark">Sending Keypresses to a Window Using PInvoke</a></h1>
-		<div class="categories">
-			
-				<a href="/category/.NET/">.NET</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>Now to complete the toolset required to make a great spyware / browser hijacking application, we’ll make Internet Explorer navigate to the address we set.</p>
-<a id="more"></a>
-
-<p><a href="http://www.improve.dk/blog/2007/04/03/getting-text-from-handle" target="_blank">Like before</a>, open an Internet Explorer browser and obtain a handle to the address field.</p>
-<figure class="highlight cs"><pre><span class="keyword">using</span> System;
-<span class="keyword">using</span> System.Runtime.InteropServices;
-<span class="keyword">using</span> System.Globalization;
-
-namespace Sending_keypresses_to_a_window
-{
-	class Program
-	{
-		<span class="comment">// A Win32 constant</span>
-		<span class="keyword">const</span> <span class="keyword">int</span> WM_SETTEXT = <span class="number">0x000C</span>;
-		<span class="keyword">const</span> <span class="keyword">int</span> WM_KEYDOWN = <span class="number">0x0100</span>;
-		<span class="keyword">const</span> <span class="keyword">int</span> VK_RETURN  = <span class="number">0x0D</span>;
-
-		<span class="comment">// An overload of the SendMessage function, this time taking in a string as the lParam.</span>
-		[DllImport(<span class="string">"User32.dll"</span>)]
-		<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">extern</span> Int32 <span class="title">SendMessage</span>(<span class="keyword">int</span> hWnd, <span class="keyword">int</span> Msg, <span class="keyword">int</span> wParam, <span class="keyword">string</span> lParam);
-
-		<span class="comment">// PostMessage is very similar to SendMessage. They both send a message to the given</span>
-		<span class="comment">// handle / window, the difference being that SendMessage sends the message and waits</span>
-		<span class="comment">// for the window to "handle" the message and return a return code. PostMessage on the</span>
-		<span class="comment">// other hand simply posts the message and returns instantly, whether the window</span>
-		<span class="comment">// handles the message or not, we don't care.</span>
-		[DllImport(<span class="string">"User32.Dll"</span>)]
-		<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">extern</span> Int32 <span class="title">PostMessage</span>(<span class="keyword">int</span> hWnd, <span class="keyword">int</span> msg, <span class="keyword">int</span> wParam, <span class="keyword">int</span> lParam);
-
-		<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
-		{
-			<span class="comment">// First, read the handle from the console, remember this has to be in HEX format!</span>
-			<span class="keyword">int</span> handle = <span class="keyword">int</span>.Parse(Console.ReadLine(), NumberStyles.HexNumber);
-
-			<span class="comment">// Now we'll send the WM_SETTEXT message to the window, passing the text</span>
-			<span class="comment">// through the lParam parameter.</span>
-			SendMessage(handle, WM_SETTEXT, <span class="number">0</span>, <span class="string">"http://www.improve.dk"</span>);
-			Console.WriteLine(<span class="string">"Text set!"</span>);
-
-			<span class="comment">// Now send a message telling the Edit box that the Return key has been pressed,</span>
-			<span class="comment">// resulting in Internet Explorer navigating to the page.</span>
-			PostMessage(handle, WM_KEYDOWN, VK_RETURN, <span class="number">1</span>);
-			Console.WriteLine(<span class="string">"Return keypress sent!"</span>);
-
-			<span class="comment">// And we're done</span>
-			Console.Read();
-		}
-	}
-}
-</pre></figure>
-
-<p>And the result:</p>
-<div class="imgwrapper" style=""><div><a href="/sending-keypresses-to-a-window/win32_4_1_2.jpg" class="fancy"><img src="/sending-keypresses-to-a-window/win32_4_1_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/sending-keypresses-to-a-window/win32_4_2_2.jpg" class="fancy"><img src="/sending-keypresses-to-a-window/win32_4_2_2.jpg" style="max-height: 250px"/></a></div></div>
 
 
 				<div style="clear: both"></div>

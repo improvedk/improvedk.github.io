@@ -82,6 +82,59 @@
 	<article>
 	<div class="datebox">
 		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">18</span>
+		</div>
+		<div class="lower">2014</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/presenting-at-microsoft-devcon-2014/" title="Presenting at Microsoft DevCon 2014" rel="bookmark">Presenting at Microsoft DevCon 2014</a></h1>
+		<div class="categories">
+			
+				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I’m happy to announce that I’ll be presenting at Microsoft DevCon 2014 in Russia!</p>
+<a id="more"></a>
+
+<div class="imgwrapper" style=""><div><a href="/presenting-at-microsoft-devcon-2014/devcon.png" class="fancy"><img src="/presenting-at-microsoft-devcon-2014/devcon.png" style="max-height: 250px"/></a></div></div>
+
+<p>While visiting Russia will be a first-time experience for me, the topic I’m presenting on is not. In just 30 minutes I will try to give an overview of not only how SQL Server stores data internally, but also how it keeps track of that data.</p>
+<h2 id="Full_Abstract">Full Abstract</h2>
+<blockquote>
+<p><strong>Understanding SQL Server Data Files at the Byte Level</strong></p>
+<p><em>Think SQL Server is magical? You’re right! However, there’s some sense to the magic, and that’s what I’ll show you in this level 500 deep dive session. I will walk you through the internal storage format of MDF files, how we might go about parsing a complete database ourselves, using nothing but a hex editor. I will cover how SQL Server stores its own internal metadata about objects, how it knows where to find your data on disk, and once it finds it, how to read it.</em></p>
+</blockquote>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
 			<span class="month">Apr</span>
 			<span class="day">21</span>
 		</div>
@@ -1457,80 +1510,6 @@ rows.Select(x =&gt; x[<span class="string">"name"</span>]).Dump();
 </pre></figure>
 
 <p>And just like that, the first request has read+write access to the session state, while all subsequent requests only have read access, greatly increasing the concurrency of the handler.</p>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Sep</span>
-			<span class="day">23</span>
-		</div>
-		<div class="lower">2013</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/verifying-mailgun-webhooks/" title="Verifying Mailgun Webhooks" rel="bookmark">Verifying Mailgun Webhooks</a></h1>
-		<div class="categories">
-			
-				<a href="/category/.NET/">.NET</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p><a href="http://www.mailgun.com/" target="_blank">Mailgun</a> has a very neat feature that enables you to basically convert incoming emails to a POST request to a URL of your choice, also known as a webhook. Using this, you can easily have your application respond to email events. However, as this URL/service needs to be publically available, verifying Mailgun webhooks is very important, ensuring requests actually come from Mailgun, and not someone impersonating Mailgun.</p>
-<a id="more"></a>
-
-<p>The code required for verifying Mailgun forwards is very simple and doesn’t require much explanation:</p>
-<figure class="highlight cs"><pre><span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;summary&gt;</span></span>
-<span class="comment"><span class="xmlDocTag">///</span> Verifies that the signature matches the timestamp & token.</span>
-<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;/summary&gt;</span></span>
-<span class="comment"><span class="xmlDocTag">///</span> <span class="xmlDocTag">&lt;returns&gt;</span>True if the signature is valid, otherwise false.<span class="xmlDocTag">&lt;/returns&gt;</span></span>
-<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">VerifySignature</span>(<span class="keyword">string</span> key, <span class="keyword">int</span> timestamp, <span class="keyword">string</span> token, <span class="keyword">string</span> signature)
-{
-	<span class="keyword">var</span> encoding = Encoding.ASCII;
-	<span class="keyword">var</span> hmacSha256 = <span class="keyword">new</span> HMACSHA256(encoding.GetBytes(key));
-	<span class="keyword">var</span> cleartext = encoding.GetBytes(timestamp + token);
-	<span class="keyword">var</span> hash = hmacSha256.ComputeHash(cleartext);
-	<span class="keyword">var</span> computedSignature = BitConverter.ToString(hash).Replace(<span class="string">"-"</span>, <span class="string">""</span>).ToLower();
-
-	<span class="keyword">return</span> computedSignature == signature;
-}
-</pre></figure>
-
-<p>Use sample:</p>
-<figure class="highlight cs"><pre><span class="comment">// All these values are provided by the Mailgun request</span>
-<span class="keyword">var</span> key = <span class="string">"key-x3ifab7xngqxep7923iuab251q5vhox0"</span>;
-<span class="keyword">var</span> timestamp = <span class="number">1568491354</span>;
-<span class="keyword">var</span> token = <span class="string">"asdoij2893dm98m2x0a9sdkf09k423cdm"</span>;
-<span class="keyword">var</span> signature = <span class="string">"AF038C73E912A830FFC830239ABFF"</span>;
-
-<span class="comment">// Verify if request is valid</span>
-<span class="keyword">bool</span> isValid = VerifySignature(key, timestamp, token, signature);
-</pre></figure>
-
-<p>As the <a href="http://documentation.mailgun.com/user_manual.html#securing-webhooks" target="_blank">manual says</a> you simply need to calculate a SHA256 HMAC of the concatenated timestamp and token values, after which you can verify that it matches the Mailgun provided signature. The key is the private API key, retrievable from the Mailgun control panel.</p>
 
 
 				<div style="clear: both"></div>
