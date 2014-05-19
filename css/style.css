@@ -830,209 +830,245 @@ article .highlight td {
   border: none;
   padding: 0;
 }
-figure.csharp pre .comment,
+figure.cs pre .comment,
 figure.sql pre .comment,
 figure.js pre .comment,
 figure.xml pre .comment,
 figure.html pre .comment {
   color: #090;
 }
-figure.csharp pre .title,
+figure.cs pre .title,
 figure.sql pre .title,
 figure.js pre .title,
 figure.xml pre .title,
 figure.html pre .title {
   color: #555;
 }
-figure.csharp pre .variable,
+figure.cs pre .variable,
 figure.sql pre .variable,
 figure.js pre .variable,
 figure.xml pre .variable,
 figure.html pre .variable,
-figure.csharp pre .attribute,
+figure.cs pre .attribute,
 figure.sql pre .attribute,
 figure.js pre .attribute,
 figure.xml pre .attribute,
 figure.html pre .attribute,
-figure.csharp pre .tag,
+figure.cs pre .tag,
 figure.sql pre .tag,
 figure.js pre .tag,
 figure.xml pre .tag,
 figure.html pre .tag,
-figure.csharp pre .regexp,
+figure.cs pre .regexp,
 figure.sql pre .regexp,
 figure.js pre .regexp,
 figure.xml pre .regexp,
 figure.html pre .regexp,
-figure.csharp pre .ruby .constant,
+figure.cs pre .ruby .constant,
 figure.sql pre .ruby .constant,
 figure.js pre .ruby .constant,
 figure.xml pre .ruby .constant,
 figure.html pre .ruby .constant,
-figure.csharp pre .xml .tag .title,
+figure.cs pre .xml .tag .title,
 figure.sql pre .xml .tag .title,
 figure.js pre .xml .tag .title,
 figure.xml pre .xml .tag .title,
 figure.html pre .xml .tag .title,
-figure.csharp pre .xml .pi,
+figure.cs pre .xml .pi,
 figure.sql pre .xml .pi,
 figure.js pre .xml .pi,
 figure.xml pre .xml .pi,
 figure.html pre .xml .pi,
-figure.csharp pre .xml .doctype,
+figure.cs pre .xml .doctype,
 figure.sql pre .xml .doctype,
 figure.js pre .xml .doctype,
 figure.xml pre .xml .doctype,
 figure.html pre .xml .doctype,
-figure.csharp pre .html .doctype,
+figure.cs pre .html .doctype,
 figure.sql pre .html .doctype,
 figure.js pre .html .doctype,
 figure.xml pre .html .doctype,
 figure.html pre .html .doctype,
-figure.csharp pre .css .id,
+figure.cs pre .css .id,
 figure.sql pre .css .id,
 figure.js pre .css .id,
 figure.xml pre .css .id,
 figure.html pre .css .id,
-figure.csharp pre .css .class,
+figure.cs pre .css .class,
 figure.sql pre .css .class,
 figure.js pre .css .class,
 figure.xml pre .css .class,
 figure.html pre .css .class,
-figure.csharp pre .css .pseudo,
+figure.cs pre .css .pseudo,
 figure.sql pre .css .pseudo,
 figure.js pre .css .pseudo,
 figure.xml pre .css .pseudo,
 figure.html pre .css .pseudo {
   color: #f2777a;
 }
-figure.csharp pre .number,
+figure.cs pre .number,
 figure.sql pre .number,
 figure.js pre .number,
 figure.xml pre .number,
 figure.html pre .number,
-figure.csharp pre .literal,
+figure.cs pre .literal,
 figure.sql pre .literal,
 figure.js pre .literal,
 figure.xml pre .literal,
 figure.html pre .literal,
-figure.csharp pre .params,
+figure.cs pre .params,
 figure.sql pre .params,
 figure.js pre .params,
 figure.xml pre .params,
 figure.html pre .params,
-figure.csharp pre .constant,
+figure.cs pre .constant,
 figure.sql pre .constant,
 figure.js pre .constant,
 figure.xml pre .constant,
 figure.html pre .constant,
-figure.csharp pre .string,
+figure.cs pre .string,
 figure.sql pre .string,
 figure.js pre .string,
 figure.xml pre .string,
 figure.html pre .string,
-figure.csharp pre .value,
+figure.cs pre .value,
 figure.sql pre .value,
 figure.js pre .value,
 figure.xml pre .value,
 figure.html pre .value,
-figure.csharp pre .inheritance,
+figure.cs pre .inheritance,
 figure.sql pre .inheritance,
 figure.js pre .inheritance,
 figure.xml pre .inheritance,
 figure.html pre .inheritance,
-figure.csharp pre .header,
+figure.cs pre .header,
 figure.sql pre .header,
 figure.js pre .header,
 figure.xml pre .header,
 figure.html pre .header,
-figure.csharp pre .ruby .symbol,
+figure.cs pre .ruby .symbol,
 figure.sql pre .ruby .symbol,
 figure.js pre .ruby .symbol,
 figure.xml pre .ruby .symbol,
 figure.html pre .ruby .symbol,
-figure.csharp pre .xml .cdata,
+figure.cs pre .xml .cdata,
 figure.sql pre .xml .cdata,
 figure.js pre .xml .cdata,
 figure.xml pre .xml .cdata,
 figure.html pre .xml .cdata {
   color: #FF0000;
 }
-figure.csharp pre .class,
+figure.cs pre .class,
 figure.sql pre .class,
 figure.js pre .class,
 figure.xml pre .class,
 figure.html pre .class,
-figure.csharp pre .ruby .class .title,
+figure.cs pre .ruby .class .title,
 figure.sql pre .ruby .class .title,
 figure.js pre .ruby .class .title,
 figure.xml pre .ruby .class .title,
 figure.html pre .ruby .class .title,
-figure.csharp pre .css .rules .attribute,
+figure.cs pre .css .rules .attribute,
 figure.sql pre .css .rules .attribute,
 figure.js pre .css .rules .attribute,
 figure.xml pre .css .rules .attribute,
 figure.html pre .css .rules .attribute {
   color: #9c9;
 }
-figure.csharp pre .css .hexcolor,
+figure.cs pre .css .hexcolor,
 figure.sql pre .css .hexcolor,
 figure.js pre .css .hexcolor,
 figure.xml pre .css .hexcolor,
 figure.html pre .css .hexcolor {
   color: #6cc;
 }
-figure.csharp pre .function,
+figure.cs pre .function,
 figure.sql pre .function,
 figure.js pre .function,
 figure.xml pre .function,
 figure.html pre .function,
-figure.csharp pre .python .decorator,
+figure.cs pre .python .decorator,
 figure.sql pre .python .decorator,
 figure.js pre .python .decorator,
 figure.xml pre .python .decorator,
 figure.html pre .python .decorator,
-figure.csharp pre .python .title,
+figure.cs pre .python .title,
 figure.sql pre .python .title,
 figure.js pre .python .title,
 figure.xml pre .python .title,
 figure.html pre .python .title,
-figure.csharp pre .ruby .function .title,
+figure.cs pre .ruby .function .title,
 figure.sql pre .ruby .function .title,
 figure.js pre .ruby .function .title,
 figure.xml pre .ruby .function .title,
 figure.html pre .ruby .function .title,
-figure.csharp pre .ruby .title .keyword,
+figure.cs pre .ruby .title .keyword,
 figure.sql pre .ruby .title .keyword,
 figure.js pre .ruby .title .keyword,
 figure.xml pre .ruby .title .keyword,
 figure.html pre .ruby .title .keyword,
-figure.csharp pre .perl .sub,
+figure.cs pre .perl .sub,
 figure.sql pre .perl .sub,
 figure.js pre .perl .sub,
 figure.xml pre .perl .sub,
 figure.html pre .perl .sub,
-figure.csharp pre .javascript .title,
+figure.cs pre .javascript .title,
 figure.sql pre .javascript .title,
 figure.js pre .javascript .title,
 figure.xml pre .javascript .title,
 figure.html pre .javascript .title,
-figure.csharp pre .coffeescript .title,
+figure.cs pre .coffeescript .title,
 figure.sql pre .coffeescript .title,
 figure.js pre .coffeescript .title,
 figure.xml pre .coffeescript .title,
 figure.html pre .coffeescript .title {
   color: #69c;
 }
-figure.csharp pre .keyword,
+figure.cs pre .keyword,
 figure.sql pre .keyword,
 figure.js pre .keyword,
 figure.xml pre .keyword,
 figure.html pre .keyword,
-figure.csharp pre .javascript .function,
+figure.cs pre .javascript .function,
 figure.sql pre .javascript .function,
 figure.js pre .javascript .function,
 figure.xml pre .javascript .function,
 figure.html pre .javascript .function {
   color: #00F;
+}
+/*** Print styles ***/
+@media print {
+  header {
+    display: none;
+  }
+  #asides {
+    display: none;
+  }
+  div.datebox {
+    display: none;
+  }
+  #postsharing {
+    display: none;
+  }
+  footer {
+    display: none;
+  }
+  div.categories,
+  div.comments {
+    display: none;
+  }
+  #content,
+  #bodywrapper,
+  div.title {
+    margin: 0 !important;
+    border: 0 !important;
+  }
+  article {
+    margin-bottom: 60px;
+  }
+  pre {
+    overflowv: visible !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+  }
 }
