@@ -89,6 +89,131 @@
 	</div>
 
 	<div class="title">
+		<h1><a href="/enumerating-windows/" title="Enumerating Windows Using PInvoke" rel="bookmark">Enumerating Windows Using PInvoke</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Until now we’ve seen how to retrieve basic properties of windows as well as how to interact with them by sending keypresses. Up until now we’ve had to find the handle by using Winspector or a similar program. This time I’ll present a way of finding the handles programmatically.</p>
+<a id="more"></a>
+
+
+<figure class="highlight cs"><pre><span class="keyword">using</span> System.Runtime.InteropServices;
+<span class="keyword">using</span> System.Text;
+<span class="keyword">using</span> System;
+
+namespace Enumerating_windows
+{
+	class Program
+	{
+		<span class="comment">// These are two Win32 constants that we'll need, they were explained in an earlier blog.</span>
+		<span class="keyword">const</span> <span class="keyword">int</span> WM_GETTEXT		= <span class="number">0x000D</span>;
+		<span class="keyword">const</span> <span class="keyword">int</span> WM_GETTEXTLENGTH	= <span class="number">0x000E</span>;
+
+		<span class="comment">// SendMessage overload.</span>
+		[DllImport(<span class="string">"User32.dll"</span>)]
+		<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">extern</span> Int32 <span class="title">SendMessage</span>(<span class="keyword">int</span> hWnd, <span class="keyword">int</span> Msg, <span class="keyword">int</span> wParam, <span class="keyword">int</span> lParam);
+
+		<span class="comment">// SendMessage overload.</span>
+		[DllImport(<span class="string">"User32.dll"</span>)]
+		<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">extern</span> Int32 <span class="title">SendMessage</span>(<span class="keyword">int</span> hWnd, <span class="keyword">int</span> Msg, <span class="keyword">int</span> wParam, StringBuilder lParam);
+
+		<span class="comment">// The GetClassName function takes a handle as a parameter as well as a StringBuilder</span>
+		<span class="comment">// and the max capacity of the StringBuilder as parameters. It'll return the windows</span>
+		<span class="comment">// class name by filling up the StringBuilder - though not any longer than the max capacity.</span>
+		<span class="comment">// If the class is longer than the max capacity it will simply be cropped. Having a larger</span>
+		<span class="comment">// capacity than necessary is simply a matter of performance.</span>
+		[DllImport(<span class="string">"User32.Dll"</span>)]
+		<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">extern</span> <span class="keyword">void</span> <span class="title">GetClassName</span>(<span class="keyword">int</span> hWnd, StringBuilder s, <span class="keyword">int</span> nMaxCount);
+
+		<span class="comment">// The EnumWindows function will enumerate all windows in the system. Each window will cause</span>
+		<span class="comment">// the PCallBack callback function to be called.</span>
+		[DllImport(<span class="string">"user32.Dll"</span>)]
+		<span class="keyword">static</span> <span class="keyword">extern</span> <span class="keyword">bool</span> EnumWindows(PCallBack callback, <span class="keyword">int</span> lParam);
+
+		<span class="comment">// This is the delegate that sets the signature for the callback function of the EnumWindows function.</span>
+		<span class="keyword">private</span> <span class="keyword">delegate</span> <span class="keyword">bool</span> <span class="title">PCallBack</span>(<span class="keyword">int</span> hwnd, <span class="keyword">int</span> lParam);
+
+		<span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
+		{
+			<span class="comment">// All we'll do is to invoke the EnumWindows function, passing in a new delegate specifying the EnumWindowsCallback</span>
+			<span class="comment">// function as the callback function. The lParam parameter can be used to send in an integer that will be passed</span>
+			<span class="comment">// onto the callback function unmodified. It's optional, but it may be useful in some situations.</span>
+			EnumWindows(<span class="keyword">new</span> PCallBack(EnumWindowsCallback), <span class="number">0</span>);
+
+			Console.Read();
+		}
+
+		<span class="comment">// This function will be called exactly once for each window the EnumWindows function finds. We have no idea what</span>
+		<span class="comment">// window / type of windows it'll get called for, so we'll have to identify the windows somehow. The lParam</span>
+		<span class="comment">// parameter contains the value we passed when we called the EnumWindows function.</span>
+		<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">EnumWindowsCallback</span>(<span class="keyword">int</span> handle, <span class="keyword">int</span> lParam)
+		{
+			<span class="comment">// First we'll find the class of the window as that is usually the parameter that narrows our search down the furthest.</span>
+			<span class="comment">// As classes are usually rather short, a capacity of 256 ought to be plenty.</span>
+			StringBuilder sbClass = <span class="keyword">new</span> StringBuilder(<span class="number">256</span>);
+			GetClassName(handle, sbClass, sbClass.Capacity);
+
+			<span class="comment">// As explained in an earlier blog we then get the text of the window.</span>
+			<span class="keyword">int</span> txtLength = SendMessage(handle, WM_GETTEXTLENGTH, <span class="number">0</span>, <span class="number">0</span>);
+			StringBuilder sbText = <span class="keyword">new</span> StringBuilder(txtLength + <span class="number">1</span>);
+			SendMessage(handle, WM_GETTEXT, sbText.Capacity, sbText);
+
+			<span class="comment">// Now we can write out the information we have on the window:</span>
+			Console.WriteLine(<span class="string">"Handle: "</span> + handle);
+			Console.WriteLine(<span class="string">"Class : "</span> + sbClass);
+			Console.WriteLine(<span class="string">"Text  : "</span> + sbText);
+			Console.WriteLine();
+
+			<span class="comment">// When we return true, the EnumWindows function will proceed to call the callback function with the next window.</span>
+			<span class="comment">// If we returned false, the EnumWindows function would stop and the callback function wouldn't get called again.</span>
+			<span class="comment">// This can be useful if we're looking for a specific window - once it's found we can just return false, no reason</span>
+			<span class="comment">// to handle any other windows.</span>
+			<span class="keyword">return</span> <span class="keyword">true</span>;
+		}
+	}
+}
+</pre></figure>
+
+<p>And the result:</p>
+<div class="imgwrapper" style=""><div><a href="/enumerating-windows/win32_5_1_2.jpg" class="fancy"><img src="/enumerating-windows/win32_5_1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
+			<span class="day">06</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
 		<h1><a href="/sending-keypresses-to-a-window/" title="Sending Keypresses to a Window Using PInvoke" rel="bookmark">Sending Keypresses to a Window Using PInvoke</a></h1>
 		<div class="categories">
 			
@@ -698,67 +823,6 @@ namespace Get_process_from_handle
 
 <p>My relationship:</p>
 <div class="imgwrapper" style=""><div><a href="/uml-love/relationtimeline_2.jpg" class="fancy"><img src="/uml-love/relationtimeline_2.jpg" style="max-height: 250px"/></a></div></div>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Feb</span>
-			<span class="day">14</span>
-		</div>
-		<div class="lower">2007</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/audi-tt/" title="Audi TT" rel="bookmark">Audi TT</a></h1>
-		<div class="categories">
-			
-				<a href="/category/Life/">Life</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>I’ve been asked quite a lot of times why I hadn’t put up any pictures of my new ride yet. There’s still a couple of things missing such as the Audi logos for the rims, at least I got the alarms installed yesterday, this is now officially the most secure car in Denmark, sporting a Viper 5000XL, Cobra CONNEX GPS/GSM tracker and a Credex VGS MK-III smoke machine :D</p>
-<a id="more"></a>
-
-<div class="imgwrapper" style=""><div><a href="/audi-tt/tt1_2.jpg" class="fancy"><img src="/audi-tt/tt1_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/audi-tt/tt2_2.jpg" class="fancy"><img src="/audi-tt/tt2_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/audi-tt/tt3_2.jpg" class="fancy"><img src="/audi-tt/tt3_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/audi-tt/tt4_2.jpg" class="fancy"><img src="/audi-tt/tt4_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/audi-tt/tt5_2.jpg" class="fancy"><img src="/audi-tt/tt5_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/audi-tt/tt6_2.jpg" class="fancy"><img src="/audi-tt/tt6_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<div class="imgwrapper" style=""><div><a href="/audi-tt/tt7_2.jpg" class="fancy"><img src="/audi-tt/tt7_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>Yes, those plates are mine :)</p>
-<div class="imgwrapper" style=""><div><a href="/audi-tt/tt9_2.jpg" class="fancy"><img src="/audi-tt/tt9_2.jpg" style="max-height: 250px"/></a></div></div>
 
 
 				<div style="clear: both"></div>

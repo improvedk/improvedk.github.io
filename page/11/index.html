@@ -82,6 +82,67 @@
 	<article>
 	<div class="datebox">
 		<div class="upper">
+			<span class="month">May</span>
+			<span class="day">03</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/my-pass-summit-2011-abstracts/" title="My PASS Summit 2011 Abstracts" rel="bookmark">My PASS Summit 2011 Abstracts</a></h1>
+		<div class="categories">
+			
+				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Last year I went on a marathon conference trip, starting out in LA at <a href="http://2010.max.adobe.com/" target="_blank">Adobe Max</a>, continuing on to <a href="http://qconsf.com/sf2010/" target="_blank">QCon</a> in San Francisco before finally ending up in lovely Seattle for the <a href="http://www.sqlpass.org/summit/na2010/" target="_blank">PASS Summit</a>.</p>
+<a id="more"></a>
+
+<div class="imgwrapper" style=""><div><a href="/my-pass-summit-2011-abstracts/71624_444201957306_724027306_5893683_5375463_n_2.jpg" class="fancy"><img src="/my-pass-summit-2011-abstracts/71624_444201957306_724027306_5893683_5375463_n_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Of the three, the one I’ll definitely be returning to this year is the PASS Summit. Last year I had the honor of getting a nice neon green “FIRST-TIMER” snippet on my badge, a snippet I wore with honor. This year however, I’m aiming for the Alumni snippet, and perhaps even the speaker snippet by submitting a couple of abstracts.</p>
+<p>As I’ve been somewhat busy with <a href="/introducing-orcamdf">OrcaMDF</a> in my spare time recently, both of my abstracts use OrcaMDF as the origin for going into the internals. I really hope I get a chance to present about this as I’m super psyched about it :)</p>
+<h2 id="Knowing_the_Internals_–_Who_Needs_SQL_Server_Anyway?">Knowing the Internals – Who Needs SQL Server Anyway?</h2>
+<p>You’re stuck on a remote island with just a laptop and your main database .MDF file. The boss calls and asks you to retrieve some data, but alas, you forgot to install SQL Server on your laptop. Luckily you have a HEX editor by your side!</p>
+<p>In this level 500 deep dive session we will go into the intimate details of the MDF file format. Think using DBCC Page is pushing it? Think again! As a learning experiment, I’ve created an open source parser for MDF files, called OrcaMDF. Using the OrcaMDF parser I’ll go through the primary storage mechanisms, how to parse page headers, boot pages, internal system tables, data &amp; index records, b-tree structures as well as the supporting IAM, GAM, SGAM &amp; PFS pages.</p>
+<p>Has your database suffered an unrecoverable disk corruption? This session might just be your way out! Using a corrupt &amp; unattachable MDF file, I’ll demo how to recover as much data as possible. This session is not for the faint of heart, there will be bytes!</p>
+<h3 id="Why_&amp;_What?">Why &amp; What?</h3>
+<p>I originally gave this presentation at <a href="http://mow2011.dk/mow2011.aspx" target="_blank">Miracle Open World 2011</a> and got some great feedback. Fueled by positive feedback I continued the development and am now at the point where I have so much content I considered doing a 3½ hour session instead. By attending this session you will not only see diagrams of internal structures on slides, you’ll actually see C# code demonstrated that parses &amp; utilizes them!</p>
+<h2 id="Demystifying_Database_Metadata">Demystifying Database Metadata</h2>
+<p>You know how to query sys.tables, sys.columns and perhaps even sys.system_internals_allocation_units to discover the metadata contents of a database. But where are these views getting their data from, and how do the core system tables relate?</p>
+<p>Based on my work with OrcaMDF, an open source C# parser for MDF files, I will demonstrate how to parse the internal system tables. Using just the boot page as origin, we’ll discover how to traverse the chain of references that ultimately end up in references to the actual system table data, from where we can parse the data records.</p>
+<p>Once we’ve got the system table data, I’ll demonstrate how to correlate the different tables to end up with the data we see in common system views.</p>
+<h3 id="Why_&amp;_What?-1">Why &amp; What?</h3>
+<p>As I continued the development of OrcaMDF I used the various system views extensively – sys.objects, tables, columns, indexes, internals_allocation_units etc. However, as development moved forward and I needed to parse that metadata myself, I had to look into the underlying tables – sysallocunits, sysschobjs, sysrowsets, sysrowsetcolumns. Join this session and let’s enter the realm of the hidden metadata and let’s explore it together!</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
 			<span class="month">Apr</span>
 			<span class="day">28</span>
 		</div>
@@ -1009,112 +1070,6 @@ namespace MailTest
 
 <p>I’ll give a quick run through of what SharedCache is and what it’s not, how to use it and what you can expect from it. If all goes well, I’ll have my EC2 SharedCache cluster up and running for demo purposes :)</p>
 <p>If you want to join, please <a href="http://www.facebook.com/event.php?eid=109698295736298" target="_blank">sign up at Facebook</a>.</p>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Apr</span>
-			<span class="day">21</span>
-		</div>
-		<div class="lower">2010</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/simple-as3-stack-implementation/" title="Simple AS3 Stack Implementation" rel="bookmark">Simple AS3 Stack Implementation</a></h1>
-		<div class="categories">
-			
-				<a href="/category/AS/Flex/Flash/">AS/Flex/Flash</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>Recently I was doing some experimental AS3 development. Much to my surprise, simple collection classes like Stack/Queue are not available in the framework - guess I’m spoiled being used to the .NET Framework.</p>
-<a id="more"></a>
-
-<p>I ended up implementing a simple <a href="http://en.wikipedia.org/wiki/Stack_(data_structure" target="_blank">stack</a>) using an internal <a href="http://en.wikipedia.org/wiki/Linked_list" target="_blank">linked list</a>. There’s nothing exciting about the implementation but I thought others might be able to use it, so here it is :)</p>
-<h3 id="StackNode-as">StackNode.as</h3>
-<figure class="highlight actionscript"><pre><span class="package"><span class="keyword">package</span> <span class="title">dk</span>.<span class="title">improve</span>.<span class="title">collections</span>
-{</span>
-    <span class="keyword">internal</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">StackNode</span>
-    {</span>
-        <span class="keyword">public</span> <span class="keyword">var</span> value:Object;
-        <span class="keyword">public</span> <span class="keyword">var</span> next:StackNode;
-
-        <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">StackNode</span><span class="params">(value:Object)</span><span class="type">:void</span>
-        {</span>
-            <span class="keyword">this</span>.value = value;
-        }
-    }
-}
-</pre></figure>
-
-<h3 id="Stack-as">Stack.as</h3>
-<figure class="highlight actionscript"><pre><span class="package"><span class="keyword">package</span> <span class="title">dk</span>.<span class="title">improve</span>.<span class="title">collections</span>
-{</span>
-    <span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Stack</span>
-    {</span>
-        <span class="keyword">private</span> <span class="keyword">var</span> head:StackNode;
-
-        <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">push</span><span class="params">(obj:Object)</span><span class="type">:void</span>
-        {</span>
-            <span class="keyword">var</span> newNode:StackNode = <span class="keyword">new</span> StackNode(obj);
-
-            <span class="keyword">if</span>(head == <span class="literal">null</span>)
-                head = newNode;
-            <span class="keyword">else</span>
-            {
-                newNode.next = head;
-                head = newNode;
-            }
-        }
-
-        <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">pop</span><span class="params">()</span><span class="type">:Object</span>
-        {</span>
-            <span class="keyword">if</span>(head != <span class="literal">null</span>)
-            {
-                <span class="keyword">var</span> result:Object = head.value;
-                head = head.next;
-
-                <span class="keyword">return</span> result;
-            }
-            <span class="keyword">else</span>
-                <span class="keyword">return</span> <span class="literal">null</span>;
-        }
-
-        <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">peek</span><span class="params">()</span><span class="type">:Object</span>
-        {</span>
-            <span class="keyword">if</span>(head != <span class="literal">null</span>)
-                <span class="keyword">return</span> head.value;
-            <span class="keyword">else</span>
-                <span class="keyword">return</span> <span class="literal">null</span>;
-        }
-    }
-}
-</pre></figure>
-
 
 
 				<div style="clear: both"></div>

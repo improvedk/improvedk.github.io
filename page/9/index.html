@@ -83,6 +83,66 @@
 	<div class="datebox">
 		<div class="upper">
 			<span class="month">Jul</span>
+			<span class="day">12</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/sqlbits-9-voting-amp-registration-open/" title="SQLBits 9 Voting &amp; Registration Open" rel="bookmark">SQLBits 9 Voting &amp; Registration Open</a></h1>
+		<div class="categories">
+			
+				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>The <a href="http://sqlbits.com/information/Pricing.aspx" target="_blank">registration for SQLBits 9 is now open</a>.Equally important, the voting for sessions is has also opened. Simply login and take a look at the <a href="http://sqlbits.com/information/PublicSessions.aspx" target="_blank">list of sessions</a> to vote for your preferred sessions.</p>
+<a id="more"></a>
+
+<h2 id="My_sessions">My sessions</h2>
+<p><img style="margin: 15px; display: inline; float: right;" alt="Training Day" src="http://sqlbits.com/images/SQLBits/SQLBitsTrainingDay.png" align="right" /></p>
+<p>Besides doing a full day training on the <a href="http://sqlbits.com/information/Event9/SQL_Server_Storage_Engine_and_MDF_File_Internals/TrainingDetails.aspx" target="_blank">SQL Server Storage Engine and MDF File Internals</a>, I’ve also submitted two related sessions that present a subset of the training day material, in a much more dense format. Both sessions are very technical deep dives on the storage internals. If you think they sound interesting, I’d appreciate a vote :)</p>
+<h3 id="Knowing_The_Internals,_Who_Needs_SQL_Server_Anyway?">Knowing The Internals, Who Needs SQL Server Anyway?</h3>
+<p>You’re stuck on a remote island with just a laptop and your main database .MDF file. The boss calls and asks you to retrieve some data, but alas, you forgot to install SQL Server on your laptop. Luckily you have a HEX editor by your side!</p>
+<p>In this level 500 deep dive session we will go into the intimate details of the MDF file format. Think using DBCC Page is pushing it? Think again! As a learning experiment, I’ve created an open source parser for MDF files, called OrcaMDF. Using the OrcaMDF parser I’ll go through the primary storage structures, how to parse page headers, boot pages, internal system tables, data &amp; index records, b-tree structures as well as the supporting IAM, GAM, SGAM &amp; PFS pages.</p>
+<p>Has your database suffered an unrecoverable disk corruption? This session might just be your way out! Using a corrupt &amp; unattachable MDF file, I’ll demo how to recover as much data as possible. This session is not for the faint of heart, there will be bits &amp; bytes.</p>
+<h3 id="Demystifying_Database_Metadata">Demystifying Database Metadata</h3>
+<p>You know how to query sys.tables, sys.columns and perhaps even sys.system_internals_allocation_units to discover the metadata contents of a database. But where are these views getting their data from, and how do the core system tables relate?</p>
+<p>Based on my work with OrcaMDF, an open source C# parser for MDF files, I will demonstrate how to parse the internal system tables. Using just the boot page as origin, we’ll discover how to traverse the chain of references that ultimately end up in references to the actual system table data, from where we can parse the data records.</p>
+<p>Once we’ve got the system table data, I’ll demonstrate how to correlate the different tables to end up with the data we see in common system views.</p>
+<h2 id="My_picks">My picks</h2>
+<p><img style="margin: 15px; display: inline; float: right;" alt="Sessions Title" src="http://sqlbits.com/images/headings/Sessions.png" width="286" height="98" align="right" />Having only 10 votes, it’s tough to pick out the top 10 sessions from a list of almost ~150 sessions. Though it was a struggle, I ended up with the following votes:</p>
+<p><a href="http://sqlbits.com/Sessions/Event9/Performance_tuning_from_the_field" target="_blank">Performance tuning from the field</a> by Simon Sabin<br><a href="http://sqlbits.com/Sessions/Event9/Transaction_Log_Performance_and_Troubleshooting-Deep_Dive" target="_blank">Transaction Log Performance and Troubleshooting – Deep Dive</a> by Chirag Roy<br><a href="http://sqlbits.com/Sessions/Event9/SQL_Server_Denali-Always_On_Deep_Dive" target="_blank">SQL Server Denali – Always On Deep Dive</a> by Bob Duffy<br><a href="http://sqlbits.com/Sessions/Event9/HA_DR-Focus_on_Options_Comparisons_and_Interoperability" target="_blank">HA/DR – Focus on Options, Comparisons and Interoperability</a> by Chirag Roy<br><a href="http://sqlbits.com/Sessions/Event9/READPAST__Furious_Transactions_Locking_and_Isolation" target="_blank">READPAST &amp; Furious: Transactions, Locking and Isolation</a> by Mark Broadbent<br><a href="http://sqlbits.com/Sessions/Event9/Preparation_for_Disaster" target="_blank">Preparation for Disaster</a> by Steve Jones<br><a href="http://sqlbits.com/Sessions/Event9/Busted_A_journey_into_the_most_common_TSQL__Tuning_myths" target="_blank">Busted! A journey into the most common TSQL &amp; Tuning myths</a> by David Morrison<br><a href="http://sqlbits.com/Sessions/Event9/Turbocharge_Database_Recoverability_Performance" target="_blank">Turbocharge Database Recoverability Performance</a> by Chirag Roy<br><a href="http://sqlbits.com/Sessions/Event9/Implementing_Real-Time_Data_Warehouse" target="_blank">Implementing Real-Time Data Warehouse</a> by Sutha Thiru<br><a href="http://sqlbits.com/Sessions/Event9/Replication-Best_Practices_Troubleshooting__Performance" target="_blank">Replication – Best Practices, Troubleshooting &amp; Performance</a> by Neil Hambly  </p>
+<p>Not until now did I notice that three of my sessions are by <a href="http://sqlking.wordpress.com/" target="_blank">Chirag Roy</a>, I’ll use this as an opportunity to congratulate him on becoming the latest <a href="http://www.microsoft.com/learning/en/us/certification/master-sql.aspx" target="_blank">Microsoft Certified Master</a>!</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jul</span>
 			<span class="day">11</span>
 		</div>
 		<div class="lower">2011</div>
@@ -1188,78 +1248,6 @@ DBCC PAGE (Test, 1, 114, 3)
 <p>Save the CustomRules.js file and Fiddler will automatically pick up on the changes and start saving those precious MP3s!</p>
 <h2 id="Disclaimer">Disclaimer</h2>
 <p>Obviously the above code should only be used to save MP3 files from streams to which you own the rights.</p>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">May</span>
-			<span class="day">31</span>
-		</div>
-		<div class="lower">2011</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/saving-space-by-storing-real-values-in-smallints/" title="Saving Space by Storing Decimal Values in Integer Data Types" rel="bookmark">Saving Space by Storing Decimal Values in Integer Data Types</a></h1>
-		<div class="categories">
-			
-				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>I recently stumbled upon a <a href="http://stackoverflow.com/questions/6015605/design-question-on-storing-meteorological-data-on-sql-server-2008/6016237#6016237" target="_blank">question on Stack Overflow</a> on how best to reduce their data size as it’s growing out of hand. As the original author hasn’t replied back yet (as of writing this post, I’m making some assumptions on the scenario – so take it as an abstract scenario). The basic scenario is that they have a number of measuring stations, each one of those containing a lot of equipment reporting back to a SQL Server in a schema like the following abstract:</p>
-<a id="more"></a>
-
-
-<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> Measurements
-(
-	DataID bigint <span class="keyword">IDENTITY</span>,
-	StationID <span class="keyword">int</span>,
-	MeasurementA <span class="keyword">real</span>,
-	MeasurementB <span class="keyword">real</span>,
-	MeasurementC <span class="keyword">real</span>
-	... <span class="number">100</span> more columns
-)</span>
-</pre></figure>
-
-<p>They’re willing to loose some precision of the data, for the purpose of saving space. As some of the data is measuring wind speed in meters/sec and air pressure, I’m making the assumptions that most of the data will be in the 0-200 and 500-2000 ranges, depending on the scale used.</p>
-<p>If the wind speed does not need accuracy further than two decimals, storing it in a 4 byte real column is a lot of waste. Instead we might store it in a smallint column, saving 2 bytes per column. The data would be converted like so:</p>
-<figure class="highlight sql"><pre>35.7   =&gt; 35.7   * 100 = 3,570
-1.38   =&gt; 1.38   * 100 = 138
-155.29 =&gt; 155.29 * 100 = 15,529
-84.439 =&gt; 84.439 * 100 = 8,443 (with the .9 being rounded off due to integer math)
-</pre></figure>
-
-<p>So by multiplying all the values by 100, we achieve a precision of two decimal points, with all further decimal points being cropped. As the smallint max value is 32,767, the maximum value we could store in this format would be:</p>
-<figure class="highlight sql"><pre>327.67 =&gt; 327.67 * 100 = 32,767
-</pre></figure>
-
-<p>Which is probably enough for most wind measurements. Hopefully.</p>
-<p>For the larger values in the 500-2000 ranges, we can employ the same technique by multiplying by 10. This only gives us a single digit of precision, but allows for values in the –3,276.8 to 3,276.7 range, stored using just 2 bytes per column. Employing the same technique we could also store values between 0 and 2.55 in a single byte tinyint column, with a precision of two digits.</p>
-<p>Unless you really need to save those bytes, I wouldn’t recommend you do this as it’s usually better to store the full precision. However, this does show that we can store decimals in integer data types with a bit of math involved.</p>
 
 
 				<div style="clear: both"></div>

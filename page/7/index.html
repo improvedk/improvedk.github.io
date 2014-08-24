@@ -83,6 +83,57 @@
 	<div class="datebox">
 		<div class="upper">
 			<span class="month">Oct</span>
+			<span class="day">20</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/what-do-airlines-use-for-primary-keys/" title="What Do Airlines Use for Primary Keys?" rel="bookmark">What Do Airlines Use for Primary Keys?</a></h1>
+		<div class="categories">
+			
+				<a href="/category/SQL Server/">SQL Server</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>On my way home from the PASS Summit in Seattle, I had a layover in Amsterdam before continuing onto Copenhagen. For various reasons, we were about one and a half hours delayed, and I arrived in AMS at 9:30, my CPH flight departing at 9:35. As you’d probably guessed, I missed my flight.</p>
+<a id="more"></a>
+
+<p>To fix it, I was told to do a check-in at one of the self-service counters at the transfer desk. Apparently these both do normal check-ins, as well as (supposedly), get you a replacement flight in case you missed the normal one. I stuck my passport into the scanner and it gladly popped up with a new flight to Copenhagen about 4 hours later. Great! Well, except my name wasn’t on the check-in list, two other (unknown to me) Danish names were. However, I did share a surname with one of them.</p>
+<div class="imgwrapper" style=""><div><a href="/what-do-airlines-use-for-primary-keys/delta-air-france-klm_2.jpg" class="fancy"><img src="/what-do-airlines-use-for-primary-keys/delta-air-france-klm_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>After asking one of the attendants I was told, “Oh, that’s because your flight has already departed, it’ll try to find the nearest match”. Áha, so if there’s no 1:1 match, it’ll just try to find the best match of an existing booking to a non-departed flight – and apparently the best it could find was a two-person ticket for a flight 4 hours later. Now, it was for the same destination, and I did share my surname with one of the passengers, but it surely wasn’t my ticket. Still, I was able to check-in as them and confirm “my” ticket.</p>
+<p>So this leaves me the question, what in the world do they (Delta/KLM/AF) use as the primary key for their ticketing system? Once my passport is scanned, and they’ve got my passport number, how can there be <em>any</em> doubt as to who I am? How in the world can I get to check-in two completely, to me, unrelated passengers on a flight I’m not going on myself?</p>
+<p>I ended up getting booked for another flight to another (closer to my home) destination in Denmark, but it did require manual intervention from the service desk.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Oct</span>
 			<span class="day">13</span>
 		</div>
 		<div class="lower">2011</div>
@@ -671,64 +722,6 @@
 <p><a href="http://gotocon.com/aarhus-2011/freeevent/index.jsp?eventOID=3556" target="_blank"><strong>Click here for more details and free registration</strong></a></p>
 <p>Trifork has kindly chosen to sponsor some sandwiches and drinks for the night, that way you won’t be running completely dry by listening to me for six hours ;)</p>
 <p>Whether you’re a SQL Server DBA/Dev that wants to take it to the next step, by gaining an extreme insight into the internals, or just a developer with a passion for bytes &amp; hacking, this should be an interesting session for you :)</p>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Aug</span>
-			<span class="day">03</span>
-		</div>
-		<div class="lower">2011</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/sqlbits-9-agenda-published/" title="SQLBits 9 Agenda Published" rel="bookmark">SQLBits 9 Agenda Published</a></h1>
-		<div class="categories">
-			
-				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>The <a href="http://sqlbits.com/information/Agenda.aspx" target="_blank">agenda for SQLBits 9</a> has been published (though it’s still provisional). It’s looking really, really good. Especially so when you consider the price of the event – you’ve got until the 26th of August to get the <a href="http://sqlbits.com/information/Pricing.aspx" target="_blank">early bird price</a> of £375 for two complete days of conference – PLUS a whole day of <a href="http://sqlbits.com/information/TrainingDay.aspx" target="_blank">full day training sessions</a>.</p>
-<a id="more"></a>
-
-<h2 id="My_presentation">My presentation</h2>
-<p>I’ll be presenting my <a href="http://sqlbits.com/Sessions/Event9/Knowing_the_Internals_Who_Needs_SQL_Server_Anyway_" target="_blank">Knowing the Internals, Who Needs SQL Server Anyway?</a> session. This is by far my favorite session! I originally gave it back in April at Miracle Open World, though under the name “Anatomy of an MDF File”. Since then, I’ve added a good three months of development onto <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a>, the project on which the backend of the session is based. As such, this session will be even more awesome than last! Here’s the abstract:</p>
-<blockquote>
-<p>You’re stuck on a remote island with just a laptop and your main database .MDF file. The boss calls and asks you to retrieve some data, but alas, you forgot to install SQL Server on your laptop. Luckily you have a HEX editor by your side! </p>
-<p>In this level 500 deep dive session we will go into the intimate details of the MDF file format. Think using DBCC Page is pushing it? Think again! As a learning experiment, I’ve created an open source parser for MDF files, called OrcaMDF. Using the OrcaMDF parser I’ll go through the primary storage structures, how to parse page headers, boot pages, internal system tables, data &amp; index records, b-tree structures as well as the supporting IAM, GAM, SGAM &amp; PFS pages. </p>
-<p>Has your database suffered an unrecoverable disk corruption? This session might just be your way out! Using a corrupt &amp; unattachable MDF file, I’ll demo how to recover as much data as possible. This session is not for the faint of heart, there will be bits &amp; bytes.</p>
-</blockquote>
-<h2 id="My_training_day">My training day</h2>
-<p>If you think the session sounds awesome, fret not, you can opt in for a full day of delicious SQL Server internals at a level few people venture to! As I just blogged about recently, <a href="/how-not-to-reinvent-indexes">knowing the internals is the key to creating efficient databases</a>, without knowing how to do so. I’m honored to have <a href="http://sqlblogcasts.com/blogs/simons/archive/2011/07/26/must-attend-training-day-for-anyone-serious-about-sql.aspx" target="_blank">Simon Sabin feature my training day on his blog</a>, and I really cannot promote it any better than he does. This is the official abstract:</p>
-<blockquote>
-<p>Join me for a journey into the depths of the SQL Server storage engine. Through a series of lectures and demonstrations we’ll look at the internals of pages, data types, indexes, heaps, extent &amp; page allocation, allocation units, system views, base tables and nightmarish ways of data recovery. We’ll look at several storage structures that are either completely undocumented or very scarcely so.  By the end of the day, not only will you know about the most important data structures in SQL Server, you’ll also be able to parse every bit of a SQL Server data file yourself, using just a hex editor! There will be lots of hands on demos, a few of them performed in C# to demonstrate the parsing of data files outside of SQL Server.</p>
-</blockquote>
-<p>For a more thorough agenda, you should <a href="http://sqlbits.com/information/Event9/SQL_Server_Storage_Engine_and_MDF_File_Internals/TrainingDetails.aspx" target="_blank">go check it out at the SQLBits website</a>.</p>
 
 
 				<div style="clear: both"></div>

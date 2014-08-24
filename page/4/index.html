@@ -83,6 +83,61 @@
 	<div class="datebox">
 		<div class="upper">
 			<span class="month">Jun</span>
+			<span class="day">19</span>
+		</div>
+		<div class="lower">2012</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/video-from-ndc-2012-revealing-the-sql-server-magic/" title="Video From NDC 2012: Revealing the SQL Server Magic" rel="bookmark">Video From NDC 2012: Revealing the SQL Server Magic</a></h1>
+		<div class="categories">
+			
+				<a href="/category/Conferences and Presenting/">Conferences and Presenting</a>
+				, 
+			
+				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
+				, 
+			
+				<a href="/category/SQL Server - OrcaMDF/">SQL Server - OrcaMDF</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I’m really lagging behind on my blogging – life is busy as the moment! Just a couple of weeks ago I presented my Revealing the Magic session at the Norwegian Developers Conference in Oslo. I was quite excited to give my SQL Server oriented session to a crowd of developers – a 500 level session, at SQL Server events that is.</p>
+<a id="more"></a>
+
+<p>I just got the feedback today – 0 reds, 3 yellows and 15 greens – very happy with that, especially when taking the audience into account. To those of you who haven’t seen my session before, here it is:</p>
+<iframe src="http://player.vimeo.com/video/43659054" height="281" width="500" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
+
+<p><a href="http://vimeo.com/43659054" target="_blank">Mark S. Rasmussen - Revealing the SQL Server Magic</a> from <a href="http://vimeo.com/ndcoslo" target="_blank">NDCOslo</a> on <a href="http://vimeo.com" target="_blank">Vimeo</a>.</p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Jun</span>
 			<span class="day">01</span>
 		</div>
 		<div class="lower">2012</div>
@@ -614,102 +669,6 @@ node14_2_ <span class="keyword">on</span> node14_.Id=node14_2_.NodeId <span clas
 <p>9,223,372,036,854,775,807 / 100,000,000 / 60 / 60 / 24 / 365 = 2,924 years.</p>
 <p>So at 100 million new bigint seed allocations per second, you’d still last almost 3,000 years before running out. And you can double that to 6,000 years if you start from the negative max seed value.</p>
 <p>If you do manage to setup a SQL Server system with this kind of tx/sec – I’d love to see it!</p>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Feb</span>
-			<span class="day">17</span>
-		</div>
-		<div class="lower">2012</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/linqpad-ndash-the-perfect-playground-for-amazon-web-services/" title="LINQPad - The Perfect Playground for Amazon Web Services" rel="bookmark">LINQPad - The Perfect Playground for Amazon Web Services</a></h1>
-		<div class="categories">
-			
-				<a href="/category/.NET/">.NET</a>
-				, 
-			
-				<a href="/category/Amazon Web Services/">Amazon Web Services</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>I’ve previously written on <a href="/how-to-set-up-and-serve-private-content-using-s3">why I don’t want to rely on third party GUIs</a> for managing my AWS services. Assuming I’ll be interacting with AWS through the SDK later on, I much prefer doing the initial setup using the SDK as well, to ensure I fully understand what I’ve done. <a href="/how-to-set-up-and-serve-private-content-using-s3">In</a> <a href="/pushing-the-limits-of-amazon-s3-upload-performance">previous</a> <a href="/optimizing-single-instance-amazon-s3-delete-performance">posts</a>, I’ve shown full console application examples on how to use the SDK for various tasks; however, creating a console application project, compiling and running it can be kind of cumbersome, especially if you’re just doing some quick testing or API exploration.</p>
-<a id="more"></a>
-
-<h2 id="Enter_LINQPad">Enter LINQPad</h2>
-<p>If you haven’t tried <a href="http://www.linqpad.net/" target="_blank">LINQPad</a> out before, go do it now! It’s an awesome scratchpad style application for writing and running C#/VB.NET/F# code, either as a single expression, a set of statements or a full application. There are also various plugins for easily connecting to databases, Azure services and lots more. Probably just a matter of time before someone writes a <a href="http://www.linqpad.net/extensibility.aspx" target="_blank">custom provider</a> for AWS as well.</p>
-<h3 id="Getting_started_with_the_AWS_SDK_in_LINQPad">Getting started with the AWS SDK in LINQPad</h3>
-<p>First up, you need to <a href="http://aws.amazon.com/sdkfornet/" target="_blank">download</a> and install the AWS SDK. Once installed, open LINQPad and press F4. In the following dialog, click Add…</p>
-<div class="imgwrapper" style=""><div><a href="/linqpad-ndash-the-perfect-playground-for-amazon-web-services/image_2.png" class="fancy"><img src="/linqpad-ndash-the-perfect-playground-for-amazon-web-services/image_2.png" style="max-height: 250px"/></a></div></div>
-
-<p>You can either browse to the AWSSDK.dll file manually, or you can pick it from the GAC – which would be the easiest option if you’re just doing some quick testing.</p>
-<div class="imgwrapper" style=""><div><a href="/linqpad-ndash-the-perfect-playground-for-amazon-web-services/image_4.png" class="fancy"><img src="/linqpad-ndash-the-perfect-playground-for-amazon-web-services/image_4.png" style="max-height: 250px"/></a></div></div>
-
-<p>After adding it, as a final step, go to the <em>Additional Namespace Imports</em> tab and add Amazon to the list.</p>
-<div class="imgwrapper" style=""><div><a href="/linqpad-ndash-the-perfect-playground-for-amazon-web-services/image_61.png" class="fancy"><img src="/linqpad-ndash-the-perfect-playground-for-amazon-web-services/image_61.png" style="max-height: 250px"/></a></div></div>
-
-<h2 id="Discoverability">Discoverability</h2>
-<p>There are generally two ways to approach a new and unknown API. You <a href="http://aws.amazon.com/documentation/" target="_blank">could read the documentation</a>, or you could just throw yourself at it, relying on intellisense. Unfortunately the free version of LINQPad does not come with intellisense/auto completion, however, at a price of $39 it’s a bargain.</p>
-<div class="imgwrapper" style=""><div><a href="/linqpad-ndash-the-perfect-playground-for-amazon-web-services/image_121.png" class="fancy"><img src="/linqpad-ndash-the-perfect-playground-for-amazon-web-services/image_121.png" style="max-height: 250px"/></a></div></div>
-
-<h3 id="Exception_output">Exception output</h3>
-<p>Inevitably, you’ll probably run into an exception or two. Take the following piece of code for example; it works perfectly, but I forgot to assign the IAM user access to the bucket I’m trying to interact with (and before you remind me to remove the keys, don’t worry, the IAM user was temporary and no longer exists):</p>
-<figure class="highlight cs"><pre><span class="keyword">var</span> accessKeyID = <span class="string">"AKIAIKB6FI6SSOGGOP7A"</span>;
-<span class="keyword">var</span> secretKey = <span class="string">"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"</span>;
-
-<span class="keyword">using</span> (<span class="keyword">var</span> client = AWSClientFactory.CreateAmazonS3Client(accessKeyID, secretKey))
-{
-	<span class="keyword">var</span> request = <span class="keyword">new</span> Amazon.S3.Model.ListObjectsRequest()
-		.WithBucketName(<span class="string">"improve-us.dk"</span>);
-
-	<span class="keyword">using</span> (<span class="keyword">var</span> result = client.ListObjects(request))
-	{
-		result.Dump();
-	}
-}
-</pre></figure>
-
-<p>What you’ll see is a clear notification saying an exception has occurred, as well as a repeated exception in the output pane:</p>
-<div class="imgwrapper" style=""><div><a href="/linqpad-ndash-the-perfect-playground-for-amazon-web-services/image_141.png" class="fancy"><img src="/linqpad-ndash-the-perfect-playground-for-amazon-web-services/image_141.png" style="max-height: 250px"/></a></div></div>
-
-<p>But look what happens once we expand the exception:</p>
-<div class="imgwrapper" style=""><div><a href="/linqpad-ndash-the-perfect-playground-for-amazon-web-services/image_161.png" class="fancy"><img src="/linqpad-ndash-the-perfect-playground-for-amazon-web-services/image_161.png" style="max-height: 250px"/></a></div></div>
-
-<p>We get all of the output! Any object, returned or thrown from the code, will automatically be displayed in the output, and can easily be drilled into.</p>
-<h3 id="Dumping_objects">Dumping objects</h3>
-<p>In case you’re code neither throws exceptions (by some miracle, in my case) nor returns objects, you can always call the .Dump() extension method on any object. Once I granted the IAM user the correct permissions, result.Dump() was called and the result of the ListObjectsRequest was output:</p>
-<div class="imgwrapper" style=""><div><a href="/linqpad-ndash-the-perfect-playground-for-amazon-web-services/image_181.png" class="fancy"><img src="/linqpad-ndash-the-perfect-playground-for-amazon-web-services/image_181.png" style="max-height: 250px"/></a></div></div>
-
-<p>Once again it’s easy to drill down and see all of the properties of the result.</p>
-<h2 id="Conclusion">Conclusion</h2>
-<p>Adhering to my original statement of not liking third party GUIs, using tools like LINQPad is an excellent option for easily writing test code, without the added overhead of starting Visual Studio, compiling, running, etc. The output is neatly presented and really helps you to get a feeling for the API.</p>
-<p>Just to finish off – LINQPad has plenty of uses besides AWS, this is just one scenario for which I’ve been using it extensively lately. I’m really considering creating a LINQPad provider for <a href="https://github.com/improvedk/OrcaMDF" target="_blank">OrcaMDF</a> as one of my next projects.</p>
 
 
 				<div style="clear: both"></div>

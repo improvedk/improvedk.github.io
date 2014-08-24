@@ -83,6 +83,455 @@
 	<div class="datebox">
 		<div class="upper">
 			<span class="month">Apr</span>
+			<span class="day">30</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/performance-comparison-reading-data-from-the-database-strongly-typed/" title="Performance Comparison - Reading Data From the Database Strongly Typed" rel="bookmark">Performance Comparison - Reading Data From the Database Strongly Typed</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I’m a big fan of strongly typed database querying as well as returning strong typed results. Due to the nature of static languages, you’ll get compile time checking of all our tables and columns. You can easily rename columns as you can be sure all your (internal) references are accounted for.</p>
+<a id="more"></a>
+
+<p>Returning strongly typed lists of objects instead of DataReaders/DataTables / any other object based containers will also make it easier to transfer through data layers as you’re always certain of what’s available for you to read and what’s not.</p>
+<p>But it comes at a cost. Performance.</p>
+<p>I set out to test various different ways we could query our database and generate a strongly typed List with the results in it. I’m using the <a href="http://codeplex.com/SqlServerSamples" target="_blank">standard AdventureWorks 2005 database</a> for my testing. For the actual profiling, I’ll be using <a href="/profiling-code-the-easy-way/">my CodeProfiler class</a> from a previous blogpost.</p>
+<p>I’ll be using two different entities, Product and CompleteProduct:</p>
+<figure class="highlight cs"><pre>[Table(Name = <span class="string">"Production.Product"</span>)]
+<span class="keyword">public</span> <span class="keyword">class</span> Product
+{
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">virtual</span> <span class="keyword">int</span> ProductID { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">virtual</span> <span class="keyword">string</span> Name { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">virtual</span> <span class="keyword">string</span> ProductNumber { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">virtual</span> <span class="keyword">bool</span> MakeFlag { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">virtual</span> <span class="keyword">short</span> SafetyStockLevel { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">virtual</span> <span class="keyword">decimal</span> ListPrice { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">virtual</span> DateTime SellStartDate { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+}
+
+[Table(Name = <span class="string">"Production.Product"</span>)]
+<span class="keyword">public</span> <span class="keyword">class</span> CompleteProduct
+{
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">int</span> ProductID { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">string</span> Name { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">string</span> ProductNumber { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">bool</span> MakeFlag { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">bool</span> FinishedGoodsFlag { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">string</span> Color { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">short</span> SafetyStockLevel { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">short</span> ReorderPoint { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">decimal</span> StandardCost { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">decimal</span> ListPrice { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">string</span> Size { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">string</span> SizeUnitMeasureCode { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">string</span> WeightUnitMeasureCode { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">decimal</span>? Weight { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">int</span> DaysToManufacture { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">string</span> ProductLine { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">string</span> Class { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">string</span> Style { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">int</span>? ProductSubcategoryID { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> <span class="keyword">int</span>? ProductModelID { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> DateTime SellStartDate { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> DateTime? SellEndDate { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> DateTime? DiscontinuedDate { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> Guid rowguid { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+	[Column]
+	<span class="keyword">public</span> DateTime ModifiedDate { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+}
+</pre></figure>
+
+<p>They both map to the same table, Production.Product. CompleteProduct covers all columns, Product just covers the ones I’m interested in.</p>
+<h2 id="Method_#1_-_Manually_mapping_from_DataReader">Method #1 - Manually mapping from DataReader</h2>
+<figure class="highlight cs"><pre><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">performDataReader</span>()
+{
+	<span class="keyword">var</span> result = <span class="keyword">new</span> List&lt;Product&gt;();
+
+	<span class="keyword">using</span> (SqlConnection conn = <span class="keyword">new</span> SqlConnection(CONNECTION_STRING))
+	{
+		<span class="keyword">using</span> (SqlCommand cmd = conn.CreateCommand())
+		{
+			cmd.CommandText = COMMAND_TEXT;
+
+			conn.Open();
+			<span class="keyword">using</span> (SqlDataReader sqldr = cmd.ExecuteReader())
+			{
+				<span class="keyword">while</span> (sqldr.Read())
+				{
+					Product p = <span class="keyword">new</span> Product();
+					p.ProductID = Convert.ToInt32(sqldr[<span class="string">"ProductID"</span>]);
+					p.Name = sqldr[<span class="string">"Name"</span>].ToString();
+					p.ProductNumber = sqldr[<span class="string">"ProductNumber"</span>].ToString();
+					p.MakeFlag = Convert.ToBoolean(sqldr[<span class="string">"MakeFlag"</span>]);
+					p.SafetyStockLevel = Convert.ToInt16(sqldr[<span class="string">"SafetyStockLevel"</span>]);
+					p.ListPrice = Convert.ToDecimal(sqldr[<span class="string">"ListPrice"</span>]);
+					p.SellStartDate = Convert.ToDateTime(sqldr[<span class="string">"SellStartDate"</span>]);
+
+					result.Add(p);
+				}
+			}
+		}
+	}
+}
+</pre></figure>
+
+<p>Pros: <em>Fast</em></p>
+<p>Cons: <em>Has to be written for each object model</em></p>
+<h2 id="Method_#2_-_Manully_mapping_from_DataTable">Method #2 - Manully mapping from DataTable</h2>
+<figure class="highlight cs"><pre><span class="keyword">private</span> <span class="keyword">static</span> DataTable <span class="title">getDT</span>()
+{
+	DataTable result = <span class="keyword">new</span> DataTable();
+
+	<span class="keyword">using</span> (SqlConnection conn = <span class="keyword">new</span> SqlConnection(CONNECTION_STRING))
+	{
+		<span class="keyword">using</span> (SqlCommand cmd = conn.CreateCommand())
+		{
+			cmd.CommandText = COMMAND_TEXT;
+
+			<span class="keyword">using</span> (SqlDataAdapter sqlda = <span class="keyword">new</span> SqlDataAdapter(cmd))
+				sqlda.Fill(result);
+		}
+	}
+
+	<span class="keyword">return</span> result;
+}
+
+<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">performDataTable</span>()
+{
+	<span class="keyword">var</span> result = <span class="keyword">new</span> List&lt;Product&gt;();
+
+	<span class="keyword">foreach</span> (DataRow dr <span class="keyword">in</span> getDT().Rows)
+	{
+		Product p = <span class="keyword">new</span> Product();
+		p.ProductID = Convert.ToInt32(dr[<span class="string">"ProductID"</span>]);
+		p.Name = dr[<span class="string">"Name"</span>].ToString();
+		p.ProductNumber = dr[<span class="string">"ProductNumber"</span>].ToString();
+		p.MakeFlag = Convert.ToBoolean(dr[<span class="string">"MakeFlag"</span>]);
+		p.SafetyStockLevel = Convert.ToInt16(dr[<span class="string">"SafetyStockLevel"</span>]);
+		p.ListPrice = Convert.ToDecimal(dr[<span class="string">"ListPrice"</span>]);
+		p.SellStartDate = Convert.ToDateTime(dr[<span class="string">"SellStartDate"</span>]);
+
+		result.Add(p);
+	}
+}
+</pre></figure>
+
+<p>Pros: <em>Pretty fast, easy row access, disconnected from database</em></p>
+<p>Cons: <em>Has to be written for each object model</em></p>
+<p>Comment: <em>I often use a getDT()’ish way of accessing my tables. It’s easier than using DataReaders as they’re disconnected, you can traverse them back and forth multiple times.</em></p>
+<h2 id="Method_#3_-_Automatic_mapping_using_DataContext-Translate">Method #3 - Automatic mapping using DataContext.Translate</h2>
+<figure class="highlight cs"><pre><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">performEntityQuery</span>()
+{
+	List&lt;Product&gt; result;
+
+	<span class="keyword">using</span> (SqlConnection conn = <span class="keyword">new</span> SqlConnection(CONNECTION_STRING))
+	{
+		<span class="keyword">using</span> (DataContext dc = <span class="keyword">new</span> DataContext(conn))
+		{
+			<span class="keyword">using</span> (SqlCommand cmd = conn.CreateCommand())
+			{
+				cmd.CommandText = COMMAND_TEXT;
+
+				conn.Open();
+				<span class="keyword">using</span>(SqlDataReader sqldr = cmd.ExecuteReader())
+				{
+					result = dc.Translate&lt;Product&gt;(sqldr).ToList();
+				}
+			}
+		}
+	}
+}
+</pre></figure>
+
+<p>Pros: <em>Works for all object models, easy to use</em></p>
+<p>Cons: <em>Slow</em></p>
+<h2 id="Method_#4_-_Linq_to_SQL_query_for_complete_entity">Method #4 - Linq to SQL query for complete entity</h2>
+<figure class="highlight cs"><pre><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">performLinqQuery</span>()
+{
+	List&lt;Product&gt; result;
+
+	<span class="keyword">using</span>(DataContext dc = <span class="keyword">new</span> DataContext(CONNECTION_STRING))
+	{
+		result = dc.GetTable&lt;Product&gt;().OrderBy(p =&gt; p.ProductID).Take(rowcount).ToList();
+	}
+}
+</pre></figure>
+
+<p>Pros: <em>Could it be easier? Works for all object models</em></p>
+<p>Cons: <em>Slow</em></p>
+<h2 id="Method_#5_-_Linq_to_SQL_query_for_partial_entity">Method #5 - Linq to SQL query for partial entity</h2>
+<figure class="highlight cs"><pre><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">performSubsetLinqQuery</span>()
+{
+	List&lt;Product&gt; result;
+
+	<span class="keyword">using</span> (DataContext dc = <span class="keyword">new</span> DataContext(CONNECTION_STRING))
+	{
+		result = dc.GetTable&lt;CompleteProduct&gt;().OrderBy(p =&gt; p.ProductID).Take(rowcount).Select(p =&gt; <span class="keyword">new</span> Product() {
+			ListPrice = p.ListPrice,
+			ProductID = p.ProductID,
+			MakeFlag = p.MakeFlag,
+			Name = p.Name,
+			ProductNumber = p.ProductNumber,
+			SafetyStockLevel = p.SafetyStockLevel,
+			SellStartDate = p.SellStartDate }).ToList();
+	}
+}
+</pre></figure>
+
+<p>Pros: <em>Easy, works for all object models</em></p>
+<p>Cons: <em>Slow</em></p>
+<p>Comments: <em>In the previous method I retrieved complete Product entities. This time I’m retrieving only some columns of the CompleteProduct entity, mapping them over into a new Product. I’ve included this to see if there’s any performance difference in comparison to loading complete entities.</em></p>
+<h2 id="Method_#6_-_Automatically_mapping_from_DataReader">Method #6 - Automatically mapping from DataReader</h2>
+<figure class="highlight cs"><pre><span class="keyword">private</span> <span class="keyword">static</span> List&lt;T&gt; mapList&lt;T&gt;(SqlDataReader dr)
+{
+	List&lt;T&gt; list = <span class="keyword">new</span> List&lt;T&gt;();
+
+	PropertyInfo[] properties = <span class="keyword">typeof</span>(T).GetProperties();
+	T t = Activator.CreateInstance&lt;T&gt;();
+
+	<span class="keyword">while</span>(dr.Read())
+	{
+		<span class="keyword">foreach</span> (PropertyInfo pi <span class="keyword">in</span> properties)
+			pi.SetValue(t, dr[pi.Name], <span class="keyword">null</span>);
+
+		list.Add(t);
+	}
+
+	<span class="keyword">return</span> list;
+}
+
+<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">performAutomappedDataReader</span>()
+{
+	List&lt;Product&gt; result;
+
+	<span class="keyword">using</span> (SqlConnection conn = <span class="keyword">new</span> SqlConnection(CONNECTION_STRING))
+	{
+		<span class="keyword">using</span> (SqlCommand cmd = conn.CreateCommand())
+		{
+			cmd.CommandText = COMMAND_TEXT;
+
+			conn.Open();
+			<span class="keyword">using</span> (SqlDataReader sqldr = cmd.ExecuteReader())
+			{
+				result = mapList&lt;Product&gt;(sqldr);
+			}
+		}
+	}
+}
+</pre></figure>
+
+<p>Pros: <em>Simple to use, works for all object models</em></p>
+<p>Cons: <em>Slow, reflection based</em></p>
+<h2 id="Method_#7_-_Enhanced_automatic_mapping_from_DataReader">Method #7 - Enhanced automatic mapping from DataReader</h2>
+<figure class="highlight cs"><pre><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">performEnhancedAutomappedDataReader</span>()
+{
+	List&lt;Product&gt; result;
+
+	<span class="keyword">using</span> (SqlConnection conn = <span class="keyword">new</span> SqlConnection(CONNECTION_STRING))
+	{
+		<span class="keyword">using</span> (SqlCommand cmd = conn.CreateCommand())
+		{
+			cmd.CommandText = COMMAND_TEXT;
+
+			conn.Open();
+			<span class="keyword">using</span> (SqlDataReader sqldr = cmd.ExecuteReader())
+			{
+				result = EntityMapper.MapToEntities&lt;Product&gt;(sqldr).ToList();
+			}
+		}
+	}
+}
+</pre></figure>
+
+<p>Pros: <em>???</em></p>
+<p>Cons: <em>???</em></p>
+<p>Comments: <em>This is an enhanced version of the previous method that I’ve made. Explaining the inner workings is outside the scope of this particular topic so I’ll have to explain it in my next post. For now, just imagine something very cool and sexy. UPDATE: <a href="/mapping-datareader-to-objects-using-reflection-emit/">you can read about the method here</a>.</em></p>
+<h2 id="Method_#8_-_SubSonic_SqlQuery">Method #8 - SubSonic SqlQuery</h2>
+<figure class="highlight cs"><pre><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">performSubSonicQuery</span>()
+{
+	List&lt;Product&gt; result =
+		<span class="keyword">new</span> Select
+			(
+				Subsonic.Product.ProductIDColumn.QualifiedName,
+				Subsonic.Product.NameColumn.QualifiedName,
+				Subsonic.Product.ProductNumberColumn.QualifiedName,
+				Subsonic.Product.MakeFlagColumn.QualifiedName,
+				Subsonic.Product.SafetyStockLevelColumn.QualifiedName,
+				Subsonic.Product.ListPriceColumn.QualifiedName,
+				Subsonic.Product.SellStartDateColumn.QualifiedName
+			)
+			.Top(rowcount.ToString())
+			.From(Subsonic.Product.Schema)
+			.OrderAsc(Subsonic.Product.ProductIDColumn.QualifiedName)
+			.ExecuteTypedList&lt;Product&gt;();
+}
+</pre></figure>
+
+<p>Pros: <em>Works for all object models</em></p>
+<p>Cons: <em>Slow</em></p>
+<p>Comments: <em>I’ve never used SubSonic before, so I may have overlooked some obvious performance enhancements, thus, take my numbers with a grain of salt.</em></p>
+<h2 id="Method_#9_-_NHibernate_CreateCriteria">Method #9 - NHibernate CreateCriteria</h2>
+<figure class="highlight cs"><pre><span class="keyword">private</span> <span class="keyword">static</span> Configuration nhCfg;
+<span class="keyword">private</span> <span class="keyword">static</span> ISessionFactory nhFactory;
+
+<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">performNHibernateQuery</span>()
+{
+	List&lt;Product&gt; result;
+
+	<span class="keyword">using</span> (ISession session = nhFactory.OpenSession())
+	{
+		result = (List&lt;Product&gt;)session.CreateCriteria(<span class="keyword">typeof</span>(Product)).AddOrder(Order.Asc(<span class="string">"ProductID"</span>)).SetMaxResults(rowcount).List&lt;Product&gt;();
+	}
+}
+</pre></figure>
+
+<p>Pros: <em>Easy, works for all object models, concise querying</em></p>
+<p>Cons: <em>Slow</em></p>
+<p>Comments: <em>I’ve never used NHibernate before, so I may have overlooked some obvious performance enhancements, thus, take my numbers with a grain of salt.</em></p>
+<h2 id="Method_#10_-_Compiled_LinqQuery">Method #10 - Compiled LinqQuery</h2>
+<figure class="highlight cs"><pre><span class="keyword">private</span> <span class="keyword">static</span> Func&lt;DataContext, <span class="keyword">int</span>, IEnumerable&lt;Product&gt;&gt; compiledQuery;
+<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">performCompiledLinqQuery</span>()
+{
+	List&lt;Product&gt; result;
+
+	<span class="keyword">using</span> (DataContext dc = <span class="keyword">new</span> DataContext(CONNECTION_STRING))
+	{
+		result = compiledQuery(dc, rowcount).ToList();
+	}
+}
+</pre></figure>
+
+<p>Pros: <em>Among the fastest, no matter the rowcount, works for all object models</em></p>
+<p>Cons: <em>Requires a bit more setting up and helper functionality to store the compiled queries</em></p>
+<h2 id="The_profiling">The profiling</h2>
+<p>I profiled each of the test cases by returning 1, 10, 100, 1.000, 10.000 and 100.000 rows. The numbers are the total execution time of 50 iterations of each method. I’m on a quad core machine so I set the max parallelization degree to three, thus saving myself a core for running SQL Server and Windows.</p>
+<figure class="highlight cs"><pre><span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword">string</span>[] args)
+{
+	<span class="comment">// Make sure we don't get disturbed by other processes</span>
+	Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.High;
+
+	<span class="comment">// We'll let NHibernate cache it's Configuration and SessionFactory as we'd probably do this in most live applications</span>
+	nhCfg = <span class="keyword">new</span> Configuration();
+	nhCfg.AddAssembly(Assembly.GetExecutingAssembly());
+	nhFactory = nhCfg.BuildSessionFactory();
+
+	<span class="keyword">foreach</span>(<span class="keyword">int</span> rc <span class="keyword">in</span> <span class="keyword">new</span> <span class="keyword">int</span>[] { <span class="number">1</span>, <span class="number">10</span>, <span class="number">100</span>, <span class="number">1000</span>, <span class="number">10000</span>, <span class="number">100000</span> })<span class="comment">//, 100, 1000, 10000, 100000 })</span>
+	{
+		Console.WriteLine(<span class="string">"Rowcount: "</span> + rc);
+		rowcount = rc;
+
+		<span class="comment">// Set the rowcount</span>
+		COMMAND_TEXT = ORIGINAL_COMMAND_TEXT.Replace(<span class="string">"{rowcount}"</span>, rowcount.ToString());
+
+		<span class="comment">// Make sure the enhanced automapped datareader does not use cached resources from previous run</span>
+		EntityMapper.ClearCachedMapperMethods();
+
+		<span class="comment">// Compile the query for the compiled linq query test</span>
+		compiledQuery = CompiledQuery.Compile&lt;DataContext, <span class="keyword">int</span>, IEnumerable&lt;Product&gt;&gt;((DataContext dc, <span class="keyword">int</span> takeCount) =&gt; dc.GetTable&lt;Product&gt;().OrderBy(p =&gt; p.ProductID).Take(takeCount));
+
+		Console.WriteLine(<span class="string">"performDataReader: "</span> + CodeProfiler.ProfileAction(performDataReader, iterations, <span class="number">3</span>));
+		Console.WriteLine(<span class="string">"performDataTable: "</span> + CodeProfiler.ProfileAction(performDataTable, iterations, <span class="number">3</span>));
+		Console.WriteLine(<span class="string">"performEntityQuery: "</span> + CodeProfiler.ProfileAction(performEntityQuery, iterations, <span class="number">3</span>));
+		Console.WriteLine(<span class="string">"performLinqQuery: "</span> + CodeProfiler.ProfileAction(performLinqQuery, iterations, <span class="number">3</span>));
+		Console.WriteLine(<span class="string">"performCompiledLinqQuery: "</span> + CodeProfiler.ProfileAction(performCompiledLinqQuery, iterations, <span class="number">3</span>));
+		Console.WriteLine(<span class="string">"performSubsetLinqQuery: "</span> + CodeProfiler.ProfileAction(performSubsetLinqQuery, iterations, <span class="number">3</span>));
+		Console.WriteLine(<span class="string">"performAutomappedDataReader: "</span> + CodeProfiler.ProfileAction(performAutomappedDataReader, iterations, <span class="number">3</span>));
+		Console.WriteLine(<span class="string">"performEnhancedAutomappedDataReader: "</span> + CodeProfiler.ProfileAction(performEnhancedAutomappedDataReader, iterations, <span class="number">3</span>));
+		Console.WriteLine(<span class="string">"performSubSonicQuery: "</span> + CodeProfiler.ProfileAction(performSubSonicQuery, iterations, <span class="number">3</span>));
+		Console.WriteLine(<span class="string">"performNHibernateQuery: "</span> + CodeProfiler.ProfileAction(performNHibernateQuery, iterations, <span class="number">3</span>));
+	}
+
+	Console.Write(<span class="string">"Done"</span>);
+	Console.Read();
+}
+</pre></figure>
+
+<h2 id="The_results">The results</h2>
+<p>The following two graphs shows the total runtime of 50 iterations for each different method, as well as the total runtime divided by number of rows. Runtime in seconds along the Y-axis, number of rows along the X-axis. It basically shows that all LINQ to SQL flavors suffer from initial setup, but they scale extremely well, ending up outperforming all other contestants by a fair margin. One could argue that it’s rarely relevant in cases of more than a thousand rows as we’ll rarely pull out that much data at once. Never the less, I find it interesting - it’s something I’ll have to look under the hood to find an explanation of. Ignoring some variance due to the low row number, DataReader, DataTable and my Enhanced Automapped DataReader functions outperform most contestants.</p>
+<p>UPDATE:</p>
+<p>It seems the reason the LINQ flavors are so speedy is because their object mapper methods are being cached in the local thread cache. And since the CodeProfiler will execute all iterations on the same thread, each iteration (except the first) will simply reuse the mapper methods. See System.Data.Linq.SqlClient.ObjectReaderCompiler.Compile() for reference.</p>
+<p>UPDATE 2:</p>
+<p>As <a href="http://www.u2u.info/Blogs/Kris" target="_blank">Kris Vandermotten</a> duly commented, I should have tested a compiled LINQ query as well as that really is a separate scenario. I’ve added a tenth method as well as a new line in the graphs. The compiled LINQ query, although requiring a bit more plumbing code, really blows the competition away. It’s fast for even single row queries since we no longer suffer from the compilation time. For larger rowsets the advantage diminishes as the saved compilation time is spread out over a large amount of rows.</p>
+<p>UPDATE 3:</p>
+<p>As a friend of mine, <a href="http://intellect.dk/" target="_blank">Jakob Andersen</a> points out, I really should be a bit more specific in regards to the purpose of these comparisons.</p>
+<p>I am in no way trying to make the claim that it’s unreasonable that an OR/M framework hurts performance. Neither am I claiming that my comparisons between LINQ to SQL, Subsonic and nHibernate are fair. Really, to make a fair comparison, one should compare the very specific features of the frameworks, not a feature set as general as what I’m doing in these tests.</p>
+<p>The thing is, some of these frameworks (nHibernate, I’m looking at you especially) just offer so much more functionality that it’s a burden they have to live with. While this extra functionality might cost a bit when we’re just trying to test the actual object translation performance, it might gain you a whole lot more in real life scenarios. Take for instance, if you utilize nHibernates caching, you might save the time that goes towards the database lookups - saving you much more than the actual translation process in most cases.</p>
+<p>So, as mentioned in a couple of tests - take these results with a grain of salt. They’re rather out-of-the-box simple tests of direct querying &amp; result translation performance. We’re ignoring all of the extra OR/M features that we have available, and we’re ignoring that these different frameworks offer very different functionality.</p>
+<h3 id="Total_runtime">Total runtime</h3>
+<div class="imgwrapper" style=""><div><a href="/performance-comparison-reading-data-from-the-database-strongly-typed/totalgraph1_2.jpg" class="fancy"><img src="/performance-comparison-reading-data-from-the-database-strongly-typed/totalgraph1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<h3 id="Runtime_per_row">Runtime per row</h3>
+<div class="imgwrapper" style=""><div><a href="/performance-comparison-reading-data-from-the-database-strongly-typed/totalgraph2_2.jpg" class="fancy"><img src="/performance-comparison-reading-data-from-the-database-strongly-typed/totalgraph2_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Remember, even though there seems to be somewhat of a speed difference, the fastest method takes only 0,000074 seconds, while the slowest takes 0,00085 seconds. No matter what, you should’nt consider refactoring your solutions in regards to performance unless you really have a high hit count, or unless it’s for valid architectural reasons. Otherwise you might just risk having Ted Dziuba <a href="http://teddziuba.com/2008/04/im-going-to-scale-my-foot-up-y.html" target="_blank">shove his foot up your ass</a>.</p>
+<h2 id="Downloads">Downloads</h2>
+<p><a href="PerformanceComparison_ReadingStronglyTyped.zip">PerformanceComparison_ReadingStronglyTyped.zip - Sample code</a><br><a href="Reading_Data_From_Database_Profiling.xlsx">Reading_Data_From_Database_Profiling.xslx - Profiling results</a></p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Apr</span>
 			<span class="day">16</span>
 		</div>
 		<div class="lower">2008</div>
@@ -1327,92 +1776,6 @@ namespace StringEnumeration
 }
 </pre></figure>
 
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Mar</span>
-			<span class="day">08</span>
-		</div>
-		<div class="lower">2008</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/using-network-load-balancing-for-availability-and-scalability/" title="Using Network Load Balancing for Availability &amp; Scalability" rel="bookmark">Using Network Load Balancing for Availability &amp; Scalability</a></h1>
-		<div class="categories">
-			
-				<a href="/category/.NET/">.NET</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>There are two primary reasons for venturing into the realms of clustering/load balancing - availability &amp; scalability. In this post I’ll give a quick demo of how to setup Windows Network Load Balancing (NLB) on Server 2003 and how it affects the availability of a web application.</p>
-<a id="more"></a>
-
-<p>When we have several nodes doing the same thing, if one of them fails, the cluster as a whole continues - provided that the nodes are not so overburdened that a single node failing will kill the others due to the extra load. Most applications will have an upper limit on how much it can scale on a single box. You can get very far by vertically scaling your solution (buying faster &amp; usally exponentially more expensive hardware), but true scalability always comes in the form of horizontal scaling. Add another box and receive more or less linear return of investment in regards of added computing power.</p>
-<p>NLB enables us to easily add new nodes to a cluster and thus letting them share the workload. There are several issues to consider before setting up a cluster for a real application. Does the application share user file data? - in such a case you’ll have to make sure all nodes in the cluster have access to those files, and remember - the cluster is no stronger than the weakest link. Usually you’d probably go for a <a href="http://en.wikipedia.org/wiki/Storage_area_network" target="_blank">SAN</a> to store all common files. State is also an important factor as most web applications rely on storing user specific data in statebags like the Session object. When the load is balanced out on several servers, the user could potentially visit several servers during his visit to the website, and unless the state storage is centralized, the user will have different session data on each server. Again, remember that you’ll have to provide a redundant storage location for the session data, or else you’ll compromise the availability of the cluster.</p>
-<p>In this demonstration I’ll be using two virtual PCs running on my own host computer. All three computers are running on the subnet 192.168.0.X. Here are the virtual machines involved:</p>
-<figure class="highlight"><pre>192.168.0.34 - VENETIAN
-192.168.0.32 – MIRAGE
-</pre></figure>
-
-<p>When you setup an NLB cluster, you create a new virtual IP address that gets mapped to each individual server, besides their own static IP address. In this demo I’ll setup the cluster on the virtual IP address 192.168.0.50. Before we get too far, I should mention that if you are going to setup an NLB cluster in a production environment, you should use machines with dual NICs so one NIC can connect to the public lan while the other NIC connects to a private switched lan where only the cluster nodes are connected. This ensures that the internal cluster communication is not polluting the general network traffic, aswell as making it a lot more efficient since we’ll then be able to utilize <a href="http://en.wikipedia.org/wiki/Unicast" target="_blank">unicast communciation</a> between the nodes instead of relying on <a href="http://en.wikipedia.org/wiki/Multicast" target="_blank">multicast communication</a>.</p>
-<p>For demonstrating the effects of a node crash, I’ve created a very simple load testing tool, the main functionality is an infinite loop trying to make a request at a time while registering success/failures. It’ll also show the text result that is returned in a one-line textbox:</p>
-<figure class="highlight cs"><pre><span class="keyword">while</span> (running)
-{
-	HttpWebRequest req = (HttpWebRequest)WebRequest.Create(txtUrl.Text);
-	req.Timeout = <span class="number">1000</span>;
-	req.KeepAlive = <span class="keyword">false</span>;
-
-	<span class="keyword">try</span>
-	{
-		WebResponse res = req.GetResponse();
-		<span class="keyword">using</span> (StreamReader sr = <span class="keyword">new</span> StreamReader(res.GetResponseStream()))
-			lastResult = sr.ReadToEnd();
-
-		successfulRequests++;
-	}
-	<span class="keyword">catch</span> (WebException)
-	{
-		failedRequests++;
-	}
-}
-</pre></figure>
-
-<p>As I’m running this test on two VPCs on my local machine, I won’t be getting any extra performance out of my cluster since the VPCs will just use 50% CPU each. This demo will concentrate on the availability of the cluster - but feel assured that performance will be better if you distribute the cluster over several separate computers.</p>
-<p>Here’s the demo of how to setup &amp; use NLB:</p>
-<div class="video-container"><iframe src="//www.youtube.com/embed/32uWPp8PpUA" frameborder="0" allowfullscreen></iframe></div>
-
-
-
-<h2 id="Other_good_resources">Other good resources</h2>
-<p>Rick Strahl on <a href="http://www.west-wind.com/presentations/loadbalancing/NetworkLoadBalancingWindows2003.asp" target="_blank">Web Farming with the Network Load Balancing Service in Windows Server 2003</a></p>
-<p>Peter A. Bromberg on <a href="http://www.eggheadcafe.com/articles/20020302.asp" target="_blank">Network Load Balancing, Session State and IP Affinity</a></p>
-<h2 id="Downloads">Downloads</h2>
-<p><a href="SimpleLoadTester.zip">SimpleLoadTester.zip - Sample code</a></p>
 
 
 				<div style="clear: both"></div>

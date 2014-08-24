@@ -83,6 +83,67 @@
 	<div class="datebox">
 		<div class="upper">
 			<span class="month">Feb</span>
+			<span class="day">14</span>
+		</div>
+		<div class="lower">2007</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/audi-tt/" title="Audi TT" rel="bookmark">Audi TT</a></h1>
+		<div class="categories">
+			
+				<a href="/category/Life/">Life</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>I’ve been asked quite a lot of times why I hadn’t put up any pictures of my new ride yet. There’s still a couple of things missing such as the Audi logos for the rims, at least I got the alarms installed yesterday, this is now officially the most secure car in Denmark, sporting a Viper 5000XL, Cobra CONNEX GPS/GSM tracker and a Credex VGS MK-III smoke machine :D</p>
+<a id="more"></a>
+
+<div class="imgwrapper" style=""><div><a href="/audi-tt/tt1_2.jpg" class="fancy"><img src="/audi-tt/tt1_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/audi-tt/tt2_2.jpg" class="fancy"><img src="/audi-tt/tt2_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/audi-tt/tt3_2.jpg" class="fancy"><img src="/audi-tt/tt3_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/audi-tt/tt4_2.jpg" class="fancy"><img src="/audi-tt/tt4_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/audi-tt/tt5_2.jpg" class="fancy"><img src="/audi-tt/tt5_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/audi-tt/tt6_2.jpg" class="fancy"><img src="/audi-tt/tt6_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<div class="imgwrapper" style=""><div><a href="/audi-tt/tt7_2.jpg" class="fancy"><img src="/audi-tt/tt7_2.jpg" style="max-height: 250px"/></a></div></div>
+
+<p>Yes, those plates are mine :)</p>
+<div class="imgwrapper" style=""><div><a href="/audi-tt/tt9_2.jpg" class="fancy"><img src="/audi-tt/tt9_2.jpg" style="max-height: 250px"/></a></div></div>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Feb</span>
 			<span class="day">07</span>
 		</div>
 		<div class="lower">2007</div>
@@ -767,94 +828,6 @@
 <p>Count: <strong>90</strong><br>Suppress your appetite and feel full and satisfied all day long increase your energy levels lose excess weight increase your metabolism burn body fat burn calories attack obesity and more.</p>
 <h2 id="To_be_continued…">To be continued…</h2>
 <p>That’s all for part 1. Hopefully I’ll have come up with some more interesting analysis for the next part :) Feel free to post a suggestion if there’s something specific you’d like to see some numbers of. Also, if you have access to large quantities of spam mail (no, not in the form of signing me up for billions of sites) in Outlook PST format, please de send me a message, I’d really like to have a larger sample to base my analysis upon.</p>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Dec</span>
-			<span class="day">26</span>
-		</div>
-		<div class="lower">2006</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/executing-assembly-dynamically-in-a-strongly-typed-way/" title="Executing Assembly Dynamically In a Strongly Typed Way" rel="bookmark">Executing Assembly Dynamically In a Strongly Typed Way</a></h1>
-		<div class="categories">
-			
-				<a href="/category/.NET/">.NET</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>During a recent plugin based project that I worked upon, I had to dynamically load assemblies and instantiate objects from those assemblies. Usually that’d require a lot of typecasting and nasty code, but thanks to generics we can make it a lot smoother.</p>
-<a id="more"></a>
-
-<p>I present to you my LoadPlugin function of my PluginHandler module:</p>
-<figure class="highlight cs"><pre><span class="keyword">using</span> System.Reflection;
-<span class="keyword">using</span> System;
-
-namespace MTH.Core
-{
-	<span class="keyword">internal</span> <span class="keyword">class</span> PluginHandler
-	{
-		<span class="keyword">public</span> <span class="keyword">static</span> T LoadPlugin&lt;T&gt;(<span class="keyword">string</span> file)
-		{
-			Assembly ass = Assembly.LoadFile(file);
-
-			<span class="keyword">foreach</span> (Type t <span class="keyword">in</span> ass.GetTypes())
-				<span class="keyword">if</span> (<span class="keyword">typeof</span>(T).IsAssignableFrom(t))
-					<span class="keyword">return</span> (T)ass.CreateInstance(t.FullName);
-
-			<span class="keyword">return</span> <span class="keyword">default</span>(T);
-		}
-	}
-}
-</pre></figure>
-
-<p>The generic parameter defines the type that should be created from the specified assembly file, this also means that the function will return a strongly typed result of this specific type.</p>
-<p>Inside the function we load the assembly and load through each type it hosts. For each type we check the IsAssignableFrom function which’ll check if the current type is of the specified type T, no matter if T is an abstract class, interface or any other type. If it matches, we return a new instance of that type. If no type match is found we return null so we can handle the problem in the calling function.</p>
-<p>Note that this is a very simple example function, there are many unhandled parameters! Security for instance. In most scenarios you would probably want to check the identity of the loaded assembly and set the security permissions dependingly. Also it is not possible to pass constructor parameters, this would require an extension of the function to take in an array of objects as constructor parameters.</p>
-<p>This is how easily we can load any number of plugins that have been placed in a certain plugin directory (in this case the plugins contains code that is to be run on application startup):</p>
-<figure class="highlight cs"><pre><span class="keyword">foreach</span> (<span class="keyword">string</span> file <span class="keyword">in</span> Directory.GetFiles(Application.StartupPath + <span class="string">"\Plugins\Startup"</span>, <span class="string">"*.dll"</span>))
-{
-	IRunnable startupPlugin = PluginHandler.LoadPlugin&lt;IRunnable&gt;(file);
-
-	<span class="keyword">if</span> (startupPlugin != <span class="keyword">null</span>)
-		startupPlugin.Run();
-}
-</pre></figure>
-
-<p>All that is required is that the assemblies in the PluginsStartup folder contain a type that implements the IRunnable interface:</p>
-<figure class="highlight cs"><pre>
-<span class="keyword">public</span> <span class="keyword">interface</span> IRunnable
-{
-	<span class="keyword">void</span> Run();
-}
-</pre></figure>
-
 
 
 				<div style="clear: both"></div>

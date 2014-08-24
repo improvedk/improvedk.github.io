@@ -83,6 +83,123 @@
 	<div class="datebox">
 		<div class="upper">
 			<span class="month">Dec</span>
+			<span class="day">12</span>
+		</div>
+		<div class="lower">2011</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/determining-if-vardecimal-is-enabled-for-a-table-without-using/" title="Determining If Vardecimal Is Enabled For a Table Without Using OBJECTPROPERTY" rel="bookmark">Determining If Vardecimal Is Enabled For a Table Without Using OBJECTPROPERTY</a></h1>
+		<div class="categories">
+			
+				<a href="/category/SQL Server - Internals/">SQL Server - Internals</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>Determining whether <a href="http://msdn.microsoft.com/en-us/library/bb508963(v=sql.90" target="_blank">vardecimal</a>.aspx) is enabled for a given table is usually done by using the OBJECTPROPERTY function like so:</p>
+<a id="more"></a>
+
+
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span> OBJECTPROPERTY(OBJECT_ID(<span class="string">'MyTable'</span>), <span class="string">'TableHasVarDecimalStorageFormat'</span>)</span>
+</pre></figure>
+
+<p>If it’s disabled, you’ll see this:</p>
+<div class="imgwrapper" style=""><div><a href="/determining-if-vardecimal-is-enabled-for-a-table-without-using/image_2.png" class="fancy"><img src="/determining-if-vardecimal-is-enabled-for-a-table-without-using/image_2.png" style="max-height: 250px"/></a></div></div>
+
+<p>Whereas if it’s enabled, you’ll see a 1:</p>
+<div class="imgwrapper" style=""><div><a href="/determining-if-vardecimal-is-enabled-for-a-table-without-using/image_41.png" class="fancy"><img src="/determining-if-vardecimal-is-enabled-for-a-table-without-using/image_41.png" style="max-height: 250px"/></a></div></div>
+
+<p>This works excellent as long as SQL Server is running, and you have access to the OBJECTPROPERTY function. However, as for all I know, there’s no DMV that exposes the vardecimal status for a table. I’ve also not been able to find this property in any of the base tables (if you know where/how it’s actually stored, please let me know!).</p>
+<p>However, I’ve come up with the following query as a workaround for determining if vardecimal is enabled for a given table, without using OBJECTPROPERTY:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">SELECT</span>
+	<span class="aggregate">COUNT</span>(*)
+<span class="keyword">FROM</span>
+	sys.system_internals_partition_columns PC
+<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
+	sys.partitions P <span class="keyword">ON</span> P.partition_id = pc.partition_id
+<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
+	sys.tables T <span class="keyword">ON</span> T.object_id = P.object_id
+<span class="keyword">WHERE</span>
+	T.name = <span class="string">'MyTable'</span> <span class="keyword">AND</span>
+	P.index_id &lt;= <span class="number">1</span> <span class="keyword">AND</span>
+	PC.system_type_id = <span class="number">106</span> <span class="keyword">AND</span>
+	PC.leaf_offset &lt; <span class="number">0</span></span>
+</pre></figure>
+
+<p>What this does is to look for all of the decimal columns for the table, stored on any partition (as vardecimal is set at the table level, we don’t really care about the specific partitions) belonging to either the clustered index or heap.</p>
+<p>Note that while this is usually true, you can actually have partitions within the same object, with both decimal and vardecimal columns. If you enable and disable vardecimal quickly, you’ll often see an extra partition with the old schema definition, though no pages are allocated. Thus, if you’re using this method for parsing purposes - make sure to check at the partition level. For most use cases, this won’t be an issue.</p>
+<p>If <em>any</em> of those decimal columns have a negative leaf_offset value (result &gt; 0), we can be sure that vardecimal is enabled for the table. The leaf_offset value determines the physical order of the fixed length columns in the actual records stored on disk. All variable length columns will have a negative value, and as such, normal decimal columns should always have a positive value. If any decimal column has a negative leaf_offset value, we know it’s stored in the variable length section of the records – and only vardecimals are stored that way!</p>
+<h2 id="Example">Example</h2>
+<p>Here’s a table without vardecimal enabled:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> MyDecimalTable (A <span class="keyword">decimal</span>(<span class="number">5</span>, <span class="number">0</span>))
+
+<span class="keyword">SELECT</span>
+	<span class="aggregate">COUNT</span>(*)
+<span class="keyword">FROM</span>
+	sys.system_internals_partition_columns PC
+<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
+	sys.partitions P <span class="keyword">ON</span> P.partition_id = pc.partition_id
+<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
+	sys.tables T <span class="keyword">ON</span> T.object_id = P.object_id
+<span class="keyword">WHERE</span>
+	T.name = <span class="string">'MyDecimalTable'</span> <span class="keyword">AND</span>
+	P.index_id &lt;= <span class="number">1</span> <span class="keyword">AND</span>
+	PC.system_type_id = <span class="number">106</span> <span class="keyword">AND</span>
+	PC.leaf_offset &lt; <span class="number">0</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/determining-if-vardecimal-is-enabled-for-a-table-without-using/image_61.png" class="fancy"><img src="/determining-if-vardecimal-is-enabled-for-a-table-without-using/image_61.png" style="max-height: 250px"/></a></div></div>
+
+<p>And here’s one <em>with</em> vardecimal enabled:</p>
+<figure class="highlight sql"><pre><span class="operator"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> MyVardecimalTable (A <span class="keyword">decimal</span>(<span class="number">5</span>, <span class="number">0</span>))
+
+<span class="keyword">EXEC</span> sp_tableoption <span class="string">'MyVardecimalTable'</span>, <span class="string">'vardecimal storage format'</span>, <span class="string">'1'</span>
+
+<span class="keyword">SELECT</span>
+	<span class="aggregate">COUNT</span>(*)
+<span class="keyword">FROM</span>
+	sys.system_internals_partition_columns PC
+<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
+	sys.partitions P <span class="keyword">ON</span> P.partition_id = pc.partition_id
+<span class="keyword">INNER</span> <span class="keyword">JOIN</span>
+	sys.tables T <span class="keyword">ON</span> T.object_id = P.object_id
+<span class="keyword">WHERE</span>
+	T.name = <span class="string">'MyVardecimalTable'</span> <span class="keyword">AND</span>
+	P.index_id &lt;= <span class="number">1</span> <span class="keyword">AND</span>
+	PC.system_type_id = <span class="number">106</span> <span class="keyword">AND</span>
+	PC.leaf_offset &lt; <span class="number">0</span></span>
+</pre></figure>
+
+<div class="imgwrapper" style=""><div><a href="/determining-if-vardecimal-is-enabled-for-a-table-without-using/image_8.png" class="fancy"><img src="/determining-if-vardecimal-is-enabled-for-a-table-without-using/image_8.png" style="max-height: 250px"/></a></div></div>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Dec</span>
 			<span class="day">09</span>
 		</div>
 		<div class="lower">2011</div>
@@ -1701,57 +1818,6 @@ USE SampleDatabase
 <div class="imgwrapper" style=""><div><a href="/orcamdf-now-supports-databases-with-multiple-data-files/image_4.png" class="fancy"><img src="/orcamdf-now-supports-databases-with-multiple-data-files/image_4.png" style="max-height: 250px"/></a></div></div>
 
 <p>… All the way down to 100.</p>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Oct</span>
-			<span class="day">20</span>
-		</div>
-		<div class="lower">2011</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/what-do-airlines-use-for-primary-keys/" title="What Do Airlines Use for Primary Keys?" rel="bookmark">What Do Airlines Use for Primary Keys?</a></h1>
-		<div class="categories">
-			
-				<a href="/category/SQL Server/">SQL Server</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>On my way home from the PASS Summit in Seattle, I had a layover in Amsterdam before continuing onto Copenhagen. For various reasons, we were about one and a half hours delayed, and I arrived in AMS at 9:30, my CPH flight departing at 9:35. As you’d probably guessed, I missed my flight.</p>
-<a id="more"></a>
-
-<p>To fix it, I was told to do a check-in at one of the self-service counters at the transfer desk. Apparently these both do normal check-ins, as well as (supposedly), get you a replacement flight in case you missed the normal one. I stuck my passport into the scanner and it gladly popped up with a new flight to Copenhagen about 4 hours later. Great! Well, except my name wasn’t on the check-in list, two other (unknown to me) Danish names were. However, I did share a surname with one of them.</p>
-<div class="imgwrapper" style=""><div><a href="/what-do-airlines-use-for-primary-keys/delta-air-france-klm_2.jpg" class="fancy"><img src="/what-do-airlines-use-for-primary-keys/delta-air-france-klm_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>After asking one of the attendants I was told, “Oh, that’s because your flight has already departed, it’ll try to find the nearest match”. Áha, so if there’s no 1:1 match, it’ll just try to find the best match of an existing booking to a non-departed flight – and apparently the best it could find was a two-person ticket for a flight 4 hours later. Now, it was for the same destination, and I did share my surname with one of the passengers, but it surely wasn’t my ticket. Still, I was able to check-in as them and confirm “my” ticket.</p>
-<p>So this leaves me the question, what in the world do they (Delta/KLM/AF) use as the primary key for their ticketing system? Once my passport is scanned, and they’ve got my passport number, how can there be <em>any</em> doubt as to who I am? How in the world can I get to check-in two completely, to me, unrelated passengers on a flight I’m not going on myself?</p>
-<p>I ended up getting booked for another flight to another (closer to my home) destination in Denmark, but it did require manual intervention from the service desk.</p>
 
 
 				<div style="clear: both"></div>

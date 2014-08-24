@@ -83,6 +83,92 @@
 	<div class="datebox">
 		<div class="upper">
 			<span class="month">Mar</span>
+			<span class="day">08</span>
+		</div>
+		<div class="lower">2008</div>
+	</div>
+
+	<div class="title">
+		<h1><a href="/using-network-load-balancing-for-availability-and-scalability/" title="Using Network Load Balancing for Availability &amp; Scalability" rel="bookmark">Using Network Load Balancing for Availability &amp; Scalability</a></h1>
+		<div class="categories">
+			
+				<a href="/category/.NET/">.NET</a>
+				
+			
+		</div>
+		
+		<div class="clear"></div>
+	</div>
+
+	<div id="bodywrapper" >
+
+		
+		
+			<div class="body">
+			
+				<p>There are two primary reasons for venturing into the realms of clustering/load balancing - availability &amp; scalability. In this post I’ll give a quick demo of how to setup Windows Network Load Balancing (NLB) on Server 2003 and how it affects the availability of a web application.</p>
+<a id="more"></a>
+
+<p>When we have several nodes doing the same thing, if one of them fails, the cluster as a whole continues - provided that the nodes are not so overburdened that a single node failing will kill the others due to the extra load. Most applications will have an upper limit on how much it can scale on a single box. You can get very far by vertically scaling your solution (buying faster &amp; usally exponentially more expensive hardware), but true scalability always comes in the form of horizontal scaling. Add another box and receive more or less linear return of investment in regards of added computing power.</p>
+<p>NLB enables us to easily add new nodes to a cluster and thus letting them share the workload. There are several issues to consider before setting up a cluster for a real application. Does the application share user file data? - in such a case you’ll have to make sure all nodes in the cluster have access to those files, and remember - the cluster is no stronger than the weakest link. Usually you’d probably go for a <a href="http://en.wikipedia.org/wiki/Storage_area_network" target="_blank">SAN</a> to store all common files. State is also an important factor as most web applications rely on storing user specific data in statebags like the Session object. When the load is balanced out on several servers, the user could potentially visit several servers during his visit to the website, and unless the state storage is centralized, the user will have different session data on each server. Again, remember that you’ll have to provide a redundant storage location for the session data, or else you’ll compromise the availability of the cluster.</p>
+<p>In this demonstration I’ll be using two virtual PCs running on my own host computer. All three computers are running on the subnet 192.168.0.X. Here are the virtual machines involved:</p>
+<figure class="highlight"><pre>192.168.0.34 - VENETIAN
+192.168.0.32 – MIRAGE
+</pre></figure>
+
+<p>When you setup an NLB cluster, you create a new virtual IP address that gets mapped to each individual server, besides their own static IP address. In this demo I’ll setup the cluster on the virtual IP address 192.168.0.50. Before we get too far, I should mention that if you are going to setup an NLB cluster in a production environment, you should use machines with dual NICs so one NIC can connect to the public lan while the other NIC connects to a private switched lan where only the cluster nodes are connected. This ensures that the internal cluster communication is not polluting the general network traffic, aswell as making it a lot more efficient since we’ll then be able to utilize <a href="http://en.wikipedia.org/wiki/Unicast" target="_blank">unicast communciation</a> between the nodes instead of relying on <a href="http://en.wikipedia.org/wiki/Multicast" target="_blank">multicast communication</a>.</p>
+<p>For demonstrating the effects of a node crash, I’ve created a very simple load testing tool, the main functionality is an infinite loop trying to make a request at a time while registering success/failures. It’ll also show the text result that is returned in a one-line textbox:</p>
+<figure class="highlight cs"><pre><span class="keyword">while</span> (running)
+{
+	HttpWebRequest req = (HttpWebRequest)WebRequest.Create(txtUrl.Text);
+	req.Timeout = <span class="number">1000</span>;
+	req.KeepAlive = <span class="keyword">false</span>;
+
+	<span class="keyword">try</span>
+	{
+		WebResponse res = req.GetResponse();
+		<span class="keyword">using</span> (StreamReader sr = <span class="keyword">new</span> StreamReader(res.GetResponseStream()))
+			lastResult = sr.ReadToEnd();
+
+		successfulRequests++;
+	}
+	<span class="keyword">catch</span> (WebException)
+	{
+		failedRequests++;
+	}
+}
+</pre></figure>
+
+<p>As I’m running this test on two VPCs on my local machine, I won’t be getting any extra performance out of my cluster since the VPCs will just use 50% CPU each. This demo will concentrate on the availability of the cluster - but feel assured that performance will be better if you distribute the cluster over several separate computers.</p>
+<p>Here’s the demo of how to setup &amp; use NLB:</p>
+<div class="video-container"><iframe src="//www.youtube.com/embed/32uWPp8PpUA" frameborder="0" allowfullscreen></iframe></div>
+
+
+
+<h2 id="Other_good_resources">Other good resources</h2>
+<p>Rick Strahl on <a href="http://www.west-wind.com/presentations/loadbalancing/NetworkLoadBalancingWindows2003.asp" target="_blank">Web Farming with the Network Load Balancing Service in Windows Server 2003</a></p>
+<p>Peter A. Bromberg on <a href="http://www.eggheadcafe.com/articles/20020302.asp" target="_blank">Network Load Balancing, Session State and IP Affinity</a></p>
+<h2 id="Downloads">Downloads</h2>
+<p><a href="SimpleLoadTester.zip">SimpleLoadTester.zip - Sample code</a></p>
+
+
+				<div style="clear: both"></div>
+
+				
+
+			</div>
+
+		
+
+		
+
+	</div>
+</article>
+
+	<article>
+	<div class="datebox">
+		<div class="upper">
+			<span class="month">Mar</span>
 			<span class="day">07</span>
 		</div>
 		<div class="lower">2008</div>
@@ -1275,62 +1361,6 @@ class MyApplication
 <p>It’s a tough decision, choosing which sessions to fit into the available slots. There are several slots where I’d love to watch multiple sessions.</p>
 <p>I look forward to meeting a lot of people, colleagues and friends. Conferences are superb for developing ones network.</p>
 <p>I like the multitude of technologies and areas that are covered at JAOO, Java, JavaScript, .NET, virtualization, architecture and so forth. I’d love to see some more DBA related sessions though (especially MSSQL 2008).</p>
-
-
-				<div style="clear: both"></div>
-
-				
-
-			</div>
-
-		
-
-		
-
-	</div>
-</article>
-
-	<article>
-	<div class="datebox">
-		<div class="upper">
-			<span class="month">Jun</span>
-			<span class="day">23</span>
-		</div>
-		<div class="lower">2007</div>
-	</div>
-
-	<div class="title">
-		<h1><a href="/zune-causing-license-resets/" title="Zune Causing License Resets?" rel="bookmark">Zune Causing License Resets?</a></h1>
-		<div class="categories">
-			
-				<a href="/category/Miscellaneous/">Miscellaneous</a>
-				
-			
-		</div>
-		
-		<div class="clear"></div>
-	</div>
-
-	<div id="bodywrapper" >
-
-		
-		
-			<div class="body">
-			
-				<p>I’ve had my Vista PC running for quite some months now without problems, as well as Adobe Acrobat Professional and Adobe Photoshop. But not anymore…</p>
-<a id="more"></a>
-
-<div class="imgwrapper" style=""><div><a href="/zune-causing-license-resets/zuneactivation_1_2.jpg" class="fancy"><img src="/zune-causing-license-resets/zuneactivation_1_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>Yesterday I plugged in the Zune that I bought on a trip to the US in january. I got the installer / driver software from zune.net. During the installation the installer requested me to update my Zune firmware, which I did. Everything went smooth.</p>
-<p>I then left my PC for some hours to go to work. When I got back I was shown a dialog saying that my hardware configuration had changed and that I needed to reactivate Vista, hmmm. I tried the automatic activation but it said my key was already in use. After calling the automatic activation service phone number I got Vista reactivated, weird stuff.</p>
-<p>Then suddenly Adobe Acrobat said that my current license was invalid and that I had to reactivate the software. I had to do this twice as I got the exact same message the next time I started Acrobat:</p>
-<div class="imgwrapper" style=""><div><a href="/zune-causing-license-resets/zuneactivation_3_2.jpg" class="fancy"><img src="/zune-causing-license-resets/zuneactivation_3_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>And now today I just started Photoshop, and Guess what came up:</p>
-<div class="imgwrapper" style=""><div><a href="/zune-causing-license-resets/zuneactivation_2_2.jpg" class="fancy"><img src="/zune-causing-license-resets/zuneactivation_2_2.jpg" style="max-height: 250px"/></a></div></div>
-
-<p>Did me plugging in my Zune cause all of this? I have not made any other hardware changes for months, but how in the world would plugging in an MP3 player cause such a mess?</p>
 
 
 				<div style="clear: both"></div>
