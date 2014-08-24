@@ -4,7 +4,7 @@
   
   <link href="/atom.xml" rel="self"/>
   <link href="http://improve.dk/"/>
-  <updated>2014-05-19T07:31:46.341Z</updated>
+  <updated>2014-08-24T14:04:33.464Z</updated>
   <id>http://improve.dk/</id>
   
   <author>
@@ -19,7 +19,7 @@
     <link href="http://improve.dk/presenting-at-microsoft-devcon-2014/"/>
     <id>http://improve.dk/presenting-at-microsoft-devcon-2014/</id>
     <published>2014-05-18T13:27:00.000Z</published>
-    <updated>2014-05-19T07:07:16.000Z</updated>
+    <updated>2014-08-24T11:31:01.000Z</updated>
     <content type="html"><![CDATA[<p>I’m happy to announce that I’ll be presenting at <a href="http://www.msdevcon.ru/en/" target="_blank">Microsoft DevCon 2014</a> in Russia!</p>
 <a id="more"></a>
 
@@ -44,7 +44,7 @@
     <link href="http://improve.dk/redirecting-old-permalinks-on-statically-generated-blogs/"/>
     <id>http://improve.dk/redirecting-old-permalinks-on-statically-generated-blogs/</id>
     <published>2014-04-20T23:56:12.000Z</published>
-    <updated>2014-05-04T16:12:23.000Z</updated>
+    <updated>2014-08-24T11:30:52.000Z</updated>
     <content type="html"><![CDATA[<p>Having <a href="/migrating-from-wordpress-to-hexo/">just migrated from Wordpress to Hexo</a>, I quickly realized I forgot something. I forgot to redirect my old permalinks to the new ones…</p>
 <h2 id="Permalinks_Aren’t_Necessarily_Permanent">Permalinks Aren’t Necessarily Permanent</h2>
 <p>A permalink ought to live for the duration of your content, and most importantly, never change. However, having been through a number of different blog engines, not all of them support the same permalink structures, and might not even support redirecting old ones. As such, throgh the years my posts have ended up with multiple permalinks:</p>
@@ -149,7 +149,7 @@
     <link href="http://improve.dk/migrating-from-wordpress-to-hexo/"/>
     <id>http://improve.dk/migrating-from-wordpress-to-hexo/</id>
     <published>2014-04-19T00:00:00.000Z</published>
-    <updated>2014-04-22T10:39:11.000Z</updated>
+    <updated>2014-04-21T01:00:57.000Z</updated>
     <content type="html"><![CDATA[<p>It’s this time of the year again - the time to migrate from one blog engine to another.</p>
 <a id="more"></a>
 
@@ -270,7 +270,7 @@ hexo.extend.filter.register(<span class="string">'pre'</span>, <span class="func
     <link href="http://improve.dk/presenting-sql-saturday-275/"/>
     <id>http://improve.dk/presenting-sql-saturday-275/</id>
     <published>2014-02-04T00:00:00.000Z</published>
-    <updated>2014-04-22T10:39:11.000Z</updated>
+    <updated>2014-04-21T01:00:57.000Z</updated>
     <content type="html"><![CDATA[<p>I’m happy to announce that I’ll be presenting at <a href="http://sqlsaturday.com/275/" target="_blank">SQLSaturday #275</a> in Copenhagen on March 29th!</p>
 <a id="more"></a>
 
@@ -296,7 +296,7 @@ hexo.extend.filter.register(<span class="string">'pre'</span>, <span class="func
     <link href="http://improve.dk/sql-server-corruption-recovery-when-all-else-fails/"/>
     <id>http://improve.dk/sql-server-corruption-recovery-when-all-else-fails/</id>
     <published>2013-11-06T00:00:00.000Z</published>
-    <updated>2014-05-04T16:12:23.000Z</updated>
+    <updated>2014-08-24T11:30:52.000Z</updated>
     <content type="html"><![CDATA[<p>In this post I want to walk through a number of SQL Server corruption recovery techniques for when you’re out of luck, have no backups, and the usual methods don’t work. I’ll be using the <a href="http://msftdbprodsamples.codeplex.com/releases/view/93587" target="_blank">AdventureWorksLT2008R2 sample database</a> as my victim.</p>
 <a id="more"></a>
 
@@ -768,7 +768,7 @@ rows.Select(x =&gt; <span class="keyword">new</span> {
     <link href="http://improve.dk/corrupting-databases-purpose-using-orcamdf-corruptor/"/>
     <id>http://improve.dk/corrupting-databases-purpose-using-orcamdf-corruptor/</id>
     <published>2013-11-05T00:00:00.000Z</published>
-    <updated>2014-05-04T16:12:23.000Z</updated>
+    <updated>2014-08-24T11:30:52.000Z</updated>
     <content type="html"><![CDATA[<p>Sometimes you must first do evil, to do good. Such is the case when you want to hone your skills in corruption recovery of SQL Server databases.</p>
 <a id="more"></a>
 
@@ -819,7 +819,7 @@ Console.WriteLine(<span class="keyword">string</span>.Join(<span class="string">
     <link href="http://improve.dk/orcamdf-rawdatabase-a-swiss-army-knife-for-mdf-files/"/>
     <id>http://improve.dk/orcamdf-rawdatabase-a-swiss-army-knife-for-mdf-files/</id>
     <published>2013-11-04T00:00:00.000Z</published>
-    <updated>2014-05-04T16:12:23.000Z</updated>
+    <updated>2014-08-24T11:30:52.000Z</updated>
     <content type="html"><![CDATA[<p>When I initially started working on <a href="/introducing-orcamdf/">OrcaMDF</a> I had just one goal, to gain a deeper knowledge of MDF file internals than I could through most books available.</p>
 <a id="more"></a>
 
@@ -975,7 +975,7 @@ rows.Select(x =&gt; x[<span class="string">"name"</span>]).Dump();
     <link href="http://improve.dk/powerpad-powerpoint-presenters-view-for-tablets-phones/"/>
     <id>http://improve.dk/powerpad-powerpoint-presenters-view-for-tablets-phones/</id>
     <published>2013-10-28T00:00:00.000Z</published>
-    <updated>2014-04-22T10:39:11.000Z</updated>
+    <updated>2014-04-21T01:00:57.000Z</updated>
     <content type="html"><![CDATA[<p>I love presenting, especially so when it’s possible for me to do so alongside Powerpoints presenters view. Unfortunately I’m an even bigger fan of <a href="http://technet.microsoft.com/en-us/sysinternals/bb897434.aspx" target="_blank">ZoomIt</a> and I use it extensively when presenting. Why is that an issue? To use ZoomIt effectively, not just in demos but when showing slides as well, I need to duplicate my screen rather than extending it. Duplicating the screen means presenters view is not an option :(</p>
 <a id="more"></a>
 
@@ -1010,7 +1010,7 @@ rows.Select(x =&gt; x[<span class="string">"name"</span>]).Dump();
     <link href="http://improve.dk/announcing-tribalsql/"/>
     <id>http://improve.dk/announcing-tribalsql/</id>
     <published>2013-10-23T00:00:00.000Z</published>
-    <updated>2014-04-22T10:39:11.000Z</updated>
+    <updated>2014-04-21T01:00:57.000Z</updated>
     <content type="html"><![CDATA[<p>I’m slightly late to announce this, but better late than never!</p>
 <a id="more"></a>
 
@@ -1037,7 +1037,7 @@ rows.Select(x =&gt; x[<span class="string">"name"</span>]).Dump();
     <link href="http://improve.dk/optimizing-performance-programmatically-setting-readonlysessionstate/"/>
     <id>http://improve.dk/optimizing-performance-programmatically-setting-readonlysessionstate/</id>
     <published>2013-10-08T00:00:00.000Z</published>
-    <updated>2014-05-04T16:12:23.000Z</updated>
+    <updated>2014-08-24T11:30:52.000Z</updated>
     <content type="html"><![CDATA[<p>One of the main culprits when it comes to ASP.NET concurrency is caused by the fact that default sesion state has been implemented using a pessimistic locking pattern. Basically, any standard handler, whether that be an ASPX page, a generic handler or an ASMX web service, goes through the following steps:</p>
 <a id="more"></a>
 
@@ -1165,7 +1165,7 @@ rows.Select(x =&gt; x[<span class="string">"name"</span>]).Dump();
     <link href="http://improve.dk/verifying-mailgun-webhooks/"/>
     <id>http://improve.dk/verifying-mailgun-webhooks/</id>
     <published>2013-09-23T00:00:00.000Z</published>
-    <updated>2014-05-04T16:12:23.000Z</updated>
+    <updated>2014-08-24T11:30:52.000Z</updated>
     <content type="html"><![CDATA[<p><a href="http://www.mailgun.com/" target="_blank">Mailgun</a> has a very neat feature that enables you to basically convert incoming emails to a POST request to a URL of your choice, also known as a webhook. Using this, you can easily have your application respond to email events. However, as this URL/service needs to be publically available, verifying Mailgun webhooks is very important, ensuring requests actually come from Mailgun, and not someone impersonating Mailgun.</p>
 <a id="more"></a>
 
@@ -1211,7 +1211,7 @@ rows.Select(x =&gt; x[<span class="string">"name"</span>]).Dump();
     <link href="http://improve.dk/analyzing-bsod-minidump-files-using-windbg/"/>
     <id>http://improve.dk/analyzing-bsod-minidump-files-using-windbg/</id>
     <published>2013-06-04T00:00:00.000Z</published>
-    <updated>2014-04-22T10:39:11.000Z</updated>
+    <updated>2014-04-21T01:00:57.000Z</updated>
     <content type="html"><![CDATA[<p>Unfortunately, once in a while, computers fail. If you’re running Windows you’ve probably witnessed the dreaded <a href="http://en.wikipedia.org/wiki/Blue_Screen_of_Death" target="_blank">Blue Screen of Death</a>, commonly referred to as a BSOD. Once the BSOD occurs, some machines will immediately restart, before you’ve got a chance to actually see what happened. Other times users will just report that the BSOD happened, without noting anything down about what the message actually said. In this post I’ll show you how analyzing BSOD minidump files using <a href="http://en.wikipedia.org/wiki/WinDbg" target="_blank">Windbg</a> will enable you to find the cause of the BSOD after the fact.</p>
 <a id="more"></a>
 
@@ -1373,7 +1373,7 @@ Followup: MachineOwner
     <link href="http://improve.dk/speaking-at-sql-pass-summit-2013/"/>
     <id>http://improve.dk/speaking-at-sql-pass-summit-2013/</id>
     <published>2013-05-28T00:00:00.000Z</published>
-    <updated>2014-04-22T10:39:11.000Z</updated>
+    <updated>2014-04-21T01:00:57.000Z</updated>
     <content type="html"><![CDATA[<p>I’m delighted to announce that <a href="http://www.sqlpass.org/summit/2013/Sessions/SpeakerDetails.aspx?spid=245" target="_blank">I’ll be speaking</a> at this years <a href="http://www.sqlpass.org/summit/2013/" target="_blank">SQL PASS Summit in Charlotte, North Carolina</a>. Having submitted several times before, unsuccessfully, I’m really happy to have made the cut this year. Looking at the <a href="http://www.sqlpass.org/summit/2013/Sessions.aspx" target="_blank">lineup of speakers</a>, I take great pride in being given the opportunity.</p>
 <a id="more"></a>
 
@@ -1404,7 +1404,7 @@ Followup: MachineOwner
     <link href="http://improve.dk/could-not-load-type-newrelic-agent-core-agentapi/"/>
     <id>http://improve.dk/could-not-load-type-newrelic-agent-core-agentapi/</id>
     <published>2013-05-23T00:00:00.000Z</published>
-    <updated>2014-04-22T10:39:11.000Z</updated>
+    <updated>2014-04-21T01:00:57.000Z</updated>
     <content type="html"><![CDATA[<p>Recently I’ve begun using <a href="http://newrelic.com/" target="_blank">New Relic</a>, and so far it’s been an excellent experience. About two weeks ago I started using their <a href="https://newrelic.com/docs/dotnet/the-net-agent-api" target="_blank">.NET Agent API</a> to customize some of the data reported by our application to their servers. This makes the data way more valuable to us as we can now selectively ignore certain parts of our application while getting better reporting from other, more critical, parts of the application.</p>
 <a id="more"></a>
 
@@ -1437,7 +1437,7 @@ Followup: MachineOwner
     <link href="http://improve.dk/partial-dns-forwarding-using-individual-windows-dns-zones/"/>
     <id>http://improve.dk/partial-dns-forwarding-using-individual-windows-dns-zones/</id>
     <published>2013-05-21T00:00:00.000Z</published>
-    <updated>2014-04-22T10:39:11.000Z</updated>
+    <updated>2014-04-21T01:00:57.000Z</updated>
     <content type="html"><![CDATA[<p>At our office, all machines are using a local Windows DNS server for their outgoing DNS queries. This allows us to make internal zones like .ipaperlan that points to all of our internal systems, while setting up the DNS server to forward all unknown queries to Google DNS. One feature I’m missing in the standard Windows DNS server is the option to partially forward individual zones. However, there is a workaround that will allow you to setup partial DNS forwarding using individual Windows DNS zones.</p>
 <a id="more"></a>
 
@@ -1481,7 +1481,7 @@ Followup: MachineOwner
     <link href="http://improve.dk/orcamdf-is-now-available-on-nuget/"/>
     <id>http://improve.dk/orcamdf-is-now-available-on-nuget/</id>
     <published>2013-05-13T00:00:00.000Z</published>
-    <updated>2014-05-04T16:12:23.000Z</updated>
+    <updated>2014-08-24T11:30:52.000Z</updated>
     <content type="html"><![CDATA[<p>Thanks to Justin Dearing (<a href="http://www.justaprogrammer.net/" target="_blank">b</a>|<a href="https://twitter.com/zippy1981" target="_blank">t</a>), OrcaMDF is now available on <a href="https://www.nuget.org/packages/OrcaMDF.Core" target="_blank">NuGet</a>!</p>
 <a id="more"></a>
 
@@ -1544,7 +1544,7 @@ namespace ConsoleApplication1
     <link href="http://improve.dk/how-to-identify-which-request-caused-a-runaway-thread-using-windbg/"/>
     <id>http://improve.dk/how-to-identify-which-request-caused-a-runaway-thread-using-windbg/</id>
     <published>2013-05-07T00:00:00.000Z</published>
-    <updated>2014-04-22T10:39:11.000Z</updated>
+    <updated>2014-04-21T01:00:57.000Z</updated>
     <content type="html"><![CDATA[<p>When your w3wp process is stuck at 100% like, <a href="/debugging-in-production-part-1-analyzing-100-cpu-usage-using-windbg/">like when I used a non-thread-safe Dictionary concurrently</a>, you may want to identify what request the runaway thread is actually serving. Let me show you how to identify which request caused a runaway thread, using windbg.</p>
 <a id="more"></a>
 
@@ -1823,7 +1823,7 @@ OS Thread Id: <span class="number">0x14930</span> (<span class="number">20</span
     <link href="http://improve.dk/debugging-in-production-part-3-thread-safe-dictionaries/"/>
     <id>http://improve.dk/debugging-in-production-part-3-thread-safe-dictionaries/</id>
     <published>2013-04-30T00:00:00.000Z</published>
-    <updated>2014-05-04T16:12:23.000Z</updated>
+    <updated>2014-08-24T11:30:52.000Z</updated>
     <content type="html"><![CDATA[<p><a href="/debugging-in-production-part-2-latent-race-condition-bugs">In part 2 we found out that the concurrent access to a generic dictionary triggered a race condition bug</a> that caused threads to get stuck at 100% CPU usage. In this part, I’ll show how easy it is to rewrite the code, using the new thread-safe dictionaries in .NET 4.0, so it’s protected from race condition bugs like the one I encountered.</p>
 <a id="more"></a>
 
@@ -1876,7 +1876,7 @@ OS Thread Id: <span class="number">0x14930</span> (<span class="number">20</span
     <link href="http://improve.dk/debugging-in-production-part-2-latent-race-condition-bugs/"/>
     <id>http://improve.dk/debugging-in-production-part-2-latent-race-condition-bugs/</id>
     <published>2013-04-15T00:00:00.000Z</published>
-    <updated>2014-05-04T16:12:23.000Z</updated>
+    <updated>2014-08-24T11:30:52.000Z</updated>
     <content type="html"><![CDATA[<p>Having <a href="/debugging-in-production-part-1-analyzing-100-cpu-usage-using-windbg">analyzed the process dump in part 1</a>, let’s take a look at the code we suspect of causing the issue, in particular how race condition bugs can be avoided.</p>
 <a id="more"></a>
 
@@ -1953,7 +1953,7 @@ OS Thread Id: <span class="number">0x14930</span> (<span class="number">20</span
     <link href="http://improve.dk/last-chance-to-register-for-sqlsaturday-196-in-copenhagen/"/>
     <id>http://improve.dk/last-chance-to-register-for-sqlsaturday-196-in-copenhagen/</id>
     <published>2013-04-09T00:00:00.000Z</published>
-    <updated>2014-04-22T10:39:11.000Z</updated>
+    <updated>2014-04-21T01:00:57.000Z</updated>
     <content type="html"><![CDATA[<p>In just a couple of weeks <a href="http://www.sqlsaturday.com/196/eventhome.aspx" target="_blank">SQLSaturday #196</a> will be happening on April 20th in Copenhagen, Denmark. This is a <strong>free</strong> day smack-filled with great speakers, many of them international! <a href="http://www.sqlsaturday.com/196/schedule.aspx" target="_blank">Just check out the schedule.</a></p>
 <a id="more"></a>
 
